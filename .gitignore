@@ -30,6 +30,7 @@ DeusExConversations/
 DXEP_WC.exe
 Core/
 UWindow/
+Save/
 
 !Maps/50_Ophelia*
 !System/DXOg*
@@ -37,7 +38,6 @@ UWindow/
 
 MyIcons.DLL
 Revision_installscript.vdf
-Save/dummy.txt
 installscript.vdf
 modpath.exe
 unins000.dat

@@ -32,10 +32,13 @@ Core/
 UWindow/
 Save/
 
-!Maps/50_OpheliaDocks_variant_old.dx
-!Maps/50_OpheliaL1-v13.dx
-!Maps/50_OpheliaL1-v13_old.dx
-!Maps/50_OpheliaL1-v25.dx
+#!Maps/50_OpheliaDocks_variant_old.dx
+#!Maps/50_OpheliaL1-v13.dx
+#!Maps/50_OpheliaL1-v13_old.dx
+#!Maps/50_OpheliaL1-v25.dx
+
+#Exclude for maps:
+!Maps/50_Opheli*.dx
 
 !System/DXOg*
 !Textures/GenFX.utx

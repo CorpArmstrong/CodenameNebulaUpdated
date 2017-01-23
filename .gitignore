@@ -40,7 +40,7 @@ Save/
 !Maps/50_Docks-v17.dx
 
 #Exclude for maps:
-!Maps/50_*.dx
+!Maps/50_*
 
 !System/DXOg*
 !Textures/GenFX.utx

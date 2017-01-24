@@ -1,3 +1,16 @@
+#Exclude for maps:
+!Maps/50_*
+
+!Maps/50_OpheliaDocks_variant_old.dx
+!Maps/50_OpheliaL1-v13.dx
+!Maps/50_OpheliaL1-v13_old.dx
+!Maps/50_OpheliaL1-v25.dx
+!Maps/50_OpheliaL1-v27.dx
+!Maps/50_Docks-v17.dx
+
+!System/DXOg*
+!Textures/GenFX.utx
+
 DeusEx/
 Prefabs/
 Revision/
@@ -32,6 +45,7 @@ UWindow/
 Save/
 Maps/
 
+<<<<<<< HEAD
 #!Maps/50_OpheliaDocks_variant_old.dx
 #!Maps/50_OpheliaL1-v13.dx
 #!Maps/50_OpheliaL1-v13_old.dx
@@ -40,6 +54,8 @@ Maps/
 !System/DXOg*
 !Textures/GenFX.utx
 
+=======
+>>>>>>> 9080cae4c0aed3f97411d4ac9bd0f0ee439471a1
 MyIcons.DLL
 Revision_installscript.vdf
 installscript.vdf

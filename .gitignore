@@ -1,5 +1,6 @@
 #Exclude for maps:
 !Maps/50_*
+!Maps/*.t3d
 
 !Maps/50_OpheliaDocks_variant_old.dx
 !Maps/50_OpheliaL1-v13.dx

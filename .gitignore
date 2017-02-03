@@ -1,5 +1,6 @@
 #Exclude for maps:
 !Maps/50_*
+!Maps/*.t3d
 
 !Maps/50_OpheliaDocks_variant_old.dx
 !Maps/50_OpheliaL1-v13.dx
@@ -158,5 +159,8 @@ Music/OceanLab2_Music.umx
 Textures/subway.utx
 Textures/area51textures.utx
 Textures/DerZeitMann.utx
+<<<<<<< HEAD
 Uninstall_DerZeitMann.exe
 config.json
+=======
+>>>>>>> 11da50a765c23d6c8cdd5c3de8c93d36aa8fafc6

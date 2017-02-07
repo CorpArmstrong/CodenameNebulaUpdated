@@ -1,16 +1,15 @@
-#Exclude for maps:
-!Maps/50_*
-!Maps/*.t3d
+# Ignore all files *.*
+*
+*.*
 
-!Maps/50_OpheliaDocks_variant_old.dx
-!Maps/50_OpheliaL1-v13.dx
-!Maps/50_OpheliaL1-v13_old.dx
-!Maps/50_OpheliaL1-v25.dx
-!Maps/50_OpheliaL1-v27.dx
-!Maps/50_Docks-v17.dx
-
+# Excluded:
 !System/DXOg*
 !Textures/GenFX.utx
+
+#!Maps/50_OpheliaDocks_variant_old.dx
+#!Maps/50_OpheliaL1-v13.dx
+#!Maps/50_OpheliaL1-v13_old.dx
+#!Maps/50_OpheliaL1-v25.dx
 
 DeusEx/
 Prefabs/
@@ -38,35 +37,10 @@ Sounds/
 DeusExDeco/
 DeusExCharacters/
 DeusExConversations/
-DXEP_WC.exe
 Core/
 UWindow/
 Save/
-Maps/
 
-<<<<<<< HEAD
-#!Maps/50_OpheliaDocks_variant_old.dx
-#!Maps/50_OpheliaL1-v13.dx
-#!Maps/50_OpheliaL1-v13_old.dx
-#!Maps/50_OpheliaL1-v25.dx
-
-!System/DXOg*
-!Textures/GenFX.utx
-
-=======
->>>>>>> 9080cae4c0aed3f97411d4ac9bd0f0ee439471a1
-MyIcons.DLL
-Revision_installscript.vdf
-installscript.vdf
-modpath.exe
-unins000.dat
-unins000.exe
-ereg.url
-games.pdf
-nd.url
-readme.txt
-support.txt
-Cache0000.tmp
 Textures/HK_BuildingExt.utx
 Textures/CoreTexWallObj.utx
 Textures/CoreTexWater.utx
@@ -104,24 +78,11 @@ Textures/CoreTexCeramic.utx
 Textures/HK_VersaLife.utx
 Textures/Hangar18.utx
 Textures/InfoPortraits.utx
-Music/Title_Music.umx
-Music/Training_Music.umx
-Music/Tunnels_Music.umx
-Music/UNATCOReturn_Music.umx
-Music/UNATCO_Music.umx
-Music/Vandenberg_Music.umx
-Music/VersaLife_Music.umx
-Music/ParisClub2_Music.umx
-Music/ParisClub_Music.umx
-Music/Quotes_Music.umx
-Music/ParisCathedral_Music.umx
-Music/ParisChateau_Music.umx
 Textures/Airfield.utx
 Textures/BobPage.utx
 Textures/MJ12_lab.utx
 Textures/Mobile_Camp.utx
 Textures/MolePeople.utx
-Music/OceanLab_Music.umx
 Textures/Moon.utx
 Textures/NYCBar.utx
 Textures/NewYorkCity.utx
@@ -134,6 +95,22 @@ Textures/SubBase.utx
 Textures/Supertanker.utx
 Textures/UNATCO.utx
 Textures/V_Com_Center.utx
+Textures/subway.utx
+Textures/area51textures.utx
+Textures/DerZeitMann.utx
+
+Music/Title_Music.umx
+Music/Training_Music.umx
+Music/Tunnels_Music.umx
+Music/UNATCOReturn_Music.umx
+Music/UNATCO_Music.umx
+Music/Vandenberg_Music.umx
+Music/VersaLife_Music.umx
+Music/ParisClub2_Music.umx
+Music/ParisClub_Music.umx
+Music/Quotes_Music.umx
+Music/ParisCathedral_Music.umx
+Music/ParisChateau_Music.umx
 Music/Area51Bunker_Music.umx
 Music/Area51_Music.umx
 Music/BatteryPark_Music.umx
@@ -156,11 +133,4 @@ Music/NYCStreets2_Music.umx
 Music/NYCStreets_Music.umx
 Music/NavalBase_Music.umx
 Music/OceanLab2_Music.umx
-Textures/subway.utx
-Textures/area51textures.utx
-Textures/DerZeitMann.utx
-<<<<<<< HEAD
-Uninstall_DerZeitMann.exe
-config.json
-=======
->>>>>>> 11da50a765c23d6c8cdd5c3de8c93d36aa8fafc6
+Music/OceanLab_Music.umx

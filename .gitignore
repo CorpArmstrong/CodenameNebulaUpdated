@@ -1,7 +1,7 @@
 # Excluded:
 !System/DXOg*
 
-../Deus Ex/
+../Deus Ex/*.*
 DeusEx/
 Prefabs/
 Revision/

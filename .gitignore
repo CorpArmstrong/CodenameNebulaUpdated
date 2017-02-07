@@ -1,16 +1,7 @@
-# Ignore all files *.*
-*
-*.*
-
 # Excluded:
 !System/DXOg*
-!Textures/GenFX.utx
 
-#!Maps/50_OpheliaDocks_variant_old.dx
-#!Maps/50_OpheliaL1-v13.dx
-#!Maps/50_OpheliaL1-v13_old.dx
-#!Maps/50_OpheliaL1-v25.dx
-
+../Deus Ex/
 DeusEx/
 Prefabs/
 Revision/

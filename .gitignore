@@ -1,7 +1,9 @@
 # Excluded:
 !System/DXOg*
 
-../Deus Ex/*.*
+# Ignore files in root directory
+/*.*
+
 DeusEx/
 Prefabs/
 Revision/

@@ -1,0 +1,6 @@
+You need to make the following texture files available:
+ShipGrayMetal_A.PCX
+HK_strwal_03.PCX
+HK_strwal_03.PCX
+ShipWhitMetal_A.PCX
+

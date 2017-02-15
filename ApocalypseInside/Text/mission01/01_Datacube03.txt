@@ -1,0 +1,13 @@
+<P>Subject Name: Uber Alles
+<P>Series name: 
+<DC=255,0,0>(UNSUFFICIENT PERMISSIONS TO VIEW)
+<P>BASIC GENETIC SAMPLE: 
+<DC=255,0,0> (UNSUFFICIENT PERMISSIONS TO VIEW)
+<P>STATUS: STASIS
+<P> BIRTHDATE UNASSIGNED
+<DC=0,255,255>
+<JC>NOTES</JC>
+<P>Project UBERMENSCH
+<P>2/15/2046 Subject's limbs we surgically replaced with military-grade mechanical limbs.
+<P>12/05/2049 Subject was given a nanite-infusion. Body cells appear to tolerate nanites.
+<P>1/17/2050 An experimental exoskeleton has been developed and exoskeleton chassis were added to Subject's body.

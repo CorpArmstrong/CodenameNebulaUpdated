@@ -1,0 +1,8 @@
+<DC=255,255,255>
+<P><B>The Mona Lisa</B>
+<P>
+<P>Exhibit name: The Mona Lisa by Leonardo DaVinci
+<P>Danger level: Low
+<P>Date of aquisition: 1960 (arrived on station)
+<P>
+<P>Notes: Among other genuine works by Grand Master DaVinci, the Mona Lisa is too valuable to be displayed in the Louvre. Paris has seen rise in terrorism activity and DuBeers ordered it moved to Ophelia, replacing it with a replica. Not sure if it's a good idea to keep a masterpiece like this next to plutonium barrels, but orders are orders.

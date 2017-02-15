@@ -1,0 +1,26 @@
+Begin PolyList
+   Begin Polygon Texture=AF_LiftMetl_A Flags=1073741832
+      Normal   -1,  0,  0
+      Vertex   0,  48,  -48
+      Vertex   0,  -80,  -48
+      Vertex   0,  -80,  80
+   End Polygon
+   Begin Polygon Texture=AF_LiftMetl_A Flags=1073741832
+      Normal   -1,  0,  0
+      Vertex   0,  48,  -48
+      Vertex   0,  -80,  80
+      Vertex   0,  48,  80
+   End Polygon
+   Begin Polygon Texture=AF_LiftMetl_A Flags=1073741832
+      Normal   -1,  -0,  -0
+      Vertex   16,  80,  64
+      Vertex   16,  80,  -64
+      Vertex   16,  -48,  -64
+   End Polygon
+      Begin Polygon Texture=AF_LiftMetl_A Flags=1073741832
+      Normal   -1,  -0,  -0
+      Vertex   16,  80,  64
+      Vertex   16,  -48,  -64
+      Vertex   16,  -48,  64
+   End Polygon
+End PolyList

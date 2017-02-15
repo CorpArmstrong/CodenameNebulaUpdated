@@ -1,0 +1,81 @@
+#  Wavefront material file
+# Converted by UnrealToObj
+
+newmtl UC_Panel_021073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UC_Panel_02.
+
+newmtl UC_Panel_031073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UC_Panel_03.
+
+newmtl LabWall_061073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd LabWall_06.
+
+newmtl UC_Panel_031077936128
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UC_Panel_03.
+
+newmtl UC_Panel_071082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UC_Panel_07.
+
+newmtl H_noise_A001077936128
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd H_noise_A00.
+
+newmtl KEYBOARD41073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd KEYBOARD4.
+
+newmtl ClenGrayMetal_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrayMetal_A.
+
+newmtl ShipGrayMetal_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipGrayMetal_A.
+
+newmtl UC_Panel_061073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UC_Panel_06.
+
+newmtl ClenMetlPanel_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenMetlPanel_A.
+
+newmtl UC_Panel_071073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UC_Panel_07.
+
+newmtl UC_Tube_011073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UC_Tube_01.
+

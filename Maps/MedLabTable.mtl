@@ -1,0 +1,27 @@
+#  Wavefront material file
+# Converted by UnrealToObj
+
+newmtl ShipGrayMetal_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipGrayMetal_A.PCX
+
+newmtl HK_strwal_031073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd HK_strwal_03.PCX
+
+newmtl HK_strwal_031082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd HK_strwal_03.PCX
+
+newmtl ShipWhitMetal_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipWhitMetal_A.PCX
+

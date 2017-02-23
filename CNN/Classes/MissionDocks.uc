@@ -20,46 +20,46 @@ function FirstFrame()
     Super.FirstFrame();
 
     foreach AllActors(class 'ZoneInfo', zInfo, zoneInfoTag)
-	{
-		zoneInfo = zInfo;
-		break;
-	}
+    {
+        zoneInfo = zInfo;
+        break;
+    }
 
-	flags.SetBool(physicsFlag, false);
+    flags.SetBool(physicsFlag, false);
 }
 
 function Timer()
 {
-	super.Timer();
-	if(flags.GetBool(physicsFlag))
+    super.Timer();
+    if(flags.GetBool(physicsFlag))
     {
-    	flags.SetBool(physicsFlag, false);
-    	SimulateGravity(true);
+        flags.SetBool(physicsFlag, false);
+        SimulateGravity(true);
     }
 }
 
 function SimulateGravity(bool isApplied)
 {
-	local Actor physicsActor;
+    local Actor physicsActor;
 
     foreach AllActors(class 'Actor', physicsActor, physicsActorTag)
     {
-    	physicsActor.SetPhysics(PHYS_Falling);
+        physicsActor.SetPhysics(PHYS_Falling);
     }
 
     if (isApplied)
     {
-		zoneInfo.ZoneGravity = vect(0, 0, -850);
-	}
-	else
-	{
-		zoneInfo.ZoneGravity = vect(0, 0, -1);
-	}
+        zoneInfo.ZoneGravity = vect(0, 0, -850);
+    }
+    else
+    {
+        zoneInfo.ZoneGravity = vect(0, 0, -1);
+    }
 }
 
 DefaultProperties
 {
-	zoneInfoTag=ZoneInfoSimulatedGravity
-	physicsActorTag=SimulatedPhysics
-	physicsFlag=gravityApplied
+    zoneInfoTag=ZoneInfoSimulatedGravity
+    physicsActorTag=SimulatedPhysics
+    physicsFlag=gravityApplied
 }

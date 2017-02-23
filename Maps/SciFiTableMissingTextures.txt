@@ -1,0 +1,15 @@
+You need to make the following texture files available:
+UC_Panel_02.
+UC_Panel_03.
+LabWall_06.
+UC_Panel_03.
+UC_Panel_07.
+H_noise_A00.
+KEYBOARD4.
+ClenGrayMetal_A.
+ShipGrayMetal_A.
+UC_Panel_06.
+ClenMetlPanel_A.
+UC_Panel_07.
+UC_Tube_01.
+

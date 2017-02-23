@@ -1,0 +1,859 @@
+#  Wavefront material file
+# Converted by UnrealToObj
+
+newmtl HK_strwal_030
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd HK_strwal_03.
+
+newmtl DrtyIronPlain_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DrtyIronPlain_A.
+
+newmtl DrtyIronPlain_A0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DrtyIronPlain_A.
+
+newmtl ClenIronWOriv_C32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenIronWOriv_C.
+
+newmtl DamgBlueMetal_A0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DamgBlueMetal_A.
+
+newmtl ClenIronWOriv_C0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenIronWOriv_C.
+
+newmtl 747ceilnsec_C20
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd 747ceilnsec_C2.
+
+newmtl Uob_HangnLight1572864
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_HangnLight.
+
+newmtl Uob_HangnLight0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_HangnLight.
+
+newmtl Uob_HangnLight32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_HangnLight.
+
+newmtl Uob_HangnLight1572896
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_HangnLight.
+
+newmtl cargo01b0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd cargo01b.
+
+newmtl cargo0332
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd cargo03.
+
+newmtl cargo01b32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd cargo01b.
+
+newmtl area51shere_a0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd area51shere_a.
+
+newmtl A51_Floor_0132
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd A51_Floor_01.
+
+newmtl A51_Floor_011073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd A51_Floor_01.
+
+newmtl ClenCmandWall_J1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenCmandWall_J.
+
+newmtl ShipGrayMetal_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipGrayMetal_A.
+
+newmtl ClenCmandWall_J32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenCmandWall_J.
+
+newmtl boxes0132
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd boxes01.
+
+newmtl DrtyWoodCrate_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DrtyWoodCrate_A.
+
+newmtl DrtyWoodCrate_B32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DrtyWoodCrate_B.
+
+newmtl DrtyPlyWood_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DrtyPlyWood_A.
+
+newmtl DrtyPlyWood_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DrtyPlyWood_A.
+
+newmtl 747ceilnsec_C232
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd 747ceilnsec_C2.
+
+newmtl OldeWhitGlass_A1572896
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd OldeWhitGlass_A.
+
+newmtl OldBrasMCvent_B0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd OldBrasMCvent_B.
+
+newmtl Galvanzd0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Galvanzd.
+
+newmtl area51shere_a1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd area51shere_a.
+
+newmtl area51wall_d0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd area51wall_d.
+
+newmtl A51_Light_011572864
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd A51_Light_01.
+
+newmtl area51wall_d32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd area51wall_d.
+
+newmtl A51_Light_011572896
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd A51_Light_01.
+
+newmtl A51_Light_0132
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd A51_Light_01.
+
+newmtl A51_Light_010
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd A51_Light_01.
+
+newmtl ShipGrayMetal_A0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipGrayMetal_A.
+
+newmtl ClenCmandWall_J0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenCmandWall_J.
+
+newmtl area51pipes_b0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd area51pipes_b.
+
+newmtl ClenCommPanel_A0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenCommPanel_A.
+
+newmtl KEYBOARD40
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd KEYBOARD4.
+
+newmtl area51bldng_d0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd area51bldng_d.
+
+newmtl ShipGrayMetal_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipGrayMetal_A.
+
+newmtl A51_Comptr_020
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd A51_Comptr_02.
+
+newmtl metalgrate_a266
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd metalgrate_a.
+map_d metalgrate_a.
+
+newmtl ClenIronWOriv_A0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenIronWOriv_A.
+
+newmtl ClenIronWOriv_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenIronWOriv_A.
+
+newmtl pipends010
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd pipends01.
+
+newmtl pipends0132
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd pipends01.
+
+newmtl DrtyIronWOriv_B0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DrtyIronWOriv_B.
+
+newmtl DrtyIronWOriv_B32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DrtyIronWOriv_B.
+
+newmtl DamgGreyWood0132
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DamgGreyWood01.
+
+newmtl Galvanzd32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Galvanzd.
+
+newmtl BoilerDetail_C32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd BoilerDetail_C.
+
+newmtl Heli_LiftMetl_A1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Heli_LiftMetl_A.
+
+newmtl Ctcomb_31082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Ctcomb_3.
+
+newmtl BeneBeigMarbl_A1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd BeneBeigMarbl_A.
+
+newmtl Type_Grn_A011086324768
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Type_Grn_A01.
+
+newmtl AF_GrayMetal_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd AF_GrayMetal_A.
+
+newmtl AF_GrayMetal_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd AF_GrayMetal_A.
+
+newmtl BeneBeigMarbl_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd BeneBeigMarbl_A.
+
+newmtl ClenGrenSlate_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrenSlate_A.
+
+newmtl AF_GrayMetal_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd AF_GrayMetal_A.
+
+newmtl ClenGrenSlate_A1074298912
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrenSlate_A.
+
+newmtl NYC_GalvMetl_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd NYC_GalvMetl_A.
+
+newmtl NYC_GalvMetl_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd NYC_GalvMetl_A.
+
+newmtl table011073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd table01.
+
+newmtl ComptrPanel_0632
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ComptrPanel_06.
+
+newmtl ClenGreyUSide_A0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGreyUSide_A.
+
+newmtl ComptrPanel_0532
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ComptrPanel_05.
+
+newmtl ClenGrenLight_A0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrenLight_A.
+
+newmtl ClenCncrtWall_I0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenCncrtWall_I.
+
+newmtl DrtyBlueLight_A1572896
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DrtyBlueLight_A.
+
+newmtl Heli_LiftMetl_A0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Heli_LiftMetl_A.
+
+newmtl Heli_LiftMetl_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Heli_LiftMetl_A.
+
+newmtl WindOpacStrek_B4194308
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WindOpacStrek_B.
+d 0.5
+
+newmtl ShipBeigMetal_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipBeigMetal_A.
+
+newmtl ClenGrayMetal_B0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrayMetal_B.
+
+newmtl SB_StairFrnt_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd SB_StairFrnt_A.
+
+newmtl mc_cmptrpanel_b0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd mc_cmptrpanel_b.
+
+newmtl mc_cmptr_lg_b0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd mc_cmptr_lg_b.
+
+newmtl SB_RoomCeiln_C0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd SB_RoomCeiln_C.
+
+newmtl mc_lrgcmptr_A000
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd mc_lrgcmptr_A00.
+
+newmtl INDUgraytile32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd INDUgraytile.
+
+newmtl INDUgraytile0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd INDUgraytile.
+
+newmtl Pipe_C32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Pipe_C.
+
+newmtl NYC_pipe_B32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd NYC_pipe_B.
+
+newmtl Pipe_B32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Pipe_B.
+
+newmtl CT_RdRstMtl_010
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd CT_RdRstMtl_01.
+
+newmtl Uob_SB_Ceiln_C32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_SB_Ceiln_C.
+
+newmtl HK_strwal_021073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd HK_strwal_02.
+
+newmtl PrivBlueGlass_A1077936128
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd PrivBlueGlass_A.
+
+newmtl HK_strwal_031073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd HK_strwal_03.
+
+newmtl tanfloortile_a0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd tanfloortile_a.
+
+newmtl Uob_Consocab_D0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_Consocab_D.
+
+newmtl un_lightmdcl_a0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_lightmdcl_a.
+
+newmtl ThreeWords_132
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ThreeWords_1.
+
+newmtl ThreeWords_11073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ThreeWords_1.
+
+newmtl ClenGrenMarbl_A1073774592
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrenMarbl_A.
+
+newmtl ClenBrwnWood_A1073774592
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenBrwnWood_A.
+
+newmtl ClenWoodPanel_D1073774592
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenWoodPanel_D.
+
+newmtl ShipWhitMetal_A1073774592
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipWhitMetal_A.
+
+newmtl ClenViltMarble01076920320
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenViltMarble0.
+
+newmtl ClenViltMarble01073774592
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenViltMarble0.
+
+newmtl DrtySilvMetal_A0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DrtySilvMetal_A.
+
+newmtl DrtySilvMetal_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DrtySilvMetal_A.
+
+newmtl mc_cmptrpanel_c0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd mc_cmptrpanel_c.
+
+newmtl MetlBoxPanel_C0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd MetlBoxPanel_C.
+
+newmtl LabFlr_0132
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd LabFlr_01.
+
+newmtl LabFlr_011073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd LabFlr_01.
+
+newmtl ClenMedmWalnt_A1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenMedmWalnt_A.
+
+newmtl ClenMedmWalnt_A142606432
+Ka 1 1 1
+Ks 1 1 1
+Ns 50
+illum 2
+map_Kd ClenMedmWalnt_A.
+
+newmtl PlatMetlGrate_B266
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd PlatMetlGrate_B.
+map_d PlatMetlGrate_B.
+
+newmtl shipskin030
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd shipskin03.
+
+newmtl ShipPipeDetal_D1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipPipeDetal_D.
+
+newmtl ShipPipeDetal_C1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipPipeDetal_C.
+
+newmtl ClenMedmChery_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenMedmChery_A.
+
+newmtl ClenMedmChery_A0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenMedmChery_A.
+
+newmtl Art_E1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Art_E.
+
+newmtl Art_D0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Art_D.
+
+newmtl ClenBrwnWood_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenBrwnWood_A.
+
+newmtl ClenBrwnWood_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenBrwnWood_A.
+
+newmtl table0132
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd table01.
+
+newmtl un_grnyblnkt_b1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_grnyblnkt_b.
+
+newmtl un_grnyblnkt_a1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_grnyblnkt_a.
+
+newmtl FiniWhitDrywa_A8388640
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd FiniWhitDrywa_A.
+
+newmtl FiniWhitDrywa_A1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd FiniWhitDrywa_A.
+
+newmtl ClenWhitPine_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenWhitPine_A.
+
+newmtl ShipWhitMetal_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipWhitMetal_A.
+
+newmtl ClenWhitPine_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenWhitPine_A.
+
+newmtl ClenGrayMetal_A1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrayMetal_A.
+
+newmtl ClenGrayMetal_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrayMetal_A.
+
+newmtl Galvanzd1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Galvanzd.
+
+newmtl ShipWhitMetal_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipWhitMetal_A.
+
+newmtl un_woodfloor_b32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.
+
+newmtl BeneBeigMarbl_A1082654752
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd BeneBeigMarbl_A.
+
+newmtl un_woodfloor_b1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.
+
+newmtl un_woodfloor_b1082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.
+
+newmtl STBeigMetal_A32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd STBeigMetal_A.
+
+newmtl STBeigMetal_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd STBeigMetal_A.
+
+newmtl 747_metal32
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd 747_metal.
+
+newmtl 747_metal0
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd 747_metal.
+

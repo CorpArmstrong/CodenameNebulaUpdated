@@ -1,0 +1,8 @@
+<FILE=06_Bulletin01,American Nuke>
+<FILE=06_Bulletin02,Soviet Nuke>
+<FILE=06_Bulletin03,Malaysian Airlines Debris>
+<FILE=06_Bulletin04,Grey Death>
+<FILE=06_Bulletin05,The Dentons' Car>
+<FILE=06_Bulletin06,Statue Of Liberty's Head>
+<FILE=06_Bulletin07,The Mona Lisa>
+<FILE=06_Bulletin08,Bones Of The Desposyni>

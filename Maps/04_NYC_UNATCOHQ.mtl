@@ -1,0 +1,1254 @@
+#  Wavefront material file
+# Converted by UnrealToObj
+
+newmtl greenntan_a1074298880
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd greenntan_a.PCX
+
+newmtl un_woodwall_b1074298880
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodwall_b.PCX
+
+newmtl Uob_Far_Wall_B1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_Far_Wall_B.PCX
+
+newmtl un_woodfloor_a1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_a.PCX
+
+newmtl UN_Wall_Green1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UN_Wall_Green.PCX
+
+newmtl Uob_ConRmFloor1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_ConRmFloor.PCX
+
+newmtl MasnBrwnMarbl_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd MasnBrwnMarbl_A.PCX
+
+newmtl un_woodwall_b1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodwall_b.PCX
+
+newmtl Heli_LiftMetl_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Heli_LiftMetl_A.PCX
+
+newmtl un_insetlight_b1077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_insetlight_b.PCX
+
+newmtl UN_Wall_Green1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UN_Wall_Green.PCX
+
+newmtl sign_Level11073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd sign_Level1.PCX
+
+newmtl ClenMedmWalnt_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenMedmWalnt_A.PCX
+
+newmtl western_a1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd western_a.PCX
+
+newmtl un_woodwall_b1074266144
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodwall_b.PCX
+
+newmtl Uob_ConRmFloor1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_ConRmFloor.PCX
+
+newmtl Uob_Concrete1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_Concrete.PCX
+
+newmtl graycncrtwall_a1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd graycncrtwall_a.PCX
+
+newmtl ClenGrayCarpt_C1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrayCarpt_C.PCX
+
+newmtl western_c1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd western_c.PCX
+
+newmtl deskdrawer_a1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd deskdrawer_a.PCX
+
+newmtl BeneBeigMarbl_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd BeneBeigMarbl_A.PCX
+
+newmtl BeneBeigMarbl_A1074298912
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd BeneBeigMarbl_A.PCX
+
+newmtl deskdrawer_a1074298880
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd deskdrawer_a.PCX
+
+newmtl UN_Wall_Blue1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UN_Wall_Blue.PCX
+
+newmtl LowrLevWall_A1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd LowrLevWall_A.PCX
+
+newmtl ClenMedmChery_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenMedmChery_A.PCX
+
+newmtl un_woodfloor_a1082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_a.PCX
+
+newmtl LowrLevWall_B1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd LowrLevWall_B.PCX
+
+newmtl CeilnLite_A21077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd CeilnLite_A2.PCX
+
+newmtl un_woodfloor_b1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.PCX
+
+newmtl Heli_LiftMetl_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Heli_LiftMetl_A.PCX
+
+newmtl NanoBookTops1077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd NanoBookTops.PCX
+
+newmtl 07WindOpacStrek1082654988
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd 07WindOpacStrek.PCX
+d 0.5
+
+newmtl un_heli_c1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_heli_c.PCX
+
+newmtl un_heli_c1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_heli_c.PCX
+
+newmtl LowrLevFloor_A1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd LowrLevFloor_A.PCX
+
+newmtl ClenMetlPatrn_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenMetlPatrn_A.PCX
+
+newmtl Uob_Floor_A1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_Floor_A.PCX
+
+newmtl 07WindOpacStrek1078460684
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd 07WindOpacStrek.PCX
+d 0.5
+
+newmtl BlastDoors_B1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd BlastDoors_B.PCX
+
+newmtl WarnYeloStrip_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WarnYeloStrip_A.PCX
+
+newmtl un_woodfloor_b1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.PCX
+
+newmtl BeneBeigMarbl_A1073774624
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd BeneBeigMarbl_A.PCX
+
+newmtl un_woodfloor_b1074298880
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.PCX
+
+newmtl Heli_LiftMetl_A1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Heli_LiftMetl_A.PCX
+
+newmtl WarnYeloStrip_A1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WarnYeloStrip_A.PCX
+
+newmtl UNAT_PersOnly1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UNAT_PersOnly.PCX
+
+newmtl 07WindOpacStrek1073742092
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd 07WindOpacStrek.PCX
+d 0.5
+
+newmtl LowrLevWall_C1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd LowrLevWall_C.PCX
+
+newmtl sign_Level31073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd sign_Level3.PCX
+
+newmtl Uob_Floor_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_Floor_A.PCX
+
+newmtl LowrLevFloor_B1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd LowrLevFloor_B.PCX
+
+newmtl ClenGrenSlate_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrenSlate_A.PCX
+
+newmtl greenntan_a1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd greenntan_a.PCX
+
+newmtl ClenGrenSlate_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrenSlate_A.PCX
+
+newmtl ClenBlueGrte_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenBlueGrte_A.PCX
+
+newmtl MasnBrwnMarbl_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd MasnBrwnMarbl_A.PCX
+
+newmtl RestRoomSign_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd RestRoomSign_A.PCX
+
+newmtl un_woodfloor_b1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.PCX
+
+newmtl LowrLevWall_B1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd LowrLevWall_B.PCX
+
+newmtl un_gunpster21073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_gunpster2.PCX
+
+newmtl un_woodwall_b1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodwall_b.PCX
+
+newmtl LowrLevWall_B1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd LowrLevWall_B.PCX
+
+newmtl plaque_a1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd plaque_a.PCX
+
+newmtl plaque_b1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd plaque_b.PCX
+
+newmtl ClenGrayCarpt_C1082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrayCarpt_C.PCX
+
+newmtl ClenViltMarble01073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenViltMarble0.PCX
+
+newmtl UN_Wall_White1082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UN_Wall_White.PCX
+
+newmtl WindOpacStrek_A1077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WindOpacStrek_A.PCX
+
+newmtl WindOpacStrek_A1212153892
+Ka 1 1 1
+Ks 1 1 1
+Ns 50
+illum 2
+map_Kd WindOpacStrek_A.PCX
+d 0.5
+
+newmtl GrayWoodTWall_C1083179040
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd GrayWoodTWall_C.PCX
+
+newmtl GrayWoodTWall_C1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd GrayWoodTWall_C.PCX
+
+newmtl ClenViltMarble01074790400
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenViltMarble0.PCX
+
+newmtl HevyMetlGrate_B1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd HevyMetlGrate_B.PCX
+
+newmtl sign_Level21073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd sign_Level2.PCX
+
+newmtl western_b1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd western_b.PCX
+
+newmtl graycncrtwall_a1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd graycncrtwall_a.PCX
+
+newmtl GrayWoodTWall_C1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd GrayWoodTWall_C.PCX
+
+newmtl un_woodfloor_a1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_a.PCX
+
+newmtl Stoc_A011073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Stoc_A01.PCX
+
+newmtl UNATCOseal_A1082654986
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UNATCOseal_A.PCX
+map_d UNATCOseal_A.PCX
+
+newmtl un_PrezMeadPic1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_PrezMeadPic.PCX
+
+newmtl deskdrawer_a1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd deskdrawer_a.PCX
+
+newmtl BeneBeigMarbl_A1082654752
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd BeneBeigMarbl_A.PCX
+
+newmtl un_LibIslandMap1077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_LibIslandMap.PCX
+
+newmtl BeneBeigMarbl_A1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd BeneBeigMarbl_A.PCX
+
+newmtl deskdrawer_a1082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd deskdrawer_a.PCX
+
+newmtl HevyMetlGrate_B1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd HevyMetlGrate_B.PCX
+
+newmtl DevoBeigMarbl_A1074790432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DevoBeigMarbl_A.PCX
+
+newmtl un_wallplaq_g1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_wallplaq_g.PCX
+
+newmtl WorldMap_A21073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WorldMap_A2.PCX
+
+newmtl un_wallplaq_h1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_wallplaq_h.PCX
+
+newmtl DevoBeigMarbl_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DevoBeigMarbl_A.PCX
+
+newmtl un_woodfloor_a1074266144
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_a.PCX
+
+newmtl sign_JM1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd sign_JM.PCX
+
+newmtl WindOpacStrek_A1077936396
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WindOpacStrek_A.PCX
+d 0.5
+
+newmtl mc_wire_b1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd mc_wire_b.PCX
+
+newmtl Heli_LiftMetl_A1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Heli_LiftMetl_A.PCX
+
+newmtl mc_wire_b1082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd mc_wire_b.PCX
+
+newmtl Heli_LiftMetl_A1082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Heli_LiftMetl_A.PCX
+
+newmtl mc_wire_a1082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd mc_wire_a.PCX
+
+newmtl un_woodwall_b1074790432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodwall_b.PCX
+
+newmtl un_woodwall_b1082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodwall_b.PCX
+
+newmtl un_woodfloor_b1082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.PCX
+
+newmtl un_lightmdcl_a1086324768
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_lightmdcl_a.PCX
+
+newmtl WindOpacStrek_A1082654988
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WindOpacStrek_A.PCX
+d 0.5
+
+newmtl un_LibIslandMap1086324768
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_LibIslandMap.PCX
+
+newmtl WorldMap_A21082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WorldMap_A2.PCX
+
+newmtl WorldMap_A1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WorldMap_A.PCX
+
+newmtl MasnBrwnMarbl_A1207959556
+Ka 1 1 1
+Ks 1 1 1
+Ns 50
+illum 2
+map_Kd MasnBrwnMarbl_A.PCX
+d 0.5
+
+newmtl ShipGrayMetal_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipGrayMetal_A.PCX
+
+newmtl Exitsign_a1074790432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Exitsign_a.PCX
+
+newmtl UNAT_PersOnly1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UNAT_PersOnly.PCX
+
+newmtl un_lightmdcl_a1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_lightmdcl_a.PCX
+
+newmtl Heli_LiftMetl_A1074790432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Heli_LiftMetl_A.PCX
+
+newmtl Uob_ConRmFloor1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_ConRmFloor.PCX
+
+newmtl UC_Panel_031073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UC_Panel_03.PCX
+
+newmtl BW_SatPic_A001077936396
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd BW_SatPic_A00.PCX
+d 0.5
+
+newmtl OldeWhitGlass_A1074790400
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd OldeWhitGlass_A.PCX
+
+newmtl Uob_ObsMap_A001077936396
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_ObsMap_A00.PCX
+d 0.5
+
+newmtl racksides1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd racksides.PCX
+
+newmtl DamgGreyWood011073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DamgGreyWood01.PCX
+
+newmtl WhiteNoise_A011077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WhiteNoise_A01.PCX
+
+newmtl ClenGrenSlate_A1074298912
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrenSlate_A.PCX
+
+newmtl SciFiPoster_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd SciFiPoster_A.PCX
+
+newmtl Uob_Concrete1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_Concrete.PCX
+
+newmtl VBC_Hlgram_011077936128
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd VBC_Hlgram_01.PCX
+
+newmtl UN_Wall_Blue1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UN_Wall_Blue.PCX
+
+newmtl ClenGrayCarpt_C1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrayCarpt_C.PCX
+
+newmtl ShipGrayMetal_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ShipGrayMetal_A.PCX
+
+newmtl Obs_Screen_E011077936128
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Obs_Screen_E01.PCX
+
+newmtl sign_SC1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd sign_SC.PCX
+
+newmtl sign_GH1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd sign_GH.PCX
+
+newmtl sign_AN1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd sign_AN.PCX
+
+newmtl QuartSign_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd QuartSign_A.PCX
+
+newmtl CautStepWatch_A1073741858
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd CautStepWatch_A.PCX
+map_d CautStepWatch_A.PCX
+
+newmtl un_woodfloor_b1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.PCX
+
+newmtl un_woodfloor_a1074266112
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_a.PCX
+
+newmtl un_woodfloor_b1074266144
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.PCX
+
+newmtl bulltprftrans_a1077936396
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd bulltprftrans_a.PCX
+d 0.5
+
+newmtl MedAreaWall_B1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd MedAreaWall_B.PCX
+
+newmtl CompOps_sign1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd CompOps_sign.PCX
+
+newmtl WorldMap_B1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WorldMap_B.PCX
+
+newmtl MedChart_C1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd MedChart_C.PCX
+
+newmtl sign_JR1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd sign_JR.PCX
+
+newmtl sign_AJ1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd sign_AJ.PCX
+
+newmtl MedSignLite_A1077936128
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd MedSignLite_A.PCX
+
+newmtl VBC_Hlgram_021077936128
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd VBC_Hlgram_02.PCX
+
+newmtl bluewater1073742092
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd bluewater.PCX
+d 0.5
+
+newmtl Uob_Consocab_D1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_Consocab_D.PCX
+
+newmtl Uob_Consocab_C1077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_Consocab_C.PCX
+
+newmtl Type_Red_A011077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Type_Red_A01.PCX
+
+newmtl LadrBrwnMetal1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd LadrBrwnMetal.PCX
+
+newmtl MedChart_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd MedChart_A.PCX
+
+newmtl H_noise_A001077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd H_noise_A00.PCX
+
+newmtl Med_Screen_B011077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Med_Screen_B01.PCX
+
+newmtl un_lightmdcl_a1077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_lightmdcl_a.PCX
+
+newmtl un_woodfloor_b1074266112
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.PCX
+
+newmtl un_woodfloor_b1074528256
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_b.PCX
+
+newmtl un_lightmdcl_a1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_lightmdcl_a.PCX
+
+newmtl un_safe1074266112
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_safe.PCX
+
+newmtl ClenBrwnWood_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenBrwnWood_A.PCX
+
+newmtl un_wallplaq_f1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_wallplaq_f.PCX
+
+newmtl un_whiteboard_a1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_whiteboard_a.PCX
+
+newmtl ClenGrenSlate_A1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrenSlate_A.PCX
+
+newmtl ClenBrwnWood_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenBrwnWood_A.PCX
+
+newmtl un_woodfloor_a1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_a.PCX
+
+newmtl un_bboard1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_bboard.PCX
+
+newmtl ClenGrenSlate_A1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd ClenGrenSlate_A.PCX
+
+newmtl un_woodfloor_a1082654752
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_a.PCX
+
+newmtl StovCookTop_B1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd StovCookTop_B.PCX
+
+newmtl tanfloortile_b1082654752
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd tanfloortile_b.PCX
+
+newmtl CermRomnFloor_D1082654720
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd CermRomnFloor_D.PCX
+
+newmtl un_woodfloor_a1083179008
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_woodfloor_a.PCX
+
+newmtl diamond_floor1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd diamond_floor.PCX
+
+newmtl pa_chteutble_a1082130432
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd pa_chteutble_a.PCX
+
+newmtl bulltprftrans_a1082130698
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd bulltprftrans_a.PCX
+map_d bulltprftrans_a.PCX
+
+newmtl WindOpacStrek_A1082130700
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WindOpacStrek_A.PCX
+d 0.5
+
+newmtl pa_kiosque_b1077936396
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd pa_kiosque_b.PCX
+d 0.5
+
+newmtl FlutBrwnPanel_A1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd FlutBrwnPanel_A.PCX
+
+newmtl pa_chteutble_a1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd pa_chteutble_a.PCX
+
+newmtl FlutBrwnPanel_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd FlutBrwnPanel_A.PCX
+
+newmtl un_grnyblnkt_b1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_grnyblnkt_b.PCX
+
+newmtl MedChart_B1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd MedChart_B.PCX
+
+newmtl mc_cmptrpanel_b1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd mc_cmptrpanel_b.PCX
+
+newmtl FiniWhitDrywa_A1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd FiniWhitDrywa_A.PCX
+
+newmtl un_medcmptr_A001073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_medcmptr_A00.PCX
+
+newmtl un_grnyblnkt_a1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_grnyblnkt_a.PCX
+
+newmtl MedLab_sign1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd MedLab_sign.PCX
+
+newmtl FileCabn_Body_B1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd FileCabn_Body_B.PCX
+
+newmtl FileCabn_Body_B1082163232
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd FileCabn_Body_B.PCX
+
+newmtl Obs_Screen_E011077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Obs_Screen_E01.PCX
+
+newmtl Med_Screen_A011077936160
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Med_Screen_A01.PCX
+
+newmtl MasnBrwnMarbl_A1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd MasnBrwnMarbl_A.PCX
+
+newmtl sign_Level41082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd sign_Level4.PCX
+
+newmtl restrcdarea1073741856
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd restrcdarea.PCX
+
+newmtl DangDoNoEnter_A1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd DangDoNoEnter_A.PCX
+
+newmtl INDUgraytile1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd INDUgraytile.PCX
+
+newmtl Uob_Concrete1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd Uob_Concrete.PCX
+
+newmtl un_lightmdcl_a1086324736
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd un_lightmdcl_a.PCX
+
+newmtl mc_metal_a1082130464
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd mc_metal_a.PCX
+
+newmtl UNAT_PersOnly1073741824
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd UNAT_PersOnly.PCX
+
+newmtl WindOpacStrek_A1216872460
+Ka 1 1 1
+Ks 1 1 1
+Ns 50
+illum 2
+map_Kd WindOpacStrek_A.PCX
+d 0.5
+
+newmtl WindOpacStrek_A1082654732
+Ka 1 1 1
+Ns 8
+illum 2
+map_Kd WindOpacStrek_A.PCX
+d 0.5
+

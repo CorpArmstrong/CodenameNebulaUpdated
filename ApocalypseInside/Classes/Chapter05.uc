@@ -18,8 +18,11 @@ var Name CutsceneEndFlagName;
 function InitStateMachine()
 {
 	Super.InitStateMachine();
+	//flags.SetBool('ReadyToLeaveMoon', true, true, 0);
     CheckIntroFlags();
+	//GivePlayerAugmentation(Class'DeusEx.AugMuscle');
 }
+
 
 // ----------------------------------------------------------------------
 // FirstFrame()
@@ -55,6 +58,11 @@ function Timer()
 {
 	Super.Timer();
     SendPlayerOnceToGame();
+	//LeavingMoon();
+	/*if (flags.GetBool('ReadyToLeaveMoon'))
+		{
+			Level.Game.SendPlayer(Player, "06_OpheliaDocks?Difficulty="$Player.combatDifficulty);
+		}*/
 }
 
 // ----------------------------------------------------------------------
@@ -121,11 +129,21 @@ function SendPlayerOnceToGame()
 	
 }
 
+/*function LeavingMoon()
+{
+	if (flags.GetBool('ReadyToLeaveMoon'))
+	{
+		flags.SetBool('ReadyToLeaveMoon', true, true, 0);
+		//Level.Game.SendPlayer(player, '06_OpheliaDocks');
+	}
+	
+}*/
+
 defaultproperties
 {
     missionName="Moon"
-	sendToLocation="Moon_V1#TwoMonthsLater"
-	conversationName=CutsceneMoon
+	sendToLocation="05_MoonIntro#TwoMonthsLater"
+	conversationName=InExile
 	actorTag=Magdalene
 	CutsceneEndFlagName=IsIntroPlayed
 }

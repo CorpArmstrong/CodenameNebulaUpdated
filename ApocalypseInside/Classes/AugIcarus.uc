@@ -15,6 +15,22 @@ Begin:
 	//displayMode = DM_ThirdPerson;
 }
 
+	//== Wall walk for Run Silent aug.  Aren't I awesome?
+/*	event BumpWall(vector HitLocation, vector HitNormal)
+	{
+		local Rotator rot;
+		if((Physics == PHYS_Falling || (Physics == PHYS_Spider && HitNormal != Floor)) && RunSilentValue < 1.0 )
+		{
+			SetPhysics(PHYS_Spider);
+			rot = Rotator(Floor);
+			rot.Yaw = Rotation.Yaw;
+			ViewRotation.Roll = rot.Roll;
+
+			SetRotation(rot);
+		}
+		Global.BumpWall(HitLocation, HitNormal);
+	} */
+
 function Deactivate()
 {
 		super.Deactivate();

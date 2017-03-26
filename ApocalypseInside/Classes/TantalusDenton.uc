@@ -174,7 +174,8 @@ function ShowIntro(optional bool bStartNewGame)
 	AugmentationSystem.DeactivateAll();
 
 	// Reset the player
-	Level.Game.SendPlayer(Self, "AiPrologue");
+	//Level.Game.SendPlayer(Self, "AiPrologue");
+	Level.Game.SendPlayer(Self, "50_Docks-v17");
 }
 
 // ----------------------------------------------------------------------

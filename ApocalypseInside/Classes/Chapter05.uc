@@ -5,6 +5,7 @@ class Chapter05 expands MissionScript;
 
 var byte savedSoundVolume;
 var bool isIntroCompleted;
+var bool GaveMuscleAug;
 var String sendToLocation;
 var Name conversationName;
 var Name actorTag;
@@ -18,9 +19,8 @@ var Name CutsceneEndFlagName;
 function InitStateMachine()
 {
 	Super.InitStateMachine();
-	//flags.SetBool('ReadyToLeaveMoon', true, true, 0);
     CheckIntroFlags();
-	//GivePlayerAugmentation(Class'DeusEx.AugMuscle');
+	//Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugMuscle');
 }
 
 
@@ -33,7 +33,7 @@ function InitStateMachine()
 function FirstFrame()
 {
 	Super.FirstFrame();
-	StartConversationWithActor();
+	//StartConversationWithActor(); Intro will start in first person mode and the convo will be interactive.
 }
 
 // ----------------------------------------------------------------------
@@ -57,12 +57,8 @@ function PreTravel()
 function Timer()
 {
 	Super.Timer();
-    SendPlayerOnceToGame();
-	//LeavingMoon();
-	/*if (flags.GetBool('ReadyToLeaveMoon'))
-		{
-			Level.Game.SendPlayer(Player, "06_OpheliaDocks?Difficulty="$Player.combatDifficulty);
-		}*/
+    //SendPlayerOnceToGame();
+	GivePlayerHisAugs();
 }
 
 // ----------------------------------------------------------------------
@@ -129,15 +125,15 @@ function SendPlayerOnceToGame()
 	
 }
 
-/*function LeavingMoon()
+function GivePlayerHisAugs()
 {
-	if (flags.GetBool('ReadyToLeaveMoon'))
-	{
-		flags.SetBool('ReadyToLeaveMoon', true, true, 0);
-		//Level.Game.SendPlayer(player, '06_OpheliaDocks');
+	if(flags.GetBool('HasMuscleAug') && !GaveMuscleAug) {
+		Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugMuscle');
+		flags.SetBool('GaveMuscleAug', true, true, 0);
 	}
-	
-}*/
+	if(flags.GetBool('HasCombatAug'))
+	Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugCombat');
+}
 
 defaultproperties
 {

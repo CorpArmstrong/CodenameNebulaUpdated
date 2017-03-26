@@ -5,7 +5,6 @@ class Chapter05 expands MissionScript;
 
 var byte savedSoundVolume;
 var bool isIntroCompleted;
-var bool GaveMuscleAug;
 var String sendToLocation;
 var Name conversationName;
 var Name actorTag;
@@ -80,6 +79,14 @@ function CheckIntroFlags()
 	}
 }
 
+function GivePlayerHisAugs()
+{	
+	if(flags.GetBool('HasMuscleAug'))
+		Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugMuscle');
+	if(flags.GetBool('HasCombatAug'))
+		Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugCombat');
+}
+
 function StartConversationWithActor()
 {
 	if (!flags.GetBool(CutsceneEndFlagName))
@@ -125,15 +132,6 @@ function SendPlayerOnceToGame()
 	
 }
 
-function GivePlayerHisAugs()
-{
-	if(flags.GetBool('HasMuscleAug') && !GaveMuscleAug) {
-		Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugMuscle');
-		flags.SetBool('GaveMuscleAug', true, true, 0);
-	}
-	if(flags.GetBool('HasCombatAug'))
-	Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugCombat');
-}
 
 defaultproperties
 {

@@ -178,7 +178,7 @@ function ShowIntro(optional bool bStartNewGame)
 
     // Reset the player
     //Level.Game.SendPlayer(Self, "AiPrologue");
-    Level.Game.SendPlayer(Self, strStartMap);//"96_Area51");
+    Level.Game.SendPlayer(Self, strStartMap);
 }
 
 // ----------------------------------------------------------------------
@@ -363,7 +363,7 @@ function InitializeSubSystems()
 function bool Facelift(bool bOn)
     {
     }
-/*
+
 // ----------------------------------------------------------------------
 // CreateThemeManager()
 // ----------------------------------------------------------------------
@@ -436,7 +436,7 @@ function CreateColorThemeManager()
         ThemeManager.AddTheme(Class'ColorThemeHUD_Violet');
     }
 }
-*/
+
 // ----------------------------------------------------------------------
 // StartConversation()
 //

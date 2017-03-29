@@ -15,6 +15,7 @@ abstract;
 #exec CONVERSATION IMPORT FILE="Conversations\DL_Chapter04.Con"
 #exec CONVERSATION IMPORT FILE="Conversations\DL_Chapter05.Con"
 #exec CONVERSATION IMPORT FILE="Conversations\DL_Chapter06.Con"
+#exec CONVERSATION IMPORT FILE="Conversations\Mission96.Con"
 
 
 // shared conversations

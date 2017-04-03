@@ -6,6 +6,8 @@ abstract;
 // Import conversations
 #exec CONVERSATION IMPORT FILE="Conversations\Mission00.Con"
 #exec CONVERSATION IMPORT FILE="Conversations\Mission50.Con"
+#exec CONVERSATION IMPORT FILE="Conversations\Mission45.Con"
+#exec CONVERSATION IMPORT FILE="Conversations\DL_Mission45.Con"
 //#exec CONVERSATION IMPORT FILE="Mission16_Infolink.Con"
 
 // shared conversations

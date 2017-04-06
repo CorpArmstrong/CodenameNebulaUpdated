@@ -57,6 +57,11 @@ function SimulateGravity(bool isApplied)
     }
 }
 
+function TestEvent()
+{
+    SimulateGravity(false);
+}
+
 DefaultProperties
 {
     zoneInfoTag=ZoneInfoSimulatedGravity

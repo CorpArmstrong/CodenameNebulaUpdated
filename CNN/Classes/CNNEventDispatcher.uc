@@ -27,13 +27,13 @@ state Dispatch
     enable('Trigger');
 
     // CorpArmstrong:
-	gotostate('ProcessEvents');
+    gotostate('ProcessEvents');
 }
 
 state ProcessEvents
 {
-	Begin:
-	for(counter = 0; counter < ArrayCount(CodeEventClasses); counter++)
+    Begin:
+    for(counter = 0; counter < ArrayCount(CodeEventClasses); counter++)
     {
         if(CodeEventClasses[counter] != none)
         {
@@ -45,5 +45,5 @@ state ProcessEvents
 
 defaultproperties
 {
-	CodeEventNames[0]=class'CNN.EventCommandTurnOffGravity'
+    CodeEventNames[0]=class'CNN.EventCommandToggleGravity'
 }

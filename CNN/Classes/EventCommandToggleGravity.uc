@@ -45,4 +45,5 @@ DefaultProperties
 {
     zoneInfoTag=ZoneInfoSimulatedGravity
     physicsActorTag=SimulatedPhysics
+	eventCommandTag=EC_ToggleGravity
 }

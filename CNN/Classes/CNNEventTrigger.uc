@@ -2,32 +2,33 @@ class CNNEventTrigger extends Trigger;
 
 var(CodeEvent) class<EventCommand> codeEventClass;
 var EventCommand ev;
+var bool codeEventSpawned;
 
 function Trigger(Actor Other, Pawn Instigator)
 {
-	if (!IsActorSpawned())
-	{
-		Spawn(codeEventClass).ExecuteEvent();
-	}
-	else
-	{
-		ev.ExecuteEvent();
-	}
+    if (!codeEventSpawned)
+    {
+       ev = GetCodeEvent();
+
+       if (ev == none)
+       {
+          ev = Spawn(codeEventClass);
+       }
+
+       codeEventSpawned = true;
+    }
+
+    ev.ExecuteEvent();
 }
 
-function bool IsActorSpawned()
+function EventCommand GetCodeEvent()
 {
-	local bool bEventActorFound;
     local Actor evs;
 
-	foreach AllActors(codeEventClass, evs, /*Tag*/codeEventClass.default.eventCommandTag)
-	{
-		bEventActorFound = true;
-		ev = EventCommand(evs);
+	foreach AllActors(codeEventClass, evs)
 		break;
-	}
 
-	return bEventActorFound;
+	return EventCommand(evs);
 }
 
 defaultproperties

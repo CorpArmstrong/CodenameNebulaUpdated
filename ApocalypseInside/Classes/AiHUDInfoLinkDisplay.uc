@@ -1,8 +1,8 @@
 //=============================================================================
 // AiHUDInfoLinkDisplay
 //=============================================================================
-class AiHUDInfoLinkDisplay expands HUDInfoLinkDisplay
-	transient;
+class AiHUDInfoLinkDisplay expands HUDInfoLinkDisplay; // Added semicolon
+    //transient;
 
 // this seems to have to be here to load the damn DefaultPortrait texture
 //#exec OBJ LOAD FILE=InfoPortraits
@@ -17,16 +17,16 @@ class AiHUDInfoLinkDisplay expands HUDInfoLinkDisplay
 
 function SetSpeaker(String bindName, String displayName)
 {
-	local String portraitStringName;
+    local String portraitStringName;
 
-	winName.SetText(displayName);
+    winName.SetText(displayName);
 
-	// Default portrait name based on bind naem
+    // Default portrait name based on bind naem
 
-	portraitStringName = "AiInfoPortraits." $ Left(bindName, 19);//16
+    portraitStringName = "AiInfoPortraits." $ Left(bindName, 19);//16
 
 
 
-	// Get a pointer to the portrait
-	speakerPortrait = Texture(DynamicLoadObject(portraitStringName, class'Texture'));
+    // Get a pointer to the portrait
+    speakerPortrait = Texture(DynamicLoadObject(portraitStringName, class'Texture'));
 }

@@ -12,7 +12,7 @@ event InitWindow()
     local DeusExRootWindow root;
     local DeusExPlayer player;
 
-    Super.InitWindow();
+    //Super.InitWindow();
 
     // Get a pointer to the root window
     root = DeusExRootWindow(GetRootWindow());
@@ -25,14 +25,14 @@ event InitWindow()
 
     ammo            = HUDAmmoDisplay(NewChild(Class'HUDAmmoDisplay'));
     hit             = IwHUDHitDisplay(NewChild(Class'IwHUDHitDisplay'));
-    cross.Destroy();
+    //hit             = HUDHitDisplay(NewChild(Class'HUDHitDisplay'));
     cross           = Crosshair(NewChild(Class'Crosshair'));
-    belt            = IwHUDObjectBelt(NewChild(Class'IwHUDObjectBelt'));
-    activeItems     = IwHUDActiveItemsDisplay(NewChild(Class'IwHUDActiveItemsDisplay'));
-    damageDisplay.Destroy();
-    damageDisplay   = AiDamageHUDDisplay(NewChild(Class'AiDamageHUDDisplay'));
-    compass.Destroy();
-    compass         = AiHUDCompassDisplay(NewChild(Class'AiHUDCompassDisplay'));
+
+    belt            = HUDObjectBelt(NewChild(Class'IwHUDObjectBelt'));
+    activeItems     = HUDActiveItemsDisplay(NewChild(Class'IwHUDActiveItemsDisplay'));
+
+    damageDisplay   = DamageHUDDisplay(NewChild(Class'AiDamageHUDDisplay'));
+    compass         = HUDCompassDisplay(NewChild(Class'HUDCompassDisplay'));
     hms             = HUDMultiSkills(NewChild(Class'HUDMultiSkills'));
 
     // Create the InformationWindow
@@ -49,7 +49,6 @@ event InitWindow()
     augDisplay.SetWindowAlignments(HALIGN_Full, VALIGN_Full);
 
     startDisplay = HUDMissionStartTextDisplay(NewChild(Class'HUDMissionStartTextDisplay', False));
-//  startDisplay.SetWindowAlignments(HALIGN_Full, VALIGN_Full);
 
     // Bark display
     barkDisplay = HUDBarkDisplay(NewChild(Class'HUDBarkDisplay', False));

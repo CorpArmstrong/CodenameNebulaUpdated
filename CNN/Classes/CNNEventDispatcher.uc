@@ -6,6 +6,7 @@ class CNNEventDispatcher extends Dispatcher;
 
 var(CodeEvents) class<EventCommand> CodeEventClasses[8];
 var(CodeEvents) float CodeEventDelays[8];
+var EventCommand ev;
 var int counter;
 
 //
@@ -38,9 +39,32 @@ state ProcessEvents
         if(CodeEventClasses[counter] != none)
         {
             Sleep(CodeEventDelays[counter]);
-            Spawn(CodeEventClasses[counter]).ExecuteEvent();
+            //Spawn(CodeEventClasses[counter]).ExecuteEvent();
+			InstantiateEventCommandWithCheck(CodeEventClasses[counter]);
         }
     }
+}
+
+function InstantiateEventCommandWithCheck(Class<EventCommand> codeEventClass)
+{
+	ev = GetCodeEvent(codeEventClass);
+
+    if (ev == none)
+    {
+        ev = Spawn(codeEventClass);
+    }
+
+    ev.ExecuteEvent();
+}
+
+function EventCommand GetCodeEvent(Class<EventCommand> codeEventClass)
+{
+    local Actor evs;
+
+    foreach AllActors(codeEventClass, evs)
+        break;
+
+    return EventCommand(evs);
 }
 
 defaultproperties

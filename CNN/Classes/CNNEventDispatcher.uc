@@ -39,15 +39,14 @@ state ProcessEvents
         if(CodeEventClasses[counter] != none)
         {
             Sleep(CodeEventDelays[counter]);
-            //Spawn(CodeEventClasses[counter]).ExecuteEvent();
-			InstantiateEventCommandWithCheck(CodeEventClasses[counter]);
+            InstantiateEventCommandWithCheck(CodeEventClasses[counter]);
         }
     }
 }
 
 function InstantiateEventCommandWithCheck(Class<EventCommand> codeEventClass)
 {
-	ev = GetCodeEvent(codeEventClass);
+    ev = GetCodeEvent(codeEventClass);
 
     if (ev == none)
     {

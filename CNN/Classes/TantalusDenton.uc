@@ -221,24 +221,22 @@ function UpdatePlayerSkin()
 }
 
 //invokes new hud initially for infolinks. found how to do it on http://www.offtopicproductions.com/tacks/CustomInfolinkPortraits/GameReaction%20Forums%20-%20Custom%20InfoLink%20Portraits.htm
-/*
+
 function Possess()
 {
 
-local DeusExRootWindow root;
+	local DeusExRootWindow root;
+	Super.Possess();
 
-Super.Possess();
+	root = DeusExRootWindow(rootWindow);
 
-root = DeusExRootWindow(rootWindow);
+	root.hud.Destroy();
+	root.hud = DeusexHUD(root.NewChild(Class'CNNHUD'));
 
-root.hud.Destroy();
-root.hud = DeusexHUD(root.NewChild(Class'ApocalypseInsideHUD'));
-
-root.hud.UpdateSettings(Self);
-root.hud.SetWindowAlignments(HALIGN_Full,VALIGN_Full, 0, 0);
-
+	root.hud.UpdateSettings(Self);
+	root.hud.SetWindowAlignments(HALIGN_Full,VALIGN_Full, 0, 0);
 }
-*/
+
 // ----------------------------------------------------------------------
 // StartDataLinkTransmission()
 //
@@ -265,7 +263,6 @@ function Bool StartDataLinkTransmission(
 
         if ( dataLinkPlay == None )
         {
-
             datalinkPlay = Spawn(class'AiDataLinkPlay');
             bDataLinkPlaySpawned = True;
         }

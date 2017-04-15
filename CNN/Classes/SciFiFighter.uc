@@ -16,7 +16,7 @@ class SciFiFighter extends Actor;
 //Edit X, Y, and Z values in line below to change size of mesh in game
 #exec MESHMAP SCALE MESHMAP=SciFiFighter X=7.743437 Y=7.743437 Z=7.743437
 
-#exec TEXTURE IMPORT NAME=SciFiFighterTex0 FILE=textures\Free_T GROUP=Skins FLAGS=2
+#exec TEXTURE IMPORT NAME=SciFiFighterTex0 FILE=textures\SFShipHigh.PCX GROUP=Skins FLAGS=2
 #exec MESHMAP SETTEXTURE MESHMAP=SciFiFighter NUM=0 TEXTURE=SciFiFighterTex0
 
 

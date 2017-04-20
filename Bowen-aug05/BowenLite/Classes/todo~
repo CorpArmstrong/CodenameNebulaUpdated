@@ -1,0 +1,27 @@
+Todo:
+
+TeleportGun:
+#	Fix lasersight
+
+LocatorDrone:
+#	Spawn serverside only. 
+!	Replicate locator.
+?	Faster
+?	Dont reattach
+
+LocatorBeacon:
+#	Replicate position
+#	respawn window
+	
+LocatorWindow:
+#	RocketPod support
+#	Turret support
+	
+UberGoggles:
+#	No SP vision aug
+
+SuperRifle
+?	Destroy shields
+
+Coilguns
+	Destroy shields (FindInventory(class))

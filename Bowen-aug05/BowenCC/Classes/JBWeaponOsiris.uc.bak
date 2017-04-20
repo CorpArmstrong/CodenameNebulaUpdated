@@ -1,0 +1,190 @@
+//=============================================================================
+// JBWeaponOsiris.
+//=============================================================================
+class JBWeaponOsiris extends DeusExWeapon;
+
+// Muzzle Flash Stuff
+// called from the mesh NOTIFY Copied from DeusexWeapons.uc and modified...
+//
+// Effect used - Effects.Electricity.LaserSpot1
+//
+simulated function SwapMuzzleFlashTexture()
+{
+     if (!bHasMuzzleFlash)
+     return;
+     if (FRand() < 0.5)
+         MultiSkins[5] = Texture'BeamTex';
+         MultiSkins[4] = Texture'RedLightTex';
+
+     MuzzleFlashLight();
+     SetTimer(0.6, False);
+}
+
+simulated function EraseMuzzleFlashTexture()
+{
+     MultiSkins[5] = None;
+}
+
+simulated function Timer()
+{
+     EraseMuzzleFlashTexture();
+}
+
+simulated function MuzzleFlashLight()
+{
+     local Vector offset, X, Y, Z;
+     local Effects flash;
+
+      if (!bHasMuzzleFlash)
+          return;
+
+     if ((flash != None) && !flash.bDeleteMe)
+          flash.LifeSpan = flash.Default.LifeSpan;
+     else
+     {
+          GetAxes(Pawn(Owner).ViewRotation,X,Y,Z);
+          offset = Owner.Location;
+          offset += X * Owner.CollisionRadius * 2;
+          flash = spawn(class'Muzzleflash',,, offset);
+          if (flash != None)
+               flash.SetBase(Owner);
+     }
+}
+
+//
+// Multiplayer Stuff
+//
+simulated function PreBeginPlay()
+{
+     Super.PreBeginPlay();
+
+     // If this is a netgame, then override defaults
+     if ( Level.NetMode != NM_StandAlone )
+     {
+          HitDamage = mpHitDamage;
+          BaseAccuracy = mpBaseAccuracy;
+          ReloadTime = mpReloadTime;
+          AccurateRange = mpAccurateRange;
+          MaxRange = mpMaxRange;
+          ReloadCount = mpReloadCount;
+     }
+}
+
+
+// Belt and Inventory Icons
+#exec texture IMPORT NAME=BeltIconOsiris FILE=Textures\BeltIconOsiris.pcx GROUP=Icons // Belt Icon
+#exec texture IMPORT NAME=LargeIconOsiris FILE=Textures\BeltIconOsiris.pcx GROUP=Icons // Iventory Icon
+
+//
+// PlayerView
+//
+#exec MESH IMPORT MESH=JBWeaponOsiris ANIVFILE=MODELS\JBWeaponOsiris_a.3d DATAFILE=MODELS\JBWeaponOsiris_d.3d X=0 Y=0 Z=0
+#exec mesh ORIGIN MESH=JBWeaponOsiris X=7000 Y=2000 Z=0  YAW=128
+
+#exec mesh SEQUENCE MESH=JBWeaponOsiris SEQ=All            STARTFRAME=0     NUMFRAMES=58
+#exec mesh SEQUENCE MESH=JBWeaponOsiris SEQ=Still	       STARTFRAME=0	    NUMFRAMES=1
+#exec mesh SEQUENCE MESH=JBWeaponOsiris SEQ=Select	       STARTFRAME=1	    NUMFRAMES=6	    RATE=10	GROUP=Select
+#exec mesh SEQUENCE MESH=JBWeaponOsiris SEQ=Shoot	       STARTFRAME=6	    NUMFRAMES=22	RATE=10
+#exec mesh SEQUENCE MESH=JBWeaponOsiris SEQ=Shoot2	       STARTFRAME=28	NUMFRAMES=10	RATE=14
+#exec mesh SEQUENCE MESH=JBWeaponOsiris SEQ=Down	       STARTFRAME=37	NUMFRAMES=5	    RATE=20
+#exec mesh SEQUENCE MESH=JBWeaponOsiris SEQ=Idle1	       STARTFRAME=42	NUMFRAMES=6	    RATE=2
+#exec mesh SEQUENCE MESH=JBWeaponOsiris SEQ=Idle2	       STARTFRAME=47	NUMFRAMES=6	    RATE=2
+#exec mesh SEQUENCE MESH=JBWeaponOsiris SEQ=Idle3	       STARTFRAME=52	NUMFRAMES=6     RATE=2
+
+// Beam
+#exec mesh NOTIFY MESH=JBWeaponOsiris SEQ=Shoot     TIME=0.01     FUNCTION=SwapMuzzleFlashTexture
+#exec mesh NOTIFY MESH=JBWeaponOsiris SEQ=Shoot2    TIME=0.05     FUNCTION=SwapMuzzleFlashTexture
+
+#exec texture IMPORT NAME=OsirisTex1       FILE=Textures\OsirisGunTex1.PCX  GROUP=Skins  // Material #1
+#exec texture IMPORT NAME=HandsTex         FILE=Textures\WeaponHandsTex.PCX GROUP=Skins  // TWOSIDED
+#exec texture IMPORT NAME=ChargeTex        FILE=Textures\LaserChargeTex1.pcx     GROUP=Skins  // Material #3
+#exec texture IMPORT NAME=BeamTex          FILE=Textures\RedBeamTex.PCX     GROUP=Skins  // TRANSLUCENT
+#exec texture IMPORT NAME=BlackMaskTex     FILE=Textures\BlackMaskTex.PCX   GROUP=Skins  // TRANSLUCENT
+
+#exec MESHMAP NEW   MESHMAP=JBWeaponOsiris MESH=JBWeaponOsiris
+#exec MESHMAP SCALE MESHMAP=JBWeaponOsiris X=0.00390625 Y=0.00390625 Z=0.00390625
+
+#exec MESHMAP SETTEXTURE MESHMAP=JBWeaponOsiris NUM=1 TEXTURE=HandsTex
+#exec MESHMAP SETTEXTURE MESHMAP=JBWeaponOsiris NUM=2 TEXTURE=ChargeTex
+#exec MESHMAP SETTEXTURE MESHMAP=JBWeaponOsiris NUM=3 TEXTURE=OsirisTex1
+#exec MESHMAP SETTEXTURE MESHMAP=JBWeaponOsiris NUM=4 TEXTURE=GreenLightTex
+#exec MESHMAP SETTEXTURE MESHMAP=JBWeaponOsiris NUM=5 TEXTURE=BlackMaskTex
+
+//
+// Pickup Version
+//
+#exec mesh IMPORT MESH=OsirisPickup ANIVFILE=MODELS\OsirisPickup_a.3d DATAFILE=MODELS\OsirisPickup_d.3d X=0 Y=0 Z=0
+#exec mesh ORIGIN MESH=OsirisPickup X=0 Y=0 Z=0
+
+#exec mesh SEQUENCE MESH=OsirisPickup SEQ=All               STARTFRAME=0 NUMFRAMES=1
+#exec mesh SEQUENCE MESH=OsirisPickup SEQ=Still STARTFRAME=0 NUMFRAMES=1
+
+#exec texture IMPORT NAME=JOsirisPickup1 FILE=Textures\OsirisGun3rd.pcx GROUP=Skins // Material #2
+
+#exec MESHMAP new   MESHMAP=OsirisPickup MESH=Osiris3rd
+#exec MESHMAP scale MESHMAP=OsirisPickup X=0.00390625 Y=0.00390625 Z=0.00390625
+
+#exec MESHMAP SETTEXTURE MESHMAP=OsirisPickup NUM=1 TEXTURE=JOsirisPickup1
+
+//
+// 3rd Person Version
+//
+#exec mesh IMPORT MESH=Osiris3rd ANIVFILE=MODELS\Osiris3rd_a.3d DATAFILE=MODELS\Osiris3rd_d.3d X=0 Y=0 Z=0
+#exec mesh ORIGIN MESH=Osiris3rd X=0 Y=0 Z=-2000 YAW=148 PITCH=-28
+
+#exec mesh SEQUENCE MESH=Osiris3rd SEQ=All               STARTFRAME=0 NUMFRAMES=1
+#exec mesh SEQUENCE MESH=Osiris3rd SEQ=Still             STARTFRAME=0 NUMFRAMES=1
+#exec mesh SEQUENCE MESH=Osiris3rd SEQ=Shoot             STARTFRAME=0 NUMFRAMES=1
+#exec mesh SEQUENCE MESH=Osiris3rd SEQ=Shoot2            STARTFRAME=0 NUMFRAMES=1
+
+// 3rd Person Beam
+#exec mesh NOTIFY MESH=Osiris3rd SEQ=Shoot     TIME=0.01     FUNCTION=SwapMuzzleFlashTexture
+#exec mesh NOTIFY MESH=Osiris3rd SEQ=Shoot2    TIME=0.05     FUNCTION=SwapMuzzleFlashTexture
+
+#exec MESHMAP new   MESHMAP=Osiris3rd MESH=Osiris3rd
+#exec MESHMAP SCALE MESHMAP=Osiris3rd X=0.00390625 Y=0.00390625 Z=0.00390625
+
+#exec MESHMAP SETTEXTURE MESHMAP=Osiris3rd NUM=1 TEXTURE=JOsirisPickup1
+#exec MESHMAP SETTEXTURE MESHMAP=Osiris3rd NUM=5 TEXTURE=BlackMaskTex
+
+defaultproperties
+{
+     LowAmmoWaterMark=0
+     GoverningSkill=Class'DeusEx.SkillWeaponHeavy'
+     NoiseLevel=0.010000
+     Concealability=CONC_All
+     ShotTime=0.300000
+     reloadTime=0.000000
+     HitDamage=25
+     maxRange=24000
+     AccurateRange=14400
+     BaseAccuracy=0.000000
+     bHasMuzzleFlash=True
+     bEmitWeaponDrawn=False
+     bUseAsDrawnWeapon=False
+     AmmoName=Class'DeusEx.AmmoNone'
+     ReloadCount=0
+     FireOffset=(X=-20.000000,Y=10.000000,Z=16.000000)
+     ProjectileClass=Class'DeusEx.PlasmaBolt'
+     shakemag=50.000000
+     FireSound=Sound'DeusExSounds.Weapons.PlasmaRifleFire'
+     SelectSound=Sound'DeusExSounds.Weapons.HideAGunSelect'
+     ItemName="Osiris"
+     PlayerViewOffset=(X=20.000000,Y=-10.000000,Z=-16.000000)
+     PlayerViewMesh=LodMesh'JBWeaponOsiris'
+     PlayerViewScale=2.50000
+     PickupViewMesh=LodMesh'OsirisPickup'
+     ThirdPersonMesh=LodMesh'Osiris3rd'
+     ThirdPersonScale=0.50000
+     Icon=Texture'BeltIconOsiris'
+     largeIcon=Texture'LargeIconOsiris'
+     largeIconWidth=43
+     largeIconHeight=21
+     Description="The Osiris is a disposable Laser designator, once the satalite sees the laser the sky will fall..."
+     beltDescription="Osiris"
+     Mesh=LodMesh'OsirisPickup'
+     CollisionRadius=15.300000
+     CollisionHeight=6.000000
+     Mass=50.000000
+     Buoyancy=2.000000
+}

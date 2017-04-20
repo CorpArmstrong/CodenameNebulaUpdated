@@ -18,7 +18,7 @@ var Name CutsceneEndFlagName;
 
 function InitStateMachine()
 {
-	Super.InitStateMachine();
+    Super.InitStateMachine();
     CheckIntroFlags();
 }
 
@@ -30,8 +30,8 @@ function InitStateMachine()
 
 function FirstFrame()
 {
-	Super.FirstFrame();
-	StartConversationWithActor();
+    Super.FirstFrame();
+    StartConversationWithActor();
 }
 
 // ----------------------------------------------------------------------
@@ -42,7 +42,7 @@ function FirstFrame()
 
 function PreTravel()
 {
-	Super.PreTravel();
+    Super.PreTravel();
     RestoreSoundVolume();
 }
 
@@ -54,7 +54,7 @@ function PreTravel()
 
 function Timer()
 {
-	Super.Timer();
+    Super.Timer();
     SendPlayerOnceToGame();
 }
 
@@ -62,70 +62,71 @@ function Timer()
 
 function CheckIntroFlags()
 {
-	if (flags.GetBool(CutsceneEndFlagName))
-	{
-		// After we've teleported back and map has reloaded
-		// set the flag, to skip recursive intro call.
-		isIntroCompleted = true;
-	}
+    if (flags.GetBool(CutsceneEndFlagName))
+    {
+        // After we've teleported back and map has reloaded
+        // set the flag, to skip recursive intro call.
+        isIntroCompleted = true;
+    }
 
-	if (!isIntroCompleted)
-	{
-	    // Set the PlayerTraveling flag (always want it set for
-		// the intro and endgames)
-		flags.SetBool('PlayerTraveling', true, true, 0);
-	}
+    if (!isIntroCompleted)
+    {
+        // Set the PlayerTraveling flag (always want it set for
+        // the intro and endgames)
+        flags.SetBool('PlayerTraveling', true, true, 0);
+    }
 }
 
 function StartConversationWithActor()
 {
-	if (!flags.GetBool(CutsceneEndFlagName))
-	{
-	   	if (player != none)
-		{
-			DeusExRootWindow(player.rootWindow).ResetFlags();
+    if (!flags.GetBool(CutsceneEndFlagName))
+    {
+        if (player != none)
+        {
+            DeusExRootWindow(player.rootWindow).ResetFlags();
 
-			foreach AllActors(class'Actor', actorToSpeak, actorTag)
-				break;
+            foreach AllActors(class'Actor', actorToSpeak, actorTag)
+                break;
 
-			if (actorToSpeak != none) {
-				player.StartConversationByName(conversationName, actorToSpeak, false, true);
-			}
+            if (actorToSpeak != none)
+			{
+                player.StartConversationByName(conversationName, actorToSpeak, false, true);
+            }
 
-			// turn down the sound so we can hear the speech
-			savedSoundVolume = SoundVolume;
-			SoundVolume = 32;
-			player.SetInstantSoundVolume(SoundVolume);
-		}
-	}
+            // turn down the sound so we can hear the speech
+            savedSoundVolume = SoundVolume;
+            SoundVolume = 32;
+            player.SetInstantSoundVolume(SoundVolume);
+        }
+    }
 }
 
 function RestoreSoundVolume()
 {
-	if (flags.GetBool(CutsceneEndFlagName) && !isIntroCompleted)
-	{
-		SoundVolume = savedSoundVolume;
-		player.SetInstantSoundVolume(SoundVolume);
-	}
+    if (flags.GetBool(CutsceneEndFlagName) && !isIntroCompleted)
+    {
+        SoundVolume = savedSoundVolume;
+        player.SetInstantSoundVolume(SoundVolume);
+    }
 }
 
 function SendPlayerOnceToGame()
 {
-	if (flags.GetBool(CutsceneEndFlagName) && !isIntroCompleted)
-	{
-		if (DeusExRootWindow(player.rootWindow) != none) {
-			DeusExRootWindow(player.rootWindow).ClearWindowStack();
-		}
-			Level.Game.SendPlayer(player, sendToLocation);
-		
-	}
-	
+    if (flags.GetBool(CutsceneEndFlagName) && !isIntroCompleted)
+    {
+        if (DeusExRootWindow(player.rootWindow) != none)
+		{
+            DeusExRootWindow(player.rootWindow).ClearWindowStack();
+        }
+
+    	Level.Game.SendPlayer(player, sendToLocation);
+    }
 }
 
 defaultproperties
 {
-	sendToLocation="50_OpheliaL1_WithIntro#Loc1"
-	conversationName=OpheliaUICutscene
-	actorTag=Secretary
-	CutsceneEndFlagName=IsIntroPlayed
+    sendToLocation="50_OpheliaL1_WithIntro#Loc1"
+    conversationName=OpheliaUICutscene
+    actorTag=Secretary
+    CutsceneEndFlagName=IsIntroPlayed
 }

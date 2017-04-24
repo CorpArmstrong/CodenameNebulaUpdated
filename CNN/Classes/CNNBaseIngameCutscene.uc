@@ -10,7 +10,7 @@ var String sendToLocation;
 var Name conversationName;
 var Name actorTag;
 var Actor actorToSpeak;
-var Name CutsceneEndFlagName;
+var Name cutsceneEndFlagName;
 
 // ----------------------------------------------------------------------
 // InitStateMachine()
@@ -79,7 +79,7 @@ function CheckIntroFlags()
 
 function StartConversationWithActor()
 {
-    if (!flags.GetBool(CutsceneEndFlagName))
+    if (!flags.GetBool(cutsceneEndFlagName))
     {
         if (player != none)
         {
@@ -89,8 +89,16 @@ function StartConversationWithActor()
                 break;
 
             if (actorToSpeak != none)
-			{
-                player.StartConversationByName(conversationName, actorToSpeak, false, true);
+            {
+                if(player.StartConversationByName(conversationName, actorToSpeak, false, true))
+                {
+					log("Starting conversation.");
+				}
+				else
+				{
+					log("Can't start conversation! Teleporting to start!");
+					Level.Game.SendPlayer(player, sendToLocation);
+				}
             }
 
             // turn down the sound so we can hear the speech
@@ -103,7 +111,7 @@ function StartConversationWithActor()
 
 function RestoreSoundVolume()
 {
-    if (flags.GetBool(CutsceneEndFlagName) && !isIntroCompleted)
+    if (flags.GetBool(cutsceneEndFlagName) && !isIntroCompleted)
     {
         SoundVolume = savedSoundVolume;
         player.SetInstantSoundVolume(SoundVolume);
@@ -112,14 +120,14 @@ function RestoreSoundVolume()
 
 function SendPlayerOnceToGame()
 {
-    if (flags.GetBool(CutsceneEndFlagName) && !isIntroCompleted)
+    if (flags.GetBool(cutsceneEndFlagName) && !isIntroCompleted)
     {
         if (DeusExRootWindow(player.rootWindow) != none)
-		{
+        {
             DeusExRootWindow(player.rootWindow).ClearWindowStack();
         }
 
-    	Level.Game.SendPlayer(player, sendToLocation);
+        Level.Game.SendPlayer(player, sendToLocation);
     }
 }
 
@@ -128,5 +136,5 @@ defaultproperties
     sendToLocation="50_OpheliaL1_WithIntro#Loc1"
     conversationName=OpheliaUICutscene
     actorTag=Secretary
-    CutsceneEndFlagName=IsIntroPlayed
+    cutsceneEndFlagName=IsIntroPlayed
 }

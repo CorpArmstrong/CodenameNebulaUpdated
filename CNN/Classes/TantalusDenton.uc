@@ -225,16 +225,16 @@ function UpdatePlayerSkin()
 function Possess()
 {
 
-	local DeusExRootWindow root;
-	Super.Possess();
+    local DeusExRootWindow root;
+    Super.Possess();
 
-	root = DeusExRootWindow(rootWindow);
+    root = DeusExRootWindow(rootWindow);
 
-	root.hud.Destroy();
-	root.hud = DeusexHUD(root.NewChild(Class'CNNHUD'));
+    root.hud.Destroy();
+    root.hud = DeusexHUD(root.NewChild(Class'CNNHUD'));
 
-	root.hud.UpdateSettings(Self);
-	root.hud.SetWindowAlignments(HALIGN_Full,VALIGN_Full, 0, 0);
+    root.hud.UpdateSettings(Self);
+    root.hud.SetWindowAlignments(HALIGN_Full,VALIGN_Full, 0, 0);
 }
 
 // ----------------------------------------------------------------------

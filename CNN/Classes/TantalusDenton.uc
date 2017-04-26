@@ -613,10 +613,10 @@ defaultproperties
     strStartMap="96_Area51"
     CarcassType=Class'JCDentonMaleCarcass'
     Mesh=LodMesh'DeusExCharacters.GM_Trench'
-    MultiSkins(0)=Texture'ApocalypseInside.Skins.TantalusFace'
+    MultiSkins(0)=Texture'CNN.Skins.TantalusFace'
     MultiSkins(1)=Texture'DeusExCharacters.Skins.StantonDowdTex2'
     MultiSkins(2)=Texture'DeusExCharacters.Skins.MJ12TroopTex1'
-    MultiSkins(3)=Texture'ApocalypseInside.Skins.TantalusFace'
+    MultiSkins(3)=Texture'CNN.Skins.TantalusFace'
     MultiSkins(4)=Texture'DeusExCharacters.Skins.JockTex1'
     MultiSkins(5)=Texture'DeusExCharacters.Skins.SmugglerTex2'
     MultiSkins(6)=Texture'DeusExCharacters.Skins.FramesTex4'

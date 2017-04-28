@@ -603,6 +603,28 @@ function bool StartConversation(
     }
 }
 */
+
+// ----------------------------------------------------------------------
+// InvokeUIScreen()
+//
+// Calls DeusExRootWindow::InvokeUIScreen(), but first make sure
+// a modifier (Alt, Shift, Ctrl) key isn't being held down.
+// ----------------------------------------------------------------------
+
+function InvokeUIScreen(Class<DeusExBaseWindow> windowClass)
+{
+    local DeusExRootWindow root;
+    root = DeusExRootWindow(rootWindow);
+    if (root != None)
+    {
+        if ( root.IsKeyDown( IK_Alt ) || root.IsKeyDown( IK_Shift ) || root.IsKeyDown( IK_Ctrl ))
+            return;
+
+		// Method second param is boolean bNoPause
+        root.InvokeUIScreen(windowClass, true);
+    }
+}
+
 defaultproperties
 {
     TruePlayerName="Tantalus Denton"

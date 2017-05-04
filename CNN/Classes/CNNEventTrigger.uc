@@ -25,10 +25,10 @@ function EventCommand GetCodeEvent()
 {
     local Actor evs;
 
-	foreach AllActors(codeEventClass, evs)
-		break;
+    foreach AllActors(codeEventClass, evs)
+        break;
 
-	return EventCommand(evs);
+    return EventCommand(evs);
 }
 
 defaultproperties

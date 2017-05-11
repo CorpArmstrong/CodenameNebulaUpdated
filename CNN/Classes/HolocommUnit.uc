@@ -27,11 +27,11 @@ var int contactIndex;
 
 function PostBeginPlay()
 {
-	if (!bSetSpawnPoint())
-	{
-		_spawnInfo.spawnLocation = self.Location;
+    if (!bSetSpawnPoint())
+    {
+        _spawnInfo.spawnLocation = self.Location;
         _spawnInfo.spawnRotation = self.Rotation;
-	}
+    }
 
     //IterateContacts();
 
@@ -40,26 +40,26 @@ function PostBeginPlay()
 
 function bool bSetSpawnPoint()
 {
-	local bool result;
-	local Actor spawnPoint;
+    local bool result;
+    local Actor spawnPoint;
 
-	if (_spawnInfo.spawnPointTag != '')
+    if (_spawnInfo.spawnPointTag != '')
     {
-		foreach AllActors(class'Actor', spawnPoint, _spawnInfo.spawnPointTag)
-		{
-			_spawnInfo.spawnPoint = spawnPoint;
-			break;
-		}
+        foreach AllActors(class'Actor', spawnPoint, _spawnInfo.spawnPointTag)
+        {
+            _spawnInfo.spawnPoint = spawnPoint;
+            break;
+        }
 
-		if (spawnPoint != none)
-		{
-			_spawnInfo.spawnLocation = spawnPoint.Location;
-			_spawnInfo.spawnRotation = spawnPoint.Rotation;
-			result = true;
-		}
-	}
+        if (spawnPoint != none)
+        {
+            _spawnInfo.spawnLocation = spawnPoint.Location;
+            _spawnInfo.spawnRotation = spawnPoint.Rotation;
+            result = true;
+        }
+    }
 
-	return result;
+    return result;
 }
 
 function IterateContacts()
@@ -77,30 +77,33 @@ function IterateContacts()
 
 function SetAndSpawnActor(ContactInfo info)
 {
-	info.contactActor = Spawn(info.contactActorType,,
-						 	  info.contactActorTag,
-						 	  _spawnInfo.spawnLocation,
-							  _spawnInfo.spawnRotation);
+    info.contactActor = Spawn(info.contactActorType,,
+                              info.contactActorTag,
+                              _spawnInfo.spawnLocation,
+                              _spawnInfo.spawnRotation);
 
-	if (info.bTranslucent)
-	{
-		info.contactActor.SetDisplayProperties(ERenderStyle.STY_Translucent,
-											   info.contactActor.Texture,
-										  	   false,
-											   false);
-	}
+    if (info.bTranslucent)
+    {
+        info.contactActor.Style = ERenderStyle.STY_Translucent;
+    /*
+        info.contactActor.SetDisplayProperties(ERenderStyle.STY_Translucent,
+                                               info.contactActor.Texture,
+                                               false,
+                                               false);
+                                               */
+    }
 }
 
 function Trigger(Actor Other, Pawn Instigator)
 {
-	/*
-	if (Instigator.Tag == 'LightSwitch')
-	{
-		SetAndSpawnActor();
-	}
-	*/
+    /*
+    if (Instigator.Tag == 'LightSwitch')
+    {
+        SetAndSpawnActor();
+    }
+    */
 
-	SetAndSpawnActor(contacts[contactIndex]);
+    SetAndSpawnActor(contacts[contactIndex]);
 
     Super.Trigger(Other, Instigator);
 }

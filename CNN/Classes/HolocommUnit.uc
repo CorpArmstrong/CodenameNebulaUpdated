@@ -11,10 +11,10 @@ struct SpawnInfo
 struct ContactInfo
 {
     var() name contactActorTag;
-    var() int entityId;
-    var() bool bHidden;
-    var() bool bTranslucent;
+    var() bool bInitiallyHidden;
     var() bool bRepeatConversation;
+    var() name conversationName;
+    var() name hideFlagName;
 
     var() class<Actor> contactActorType;
     var Actor contactActor;
@@ -23,22 +23,36 @@ struct ContactInfo
 var(SpawnInfo) SpawnInfo _spawnInfo;
 var(ContactInfo) ContactInfo contacts[8];
 
+var DeusExPlayer player;
+var FlagBase flags;
 var int contactIndex;
+var bool bCheckForConvoEnd;
 
 function PostBeginPlay()
 {
-    if (!bSetSpawnPoint())
+	// Get player and his flags.
+	player = DeusExPlayer(GetPlayerPawn());
+	flags = player.flagBase;
+
+	// Setup the spawn point!
+	if (!CanSetSpawnPoint())
     {
         _spawnInfo.spawnLocation = self.Location;
         _spawnInfo.spawnRotation = self.Rotation;
     }
 
-    //IterateContacts();
+	// Check first entry in ContactInfo list,
+	// maybe there is already a hologram needs to be shown.
+
+	if (!contacts[0].bInitiallyHidden)
+	{
+		SetAndSpawnActor(contacts[0], false);
+	}
 
     Super.PostBeginPlay();
 }
 
-function bool bSetSpawnPoint()
+function bool CanSetSpawnPoint()
 {
     local bool result;
     local Actor spawnPoint;
@@ -68,30 +82,26 @@ function IterateContacts()
 
     for (i = 0; i < ArrayCount(contacts); i++)
     {
-        if (contacts[i].entityId == 5)
-        {
-            log("...");
-        }
     }
 }
 
-function SetAndSpawnActor(ContactInfo info)
+function SetAndSpawnActor(ContactInfo info, bool bStartConversation)
 {
     info.contactActor = Spawn(info.contactActorType,,
                               info.contactActorTag,
                               _spawnInfo.spawnLocation,
                               _spawnInfo.spawnRotation);
 
-    if (info.bTranslucent)
-    {
-        info.contactActor.Style = ERenderStyle.STY_Translucent;
-    /*
-        info.contactActor.SetDisplayProperties(ERenderStyle.STY_Translucent,
-                                               info.contactActor.Texture,
-                                               false,
-                                               false);
-                                               */
-    }
+	if (bStartConversation)
+	{
+		if (info.hideFlagName != '')
+		{
+			flags.SetBool(info.hideFlagName, false);
+			bCheckForConvoEnd = true;
+		}
+
+		player.StartConversationByName(info.conversationName, info.contactActor);
+	}
 }
 
 function Trigger(Actor Other, Pawn Instigator)
@@ -103,9 +113,21 @@ function Trigger(Actor Other, Pawn Instigator)
     }
     */
 
-    SetAndSpawnActor(contacts[contactIndex]);
+    SetAndSpawnActor(contacts[contactIndex], true);
 
     Super.Trigger(Other, Instigator);
+}
+
+function Timer()
+{
+	if (bCheckForConvoEnd)
+	{
+		if (flags.GetBool(contacts[0].hideFlagName))
+		{
+			contacts[0].contactActor.Destroy();
+			bCheckForConvoEnd = false;
+		}
+	}
 }
 
 defaultproperties

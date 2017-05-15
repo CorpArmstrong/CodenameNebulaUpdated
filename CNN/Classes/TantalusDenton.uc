@@ -5,8 +5,6 @@ class TantalusDenton extends JCDentonMale;
 
 var travel BioEnergyController bioc;
 
-var AiConPlay conplay;
-
 //var travel AiAugmentationManager AugmentationSystem;
 
 //var AiDataLinkPlay aidataLinkPlay;
@@ -442,7 +440,7 @@ function CreateColorThemeManager()
 // conversation system and returns TRUE when finished.
 // ----------------------------------------------------------------------
 // TODO: Fix native class first, than uncomment this method!
-/*
+
 function bool StartConversation(
     Actor invokeActor,
     EInvokeMethod invokeMethod,
@@ -602,7 +600,6 @@ function bool StartConversation(
         return False;
     }
 }
-*/
 
 // ----------------------------------------------------------------------
 // InvokeUIScreen()
@@ -620,7 +617,7 @@ function InvokeUIScreen(Class<DeusExBaseWindow> windowClass)
         if ( root.IsKeyDown( IK_Alt ) || root.IsKeyDown( IK_Shift ) || root.IsKeyDown( IK_Ctrl ))
             return;
 
-		// Method second param is boolean bNoPause
+        // Method second param is boolean bNoPause
         root.InvokeUIScreen(windowClass, true);
     }
 }

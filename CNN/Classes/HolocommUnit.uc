@@ -10,15 +10,13 @@ struct SpawnInfo
 
 struct ContactInfo
 {
+    var() name buttonName;
+    var() class<Actor> contactActorType;
     var() name contactActorTag;
     var() bool bInitiallyHidden;
     var() bool bRepeatConversation;
-    var() name conversationName;
     var() name hideFlagName;
-
-    var() class<Actor> contactActorType;
     var Actor contactActor;
-    var() name buttonName;
 };
 
 var(SpawnInfo) SpawnInfo _spawnInfo;
@@ -84,12 +82,12 @@ function bool GetContactIndexByName(name buttonName, out int index)
 
     for (i = 0; i < ArrayCount(contacts); i++)
     {
-    	if (contacts[i].buttonName == buttonName)
-    	{
-    		index = i;
-    		result = true;
-    		break;
-    	}
+        if (contacts[i].buttonName == buttonName)
+        {
+            index = i;
+            result = true;
+            break;
+        }
     }
 
     return result;
@@ -111,9 +109,18 @@ function SetAndSpawnActor(ContactInfo info)
 
 function Trigger(Actor Other, Pawn Instigator)
 {
+	local Actor actr;
+
     if (GetContactIndexByName(Other.Tag, contactIndex))
     {
-        SetAndSpawnActor(contacts[contactIndex]);
+	    //SetAndSpawnActor(contacts[contactIndex]);
+
+		actr = contacts[contactIndex].contactActor;
+
+		if (actr == none)
+        {
+            SetAndSpawnActor(contacts[contactIndex]);
+        }
     }
 
     Super.Trigger(Other, Instigator);

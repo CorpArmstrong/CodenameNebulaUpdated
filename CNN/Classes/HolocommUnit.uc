@@ -18,6 +18,7 @@ struct ContactInfo
 
     var() class<Actor> contactActorType;
     var Actor contactActor;
+    var() name buttonName;
 };
 
 var(SpawnInfo) SpawnInfo _spawnInfo;
@@ -30,24 +31,24 @@ var bool bCheckForConvoEnd;
 
 function PostBeginPlay()
 {
-	// Get player and his flags.
-	player = DeusExPlayer(GetPlayerPawn());
-	flags = player.flagBase;
+    // Get player and his flags.
+    player = DeusExPlayer(GetPlayerPawn());
+    flags = player.flagBase;
 
-	// Setup the spawn point!
-	if (!CanSetSpawnPoint())
+    // Setup the spawn point!
+    if (!CanSetSpawnPoint())
     {
         _spawnInfo.spawnLocation = self.Location;
         _spawnInfo.spawnRotation = self.Rotation;
     }
 
-	// Check first entry in ContactInfo list,
-	// maybe there is already a hologram needs to be shown.
+    // Check first entry in ContactInfo list,
+    // maybe there is already a hologram needs to be shown.
 
-	if (!contacts[0].bInitiallyHidden)
-	{
-		SetAndSpawnActor(contacts[0], false);
-	}
+    if (!contacts[0].bInitiallyHidden)
+    {
+        SetAndSpawnActor(contacts[0]);
+    }
 
     Super.PostBeginPlay();
 }
@@ -76,61 +77,60 @@ function bool CanSetSpawnPoint()
     return result;
 }
 
-function IterateContacts()
+function bool GetContactIndexByName(name buttonName, out int index)
 {
     local int i;
+    local bool result;
 
     for (i = 0; i < ArrayCount(contacts); i++)
     {
+    	if (contacts[i].buttonName == buttonName)
+    	{
+    		index = i;
+    		result = true;
+    		break;
+    	}
     }
+
+    return result;
 }
 
-function SetAndSpawnActor(ContactInfo info, bool bStartConversation)
+function SetAndSpawnActor(ContactInfo info)
 {
     info.contactActor = Spawn(info.contactActorType,,
                               info.contactActorTag,
                               _spawnInfo.spawnLocation,
                               _spawnInfo.spawnRotation);
 
-	if (bStartConversation)
-	{
-		if (info.hideFlagName != '')
-		{
-			flags.SetBool(info.hideFlagName, false);
-			bCheckForConvoEnd = true;
-		}
-
-		player.StartConversationByName(info.conversationName, info.contactActor);
-	}
+    if (info.hideFlagName != '')
+    {
+        flags.SetBool(info.hideFlagName, false);
+        bCheckForConvoEnd = true;
+    }
 }
 
 function Trigger(Actor Other, Pawn Instigator)
 {
-    /*
-    if (Instigator.Tag == 'LightSwitch')
+    if (GetContactIndexByName(Other.Tag, contactIndex))
     {
-        SetAndSpawnActor();
+        SetAndSpawnActor(contacts[contactIndex]);
     }
-    */
-
-    SetAndSpawnActor(contacts[contactIndex], true);
 
     Super.Trigger(Other, Instigator);
 }
 
 function Timer()
 {
-	if (bCheckForConvoEnd)
-	{
-		if (flags.GetBool(contacts[0].hideFlagName))
-		{
-			contacts[0].contactActor.Destroy();
-			bCheckForConvoEnd = false;
-		}
-	}
+    if (bCheckForConvoEnd)
+    {
+        if (flags.GetBool(contacts[0].hideFlagName))
+        {
+            contacts[0].contactActor.Destroy();
+            bCheckForConvoEnd = false;
+        }
+    }
 }
 
 defaultproperties
 {
-
 }

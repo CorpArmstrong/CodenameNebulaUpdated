@@ -22,7 +22,7 @@ struct ContactInfo
 var(SpawnInfo) SpawnInfo _spawnInfo;
 var(ContactInfo) ContactInfo contacts[8];
 
-var DeusExPlayer player;
+var TantalusDenton player;
 var FlagBase flags;
 var int contactIndex;
 var bool bCheckForConvoEnd;
@@ -30,7 +30,7 @@ var bool bCheckForConvoEnd;
 function PostBeginPlay()
 {
     // Get player and his flags.
-    player = DeusExPlayer(GetPlayerPawn());
+    player = TantalusDenton(GetPlayerPawn());
     flags = player.flagBase;
 
     // Setup the spawn point!
@@ -93,7 +93,7 @@ function bool GetContactIndexByName(name buttonName, out int index)
     return result;
 }
 
-function SetAndSpawnActor(ContactInfo info)
+function SetAndSpawnActor(out ContactInfo info)
 {
     info.contactActor = Spawn(info.contactActorType,,
                               info.contactActorTag,
@@ -102,40 +102,52 @@ function SetAndSpawnActor(ContactInfo info)
 
     if (info.hideFlagName != '')
     {
-        flags.SetBool(info.hideFlagName, false);
+    	flags.SetBool(info.hideFlagName, false);
         bCheckForConvoEnd = true;
     }
 }
 
 function Trigger(Actor Other, Pawn Instigator)
 {
-	local Actor actr;
+    local Actor actr;
 
     if (GetContactIndexByName(Other.Tag, contactIndex))
     {
-	    //SetAndSpawnActor(contacts[contactIndex]);
+        actr = contacts[contactIndex].contactActor;
 
-		actr = contacts[contactIndex].contactActor;
-
-		if (actr == none)
+        if (actr == none)
         {
             SetAndSpawnActor(contacts[contactIndex]);
+        }
+        else
+        {
+	        if (contacts[contactIndex].bRepeatConversation && actr.bHidden)
+	        {
+	        	contacts[contactIndex].contactActor.bHidden = false;
+			}
         }
     }
 
     Super.Trigger(Other, Instigator);
 }
 
-function Timer()
+// ============================================================================
+// Tick
+// ============================================================================
+
+simulated function Tick(float TimeDelta)
 {
-    if (bCheckForConvoEnd)
-    {
-        if (flags.GetBool(contacts[0].hideFlagName))
-        {
-            contacts[0].contactActor.Destroy();
-            bCheckForConvoEnd = false;
-        }
-    }
+	Super.Tick(TimeDelta);
+
+	if (bCheckForConvoEnd && !player.IsInState('Conversation'))
+	{
+		if (DeusExPlayer(GetPlayerPawn()).flagBase.GetBool(contacts[contactIndex].hideFlagName))
+		{
+			contacts[contactIndex].contactActor.bHidden = true;
+			bCheckForConvoEnd = false;
+			BroadcastMessage("Inside if(bCheckForConvoEnd) !!!");
+		}
+	}
 }
 
 defaultproperties

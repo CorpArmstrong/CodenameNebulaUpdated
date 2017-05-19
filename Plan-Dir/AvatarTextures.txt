@@ -1,0 +1,16 @@
+Class=Avatar
+MultiSkins(5)=Texture'DeusExCharacters.Skins.GuntherHermannTex1'
+	
+Class=Avatar
+MultiSkins(0)=Texture'DeusExCharacters.Skins.TobyAtanweTex0'
+MultiSkins(3)=Texture'DeusExCharacters.Skins.PantsTex9'
+MultiSkins(5)=Texture'DeusExCharacters.Skins.JoJoFineTex1'
+
+Class=Avatar
+MultiSkins(0)=Texture'DeusExCharacters.Skins.MaxChenTex0'
+MultiSkins(3)=Texture'DeusExCharacters.Skins.PantsTex9'
+MultiSkins(5)=Texture'DeusExDeco.Skins.DentonCloneTex3'
+
+Class=Avatar
+MultiSkins(0)=Texture'DeusExCharacters.Skins.MaxChenTex0'
+MultiSkins(5)=Texture'DeusExDeco.Skins.DentonCloneTex3'

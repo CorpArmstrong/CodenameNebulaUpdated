@@ -1,10 +1,11 @@
-class Avatar extends Karkian;
+class Avatar extends MIB;//Karkian;
 
 //against hdtp
 function bool Facelift(bool bOn)
 {
 }
 
+/*
 //from MIB
 function Carcass SpawnCarcass()
 {
@@ -13,8 +14,8 @@ function Carcass SpawnCarcass()
 
     return None;
 }
-
-function Explode(optional vector HitLocation)
+*/
+function Explode(/*optional vector HitLocation*/)
 {
     local SphereEffect sphere;
     local ScorchMark s;
@@ -63,7 +64,7 @@ function Explode(optional vector HitLocation)
 
     HurtRadius(explosionDamage, explosionRadius, 'Exploded', explosionDamage*100, Location);
 }
-
+/*
 function bool PlayRoar()
 {
 }
@@ -115,7 +116,7 @@ function PlayCriticalDamageSound()
 {
     PlaySound(sound'KarkianFlee', SLOT_None);
 }
-
+*/
 defaultproperties
 {
 

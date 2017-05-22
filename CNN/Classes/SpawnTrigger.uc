@@ -11,21 +11,21 @@ function Trigger(Actor Other, Pawn Instigator)
     foreach AllActors( class 'ScriptedPawn', A, ScriptedPawnTag )
             A.EnterWorld();
 
-	Super.Trigger(Other, Instigator);
+    Super.Trigger(Other, Instigator);
 }
 
 function Touch(Actor Other)
 {
-//	local DeusExPlayer player;
+//  local DeusExPlayer player;
     local ScriptedPawn A;
 
-	if (IsRelevant(Other))
-	{
+    if (IsRelevant(Other))
+    {
         foreach AllActors( class 'ScriptedPawn', A, ScriptedPawnTag )
             A.EnterWorld();
 
-		Super.Touch(Other);
-	}
+        Super.Touch(Other);
+    }
 }
 
 defaultproperties

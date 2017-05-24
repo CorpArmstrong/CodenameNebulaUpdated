@@ -14,19 +14,6 @@ var float time;
 var bool bDone;
 
 var Dispatcher disp;
-/*
-function PostBeginPlay()
-{
-    local Dispatcher dp;
-
-    foreach AllActors(class'Dispatcher', disp, timerEventTag)
-		dp = disp;
-
-	BroadcastMessage("Dispatcher name: " $  disp.Name);
-
-    Super.PostBeginPlay();
-}
-*/
 
 //
 // count up or down depending on what the settings are
@@ -35,6 +22,12 @@ event Tick(float deltaTime)
 {
     if (timerWin != None)
     {
+    	if (!bDone && timerWin.time == 0)
+    	{
+    		StopTimer();
+    		TimerEvent();
+		}
+
         if (bDone)
         {
             timerWin.bFlash = True;
@@ -77,6 +70,8 @@ function Trigger(Actor Other, Pawn EventInstigator)
 {
     local DeusExPlayer player;
 
+	FindAndSetDispatcher();
+
     player = DeusExPlayer(EventInstigator);
 
     if (player == None)
@@ -105,29 +100,44 @@ function Trigger(Actor Other, Pawn EventInstigator)
         SetTimer(destroyDelay, False);
         PlaySound(sound'Beep3', SLOT_Misc);
         player.ClientMessage(timerStopped);
-
-
-		BroadcastMessage("Timer stopped!");
-        // CorpArmstrong override, execute event here:
-        //TimerEvent();
     }
+}
+
+function FindAndSetDispatcher()
+{
+    local Dispatcher dp;
+
+    foreach AllActors(class'Dispatcher', dp, timerEventTag)
+        disp = dp;
+
+    BroadcastMessage("Dispatcher name: " $  disp.Name);
+}
+
+function StopTimer()
+{
+	timerWin.bFlash = True;
+	bDone = True;
+    SetTimer(destroyDelay, False);
+    PlaySound(sound'Beep3', SLOT_Misc);
+    BroadcastMessage(timerStopped);
 }
 
 function TimerEvent()
 {
-	BroadcastMessage("Inside TimerEvent!");
+    BroadcastMessage("Inside TimerEvent!");
 
-	if (disp != none)
-	{
-		disp.GotoState('Dispatch');
-	}
+    if (disp != none)
+    {
+       	BroadcastMessage("Dispatcher is not null!");
+	    disp.Trigger(self, DeusExPlayer(GetPlayerPawn()));
+    }
 }
 
 defaultproperties
 {
-	 timerEventTag=LabEndingSuccessDispatcher
-	 timerStarted="Survive!"
-	 timerStopped="You've survived!"
+     timerEventTag=LabEndingSuccessDispatcher
+     timerStarted="Survive!"
+     timerStopped="You've survived!"
      bCountDown=True
      StartTime=60.000000
      criticalTime=10.000000

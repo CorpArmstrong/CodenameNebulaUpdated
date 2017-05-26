@@ -102,7 +102,7 @@ function SetAndSpawnActor(out ContactInfo info)
 
     if (info.hideFlagName != '')
     {
-    	flags.SetBool(info.hideFlagName, false);
+        flags.SetBool(info.hideFlagName, false);
         bCheckForConvoEnd = true;
     }
 }
@@ -121,10 +121,10 @@ function Trigger(Actor Other, Pawn Instigator)
         }
         else
         {
-	        if (contacts[contactIndex].bRepeatConversation && actr.bHidden)
-	        {
-	        	contacts[contactIndex].contactActor.bHidden = false;
-			}
+            if (contacts[contactIndex].bRepeatConversation && actr.bHidden)
+            {
+                contacts[contactIndex].contactActor.bHidden = false;
+            }
         }
     }
 
@@ -137,17 +137,17 @@ function Trigger(Actor Other, Pawn Instigator)
 
 simulated function Tick(float TimeDelta)
 {
-	Super.Tick(TimeDelta);
+    Super.Tick(TimeDelta);
 
-	if (bCheckForConvoEnd && !player.IsInState('Conversation'))
-	{
-		if (DeusExPlayer(GetPlayerPawn()).flagBase.GetBool(contacts[contactIndex].hideFlagName))
-		{
-			contacts[contactIndex].contactActor.bHidden = true;
-			bCheckForConvoEnd = false;
-			BroadcastMessage("Inside if(bCheckForConvoEnd) !!!");
-		}
-	}
+    if (bCheckForConvoEnd && !player.IsInState('Conversation'))
+    {
+        if (DeusExPlayer(GetPlayerPawn()).flagBase.GetBool(contacts[contactIndex].hideFlagName))
+        {
+            contacts[contactIndex].contactActor.bHidden = true;
+            bCheckForConvoEnd = false;
+            BroadcastMessage("Inside if(bCheckForConvoEnd) !!!");
+        }
+    }
 }
 
 defaultproperties

@@ -145,7 +145,6 @@ simulated function Tick(float TimeDelta)
         {
             contacts[contactIndex].contactActor.bHidden = true;
             bCheckForConvoEnd = false;
-            BroadcastMessage("Inside if(bCheckForConvoEnd) !!!");
         }
     }
 }

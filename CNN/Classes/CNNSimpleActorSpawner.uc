@@ -1,25 +1,27 @@
 class CNNSimpleActorSpawner extends CNNTrigger;
 
 var(SpawnData) class<ScriptedPawn> actorType;
-var(SpawnData) float spawnInterval;
 var(SpawnData) name orderName;
 var(SpawnData) name orderTag;
+var(SpawnData) int spawnLimit;
+var(SpawnData) float spawnRate;
 
-var int counter;
 var bool bSpawning;
-var ScriptedPawn sp;
-var ScriptedPawn spawnee[10];
+var int spawnCounter;
+var float nextSpawn;
 
-function PostBeginPlay()
-{
-    //
-    Super.PostBeginPlay();
-}
+var float internalCounter;
 
 function Trigger(Actor Other, Pawn Instigator)
 {
-	if (!bSpawning) gotostate('SpawnActors');
+	bSpawning = !bSpawning;
     Super.Trigger(Other, Instigator);
+}
+
+function StopSpawning()
+{
+    bSpawning = false;
+    BroadcastMessage("Inside StopSpawning!");
 }
 
 // ============================================================================
@@ -28,76 +30,31 @@ function Trigger(Actor Other, Pawn Instigator)
 
 simulated function Tick(float TimeDelta)
 {
-	local int spawnIndex;
     Super.Tick(TimeDelta);
 
-    if (bSpawning)
-    {
-        if (bNeedToSpawnActor(spawnIndex))
-        {
-            if (SpawnActor(sp, spawnIndex))
-            {
-                BroadcastMessage("Spawned actor: " $ sp.Name);
-            }
-        }
-    }
-}
+    if(bSpawning && spawnCounter < spawnLimit)
+	{
+		BroadcastMessage("InternalCounter: " $ internalCounter $ "; nextSpawn: " $ nextSpawn);
+		internalCounter += TimeDelta;
 
-function StopSpawning()
-{
-	bSpawning = false;
-}
-
-state SpawnActors
-{
-    Begin:
-    for (counter = 0; counter < ArrayCount(spawnee); counter++)
-    {
-        if (SpawnActor(sp, counter))
-        {
-            Sleep(spawnInterval);
-        }
-    }
-    bSpawning = true;
-}
-
-function bool SpawnActor(out ScriptedPawn _actor, int arrayIndex)
-{
-    local bool result;
-    _actor = Spawn(actorType);
-
-    if (_actor != none)
-    {
-        result = true;
-        _actor.SetOrders(orderName, orderTag);
-        spawnee[arrayIndex] = _actor;
-    }
-
-    return result;
-}
-
-function bool bNeedToSpawnActor(out int index)
-{
-    local bool result;
-    local int ii;
-
-    for (ii = 0; ii < ArrayCount(spawnee); ii++)
-    {
-        if (spawnee[ii] == none)
-        {
-            index = ii;
-            BroadcastMessage("Spawned at index: " $ ii);
-            result = true;
-            break;
-        }
-    }
-
-    return result;
+		if (internalCounter > nextSpawn)
+		{
+			nextSpawn = internalCounter + spawnRate;
+			Spawn(actorType, self).SetOrders(orderName, orderTag);
+			spawnCounter++;
+			BroadcastMessage("Spawned actor! num: " $ spawnCounter);
+		}
+	}
+	else
+	{
+		BroadcastMessage("Don't spawn anymore!");
+	}
 }
 
 defaultproperties
 {
     actorType=CNN.Avatar
-    spawnInterval=3.0
+    spawnRate=3.0
     orderName=RunningTo
+    spawnLimit=50
 }

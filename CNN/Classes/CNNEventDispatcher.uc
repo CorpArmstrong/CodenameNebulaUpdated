@@ -1,6 +1,6 @@
 //=============================================================================
 // CNNEventsDispatcher: works like a normal dispatcher, but it's more useful
-// for calling external code, passes in classes array.
+// for calling external code, passed in classes array.
 //=============================================================================
 class CNNEventDispatcher extends Dispatcher;
 

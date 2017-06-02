@@ -6,7 +6,6 @@ var(SpawnData) name orderName;
 var(SpawnData) name orderTag;
 
 var int counter;
-var int spawnIndex;
 var bool bSpawning;
 var ScriptedPawn sp;
 var ScriptedPawn spawnee[10];
@@ -19,7 +18,7 @@ function PostBeginPlay()
 
 function Trigger(Actor Other, Pawn Instigator)
 {
-	gotostate('SpawnActors');
+	if (!bSpawning) gotostate('SpawnActors');
     Super.Trigger(Other, Instigator);
 }
 
@@ -29,70 +28,76 @@ function Trigger(Actor Other, Pawn Instigator)
 
 simulated function Tick(float TimeDelta)
 {
+	local int spawnIndex;
     Super.Tick(TimeDelta);
-    //
 
     if (bSpawning)
     {
-    	if (bNeedToSpawnActor(spawnIndex))
-    	{
-    		if (SpawnActor(sp, spawnIndex))
-			{
-				//
-			}
-    	}
-	}
+        if (bNeedToSpawnActor(spawnIndex))
+        {
+            if (SpawnActor(sp, spawnIndex))
+            {
+                BroadcastMessage("Spawned actor: " $ sp.Name);
+            }
+        }
+    }
+}
+
+function StopSpawning()
+{
+	bSpawning = false;
 }
 
 state SpawnActors
 {
     Begin:
-	for (counter = 0; counter < ArrayCount(spawnee); counter++)
-	{
-		if (SpawnActor(sp, counter))
-		{
-			Sleep(spawnInterval);
-		}
-	}
-	bSpawning = true;
+    for (counter = 0; counter < ArrayCount(spawnee); counter++)
+    {
+        if (SpawnActor(sp, counter))
+        {
+            Sleep(spawnInterval);
+        }
+    }
+    bSpawning = true;
 }
 
 function bool SpawnActor(out ScriptedPawn _actor, int arrayIndex)
 {
-	local bool result;
-	_actor = Spawn(actorType);
+    local bool result;
+    _actor = Spawn(actorType);
 
-	if (_actor != none)
-	{
-		result = true;
-		_actor.SetOrders(orderName, orderTag);
-		spawnee[arrayIndex] = _actor;
-	}
+    if (_actor != none)
+    {
+        result = true;
+        _actor.SetOrders(orderName, orderTag);
+        spawnee[arrayIndex] = _actor;
+    }
 
-	return result;
+    return result;
 }
 
 function bool bNeedToSpawnActor(out int index)
 {
-	local bool result;
-	local int ii;
+    local bool result;
+    local int ii;
 
-	for (ii = 0; ii < ArrayCount(spawnee); ii++)
-	{
-		if (spawnee[ii] == none)
-		{
-			index = ii;
-			result = true;
-			break;
-		}
-	}
+    for (ii = 0; ii < ArrayCount(spawnee); ii++)
+    {
+        if (spawnee[ii] == none)
+        {
+            index = ii;
+            BroadcastMessage("Spawned at index: " $ ii);
+            result = true;
+            break;
+        }
+    }
 
-	return result;
+    return result;
 }
 
 defaultproperties
 {
-	actorType=CNN.Avatar
-	spawnInterval=3.0
-	orderName=RunningTo
+    actorType=CNN.Avatar
+    spawnInterval=3.0
+    orderName=RunningTo
 }

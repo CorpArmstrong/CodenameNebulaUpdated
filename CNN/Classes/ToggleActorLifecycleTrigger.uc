@@ -17,7 +17,7 @@ function PostBeginPlay()
 
 function Trigger(Actor Other, Pawn Instigator)
 {
-	ToggleActorLifecycle();
+    ToggleActorLifecycle();
     Super.Trigger(Other, Instigator);
 }
 
@@ -57,21 +57,25 @@ function SetSpawnPoint()
 
 function ToggleActorLifecycle()
 {
-	if (!bActorAlive)
-	{
-		currentActor = Spawn(actorType,,, spawnLocation, spawnRotation);
-		bActorAlive = true;
-	}
-	else
-	{
-		// currentActor.Destroy(); ???
-		AvatarGenerator(currentActor).StopGenerator();
-		bActorAlive = false;
-	}
+    if (!bActorAlive)
+    {
+        currentActor = Spawn(actorType,,, spawnLocation, spawnRotation);
+        if (currentActor.IsA('Trigger'))
+        {
+        	currentActor.Trigger(self, DeusExPlayer(GetPlayerPawn()));
+		}
+        bActorAlive = true;
+    }
+    else
+    {
+        //currentActor.Destroy();
+        CNNSimpleActorSpawner(currentActor).StopSpawning();
+        bActorAlive = false;
+    }
 }
 
 defaultproperties
 {
-	actorType=CNN.AvatarGenerator
-	spawnPointTag=AvatarPoint_1
+    actorType=CNN.AvatarGenerator
+    spawnPointTag=AvatarPoint_1
 }

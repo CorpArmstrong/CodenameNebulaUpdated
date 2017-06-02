@@ -2,7 +2,7 @@
 // AiDataLinkPlay
 //=============================================================================
 class AiDataLinkPlay expands DataLinkPlay
-	transient;
+    transient;
 
 // Array of Bind -> Display names. Yes, horrible hack. Oh well.
 var S_InfoLinkNames infoLinkNames[19]; //17
@@ -13,22 +13,22 @@ var S_InfoLinkNames infoLinkNames[19]; //17
 // ----------------------------------------------------------------------
 function String GetDisplayName(String bindName)
 {
-	local int nameIndex;
-	local string displayName;
+    local int nameIndex;
+    local string displayName;
 
-	//displayName = "";
+    //displayName = "";
 
-	for(nameIndex=0; nameIndex<arrayCount(infoLinkNames); nameIndex++)
-	{
-		if (infoLinkNames[nameIndex].BindName == bindName)
-		{
-			displayName = infoLinkNames[nameIndex].DisplayName;
-			DeusExPlayer(GetPlayerPawn()).ClientMessage("Infolink index: " $
-				nameIndex $ ", Person: " $ displayName);
-			break;
-		}
-	}
-	return displayName;
+    for(nameIndex=0; nameIndex<arrayCount(infoLinkNames); nameIndex++)
+    {
+        if (infoLinkNames[nameIndex].BindName == bindName)
+        {
+            displayName = infoLinkNames[nameIndex].DisplayName;
+            /*DeusExPlayer(GetPlayerPawn()).ClientMessage("Infolink index: " $
+                nameIndex $ ", Person: " $ displayName);*/
+            break;
+        }
+    }
+    return displayName;
 }
 
 defaultproperties
@@ -55,8 +55,8 @@ defaultproperties
      infoLinkNames(14)=(BindName="StantonDowd",displayName="Stanton Dowd")
      infoLinkNames(15)=(BindName="TracerTong",displayName="Tracer Tong")
      infoLinkNames(16)=(BindName="WaltonSimons",displayName="Walton Simons")
-	 infoLinkNames(17)=(BindName="Janus",displayName="Janus")
-	 infoLinkNames(18)=(BindName="Ada",displayName="Ada")
+     infoLinkNames(17)=(BindName="Janus",displayName="Janus")
+     infoLinkNames(18)=(BindName="Ada",displayName="Ada")
      EndTransmission="END TRANSMISSION..."
      bHidden=True
 }

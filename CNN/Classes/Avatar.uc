@@ -7,7 +7,7 @@ function bool Facelift(bool bOn)
 
 function Explode(/*optional vector HitLocation*/)
 {
-    local SphereEffect sphere;
+    /*local SphereEffect sphere;
     local ScorchMark s;
     local ExplosionLight light;
     local int i;
@@ -52,7 +52,7 @@ function Explode(/*optional vector HitLocation*/)
             spawn(class'FleshFragment',,,Location);
     }
 
-    HurtRadius(explosionDamage, explosionRadius, 'Exploded', explosionDamage*100, Location);
+    HurtRadius(explosionDamage, explosionRadius, 'Exploded', explosionDamage*100, Location);*/
 }
 
 defaultproperties

@@ -25,7 +25,7 @@ function Touch(Actor Other)
 {
     if (IsRelevant(Other))
     {
-        ToggleActorLifecycle();
+		ToggleActorLifecycle();
         Super.Touch(Other);
     }
 }
@@ -62,8 +62,8 @@ function ToggleActorLifecycle()
         currentActor = Spawn(actorType,,, spawnLocation, spawnRotation);
         if (currentActor.IsA('Trigger'))
         {
-        	currentActor.Trigger(self, DeusExPlayer(GetPlayerPawn()));
-		}
+            currentActor.Trigger(self, DeusExPlayer(GetPlayerPawn()));
+        }
         bActorAlive = true;
     }
     else

@@ -1,0 +1,18 @@
+DeusEx.log:
+
+Log: Export travel for: Player
+Log: Browse: 01_NYC_UNATCOIsland?Name=Player?Class=DeusEx.JCDentonMale#tunnel_drop_nyc
+Log: Doing load, not loadgame
+Log: Current mission number is 1, next is 1
+Log: Attempting to get player
+Init: Shut down moving brush tracker for Level Autoplay.MyLevel
+Log: Unloading: Package Autoplay
+Log: Save=99.135629
+Log: Moving '..\Save\Current\Save.tmp' to '..\Save\Current\01_NYC_UNATCOHQ.dxs'
+Init: Initialized moving brush tracker for Level Autoplay.MyLevel
+Log: LoadMap: 01_NYC_UNATCOIsland?Name=Player?Class=DeusEx.JCDentonMale#tunnel_drop_n
+
+
+UnGame.h:
+
+void SetClientTravel( UPlayer* Viewport, const TCHAR* NextURL, UBOOL bItems, ETravelType TravelType );

@@ -122,10 +122,15 @@ simulated function Draw(ScriptedTexture TextureCanvas, int Left, int Top, float 
     foreach AllActors(class 'ScreenMutator', MutatorScreen)
       break;
 
-  //  CorpArmstrong
+  /*  CorpArmstrong
   if (FlagCached)
-    //MutatorAiDisplayCached();
-
+  {
+	MutatorAiDisplayCached();
+  }
+  */
+  
+  BroadcastMessage("Draw fucking page here");
+  
 
   Super.Draw(TextureCanvas, Left, Top, Fade);
   }

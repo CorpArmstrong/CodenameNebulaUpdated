@@ -125,41 +125,45 @@ const FlagDebug = false;
 // PreBeginPlay
 // ============================================================================
 
-simulated function PreBeginPlay() {
+simulated function PreBeginPlay()
+{
+	local GameInfo ThisGame;
+	//local AiGameInfo ThisGame;
 
-  local GameInfo ThisGame;
-  //local AiGameInfo ThisGame;
+	Super.PreBeginPlay();
 
-  Super.PreBeginPlay();
+	if (PaletteOriginal == None)
+		PaletteOriginal = ScriptedTexture.Palette;
 
-  if (PaletteOriginal == None)
-    PaletteOriginal = ScriptedTexture.Palette;
+	if (Level.NetMode != NM_Client)
+		VersionServer = Version;
 
-  if (Level.NetMode != NM_Client)
-    VersionServer = Version;
+	foreach AllActors(class 'ScreenMutator', MutatorScreen)
+		break;
 
-  foreach AllActors(class 'ScreenMutator', MutatorScreen)
-    break;
+	if (MutatorScreen == None)
+	{
+		MutatorScreen = Spawn(class 'ScreenMutator');
 
-  if (MutatorScreen == None) {
-    MutatorScreen = Spawn(class 'ScreenMutator');
+		foreach AllActors(class 'GameInfo', ThisGame)
+			break;
 
-    foreach AllActors(class 'GameInfo', ThisGame)
-      break;
-    if (ThisGame != None) {
+		if (ThisGame != None)
+		{
+			/* @CorpArmstrong
+			 * These lines doesn't work, 'cause DeusEx GameInfo
+			 * have Mutator of wrong type.
+			 * Must be AiMutator but has Mutator.
+			 *
+			 * ThisGame.BaseMutator.AddMutator(MutatorScreen);
+			 * ThisGame.RegisterMessageMutator(MutatorScreen);
+			 */
 
-      /* @CorpArmstrong
-       * These lines doesn't work, 'cause DeusEx GameInfo
-       * have Mutator of wrong type.
-       * Must be AiMutator but has Mutator.
-       *
-       * ThisGame.BaseMutator.AddMutator(MutatorScreen);
-       * ThisGame.RegisterMessageMutator(MutatorScreen);
-       */
-           ThisGame.BaseMutator.AddMutator(MutatorScreen);
-      }
+			ThisGame.BaseMutator.AddMutator(MutatorScreen);	// +
+			//ThisGame.RegisterMessageMutator(MutatorScreen);	// +
+		}
     }
-  }
+}
 
 
 // ============================================================================

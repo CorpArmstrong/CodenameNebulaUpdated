@@ -3,7 +3,6 @@
 
 class AiUWindowEditBox extends AiUWindowDialogControl;
 
-// CorpArmstrong
 #exec TEXTURE IMPORT NAME=WhiteTexture FILE=Textures\WhiteTexture.bmp GROUP="Icons" MIPS=OFF
 
 var string		Value;

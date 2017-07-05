@@ -27,16 +27,20 @@ var() ScreenSlide SlideSwitch;
 // Trigger
 // ============================================================================
 
-function Trigger(Actor Other, Pawn EventInstigator) {
-
-  local Screen ThisScreen;
-														/* CorpArmstrong
-  foreach AllActors(class 'Screen', ThisScreen, Event) {
-    ThisAiSwitchTriggered.SlideSwitch = SlideSwitch;
-    ThisAiSwitchTriggered.Update++;
+function Trigger(Actor Other, Pawn EventInstigator)
+{
+	local Screen ThisScreen;
+	
+	// CorpArmstrong
+	foreach AllActors(class 'Screen', ThisScreen, Event)
+	{
+		//ThisAiSwitchTriggered.SlideSwitch = SlideSwitch;
+		//ThisAiSwitchTriggered.Update++;
+		
+		ThisScreen.SwitchTriggered.SlideSwitch = SlideSwitch;
+		ThisScreen.SwitchTriggered.Update++;
     }
-    */
-  }
+}
 
 
 // ============================================================================

@@ -1,4 +1,4 @@
-class Avatar extends MIB;
+class Avatar extends Male1;
 
 //against hdtp
 function bool Facelift(bool bOn)
@@ -58,7 +58,7 @@ function Explode(/*optional vector HitLocation*/)
 defaultproperties
 {
 	MinHealth=0.000000
-	CarcassType=Class'DeusEx.KarkianCarcass'
+	CarcassType=Class'CNN.TestFMCarcass'
 	WalkingSpeed=0.200000
 	bCanBleed=True
 	bShowPain=False

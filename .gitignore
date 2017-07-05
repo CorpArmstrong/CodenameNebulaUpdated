@@ -275,7 +275,31 @@ Textures/DXN_RTMaggot2/
 Textures/FGRTex00/
 Maps/DeusEx.ini
 SWAT4_SDK/
+<<<<<<< HEAD
 DXApocalypseInside/
 BowenLite/
 ApocalypseInsideRelease/
 BowenCC/
+=======
+Maps/01_ApartmentBuilding.dx
+Maps/01_CorpBuilding.dx
+Maps/01_DowntownMiami.dx
+Maps/01_TechForceHQ.dx
+Maps/20_BC_MiningCamp_Return.dx
+Maps/20_BC_MiningCamp_Tunnels_4.dx
+Maps/20_Disclosure_Intro.dx
+Maps/20_Secret_Base.dx
+Maps/71_canyon.dx
+Maps/71_whitehouse.dx
+Maps/corruption.dx
+Maps/corruption2.dx
+Maps/corruption_intro.dx
+Music/DisclosureCreditsMusic.umx
+Music/HellsGatePrev.umx
+Music/Intro_EndTheme.umx
+Textures/BigalT.utx
+Textures/MiningCamp.utx
+Textures/MiningFacility.utx
+Textures/Neon.utx
+Textures/RainMod.utx
+>>>>>>> 19cf1e495032a7c355772c391bdcedb8ee00a61a

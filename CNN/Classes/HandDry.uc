@@ -38,7 +38,7 @@ function Frob(actor Frobber, Inventory frobWith)
 	SetTimer(4.0, False);
 	bUsing = True;
 
-	PlaySound(sound'AirBreath',,,, 128);
+	//PlaySound(sound'AirBreath',,,, 128);
 }
 
 defaultproperties

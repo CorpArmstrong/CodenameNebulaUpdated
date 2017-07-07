@@ -58,6 +58,7 @@ function Timer()
 {
     Super.Timer();
     SendPlayerOnceToGame();
+	GivePlayerHisAugs();
 }
 
 // ----------------------------------------------------------------------

@@ -1,5 +1,18 @@
 class Magdalene extends Female1;
 
+function float ShieldDamage(name damageType)
+{
+	// handle special damage types
+	if ((damageType == 'Flamed') || (damageType == 'Burned') || (damageType == 'Stunned') ||
+	    (damageType == 'KnockedOut'))
+		return 0.0;
+	else if ((damageType == 'TearGas') || (damageType == 'PoisonGas') || (damageType == 'HalonGas') ||
+			(damageType == 'Radiation') || (damageType == 'Shocked') || (damageType == 'Poison') ||
+	        (damageType == 'PoisonEffect'))
+		return 0.0;
+	else
+		return 0.0;
+}
 
 defaultproperties
 {
@@ -9,6 +22,7 @@ defaultproperties
      bShowPain=False
      InitialAlliances(0)=(AllianceName=Player,AllianceLevel=1.000000,bPermanent=True)
      Alliance=Player
+	 BurnPeriod=0.000000
     MultiSkins(0)=Texture'ApocalypseInside.MagdaleneFace1'
     MultiSkins(1)=Texture'ApocalypseInside.MagdaleneFace1'
     MultiSkins(2)=Texture'ApocalypseInside.MagdaleneFace1'

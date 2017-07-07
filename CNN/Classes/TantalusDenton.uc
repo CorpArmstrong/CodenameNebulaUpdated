@@ -143,7 +143,7 @@ function bool CheckActorDistances()
 {
     //mwahaaha! terrible hack, i know -T.
 }
-/*
+
 // ----------------------------------------------------------------------
 // ShowMainMenu()
 //
@@ -157,9 +157,9 @@ exec function ShowMainMenu()
 
     root = DeusExRootWindow(rootWindow);
     if (root != None)
-        root.InvokeMenu(class'ApocalypseInside.ApocalypseInsideMenuMain');
+        root.InvokeMenu(class'CNN.ApocalypseInsideMenuMain');
 }
-*/
+
 // ----------------------------------------------------------------------
 // ShowIntro()
 // ----------------------------------------------------------------------

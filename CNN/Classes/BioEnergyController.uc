@@ -77,7 +77,7 @@ function adjustDamageTimer(bool isOn) {
 }
 
 function Timer() {
-	DeusExPlayer(GetPlayerPawn()).ClientMessage("Test method.");
+	DeusExPlayer(GetPlayerPawn()).ClientMessage("My energy is depleted. Until I recharge I will suffer from withdrawal.");
 	DeusExPlayer(GetPlayerPawn()).TakeDamage(DAMAGE_AMOUNT, none, vc, vc, 'Shocked');
 }
 

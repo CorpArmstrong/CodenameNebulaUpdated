@@ -1,4 +1,4 @@
-class Mars extends Poolball;
+class Mars extends Earth;
 
 function bool Facelift(bool bOn)
 {

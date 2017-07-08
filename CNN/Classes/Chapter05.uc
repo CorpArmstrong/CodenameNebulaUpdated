@@ -8,6 +8,22 @@ var bool isIntroCompleted;
 var bool PlayerGotMuscleAug;
 var bool HasMuscleAug;
 var bool hasCombatAug;
+var bool HasAquaAug;
+var bool HasPowerAug;
+var bool HasHeartAug;
+var bool HasSpeedAug;
+var bool HasStealthAug;
+var bool HasCloakAug;
+var bool HasRadarAug;
+var bool HasRegenAug;
+var bool HasEnergyAug;
+var bool HasSpyAug;
+var bool HasBallisticAug;
+var bool HasDefenseAug;
+var bool HasEMPAug;
+var bool HasEnviroAug;
+var bool HasTargetAug;
+var bool HasVisionAug;
 var String sendToLocation;
 var Name conversationName;
 var Name actorTag;
@@ -141,20 +157,6 @@ function SendPlayerOnceToGame()
 }
 
 
-// ----------------------------------------------------------------------
-// Timer()
-//
-// Main state machine for the mission
-// ----------------------------------------------------------------------
-
-//function Timer()
-//{
-//    Super.Timer();
-//    GivePlayerHisAugs();
-//}
-
-// ----------------------------------------------------------------------
-
 function GivePlayerHisAugs()
 {
     if(flags.GetBool('HasMuscleAug') && !flags.GetBool('PlayerGotMuscleAug'))
@@ -167,12 +169,77 @@ function GivePlayerHisAugs()
         Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugCombat');
         flags.SetBool('PlayerGotCombatAug', true, true, 0);
     }
+	if(flags.GetBool('HasAquaAug') && !flags.GetBool('PlayerGotAquaAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugAqualung');
+        flags.SetBool('PlayerGotAquaAug', true, true, 0);
+    }
+	if(flags.GetBool('HasPowerAug') && !flags.GetBool('PlayerGotPowerAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugPower');
+        flags.SetBool('PlayerGotPowerAug', true, true, 0);
+    }
+	if(flags.GetBool('HasHeartAug') && !flags.GetBool('PlayerGotHeartAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugHeartLung');
+        flags.SetBool('PlayerGotHeartAug', true, true, 0);
+    }
+	if(flags.GetBool('HasSpeedAug') && !flags.GetBool('PlayerGotSpeedAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugSpeed');
+        flags.SetBool('PlayerGotSpeedAug', true, true, 0);
+    }
+	if(flags.GetBool('HasStealthAug') && !flags.GetBool('PlayerGotStealthAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugStealth');
+        flags.SetBool('PlayerGotStealthAug', true, true, 0);
+    }
+	if(flags.GetBool('HasBallisticAug') && !flags.GetBool('PlayerGotBallisticAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugBallistic');
+        flags.SetBool('PlayerGotBallisticAug', true, true, 0);
+    }
+	if(flags.GetBool('HasCloakAug') && !flags.GetBool('PlayerGotCloakAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugCloak');
+        flags.SetBool('PlayerGotCloakAug', true, true, 0);
+    }
+	if(flags.GetBool('HasDefenseAug') && !flags.GetBool('PlayerGotDefenseAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugDefense');
+        flags.SetBool('PlayerGotDefenseAug', true, true, 0);
+    }
+	if(flags.GetBool('HasEMPAug') && !flags.GetBool('PlayerGotEMPAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugEMP');
+        flags.SetBool('PlayerGotEMPAug', true, true, 0);
+    }
+	if(flags.GetBool('HasEnergyAug') && !flags.GetBool('PlayerGotEnergyAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugShield');
+        flags.SetBool('PlayerGotEnergyAug', true, true, 0);
+    }
+	if(flags.GetBool('HasEnviroAug') && !flags.GetBool('PlayerGotEnviroAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugEnviro');
+        flags.SetBool('PlayerGotEnviroAug', true, true, 0);
+    }
+	if(flags.GetBool('HasHeartAug') && !flags.GetBool('PlayerGotHeartAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugHeartLung');
+        flags.SetBool('PlayerGotHeartAug', true, true, 0);
+    }
+	if(flags.GetBool('HasRadarAug') && !flags.GetBool('PlayerGotRadarAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugRadarTrans');
+        flags.SetBool('PlayerGotRadarAug', true, true, 0);
+    }
 }
 
 defaultproperties
 {
     //missionName="Moon"
-    sendToLocation="05_MoonIntro_Mod#TwoMonthsLater"
+    sendToLocation="05_MoonIntro#TwoMonthsLater"
     conversationName=InExile
     actorTag=MagdaleneDenton
     cutsceneEndFlagName=IsIntroPlayed

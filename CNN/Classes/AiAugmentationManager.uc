@@ -76,7 +76,7 @@ defaultproperties
     augClasses(19)=Class'AugHeartLung'
     augClasses(20)=Class'AugPower'
      augClasses(21)=Class'ApocalypseInside.AugIcarus'
-     defaultAugs(0)=Class'DeusEx.AugHeartLung'
+     defaultAugs(0)=Class'DeusEx.AugLight'
      defaultAugs(1)=Class'DeusEx.AugIFF'
      defaultAugs(2)=Class'DeusEx.AugDatalink'
      AugLocationFull="You can't add any more augmentations to that location!"

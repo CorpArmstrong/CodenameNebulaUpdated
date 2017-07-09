@@ -1,0 +1,26 @@
+<DC=255,255,255>
+<P>Designation: 088/018-710
+<P>-----------------------------------------
+<P>Sex: F
+<P>Ethnicity: IC1
+<P>-----------------------------------------
+<P>Origin: Rifleman Bank Station
+<P>Associations: MJ12
+<P>Additional:
+<P>* Generic ID given
+<P>- Jane Doe-v0430, b. 2020
+<P>* Born on premises. Mother (ID unconfirmed) was in her second trimester <P>at the time of capture.
+<P>
+<P>-----------------------------------------
+<P>Procedures:
+<P>* Med. History interview reveals no counter-indications
+<P>- Biological mother successfully transformed to an OCM node, transferred <P>to Panchaea.
+<P>* Preliminary examination
+<P>- Blood Type: A-neg
+<P>- Biopsy indicates genetic markers well within acceptable values
+<P>* Subject underwent Procedure at 5 y.o. While not suitable for on-site use, the subject shows excellent benchmarks on the local OCM network. No Mindcrash occurred since May 2031.
+<P>
+<P>Suggest transfer to Omega Ranch when Subject reached 16 years of age.
+<P>
+<P>-----------------------------------------
+<P>Status: Cleared for extraction from Rifleman Bank Station Belltower base on 08/15/2035. IMPORTANT: must be rescued by a new Tyrant operative, Tantalus. 

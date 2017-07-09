@@ -5,15 +5,13 @@ class Chapter06 extends MissionScript;
 
 
 var byte savedSoundVolume;
-var bool IsArrivalPlayed;
-var bool PlayerGotMuscleAug;
-var bool HasMuscleAug;
-var bool hasCombatAug;
+var bool IsArrivalCompleted;
 var String sendToLocation;
 var Name conversationName;
 var Name actorTag;
 var Actor actorToSpeak;
 var Name cutsceneEndFlagName;
+var(ChangeLevelOnDeath) string levelName;
 
 // ----------------------------------------------------------------------
 // InitStateMachine()
@@ -46,7 +44,7 @@ function FirstFrame()
 function PreTravel()
 {
     Super.PreTravel();
-    RestoreSoundVolume();
+    //RestoreSoundVolume();
 }
 
 // ----------------------------------------------------------------------
@@ -59,6 +57,10 @@ function Timer()
 {
     Super.Timer();
     SendPlayerOnceToGame();
+	if (player.IsInState('Dying'))
+	{
+		Level.Game.SendPlayer(player, levelName);
+	}
 }
 
 // ----------------------------------------------------------------------
@@ -69,10 +71,10 @@ function CheckIntroFlags()
     {
         // After we've teleported back and map has reloaded
         // set the flag, to skip recursive intro call.
-        IsArrivalPlayed = true;
+        IsArrivalCompleted = true;
     }
 
-    if (!IsArrivalPlayed)
+    if (!IsArrivalCompleted)
     {
         // Set the PlayerTraveling flag (always want it set for
         // the intro and endgames)
@@ -105,31 +107,31 @@ function StartConversationWithActor()
             }
             else
             {
-            	IsArrivalPlayed = true;
+            	IsArrivalCompleted = true;
             	flags.SetBool(cutsceneEndFlagName, true, true, 0);
             	Level.Game.SendPlayer(player, sendToLocation);
 			}
 
             // turn down the sound so we can hear the speech
-            savedSoundVolume = SoundVolume;
+            /*savedSoundVolume = SoundVolume;
             SoundVolume = 32;
-            player.SetInstantSoundVolume(SoundVolume);
+            player.SetInstantSoundVolume(SoundVolume);*/
         }
     }
 }
-
+/*
 function RestoreSoundVolume()
 {
-    if (flags.GetBool(cutsceneEndFlagName) && !IsArrivalPlayed)
+    if (flags.GetBool(cutsceneEndFlagName) && !IsArrivalCompleted)
     {
         SoundVolume = savedSoundVolume;
         player.SetInstantSoundVolume(SoundVolume);
     }
-}
+}*/
 
 function SendPlayerOnceToGame()
 {
-    if (flags.GetBool(cutsceneEndFlagName) && !IsArrivalPlayed)
+    if (flags.GetBool(cutsceneEndFlagName) && !IsArrivalCompleted)
     {
         if (DeusExRootWindow(player.rootWindow) != none)
         {
@@ -149,4 +151,5 @@ defaultproperties
     conversationName=ApproachingOphelia
     actorTag=MagdaleneDenton
     cutsceneEndFlagName=IsArrivalPlayed
+	levelName="99_Endgame1"
 }

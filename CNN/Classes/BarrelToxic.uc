@@ -44,7 +44,7 @@ defaultproperties
      bInvincible=True
      bFlammable=False
      bUnlit=True
-     ItemName="Toxic Barrel"
+     ItemName="Helium-3 Barrel"
      bBlockSight=True
      Mesh=LodMesh'CNN.BarrelToxic'
      CollisionRadius=19.000000

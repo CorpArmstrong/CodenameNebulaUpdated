@@ -29,6 +29,7 @@ var Name conversationName;
 var Name actorTag;
 var Actor actorToSpeak;
 var Name cutsceneEndFlagName;
+var(ChangeLevelOnDeath) string levelName;
 
 // ----------------------------------------------------------------------
 // InitStateMachine()
@@ -61,7 +62,7 @@ function FirstFrame()
 function PreTravel()
 {
     Super.PreTravel();
-    RestoreSoundVolume();
+    //RestoreSoundVolume();
 }
 
 // ----------------------------------------------------------------------
@@ -75,6 +76,10 @@ function Timer()
     Super.Timer();
     SendPlayerOnceToGame();
 	GivePlayerHisAugs();
+	if (player.IsInState('Dying'))
+	{
+		Level.Game.SendPlayer(player, levelName);
+	}
 }
 
 // ----------------------------------------------------------------------
@@ -127,13 +132,13 @@ function StartConversationWithActor()
 			}
 
             // turn down the sound so we can hear the speech
-            savedSoundVolume = SoundVolume;
+            /*savedSoundVolume = SoundVolume;
             SoundVolume = 32;
-            player.SetInstantSoundVolume(SoundVolume);
+            player.SetInstantSoundVolume(SoundVolume);*/
         }
     }
 }
-
+/*
 function RestoreSoundVolume()
 {
     if (flags.GetBool(cutsceneEndFlagName) && !isIntroCompleted)
@@ -141,7 +146,7 @@ function RestoreSoundVolume()
         SoundVolume = savedSoundVolume;
         player.SetInstantSoundVolume(SoundVolume);
     }
-}
+}*/
 
 function SendPlayerOnceToGame()
 {
@@ -234,6 +239,21 @@ function GivePlayerHisAugs()
         Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugRadarTrans');
         flags.SetBool('PlayerGotRadarAug', true, true, 0);
     }
+	if(flags.GetBool('HasRegenAug') && !flags.GetBool('PlayerGotRegenAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugHealing');
+        flags.SetBool('PlayerGotRegenAug', true, true, 0);
+    }
+	if(flags.GetBool('HasSpyAug') && !flags.GetBool('PlayerGotSpyAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugDrone');
+        flags.SetBool('PlayerGotSpyAug', true, true, 0);
+    }
+	if(flags.GetBool('HasTargetAug') && !flags.GetBool('PlayerGotTargetAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugTarget');
+        flags.SetBool('PlayerGotTargetAug', true, true, 0);
+    }
 }
 
 defaultproperties
@@ -243,4 +263,5 @@ defaultproperties
     conversationName=InExile
     actorTag=MagdaleneDenton
     cutsceneEndFlagName=IsIntroPlayed
+	levelName="99_Endgame1"
 }

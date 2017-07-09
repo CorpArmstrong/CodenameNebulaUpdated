@@ -8,7 +8,7 @@ defaultproperties
      HitPoints=10
      bInvincible=True
      bFlammable=False
-     ItemName="Bio-Cannister"
+     ItemName="Helium-3 Cannister"
      Mesh=LodMesh'CNN.Cannister'
      CollisionRadius=8.500000
      CollisionHeight=9.375000

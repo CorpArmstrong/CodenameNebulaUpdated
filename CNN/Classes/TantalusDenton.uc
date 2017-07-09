@@ -163,7 +163,7 @@ exec function ShowMainMenu()
 // ----------------------------------------------------------------------
 // ShowIntro()
 // ----------------------------------------------------------------------
-/*
+
 function ShowIntro(optional bool bStartNewGame)
 {
     if (DeusExRootWindow(rootWindow) != None)
@@ -178,7 +178,7 @@ function ShowIntro(optional bool bStartNewGame)
     //Level.Game.SendPlayer(Self, "AiPrologue");
     Level.Game.SendPlayer(Self, strStartMap);
 }
-*/
+
 // ----------------------------------------------------------------------
 // ShowCredits()
 //
@@ -627,9 +627,9 @@ defaultproperties
     TruePlayerName="Tantalus Denton"
     BindName=Tantalus
     Credits=0
-    MenuThemeName="ApostleMod"
-    HUDThemeName="ApostleMod"
-    strStartMap="96_Area51"
+    MenuThemeName="Tantalus theme"
+    HUDThemeName="Tantalus theme"
+    strStartMap="05_MoonIntro"
     CarcassType=Class'JCDentonMaleCarcass'
     Mesh=LodMesh'DeusExCharacters.GM_Trench'
     MultiSkins(0)=Texture'CNN.Skins.TantalusFace'

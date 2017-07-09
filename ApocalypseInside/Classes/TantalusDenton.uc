@@ -445,7 +445,7 @@ function CreateColorThemeManager()
 // conversation system and returns TRUE when finished.
 // ----------------------------------------------------------------------
 // TODO: Fix native class first, than uncomment this method!
-/*
+
 function bool StartConversation(
     Actor invokeActor,
     EInvokeMethod invokeMethod,
@@ -605,14 +605,12 @@ function bool StartConversation(
         return False;
     }
 }
-*/
+
 defaultproperties
 {
     TruePlayerName="Tantalus Denton"
     BindName=Tantalus
     Credits=0
-    MenuThemeName="ApostleMod"
-    HUDThemeName="ApostleMod"
     strStartMap="96_Area51"
     CarcassType=Class'JCDentonMaleCarcass'
     Mesh=LodMesh'DeusExCharacters.GM_Trench'

@@ -41,3 +41,4 @@ defaultproperties
     clientTextures(1)=Texture'DeusExUI.UserInterface.MenuDifficultyBackground_2'
     textureRows=1
     textureCols=2
+	}

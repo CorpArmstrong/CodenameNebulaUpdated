@@ -8,6 +8,8 @@ var bool isIntroCompleted;
 var bool PlayerGotMuscleAug;
 var bool HasMuscleAug;
 var bool hasCombatAug;
+var bool HasLethalAug;
+var bool hasNonLethalAug;
 var bool HasAquaAug;
 var bool HasPowerAug;
 var bool HasHeartAug;
@@ -49,6 +51,7 @@ function InitStateMachine()
 
 function FirstFrame()
 {
+	
     Super.FirstFrame();
     StartConversationWithActor();
 }
@@ -73,6 +76,8 @@ function PreTravel()
 
 function Timer()
 {
+	local ScriptedPawn Uber;
+	local ScriptedPawn MagdaleneInSpacesuit;
     Super.Timer();
     SendPlayerOnceToGame();
 	GivePlayerHisAugs();
@@ -80,6 +85,17 @@ function Timer()
 	{
 		Level.Game.SendPlayer(player, levelName);
 	}
+	if(flags.GetBool('ReadyToLeaveMoon'))
+	{
+		foreach allactors(class'ScriptedPawn',Uber,'UberAlles')
+		Uber.EnterWorld();
+	}
+	if(flags.GetBool('WalkOnMoon'))
+	{
+		foreach allactors(class'ScriptedPawn',MagdaleneInSpacesuit,'MagdaleneSpacesuit')
+		MagdaleneInSpacesuit.EnterWorld();
+	}		
+		
 }
 
 // ----------------------------------------------------------------------
@@ -253,6 +269,16 @@ function GivePlayerHisAugs()
     {
         Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugTarget');
         flags.SetBool('PlayerGotTargetAug', true, true, 0);
+    }
+	if(flags.GetBool('HasLethalAug') && !flags.GetBool('PlayerGotLethalAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugSkullGunLethal');
+        flags.SetBool('PlayerGotLethalAug', true, true, 0);
+    }
+	if(flags.GetBool('HasNonLethalAug') && !flags.GetBool('PlayerGotNonLethalAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugSkullGunNonLethal');
+        flags.SetBool('PlayerGotNonLethalAug', true, true, 0);
     }
 }
 

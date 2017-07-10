@@ -643,6 +643,6 @@ defaultproperties
     FamiliarName="Tantalus Denton"
     UnfamiliarName="Tantalus Denton"
     Tag="TantalusTag"
-    Energy=150.00
-    EnergyMax=200.00
+    Energy=100.00
+    EnergyMax=100.00
 }

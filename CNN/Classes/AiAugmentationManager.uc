@@ -3,7 +3,7 @@
 //=============================================================================
 class AiAugmentationManager extends AugmentationManager;
 
-var Class<Augmentation> augClasses[25]; //was 25.  Can be increased as needed
+var Class<Augmentation> augClasses[27]; //was 25.  Can be increased as needed
 
 // ----------------------------------------------------------------------
 // CreateAugmentations()
@@ -75,7 +75,8 @@ defaultproperties
     augClasses(18)=Class'AugDatalink'
     augClasses(19)=Class'AugHeartLung'
     augClasses(20)=Class'AugPower'
-     augClasses(21)=Class'ApocalypseInside.AugIcarus'
+     augClasses(21)=Class'CNN.AugSkullGunNonLethal'
+	 augClasses(22)=Class'CNN.AugSkullGunLethal'
      defaultAugs(0)=Class'DeusEx.AugLight'
      defaultAugs(1)=Class'DeusEx.AugIFF'
      defaultAugs(2)=Class'DeusEx.AugDatalink'

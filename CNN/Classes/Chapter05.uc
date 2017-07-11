@@ -86,12 +86,12 @@ function Timer()
 	{
 		Level.Game.SendPlayer(player, levelName);
 	}
-	if(flags.GetBool('ReadyToLeaveMoon'))
+	if(flags.GetBool('LeftMoon'))
 	{
 		foreach allactors(class'UberAlles',Uber,'UberAllesInRoom')
 		Uber.EnterWorld();
 	}
-	if(flags.GetBool('ReadyToLeaveMoon'))
+	if(flags.GetBool('LeftMoon'))
 	{
 		foreach allactors(class'Magdalene',Magdalene,'MagdaleneDenton')
 		Magdalene.LeaveWorld();

@@ -76,10 +76,9 @@ function PreTravel()
 
 function Timer()
 {
-	local ScriptedPawn Uber;
-	local ScriptedPawn Magdalene;
+	local UberAlles Uber;
+	local Magdalene Magdalene;
 	local Ship1 ship;
-	local ScriptedPawn MagdaleneInSpacesuit;
     Super.Timer();
     SendPlayerOnceToGame();
 	GivePlayerHisAugs();
@@ -89,16 +88,14 @@ function Timer()
 	}
 	if(flags.GetBool('ReadyToLeaveMoon'))
 	{
-		foreach allactors(class'ScriptedPawn',Uber,'UberAlles')
+		foreach allactors(class'UberAlles',Uber,'UberAllesInRoom')
 		Uber.EnterWorld();
-		foreach allactors(class'ScriptedPawn',Magdalene,'MagdaleneDenton')
-		MagdaleneInSpacesuit.LeaveWorld();
 	}
-	if(flags.GetBool('WalkOnMoon'))
+	if(flags.GetBool('ReadyToLeaveMoon'))
 	{
-		foreach allactors(class'ScriptedPawn',MagdaleneInSpacesuit,'MagdaleneSpacesuit')
-		MagdaleneInSpacesuit.EnterWorld();
-	}	
+		foreach allactors(class'Magdalene',Magdalene,'MagdaleneDenton')
+		Magdalene.LeaveWorld();
+	}
 	if(flags.GetBool('SpacecraftLanded'))
 	{
 		foreach allactors(class'Ship1',ship,'Spacecraft')

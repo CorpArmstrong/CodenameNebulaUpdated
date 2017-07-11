@@ -182,7 +182,7 @@ function SendPlayerOnceToGame()
             DeusExRootWindow(player.rootWindow).ClearWindowStack();
         }
 		
-		Player.bHidden = False;
+		Player.Invisible(false);
         Level.Game.SendPlayer(player, sendToLocation);
     }
 }

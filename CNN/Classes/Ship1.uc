@@ -1,7 +1,7 @@
 //=============================================================================
 // Ship1.
 //=============================================================================
-class Ship1 extends Actor;
+class Ship1 extends Vehicles;
 
 #exec MESH IMPORT MESH=Ship1 ANIVFILE=MODELS\Ship1_a.3d DATAFILE=MODELS\Ship1_d.3d X=0 Y=0 Z=0
 #exec MESH ORIGIN MESH=Ship1 X=0 Y=0 Z=0

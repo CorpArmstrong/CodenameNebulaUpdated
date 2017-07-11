@@ -77,6 +77,8 @@ function PreTravel()
 function Timer()
 {
 	local ScriptedPawn Uber;
+	local ScriptedPawn Magdalene;
+	local Ship1 ship;
 	local ScriptedPawn MagdaleneInSpacesuit;
     Super.Timer();
     SendPlayerOnceToGame();
@@ -89,11 +91,18 @@ function Timer()
 	{
 		foreach allactors(class'ScriptedPawn',Uber,'UberAlles')
 		Uber.EnterWorld();
+		foreach allactors(class'ScriptedPawn',Magdalene,'MagdaleneDenton')
+		MagdaleneInSpacesuit.LeaveWorld();
 	}
 	if(flags.GetBool('WalkOnMoon'))
 	{
 		foreach allactors(class'ScriptedPawn',MagdaleneInSpacesuit,'MagdaleneSpacesuit')
 		MagdaleneInSpacesuit.EnterWorld();
+	}	
+	if(flags.GetBool('SpacecraftLanded'))
+	{
+		foreach allactors(class'Ship1',ship,'Spacecraft')
+		ship.EnterWorld();
 	}		
 		
 }
@@ -286,7 +295,7 @@ function GivePlayerHisAugs()
 defaultproperties
 {
     //missionName="Moon"
-    sendToLocation="05_MoonIntro#TwoMonthsLater"
+    sendToLocation="05_MoonIntro#TwoWeeksLater"
     conversationName=InExile
     actorTag=MagdaleneDenton
     cutsceneEndFlagName=IsIntroPlayed

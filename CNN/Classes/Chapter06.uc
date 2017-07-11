@@ -138,6 +138,7 @@ function SendPlayerOnceToGame()
             DeusExRootWindow(player.rootWindow).ClearWindowStack();
         }
 
+		Player.bHidden = False;
         Level.Game.SendPlayer(player, sendToLocation);
     }
 }

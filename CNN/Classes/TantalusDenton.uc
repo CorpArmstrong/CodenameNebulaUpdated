@@ -7,7 +7,7 @@ var travel BioEnergyController bioc;
 
 //var travel AiAugmentationManager AugmentationSystem;
 
-//var AiDataLinkPlay aidataLinkPlay;
+var AiDataLinkPlay aidataLinkPlay;
 
 //var String playerBias;
 
@@ -196,7 +196,7 @@ function ShowCredits(optional bool bLoadIntro)
     {
         // Show the credits screen and force the game not to pause
         // if we're showing the credits after the endgame
-        winCredits = burdenCreditsWindow(root.InvokeMenuScreen(Class'burdenCreditsWindow', bLoadIntro));
+        winCredits = burdenCreditsWindow(root.InvokeMenuScreen(Class'AiCreditsWindow', bLoadIntro));
         winCredits.SetLoadIntro(bLoadIntro);
     }
 }

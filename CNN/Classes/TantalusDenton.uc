@@ -7,6 +7,8 @@ var travel BioEnergyController bioc;
 
 //var travel AiAugmentationManager AugmentationSystem;
 
+var AiConPlay conplay;
+
 //var AiDataLinkPlay aidataLinkPlay;
 
 //var String playerBias;

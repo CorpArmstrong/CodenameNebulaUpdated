@@ -7,7 +7,7 @@ var travel BioEnergyController bioc;
 
 //var travel AiAugmentationManager AugmentationSystem;
 
-var AiConPlay conplay;
+var CNNConPlay conplay;
 
 //var AiDataLinkPlay aidataLinkPlay;
 
@@ -19,17 +19,18 @@ var AiConPlay conplay;
 // set up the augmentation and skill systems
 // ----------------------------------------------------------------------
 
-function PostBeginPlay() {
+function PostBeginPlay()
+{
     bioc = Spawn(class'BioEnergyController', none);
     Super.PostBeginPlay();
 }
 
-event TravelPostAccept() {
+event TravelPostAccept()
+{
     local flagbase flags;
     local DeusExLevelInfo info;
     info = DeusExPlayer(GetPlayerPawn()).GetLevelInfo();
     Super.TravelPostAccept();
-
 
     flags = flagbase;
 
@@ -356,10 +357,7 @@ function InitializeSubSystems()
 }
 
 //   Let HDTP know that Tantalus is not JC denton.
-
-function bool Facelift(bool bOn)
-    {
-    }
+function bool Facelift(bool bOn) {}
 
 // ----------------------------------------------------------------------
 // CreateThemeManager()
@@ -551,7 +549,7 @@ function bool StartConversation(
 
         // Found an active conversation, so start it
         // CorpArmstrong: Inject our class here:
-        conPlay = Spawn(class'AiConPlay');
+        conPlay = Spawn(class'CNNConPlay');
         conPlay.SetStartActor(invokeActor);
         conPlay.SetConversation(con);
         conPlay.SetForcePlay(bForcePlay);

@@ -152,5 +152,6 @@ defaultproperties
     conversationName=ApproachingOphelia
     actorTag=MagdaleneDenton
     cutsceneEndFlagName=IsArrivalPlayed
-	levelName="99_Endgame1"
+	levelName="06_OpheliaL2#HumanServer"
+	MutinyEndgame="Mutiny"
 }

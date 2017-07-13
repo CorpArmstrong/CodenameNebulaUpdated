@@ -296,5 +296,5 @@ defaultproperties
     conversationName=InExile
     actorTag=MagdaleneDenton
     cutsceneEndFlagName=IsIntroPlayed
-	levelName="99_Endgame1"
+	levelName="06_OpheliaL2#HumanServer"
 }

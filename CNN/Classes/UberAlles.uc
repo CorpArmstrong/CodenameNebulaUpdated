@@ -139,13 +139,15 @@ defaultproperties
 
     MultiSkins(3)=Texture'DeusExCharacters.Skins.MIBTex0'
 
-    MultiSkins(4)=Texture'DeusExDeco.Skins.BoneFemurTex1'
+    MultiSkins(4)=Texture'CNN.UberAllesHelmet'
 
     MultiSkins(5)=Texture'DeusExItems.Skins.GrayMaskTex'
 
     MultiSkins(6)=Texture'DeusExItems.Skins.GrayMaskTex'
 
     MultiSkins(7)=Texture'DeusExItems.Skins.GrayMaskTex'
+	
+	Texture-None
 
     CollisionRadius=20.00
 

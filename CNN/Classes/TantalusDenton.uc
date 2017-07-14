@@ -7,7 +7,7 @@ var travel BioEnergyController bioc;
 
 //var travel AiAugmentationManager AugmentationSystem;
 
-var CNNConPlay conplay;
+//var CNNConPlay conplay;
 
 //var AiDataLinkPlay aidataLinkPlay;
 

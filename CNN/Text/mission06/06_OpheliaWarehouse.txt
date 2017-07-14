@@ -4,3 +4,5 @@
 <FILE=06_Bulletin04,Grey Death>
 <FILE=06_Bulletin06,Statue Of Liberty's Head>
 <FILE=06_Bulletin07,The Mona Lisa>
+<FILE=06_Bulletin07,Ratte>
+<FILE=06_Bulletin07,Ahnenerbe>

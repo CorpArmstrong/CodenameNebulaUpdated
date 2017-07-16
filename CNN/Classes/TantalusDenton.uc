@@ -7,7 +7,7 @@ var travel BioEnergyController bioc;
 
 //var travel AiAugmentationManager AugmentationSystem;
 
-//var CNNConPlay conplay;
+//var CASConPlay conplay; UNCOMMENT!
 
 //var AiDataLinkPlay aidataLinkPlay;
 
@@ -225,7 +225,6 @@ function UpdatePlayerSkin()
 
 function Possess()
 {
-
     local DeusExRootWindow root;
     Super.Possess();
 
@@ -549,7 +548,8 @@ function bool StartConversation(
 
         // Found an active conversation, so start it
         // CorpArmstrong: Inject our class here:
-        conPlay = Spawn(class'CNNConPlay');
+        //conPlay = Spawn(class'CASConPlay');	UNCOMMENT!
+		conPlay = Spawn(class'ConPlay');
         conPlay.SetStartActor(invokeActor);
         conPlay.SetConversation(con);
         conPlay.SetForcePlay(bForcePlay);

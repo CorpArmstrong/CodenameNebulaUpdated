@@ -6,3 +6,5 @@
 <FILE=06_Bulletin07,The Mona Lisa>
 <FILE=06_Bulletin08,Ratte>
 <FILE=06_Bulletin09,Ahnenerbe>
+<FILE=06_Bulletin10,Bones Of The Desposyni>
+<FILE=06_Bulletin11,The Dentons' Car>

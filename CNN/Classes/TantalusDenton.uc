@@ -19,11 +19,11 @@ var travel BioEnergyController bioc;
 // set up the augmentation and skill systems
 // ----------------------------------------------------------------------
 
-function PostBeginPlay()
+/*function PostBeginPlay()
 {
     bioc = Spawn(class'BioEnergyController', none);
     Super.PostBeginPlay();
-}
+}*/
 
 event TravelPostAccept()
 {

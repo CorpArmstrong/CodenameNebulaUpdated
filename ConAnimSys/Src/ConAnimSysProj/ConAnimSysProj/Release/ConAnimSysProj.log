@@ -1,0 +1,2 @@
+﻿  CASConEventAnimation.cpp
+c:\program files\steam\steamapps\common\deus ex\conanimsys\src\ConAnimSysPrivate.h(11): fatal error C1083: Cannot open include file: 'Engine.h': No such file or directory

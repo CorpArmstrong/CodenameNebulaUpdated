@@ -22,6 +22,7 @@ class AiTextures expands Object abstract;
 #exec TEXTURE IMPORT FILE=Textures\MagdaleneFace2.pcx NAME=MagdaleneFace2 GROUP=Skins MIPS=Off
 #exec TEXTURE IMPORT FILE=Textures\MagdaleneDress.pcx NAME=MagdaleneDress GROUP=Skins MIPS=Off
 #exec TEXTURE IMPORT FILE=Textures\MagdaleneSkirt.pcx NAME=MagdaleneSkirt GROUP=Skins MIPS=Off
+#exec TEXTURE IMPORT FILE=Textures\paulsshirt.pcx NAME=paulsshirt GROUP=Skins MIPS=Off
 //from Nihilum
 #exec TEXTURE IMPORT NAME=RusCopTex2 FILE=Textures\RusCopTex2.pcx GROUP=Skins
 #exec TEXTURE IMPORT NAME=RusCopTex0 FILE=Textures\RusCopTex0.pcx GROUP=Skins FLAGS=2

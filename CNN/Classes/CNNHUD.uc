@@ -32,7 +32,7 @@ event InitWindow()
     activeItems     = HUDActiveItemsDisplay(NewChild(Class'IwHUDActiveItemsDisplay'));
 
     damageDisplay   = DamageHUDDisplay(NewChild(Class'AiDamageHUDDisplay'));
-    //compass         = HUDCompassDisplay(NewChild(Class'HUDCompassDisplay'));
+    compass         = HUDCompassDisplay(NewChild(Class'HUDCompassDisplay'));
     hms             = HUDMultiSkills(NewChild(Class'HUDMultiSkills'));
 
     // Create the InformationWindow

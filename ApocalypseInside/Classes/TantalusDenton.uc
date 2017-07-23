@@ -5,9 +5,9 @@ class TantalusDenton extends JCDentonMale;
 
 var travel BioEnergyController bioc;
 
-var AiConPlay conplay;
-
 //var travel AiAugmentationManager AugmentationSystem;
+
+//var CASConPlay conplay; UNCOMMENT!
 
 //var AiDataLinkPlay aidataLinkPlay;
 
@@ -19,17 +19,18 @@ var AiConPlay conplay;
 // set up the augmentation and skill systems
 // ----------------------------------------------------------------------
 
-function PostBeginPlay() {
+/*function PostBeginPlay()
+{
     bioc = Spawn(class'BioEnergyController', none);
     Super.PostBeginPlay();
-}
+}*/
 
-event TravelPostAccept() {
+event TravelPostAccept()
+{
     local flagbase flags;
     local DeusExLevelInfo info;
     info = DeusExPlayer(GetPlayerPawn()).GetLevelInfo();
     Super.TravelPostAccept();
-
 
     flags = flagbase;
 
@@ -37,10 +38,10 @@ event TravelPostAccept() {
     {
         case 0:
             flags.SetBool('Bias_Templar',True);
-            MultiSkins[0] = Texture'ApocalypseInside.Skins.TantalusFace';
+            MultiSkins[0] = Texture'CNN.Skins.TantalusFace';
             MultiSkins[1] = Texture'DeusExCharacters.Skins.StantonDowdTex2';
             MultiSkins[2] = Texture'DeusExCharacters.Skins.MJ12TroopTex1';
-            MultiSkins[3] = Texture'ApocalypseInside.Skins.TantalusFace';
+            MultiSkins[3] = Texture'CNN.Skins.TantalusFace';
             MultiSkins[4] = Texture'DeusExCharacters.Skins.JockTex1';
             MultiSkins[5] = Texture'DeusExCharacters.Skins.SmugglerTex2';
             MultiSkins[6] = Texture'DeusExCharacters.Skins.FramesTex4';
@@ -48,10 +49,10 @@ event TravelPostAccept() {
         break;
         case 1:
             flags.SetBool('Bias_Triad',True);
-            MultiSkins[0] = Texture'ApocalypseInside.Skins.TantalusAsian';
+            MultiSkins[0] = Texture'CNN.Skins.TantalusAsian';
             MultiSkins[1] = Texture'DeusExCharacters.Skins.JockTex2';
             MultiSkins[2] = Texture'DeusExCharacters.Skins.ThugMaleTex3';
-            MultiSkins[3] = Texture'ApocalypseInside.Skins.TantalusFace';
+            MultiSkins[3] = Texture'CNN.Skins.TantalusFace';
             MultiSkins[4] = Texture'DeusExCharacters.Skins.PaulDentonTex1';
             MultiSkins[5] = Texture'DeusExItems.Skins.PinkMaskTex';
             MultiSkins[6] = Texture'DeusExCharacters.Skins.FramesTex4';
@@ -60,7 +61,7 @@ event TravelPostAccept() {
         case 2:
             flags.SetBool('Bias_MJ12',True);
             Mesh=LodMesh'DeusExCharacters.GM_Suit';
-            MultiSkins[0] = Texture'ApocalypseInside.Skins.TantalusBlack';
+            MultiSkins[0] = Texture'CNN.Skins.TantalusBlack';
             MultiSkins[1] = Texture'DeusExCharacters.Skins.LowerClassMale2Tex2';
             MultiSkins[2] = Texture'DeusExItems.Skins.PinkMaskTex';
             MultiSkins[3] = Texture'DeusExCharacters.Skins.MIBTex1';
@@ -72,18 +73,18 @@ event TravelPostAccept() {
         case 3:
             flags.SetBool('Bias_NSF',True);
             Mesh=LodMesh'DeusExCharacters.GM_DressShirt';
-            MultiSkins[0] = Texture'ApocalypseInside.Skins.TantalusGinger';
+            MultiSkins[0] = Texture'CNN.Skins.TantalusGinger';
             MultiSkins[1] = Texture'DeusExItems.Skins.PinkMaskTex';
             MultiSkins[2] = Texture'DeusExItems.Skins.PinkMaskTex';
             MultiSkins[3] = Texture'DeusExCharacters.Skins.ThugMale3Tex2';
             MultiSkins[4] = Texture'DeusExItems.Skins.PinkMaskTex';
-            MultiSkins[5] = Texture'ApocalypseInside.Skins.NSFJacket';
+            MultiSkins[5] = Texture'CNN.Skins.NSFJacket';
             MultiSkins[6] = Texture'DeusExCharacters.Skins.FramesTex4';
             //MultiSkins[7] = FireTexture'Effects.water.WaterDrop1';
         break;
         case 4:
             flags.SetBool('Bias_UNATCO',True);
-            MultiSkins[0] = Texture'ApocalypseInside.Skins.TantalusGoatee';
+            MultiSkins[0] = Texture'CNN.Skins.TantalusGoatee';
             MultiSkins[1] = Texture'DeusExCharacters.Skins.SmugglerTex2';
             MultiSkins[2] = Texture'DeusExCharacters.Skins.ThugMale3Tex2';
             MultiSkins[3] = Texture'DeusExCharacters.Skins.JCDentonTex0';
@@ -159,7 +160,7 @@ exec function ShowMainMenu()
 
     root = DeusExRootWindow(rootWindow);
     if (root != None)
-        root.InvokeMenu(class'ApocalypseInside.ApocalypseInsideMenuMain');
+        root.InvokeMenu(class'CNN.ApocalypseInsideMenuMain');
 }
 
 // ----------------------------------------------------------------------
@@ -224,19 +225,16 @@ function UpdatePlayerSkin()
 
 function Possess()
 {
+    local DeusExRootWindow root;
+    Super.Possess();
 
-local DeusExRootWindow root;
+    root = DeusExRootWindow(rootWindow);
 
-Super.Possess();
+    root.hud.Destroy();
+    root.hud = DeusexHUD(root.NewChild(Class'CNNHUD'));
 
-root = DeusExRootWindow(rootWindow);
-
-root.hud.Destroy();
-root.hud = DeusexHUD(root.NewChild(Class'ApocalypseInsideHUD'));
-
-root.hud.UpdateSettings(Self);
-root.hud.SetWindowAlignments(HALIGN_Full,VALIGN_Full, 0, 0);
-
+    root.hud.UpdateSettings(Self);
+    root.hud.SetWindowAlignments(HALIGN_Full,VALIGN_Full, 0, 0);
 }
 
 // ----------------------------------------------------------------------
@@ -265,7 +263,6 @@ function Bool StartDataLinkTransmission(
 
         if ( dataLinkPlay == None )
         {
-
             datalinkPlay = Spawn(class'AiDataLinkPlay');
             bDataLinkPlaySpawned = True;
         }
@@ -359,10 +356,7 @@ function InitializeSubSystems()
 }
 
 //   Let HDTP know that Tantalus is not JC denton.
-
-function bool Facelift(bool bOn)
-    {
-    }
+function bool Facelift(bool bOn) {}
 
 // ----------------------------------------------------------------------
 // CreateThemeManager()
@@ -554,7 +548,8 @@ function bool StartConversation(
 
         // Found an active conversation, so start it
         // CorpArmstrong: Inject our class here:
-        conPlay = Spawn(class'AiConPlay');
+        //conPlay = Spawn(class'CASConPlay');	UNCOMMENT!
+		conPlay = Spawn(class'ConPlay');
         conPlay.SetStartActor(invokeActor);
         conPlay.SetConversation(con);
         conPlay.SetForcePlay(bForcePlay);
@@ -606,18 +601,41 @@ function bool StartConversation(
     }
 }
 
+// ----------------------------------------------------------------------
+// InvokeUIScreen()
+//
+// Calls DeusExRootWindow::InvokeUIScreen(), but first make sure
+// a modifier (Alt, Shift, Ctrl) key isn't being held down.
+// ----------------------------------------------------------------------
+
+function InvokeUIScreen(Class<DeusExBaseWindow> windowClass)
+{
+    local DeusExRootWindow root;
+    root = DeusExRootWindow(rootWindow);
+    if (root != None)
+    {
+        if ( root.IsKeyDown( IK_Alt ) || root.IsKeyDown( IK_Shift ) || root.IsKeyDown( IK_Ctrl ))
+            return;
+
+        // Method second param is boolean bNoPause
+        root.InvokeUIScreen(windowClass, true);
+    }
+}
+
 defaultproperties
 {
     TruePlayerName="Tantalus Denton"
     BindName=Tantalus
     Credits=0
-    strStartMap="96_Area51"
+    MenuThemeName="Tantalus theme"
+    HUDThemeName="Tantalus theme"
+    strStartMap="05_MoonIntro"
     CarcassType=Class'JCDentonMaleCarcass'
     Mesh=LodMesh'DeusExCharacters.GM_Trench'
-    MultiSkins(0)=Texture'ApocalypseInside.Skins.TantalusFace'
+    MultiSkins(0)=Texture'CNN.Skins.TantalusFace'
     MultiSkins(1)=Texture'DeusExCharacters.Skins.StantonDowdTex2'
     MultiSkins(2)=Texture'DeusExCharacters.Skins.MJ12TroopTex1'
-    MultiSkins(3)=Texture'ApocalypseInside.Skins.TantalusFace'
+    MultiSkins(3)=Texture'CNN.Skins.TantalusFace'
     MultiSkins(4)=Texture'DeusExCharacters.Skins.JockTex1'
     MultiSkins(5)=Texture'DeusExCharacters.Skins.SmugglerTex2'
     MultiSkins(6)=Texture'DeusExCharacters.Skins.FramesTex4'
@@ -625,6 +643,6 @@ defaultproperties
     FamiliarName="Tantalus Denton"
     UnfamiliarName="Tantalus Denton"
     Tag="TantalusTag"
-    Energy=150.00
-    EnergyMax=200.00
+    Energy=100.00
+    EnergyMax=100.00
 }

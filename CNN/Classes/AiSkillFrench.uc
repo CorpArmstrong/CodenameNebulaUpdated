@@ -23,7 +23,7 @@ defaultproperties
 
     SkillName="French"
 
-    Description="Earn trust of the French by speaking in their mother tong.|n|nUNTRAINED: An agent cannot speak French.|n|nTRAINED: Elementary French, survival level.|n|nADVANCED: Intermediate linguistic level, you can communicate with the French to convince them, especially patriots who are rather annoyed by non-Francophone tourists.|n|nMASTER: Vous pouvez liser ce text et les autres textes dans le monde."
+    Description="Earn trust of the French by speaking in their mother tong.|n|nUNTRAINED: An agent cannot speak French.|n|nTRAINED: Elementary French, survival level.|n|nADVANCED: Intermediate linguistic level, you can communicate with the French to convince them, especially patriots who are rather annoyed by non-Francophone tourists.|n|nMASTER: Vous pouvez liser ce texte et les autres textes dans le monde."
 
     SkillIcon=Texture'CNN.SkillIcons.skilliconFrench'
 

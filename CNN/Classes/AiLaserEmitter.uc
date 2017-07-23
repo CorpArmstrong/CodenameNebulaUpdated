@@ -102,5 +102,6 @@ function BeginPlay()
 defaultproperties
 {
      laserSpotTex=Texture'Effects.Fire.Proj_Prifle'
+	 SkinTex=Texture'Effects.Fire.Wepn_Prifle_SFX'
 	 Style=STY_Translucent
 }

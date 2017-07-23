@@ -12,7 +12,7 @@ defaultproperties
      bShowPain=False
      InitialAlliances(0)=(AllianceName=Player,AllianceLevel=1.000000,bPermanent=True)
      Alliance=Player
-    MultiSkins(4)=Texture'X3tex.Skins.paulshirt'
+    MultiSkins(4)=Texture'ApocalypseInside.paulshirt'
 	MultiSkins(7)=Texture'DeusExDeco.Skins.AlarmLightTex6'
 	
 }

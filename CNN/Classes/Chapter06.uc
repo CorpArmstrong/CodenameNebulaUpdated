@@ -12,6 +12,7 @@ var Name actorTag;
 var Actor actorToSpeak;
 var Name cutsceneEndFlagName;
 var(ChangeLevelOnDeath) string levelName;
+var int TantalusSkillLevel;
 
 // ----------------------------------------------------------------------
 // InitStateMachine()
@@ -61,6 +62,10 @@ function Timer()
 	{
 		Level.Game.SendPlayer(player, levelName);
 	}
+	TantalusSkillLevel = Player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
+	if (TantalusSkillLevel == 2.00) {
+		flags.SetBool('French_Elementary',True);
+		}
 }
 
 // ----------------------------------------------------------------------

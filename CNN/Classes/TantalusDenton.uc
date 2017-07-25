@@ -88,7 +88,7 @@ event TravelPostAccept()
             MultiSkins[1] = Texture'DeusExCharacters.Skins.SmugglerTex2';
             MultiSkins[2] = Texture'DeusExCharacters.Skins.ThugMale3Tex2';
             MultiSkins[3] = Texture'DeusExCharacters.Skins.JCDentonTex0';
-            MultiSkins[4] = Texture'DeusExCharacters.Skins.JCDentonTex1';
+            MultiSkins[4] = Texture'DeusExCharacters.Skins.PaulDentonTex1';
             MultiSkins[5] = Texture'DeusExCharacters.Skins.SmugglerTex2';
             MultiSkins[6] = Texture'DeusExCharacters.Skins.FramesTex4';
             MultiSkins[7] = FireTexture'Effects.Fire.SparkFX1';

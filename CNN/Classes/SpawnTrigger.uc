@@ -1,7 +1,9 @@
 //-----------------------------------------------------------
-//
+// SpawnTrigger
 //-----------------------------------------------------------
+
 class SpawnTrigger expands CNNTrigger;
+
 var () name ScriptedPawnTag;
 
 function Trigger(Actor Other, Pawn Instigator)
@@ -16,7 +18,6 @@ function Trigger(Actor Other, Pawn Instigator)
 
 function Touch(Actor Other)
 {
-//  local DeusExPlayer player;
     local ScriptedPawn A;
 
     if (IsRelevant(Other))

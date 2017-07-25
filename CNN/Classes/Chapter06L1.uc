@@ -51,35 +51,39 @@ function PreTravel()
 //
 // Main state machine for the mission
 // ----------------------------------------------------------------------
-function Timer() {
-  local Mover mv;
-  local DamageLaserTrigger A;
-  local SecurityCamera Cam;
+function Timer()
+{
+    local Mover mv;
+    local DamageLaserTrigger A;
+    local SecurityCamera Cam;
 
-  TantalusSkillLevel = Player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
-	if (TantalusSkillLevel == 2.00) {
+    TantalusSkillLevel = Player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
+
+    if (TantalusSkillLevel == 2.00)
+    {
 		flags.SetBool('French_Elementary',True);
 	}
-  
-  if (!bFirstFrame)
-  {
-      InitLaserSystem();
-      bFirstFrame = true;
 
-      //flags.SetBool('laserSecurityWorks', true);
-  }
+    if (!bFirstFrame)
+    {
+        InitLaserSystem();
+        bFirstFrame = true;
 
-  if ((player != None))
-  {
-        if(flags.GetBool('laserSecurityWorks') == true)
+        //flags.SetBool('laserSecurityWorks', true);
+    }
+
+    if ((player != None))
+    {
+        if(flags.GetBool('laserSecurityWorks'))
         {
-           if ( !bLasersOn )
+           if (!bLasersOn)
            {
               foreach AllActors(class'DamageLaserTrigger', A)
               {
                  A.Trigger(None, None);
               }
-              if (laserDipatcher!=None)
+
+              if (laserDipatcher != None)
 			  {
                   laserDipatcher.ToggleOn();
 
@@ -97,17 +101,19 @@ function Timer() {
 
               bLasersOn = true;
            }
+
            bLasersOff = false;
         }
         else
         {
-           if ( !bLasersOff )
+           if (!bLasersOff)
            {
               foreach AllActors(class'DamageLaserTrigger', A)
               {
-                 A.UnTrigger(None, None);
+                  A.UnTrigger(None, None);
               }
-              if (laserDipatcher!=None)
+
+              if (laserDipatcher != None)
               {
                   laserDipatcher.ToggleOff();
 
@@ -125,9 +131,10 @@ function Timer() {
 
               bLasersOff = true;
            }
+
            bLasersOn = false;
         }
-  }
+    }
 
 	Super.Timer();
 }
@@ -137,3 +144,4 @@ defaultproperties
      CamTag='
      scriptedPawnTag=Secretary
 }
+

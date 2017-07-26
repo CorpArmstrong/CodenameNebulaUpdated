@@ -37,10 +37,10 @@ event TravelPostAccept()
     switch(PlayerSkin)
     {
         case 0:
-            flags.SetBool('Bias_Templar',True);
+            flags.SetBool('Bias_UNATCO',True);
             MultiSkins[0] = Texture'CNN.Skins.TantalusFace';
-            MultiSkins[1] = Texture'DeusExCharacters.Skins.StantonDowdTex2';
-            MultiSkins[2] = Texture'DeusExCharacters.Skins.MJ12TroopTex1';
+            MultiSkins[1] = Texture'DeusExCharacters.Skins.SmugglerTex2';
+            MultiSkins[2] = Texture'DeusExCharacters.Skins.ThugMale3Tex2';
             MultiSkins[3] = Texture'CNN.Skins.TantalusFace';
             MultiSkins[4] = Texture'DeusExCharacters.Skins.JockTex1';
             MultiSkins[5] = Texture'DeusExCharacters.Skins.SmugglerTex2';
@@ -52,23 +52,25 @@ event TravelPostAccept()
             MultiSkins[0] = Texture'CNN.Skins.TantalusAsian';
             MultiSkins[1] = Texture'DeusExCharacters.Skins.JockTex2';
             MultiSkins[2] = Texture'DeusExCharacters.Skins.ThugMaleTex3';
-            MultiSkins[3] = Texture'CNN.Skins.TantalusFace';
-            MultiSkins[4] = Texture'DeusExCharacters.Skins.PaulDentonTex1';
-            MultiSkins[5] = Texture'DeusExItems.Skins.PinkMaskTex';
-            MultiSkins[6] = Texture'DeusExCharacters.Skins.FramesTex4';
+			MultiSkins[3] = None;
+            MultiSkins[4] = Texture'DeusExCharacters.Skins.SmugglerTex1';
+			MultiSkins[5] = None;
+            MultiSkins[6] = Texture'DeusExCharacters.Skins.FramesTex2';
+            MultiSkins[7] = FireTexture'Effects.Laser.LaserSpot2';
             //MultiSkins[7] = FireTexture'Effects.Fire.Spark_Electric'; //causes ucc to return error
         break;
         case 2:
             flags.SetBool('Bias_MJ12',True);
-            Mesh=LodMesh'DeusExCharacters.GM_Suit';
-            MultiSkins[0] = Texture'CNN.Skins.TantalusBlack';
-            MultiSkins[1] = Texture'DeusExCharacters.Skins.LowerClassMale2Tex2';
-            MultiSkins[2] = Texture'DeusExItems.Skins.PinkMaskTex';
-            MultiSkins[3] = Texture'DeusExCharacters.Skins.MIBTex1';
-            MultiSkins[4] = Texture'DeusExCharacters.Skins.MIBTex1';
-            MultiSkins[5] = Texture'DeusExCharacters.Skins.FramesTex4';
+            Mesh=LodMesh'DeusExCharacters.GM_DressShirt_B';
+            MultiSkins[0] = Texture'DeusExCharacters.Skins.ThugMale3Tex1';
+            MultiSkins[1] = Texture'DeusExCharacters.Skins.MJ12TroopTex1';
+			MultiSkins[2] = None;
+            MultiSkins[3] = Texture'CNN.Skins.TantalusBlack';
+			MultiSkins[4] = None;
+            MultiSkins[5] = Texture'DeusExItems.Skins.GrayMaskTex';
             MultiSkins[6] = FireTexture'Effects.Laser.LaserSpot2';
-            MultiSkins[7] = Texture'DeusExItems.Skins.PinkMaskTex';
+			MultiSkins[7] = None;
+			Texture = Texture'DeusExItems.Skins.PinkMaskTex';
         break;
         case 3:
             flags.SetBool('Bias_NSF',True);
@@ -83,15 +85,15 @@ event TravelPostAccept()
             //MultiSkins[7] = FireTexture'Effects.water.WaterDrop1';
         break;
         case 4:
-            flags.SetBool('Bias_UNATCO',True);
+            flags.SetBool('Bias_Templar',True);
             MultiSkins[0] = Texture'CNN.Skins.TantalusGoatee';
-            MultiSkins[1] = Texture'DeusExCharacters.Skins.SmugglerTex2';
-            MultiSkins[2] = Texture'DeusExCharacters.Skins.ThugMale3Tex2';
-            MultiSkins[3] = Texture'DeusExCharacters.Skins.JCDentonTex0';
-            MultiSkins[4] = Texture'DeusExCharacters.Skins.PaulDentonTex1';
+            MultiSkins[1] = Texture'DeusExCharacters.Skins.StantonDowdTex2';
+			MultiSkins[2] = Texture'DeusExCharacters.Skins.MJ12TroopTex1';
+			MultiSkins[3] = None;
+            MultiSkins[4] = Texture'DeusExCharacters.Skins.JockTex1';
             MultiSkins[5] = Texture'DeusExCharacters.Skins.SmugglerTex2';
             MultiSkins[6] = Texture'DeusExCharacters.Skins.FramesTex4';
-            MultiSkins[7] = FireTexture'Effects.Fire.SparkFX1';
+            MultiSkins[7] = FireTexture'Effects.Laser.LaserSpot2';
         break;
     }
 

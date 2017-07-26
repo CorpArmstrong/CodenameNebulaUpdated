@@ -3,7 +3,7 @@
 //-----------------------------------------------------------
 class Chapter06L1 expands MissionScript;
 
-var bool bLasersOn, bLasersOff;
+var bool bLasersOn;
 var LaserSecurityDispatcher laserDipatcher;
 var bool bFirstFrame;
 
@@ -31,11 +31,6 @@ function InitStateMachine()
     FirstFrame();
 }
 
-function InitLaserSystem()
-{
-    laserDipatcher = Spawn(class'LaserSecurityDispatcher');
-}
-
 // ----------------------------------------------------------------------
 // PreTravel()
 //
@@ -53,95 +48,108 @@ function PreTravel()
 // ----------------------------------------------------------------------
 function Timer()
 {
-    local Mover mv;
-    local DamageLaserTrigger A;
-    local SecurityCamera Cam;
+	local LaserSecurityDispatcher LSD;	// Lucy in the Sky with Diamonds :)   
 
-    TantalusSkillLevel = Player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
+	if (player != None)
+	{
+		if (!bFirstFrame)
+		{
+			bFirstFrame = true;
+			
+			foreach AllActors(class'LaserSecurityDispatcher', LSD)
+			{
+				laserDipatcher = LSD;
+			}
+			
+			if (laserDipatcher == None)
+			{
+				laserDipatcher = Spawn(class'LaserSecurityDispatcher');
+			}
+			
+			TantalusSkillLevel = Player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
 
-    if (TantalusSkillLevel == 2.00)
-    {
-		flags.SetBool('French_Elementary',True);
+			if (TantalusSkillLevel == 2.00)
+			{
+				flags.SetBool('French_Elementary', true);
+			}
+			
+			// State 0: Go to State 1
+			if (!flags.GetBool('laserSecurityWorks'))
+			{
+				flags.SetBool('laserSecurityWorks', false);
+				bLasersOn = true;
+			}
+		}
+		
+		ProcessLasers();
 	}
-
-    if (!bFirstFrame)
-    {
-        InitLaserSystem();
-        bFirstFrame = true;
-
-        //flags.SetBool('laserSecurityWorks', true);
-    }
-
-    if ((player != None))
-    {
-        if(flags.GetBool('laserSecurityWorks'))
-        {
-           if (!bLasersOn)
-           {
-              foreach AllActors(class'DamageLaserTrigger', A)
-              {
-                 A.Trigger(None, None);
-              }
-
-              if (laserDipatcher != None)
-			  {
-                  laserDipatcher.ToggleOn();
-
-                  foreach AllActors(class'SecurityCamera', Cam)
-				  {
-				      if (Cam.Tag == 'SCam1' && !Cam.bActive)
-			          {
-                          player.ToggleCameraState(cam, none);
-                          player.ClientMessage("cam+");
-			          }
-				  }
-
-                  player.ClientMessage("TogleOn âêëþ÷èë");
-              }
-
-              bLasersOn = true;
-           }
-
-           bLasersOff = false;
-        }
-        else
-        {
-           if (!bLasersOff)
-           {
-              foreach AllActors(class'DamageLaserTrigger', A)
-              {
-                  A.UnTrigger(None, None);
-              }
-
-              if (laserDipatcher != None)
-              {
-                  laserDipatcher.ToggleOff();
-
-                   foreach AllActors(class'SecurityCamera', Cam)
-			       {
-			       		if (Cam.Tag == 'SCam1' && Cam.bActive)
-			       		{
-                            player.ToggleCameraState(cam, none);
-			   	   	   		player.ClientMessage("cam-");
-			       		}
-			       }
-
-               	   player.ClientMessage("TogleOff âûêëþ÷èë");
-              }
-
-              bLasersOff = true;
-           }
-
-           bLasersOn = false;
-        }
-    }
-
+	
 	Super.Timer();
+}
+
+function ProcessLasers()
+{
+	local Mover mv;
+    local DamageLaserTrigger A;
+	local SecurityCamera Cam;
+	
+	// State 1: Security is active and lasers are off -> Turn on lasers!
+	if(flags.GetBool('laserSecurityWorks') && !bLasersOn)
+	{
+		foreach AllActors(class'DamageLaserTrigger', A)
+		{
+			A.Trigger(None, None);
+		}
+
+		if (laserDipatcher != None)
+		{
+			laserDipatcher.ToggleOn();
+
+			foreach AllActors(class'SecurityCamera', Cam)
+			{
+				if (Cam.Tag == 'SCam1' && !Cam.bActive)
+				{
+					player.ToggleCameraState(cam, none);
+					player.ClientMessage("cam+");
+				}
+			}
+
+			player.ClientMessage("TogleOn âêëþ÷èë");
+		}
+
+		bLasersOn = true;
+	}
+	
+	// State 2: Security is inactive and lasers are on -> Turn off lasers!
+	if(!flags.GetBool('laserSecurityWorks') && bLasersOn)
+	{
+		foreach AllActors(class'DamageLaserTrigger', A)
+		{
+			A.UnTrigger(None, None);
+		}
+
+		if (laserDipatcher != None)
+		{
+			laserDipatcher.ToggleOff();
+
+			foreach AllActors(class'SecurityCamera', Cam)
+			{
+				if (Cam.Tag == 'SCam1' && Cam.bActive)
+				{
+					player.ToggleCameraState(cam, none);
+					player.ClientMessage("cam-");
+				}
+			}
+
+			player.ClientMessage("TogleOff âûêëþ÷èë");
+		}
+
+		bLasersOn = false;
+	}
 }
 
 defaultproperties
 {
-     CamTag='
-     scriptedPawnTag=Secretary
+	CamTag='
+	scriptedPawnTag=Secretary
 }
-

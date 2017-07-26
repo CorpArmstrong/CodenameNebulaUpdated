@@ -60,7 +60,10 @@ event Tick(float deltaTime)
 //
 function Timer()
 {
-    timerWin.Destroy();
+	if (timerWin != None)
+	{
+		timerWin.Destroy();
+	}
 }
 
 //

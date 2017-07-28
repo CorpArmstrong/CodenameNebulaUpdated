@@ -3,13 +3,8 @@
 //-----------------------------------------------------------
 class TestFMCarcass extends CopCarcass;
 
-var() float Flammability;			// how long does the object burn?
-var FlagBase flags;
-var DeusExPlayer player;
+var() float Flammability;              // how long does the object burn?
 var bool isBurning;
-var Fire f;
-var int i;
-var vector loc;
 var() float MinScaleGlow;
 var() float GlowFadeDownSpeed;
 
@@ -17,6 +12,7 @@ function Tick(float deltaSeconds)
 {
 	if (isBurning)
 	{
+        // Adjust scale glow
 		if (ScaleGlow > MinScaleGlow)
 		{
 			ScaleGlow = ScaleGlow - GlowFadeDownSpeed*deltaSeconds;
@@ -32,61 +28,37 @@ function Tick(float deltaSeconds)
 
 function TakeDamage(int Damage, Pawn EventInstigator, vector HitLocation, vector Momentum, name DamageType)
 {
-	if ((DamageType == 'Burned') || (DamageType == 'Flamed'))
+	if (((DamageType == 'Burned') || (DamageType == 'Flamed')) && !isBurning)
     {
-		if (!isBurning)
-    	{
-			StillBurn();
-			isBurning = true;
-    	    SetTimer(Flammability-5, false);
-    	}
+		StartFire();
 	}
 
-	if (DamageType == 'HalonGas')
+	if (DamageType == 'HalonGas' && isBurning)
 	{
-		if (isBurning)
-		{
-			ExtinguishFire();
-			isBurning = false;
-		}
+		StopFire();
 	}
 }
 
-
-function ExtinguishFire()
+function StartFire()
 {
-	local Fire f;
-
-		foreach BasedActors(class'Fire', f)
-			f.Destroy();
+    isBurning = true;
+    Inflammation();
+    SetTimer(Flammability-5, false);
 }
 
-
-
-// continually burn
-function Timer()
+function StopFire()
 {
-    player = DeusExPlayer(GetPlayerPawn());
-    flags = player.FlagBase;
-
-    if(!flags.GetBool('LaserSecurityWorks'))
-    {
-       isBurning = false;
-
-    }
-    else
-    {
-       if(isBurning==true)
-       {
-		   StillBurn();
-	       SetTimer(Flammability-5, false);
-	   }
-    }
+    isBurning = false;
+    ExtinguishFire();
 }
 
-function StillBurn()
+function Inflammation()
 {
-	for (i=0; i<8; i++)
+    local int i;
+    local vector loc;
+    local Fire f;
+
+	for (i = 0; i < 8; i++)
 	{
 		loc.X = 0.9*CollisionRadius * (1.0-2.0*FRand());
 		loc.Y = 0.9*CollisionRadius * (1.0-2.0*FRand());
@@ -115,6 +87,29 @@ function StillBurn()
     }
 }
 
+function ExtinguishFire()
+{
+	local Fire f;
+
+    foreach BasedActors(class'Fire', f)
+    {
+        f.Destroy();
+    }
+}
+
+// Continually burn
+function Timer()
+{
+    if (isBurning)
+    {
+        StartFire();
+    }
+    else
+    {
+        StopFire();
+    }
+}
+
 DefaultProperties
 {
      MinScaleGlow=0.07
@@ -122,3 +117,4 @@ DefaultProperties
      Flammability=30.000000
      isBurning=false
 }
+

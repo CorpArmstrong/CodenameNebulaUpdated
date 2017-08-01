@@ -9,7 +9,7 @@ var travel BioEnergyController bioc;
 
 //var CASConPlay conplay; UNCOMMENT!
 
-var AiDataLinkPlay aidataLinkPlay;
+//var AiDataLinkPlay aidataLinkPlay;
 
 //var String playerBias;
 

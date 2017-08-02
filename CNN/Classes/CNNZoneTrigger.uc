@@ -11,6 +11,7 @@ class CNNZoneTrigger expands CNNTrigger;
 
 var(TargetZone) name zoneTag;
 var(TargetZone) name zoneDamageType;
+var(TargetZone) int zoneDamagePerSec;
 var(TargetZone) vector zoneVelocity;
 
 function TriggerZone()
@@ -20,7 +21,10 @@ function TriggerZone()
     foreach AllActors(class 'ZoneInfo', zInfo, zoneTag)
     {
         zInfo.DamageType = zoneDamageType;
-        zInfo.Velocity = zoneVelocity;
+        zInfo.ZoneVelocity = zoneVelocity;
+		zInfo.DamagePerSec = zoneDamagePerSec;
+		BroadcastMessage("zoneTag = " $zInfo.Tag);
+		BroadcastMessage("zoneVelocity = " $zInfo.ZoneVelocity);
     }
 }
 

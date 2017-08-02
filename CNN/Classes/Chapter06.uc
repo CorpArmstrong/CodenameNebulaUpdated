@@ -29,6 +29,5 @@ defaultproperties
     convNamePlayed=ApproachingOphelia_Played
     actorTag=MagdaleneDenton
 	levelName="06_OpheliaL2#HumanServer"
-	//MutinyEndgame="Mutiny"
 }
 

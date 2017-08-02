@@ -1,16 +1,16 @@
 //-----------------------------------------------------------------------
-// CNNBaseIngameCutscene
-// by CorpArmstrong
+// Class:    CNNBaseIngameCutscene
+// Author:   CorpArmstrong
 //-----------------------------------------------------------------------
-class CNNBaseIngameCutscene expands MissionScript;
+
+class CNNBaseIngameCutscene expands MissionScript abstract;
 
 var byte savedSoundVolume;
-var bool isIntroCompleted;
-var String sendToLocation;
-var Name conversationName;
-var Name actorTag;
-var Actor actorToSpeak;
-var Name cutsceneEndFlagName;
+var bool IsArrivalCompleted;
+var string sendToLocation;
+var name conversationName;
+var name convNamePlayed;
+var name actorTag;
 
 // ----------------------------------------------------------------------
 // InitStateMachine()
@@ -56,20 +56,23 @@ function Timer()
 {
     Super.Timer();
     SendPlayerOnceToGame();
+    DoLevelStuff();
 }
 
 // ----------------------------------------------------------------------
 
+function DoLevelStuff() {} // Write level-specific logic here.
+
 function CheckIntroFlags()
 {
-    if (flags.GetBool(CutsceneEndFlagName))
+    if (flags.GetBool(convNamePlayed))
     {
         // After we've teleported back and map has reloaded
         // set the flag, to skip recursive intro call.
-        isIntroCompleted = true;
+        IsArrivalCompleted = true;
     }
 
-    if (!isIntroCompleted)
+    if (!IsArrivalCompleted)
     {
         // Set the PlayerTraveling flag (always want it set for
         // the intro and endgames)
@@ -79,7 +82,9 @@ function CheckIntroFlags()
 
 function StartConversationWithActor()
 {
-    if (!flags.GetBool(cutsceneEndFlagName))
+    local Actor actorToSpeak;
+
+    if (!flags.GetBool(convNamePlayed))
     {
         if (player != none)
         {
@@ -90,28 +95,29 @@ function StartConversationWithActor()
 
             if (actorToSpeak != none)
             {
-                if(player.StartConversationByName(conversationName, actorToSpeak, false, true))
-                {
-					log("Starting conversation.");
-				}
-				else
-				{
-					log("Can't start conversation! Teleporting to start!");
-					Level.Game.SendPlayer(player, sendToLocation);
-				}
+                player.StartConversationByName(conversationName, actorToSpeak, false, true);
+                TurnDownSoundVolume();
             }
-
-            // turn down the sound so we can hear the speech
-            savedSoundVolume = SoundVolume;
-            SoundVolume = 32;
-            player.SetInstantSoundVolume(SoundVolume);
+            else
+            {
+                log("Conversation actor not found! Teleporting to start!");
+            	flags.SetBool(convNamePlayed, true, true, 0);
+			}
         }
     }
 }
 
+// Turn down the sound, so we can hear the speech
+function TurnDownSoundVolume()
+{
+    savedSoundVolume = SoundVolume;
+    SoundVolume = 32;
+    player.SetInstantSoundVolume(SoundVolume);
+}
+
 function RestoreSoundVolume()
 {
-    if (flags.GetBool(cutsceneEndFlagName) && !isIntroCompleted)
+    if (flags.GetBool(convNamePlayed) && !IsArrivalCompleted)
     {
         SoundVolume = savedSoundVolume;
         player.SetInstantSoundVolume(SoundVolume);
@@ -120,21 +126,15 @@ function RestoreSoundVolume()
 
 function SendPlayerOnceToGame()
 {
-    if (flags.GetBool(cutsceneEndFlagName) && !isIntroCompleted)
+    if (flags.GetBool(convNamePlayed) && !isArrivalCompleted)
     {
         if (DeusExRootWindow(player.rootWindow) != none)
         {
             DeusExRootWindow(player.rootWindow).ClearWindowStack();
         }
 
+		Player.Invisible(false);
         Level.Game.SendPlayer(player, sendToLocation);
     }
 }
 
-defaultproperties
-{
-    sendToLocation="50_OpheliaL1_WithIntro#Loc1"
-    conversationName=OpheliaUICutscene
-    actorTag=Secretary
-    cutsceneEndFlagName=IsIntroPlayed
-}

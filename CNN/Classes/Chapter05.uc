@@ -1,10 +1,11 @@
 //=============================================================================
 // Chapter05.
 //=============================================================================
-class Chapter05 expands MissionScript;
 
-var byte savedSoundVolume;
-var bool isIntroCompleted;
+class Chapter05 expands CNNBaseIngameCutscene;
+
+var(ChangeLevelOnDeath) string levelName;
+
 var bool PlayerGotMuscleAug;
 var bool HasMuscleAug;
 var bool hasCombatAug;
@@ -26,164 +27,38 @@ var bool HasEMPAug;
 var bool HasEnviroAug;
 var bool HasTargetAug;
 var bool HasVisionAug;
-var String sendToLocation;
-var Name conversationName;
-var Name actorTag;
-var Actor actorToSpeak;
-var Name cutsceneEndFlagName;
-var(ChangeLevelOnDeath) string levelName;
 
-// ----------------------------------------------------------------------
-// InitStateMachine()
-// ----------------------------------------------------------------------
-
-function InitStateMachine()
+function DoLevelStuff()
 {
-    Super.InitStateMachine();
-    CheckIntroFlags();
-}
-
-// ----------------------------------------------------------------------
-// FirstFrame()
-//
-// Stuff to check at first frame
-// ----------------------------------------------------------------------
-
-function FirstFrame()
-{
-	
-    Super.FirstFrame();
-    StartConversationWithActor();
-}
-
-// ----------------------------------------------------------------------
-// PreTravel()
-//
-// Set flags upon exit of a certain map
-// ----------------------------------------------------------------------
-
-function PreTravel()
-{
-    Super.PreTravel();
-    //RestoreSoundVolume();
-}
-
-// ----------------------------------------------------------------------
-// Timer()
-//
-// Main state machine for the mission
-// ----------------------------------------------------------------------
-
-function Timer()
-{
-	local UberAlles Uber;
+    local UberAlles Uber;
 	local Magdalene Magdalene;
 	local Ship1 ship;
-    Super.Timer();
-    SendPlayerOnceToGame();
-	GivePlayerHisAugs();
-	if (player.IsInState('Dying'))
+
+    GivePlayerHisAugs();
+
+    if (player.IsInState('Dying'))
 	{
 		Level.Game.SendPlayer(player, levelName);
 	}
-	if(flags.GetBool('LeftMoon'))
+
+    if(flags.GetBool('LeftMoon'))
 	{
 		foreach allactors(class'UberAlles',Uber,'UberAllesInRoom')
 		Uber.EnterWorld();
 	}
-	if(flags.GetBool('LeftMoon'))
+
+    if(flags.GetBool('LeftMoon'))
 	{
 		foreach allactors(class'Magdalene',Magdalene,'MagdaleneDenton')
 		Magdalene.LeaveWorld();
 	}
-	if(flags.GetBool('SpacecraftLanded'))
+
+    if(flags.GetBool('SpacecraftLanded'))
 	{
 		foreach allactors(class'Ship1',ship,'Spacecraft')
 		ship.EnterWorld();
-	}		
-		
+	}
 }
-
-// ----------------------------------------------------------------------
-
-function CheckIntroFlags()
-{
-    if (flags.GetBool(CutsceneEndFlagName))
-    {
-        // After we've teleported back and map has reloaded
-        // set the flag, to skip recursive intro call.
-        isIntroCompleted = true;
-    }
-
-    if (!isIntroCompleted)
-    {
-        // Set the PlayerTraveling flag (always want it set for
-        // the intro and endgames)
-        flags.SetBool('PlayerTraveling', true, true, 0);
-    }
-}
-
-function StartConversationWithActor()
-{
-    if (!flags.GetBool(cutsceneEndFlagName))
-    {
-        if (player != none)
-        {
-            DeusExRootWindow(player.rootWindow).ResetFlags();
-
-            foreach AllActors(class'Actor', actorToSpeak, actorTag)
-                break;
-
-            if (actorToSpeak != none)
-            {
-                if(player.StartConversationByName(conversationName, actorToSpeak, false, true))
-                {
-                    log("Starting conversation.");
-                }
-                else
-                {
-                    log("Can't start conversation! Teleporting to start!");
-                    Level.Game.SendPlayer(player, sendToLocation);
-                }
-            }
-            else
-            {
-            	isIntroCompleted = true;
-            	flags.SetBool(cutsceneEndFlagName, true, true, 0);
-            	Level.Game.SendPlayer(player, sendToLocation);
-			}
-
-            // turn down the sound so we can hear the speech
-            /*savedSoundVolume = SoundVolume;
-            SoundVolume = 32;
-            player.SetInstantSoundVolume(SoundVolume);*/
-        }
-    }
-}
-/*
-function RestoreSoundVolume()
-{
-    if (flags.GetBool(cutsceneEndFlagName) && !isIntroCompleted)
-    {
-        SoundVolume = savedSoundVolume;
-        player.SetInstantSoundVolume(SoundVolume);
-    }
-}*/
-
-function SendPlayerOnceToGame()
-{
-    if (flags.GetBool(cutsceneEndFlagName) && !isIntroCompleted)
-    {
-        if (DeusExRootWindow(player.rootWindow) != none)
-        {
-            DeusExRootWindow(player.rootWindow).ClearWindowStack();
-        }
-		
-		Player.Invisible(false);
-        Level.Game.SendPlayer(player, sendToLocation);
-    }
-}
-
 
 function GivePlayerHisAugs()
 {
@@ -291,10 +166,10 @@ function GivePlayerHisAugs()
 
 defaultproperties
 {
-    //missionName="Moon"
     sendToLocation="05_MoonIntro#TwoWeeksLater"
     conversationName=InExile
+    convNamePlayed=InExile_Played
     actorTag=MagdaleneDenton
-    cutsceneEndFlagName=IsIntroPlayed
 	levelName="06_OpheliaL2#HumanServer"
 }
+

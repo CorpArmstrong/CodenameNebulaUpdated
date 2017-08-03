@@ -100,7 +100,7 @@ function StartConversationWithActor()
             }
             else
             {
-                log("Conversation actor not found! Teleporting to start!");
+                Log("Conversation actor not found! Teleporting to start!");
             	flags.SetBool(convNamePlayed, true, true, 0);
 			}
         }
@@ -134,6 +134,18 @@ function SendPlayerOnceToGame()
         }
 
 		Player.Invisible(false);
+
+        /*
+		if (player.IsInState('Interpolating'))
+        {
+            Log("Camera interpolation path is longer than conversation!");
+            Log("Terminating interpolation!");
+            BroadcastMessage("Terminating interpolation!");
+            SetPhysics(PHYS_Walking);
+            player.GoToState('PlayerWalking');
+            Level.Game.SendPlayer(player, "Mutiny");
+        }*/
+
         Level.Game.SendPlayer(player, sendToLocation);
     }
 }

@@ -96,7 +96,7 @@ function StartConversationWithActor()
             if (actorToSpeak != none)
             {
                 player.StartConversationByName(conversationName, actorToSpeak, false, true);
-                TurnDownSoundVolume();
+                //TurnDownSoundVolume();
             }
             else
             {
@@ -119,7 +119,7 @@ function RestoreSoundVolume()
 {
     if (flags.GetBool(convNamePlayed) && !IsArrivalCompleted)
     {
-        SoundVolume = savedSoundVolume;
+        //SoundVolume = savedSoundVolume;
         player.SetInstantSoundVolume(SoundVolume);
     }
 }

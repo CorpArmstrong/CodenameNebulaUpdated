@@ -1,3 +1,8 @@
+//-----------------------------------------------------------------------
+// Class:    HolocommUnit
+// Author:   CorpArmstrong
+//-----------------------------------------------------------------------
+
 class HolocommUnit extends CNNTrigger;
 
 struct SpawnInfo

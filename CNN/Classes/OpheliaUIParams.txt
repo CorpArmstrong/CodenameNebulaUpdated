@@ -1,0 +1,33 @@
+Begin Map
+Begin Actor Class=Secretary Name=Secretary0
+    Orders=Standing
+    FootRegion=(Zone=ZoneInfo'MyLevel.ZoneInfo12',iLeaf=1373,ZoneNumber=3)
+    HeadRegion=(Zone=ZoneInfo'MyLevel.ZoneInfo12',iLeaf=1905,ZoneNumber=3)
+    Visibility=0
+    ViewRotation=(Yaw=16584)
+    LastRenderTime=27.876579
+    DistanceFromPlayer=669.126526
+    Level=LevelInfo'MyLevel.LevelInfo0'
+    Tag=Secretary
+    Region=(Zone=ZoneInfo'MyLevel.ZoneInfo12',iLeaf=1905,ZoneNumber=3)
+    Location=(X=1568.234497,Y=-382.460449,Z=75.970787)
+    Rotation=(Yaw=16584)
+    OldLocation=(X=-112.030403,Y=1964.039307,Z=-42.251198)
+    bSelected=True
+    Style=STY_Translucent
+    Texture=FireTexture'Effects.Electricity.AirTaserFX1'
+    ScaleGlow=0.200000
+    MultiSkins(0)=Texture'DeusExCharacters.Skins.Female4Tex0'
+    MultiSkins(1)=Texture'DeusExItems.Skins.PinkMaskTex'
+    MultiSkins(2)=Texture'DeusExCharacters.Skins.Female2Tex0'
+    MultiSkins(3)=Texture'DeusExCharacters.Skins.ScientistFemaleTex3'
+    MultiSkins(4)=Texture'DeusExCharacters.Skins.Female3Tex1'
+    MultiSkins(5)=Texture'DeusExCharacters.Skins.Female3Tex1'
+    MultiSkins(6)=Texture'DeusExItems.Skins.PinkMaskTex'
+    MultiSkins(7)=Texture'DeusExItems.Skins.PinkMaskTex'
+    BindName="OpheliaUI"
+    FamiliarName="User Interface"
+    UnfamiliarName="User Interface"
+    Name=Secretary0
+End Actor
+End Map

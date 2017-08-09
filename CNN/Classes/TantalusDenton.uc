@@ -626,7 +626,7 @@ function InvokeUIScreen(Class<DeusExBaseWindow> windowClass)
 
 defaultproperties
 {
-    TruePlayerName="Tantalus Denton"
+    TruePlayerName="Blake Denton"
     BindName=Tantalus
     Credits=0
     MenuThemeName="Tantalus theme"
@@ -642,8 +642,8 @@ defaultproperties
     MultiSkins(5)=Texture'DeusExCharacters.Skins.SmugglerTex2'
     MultiSkins(6)=Texture'DeusExCharacters.Skins.FramesTex4'
     MultiSkins(7)=FireTexture'Effects.Laser.LaserSpot2'
-    FamiliarName="Tantalus Denton"
-    UnfamiliarName="Tantalus Denton"
+    FamiliarName="Tantalus"
+    UnfamiliarName="Tantalus"
     Tag="TantalusTag"
     Energy=100.00
     EnergyMax=100.00

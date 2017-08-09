@@ -13,7 +13,6 @@ defaultproperties
     bReactAlarm=False
     bReactProjectiles=False
     Tag=UberAlles
-    Style=STY_Translucent
     bUnlit=True
     bCollideActors=False
     bBlockActors=False

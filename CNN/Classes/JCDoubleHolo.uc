@@ -2,6 +2,7 @@ class JCDoubleHolo extends JCDouble;
 
 defaultproperties
 {
+	MultiSkins(4)=Texture'CNN.Skins.paulsshirt'
 	Orders=Standing
     bShowPain=False
     bHateShot=False

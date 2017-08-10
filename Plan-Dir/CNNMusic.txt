@@ -1,0 +1,4 @@
+1) Moon:	Ambient (WhoIAm),		Combat (?),					Convo (?), Outro (?), Dying (?);
+2) Docks:	Ambient (?),			Combat (winxp),				Convo (?), Outro (?), Dying (?);
+3) L1:		Ambient (DeusEx),		Combat (magdalene_battle),	Convo (?), Outro (?), Dying (?);
+4) L2:		Ambient (LastFrontier), Combat (f_demo),			Convo (?), Outro (?), Dying (?);

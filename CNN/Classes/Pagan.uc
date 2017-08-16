@@ -1,0 +1,2 @@
+class Pagan extends CNNBurningScientist;
+

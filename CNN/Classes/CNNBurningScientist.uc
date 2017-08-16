@@ -1,13 +1,27 @@
 class CNNBurningScientist extends ScientistMale;
 
 var() float Flammability;			// How long does the object burn?
-var bool bCanBeBurned;
+var() float destroyDelay;			// after timer has expired, kill scientist.
+var() bool bCanBeBurned;
+
+var bool isBurning;
 
 function TakeDamage(int Damage, Pawn EventInstigator, vector HitLocation, vector Momentum, name DamageType)
 {
-	if (((DamageType == 'Burned') || (DamageType == 'Flamed')) && bCanBeBurned)
+	if (((DamageType == 'Burned') || (DamageType == 'Flamed'))
+			&& bCanBeBurned && !isBurning)
     {
+		isBurning = true;
 		StartFire();
+		//PlayAnimPivot('Jump', 3, 0.1);
+		//PlayAnim(Sequence, Rate, TweenTime);
+		LoopAnim('Panic', 3, 0.1, Flammability);
+		SetTimer(Flammability + destroyDelay, false);
+	}
+	
+	if (DamageType == 'AlmostKilled')
+	{
+		super.TakeDamage(Damage, EventInstigator, HitLocation, Momentum, 'Shot');
 	}
 }
 
@@ -51,12 +65,21 @@ function ExtinguishFire()
 	local Fire f;
 
     foreach BasedActors(class'Fire', f)
+	{
         f.Destroy();
+	}
+}
+
+function Timer()
+{
+	ExtinguishFire();
+	self.TakeDamage(300, none, vect(0,0,0), vect(0,0,0), 'AlmostKilled');
 }
 
 DefaultProperties
 {
     Flammability=30.000000
+	detroyDelay=0.1
     bCanBeBurned=true
     bAlliancesChanged=False
     Orders=Standing
@@ -79,7 +102,6 @@ DefaultProperties
     InitialAlliances(3)=(AllianceName=Subject)
     InitialAlliances(4)=(AllianceName=bum)
     InitialAlliances(5)=(AllianceName=Researcher,AllianceLevel=1.000000)
-    //bInWorld=False
     Alliance=Researcher
     Tag=Pagan
     Texture=Texture'DeusExItems.Skins.PinkMaskTex'

@@ -6,6 +6,7 @@ class Chapter06 extends CNNBaseIngameCutscene;
 
 var(ChangeLevelOnDeath) string levelName;
 var int TantalusSkillLevel;
+var Dispatcher returnDispatcher;
 
 function DoLevelStuff()
 {
@@ -20,6 +21,14 @@ function DoLevelStuff()
     {
 		flags.SetBool('French_Elementary', True);
     }
+	
+	if (flags.GetBool('MagdaleneDisappearsInDocks'))
+	{
+	    foreach AllActors(class'Dispatcher', returnDispatcher, 'ReturnToLevelDispatcher')
+		{
+			returnDispatcher.Trigger(self, player);
+		}
+	}
 }
 
 defaultproperties

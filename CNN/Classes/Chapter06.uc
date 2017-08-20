@@ -22,7 +22,7 @@ function DoLevelStuff()
 		flags.SetBool('French_Elementary', True);
     }
 	
-	if (flags.GetBool('MagdaleneDisappearsInDocks'))
+	if (flags.GetBool('MagdaleneDisappearsInDocks') && !flags.GetBool('AllObjectsDestroyed'))
 	{
 	    foreach AllActors(class'Dispatcher', returnDispatcher, 'ReturnToLevelDispatcher')
 		{

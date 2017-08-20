@@ -16,38 +16,26 @@ struct ObervableObject
 
 var(ObjectsToDetonate) ObervableObject objects[16];
 
-function PostBeginPlay()
-{
-    FindObjects();
-    Super.PostBeginPlay();
-}
-
-function FindObjects()
-{
-	local Actor actr;
-    local int i;
-
-    for (i = 0; i < ArrayCount(objects); i++)
-    {
-        foreach AllActors(class'Actor', actr, objects[i].tag)
-        {
-            objects[i].actr = actr;
-        }
-    }
-}
-
 function DestroyObjects()
 {
+    local Actor actr;
 	local int i;
 	
 	for (i = 0; i < ArrayCount(objects); i++)
     {
-        if (objects[i].actr != none && !objects[i].bDestroyed)
+		if (objects[i].tag != '')
 		{
-			objects[i].actr.TakeDamage(3000, none, vect(0,0,0), vect(0,0,0), 'Shot');
-			objects[i].bDestroyed = true;
-		}
+			foreach AllActors(class'Actor', actr, objects[i].tag)
+			{
+				BroadcastMessage("Object: " $ actr.tag);
+				objects[i].tag = '';
+				actr.TakeDamage(300, none, vect(0,0,0), vect(0,0,0), 'Shot');
+			}
+		}        
     }
+	
+	BroadcastMessage("All objects destroyed!");
+	DeusExPlayer(GetPlayerPawn()).flagbase.SetBool('AllObjectsDestroyed', true);
 }
 
 function Trigger(Actor Other, Pawn Instigator)

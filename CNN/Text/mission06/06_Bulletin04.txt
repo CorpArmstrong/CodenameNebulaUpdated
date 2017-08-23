@@ -1,8 +1,9 @@
 <DC=255,255,255>
 <P><B>Grey Death</B>
 <P>
-<P>Exhibit name: Containers of Grey Death virus + Ambrosia vaccine
-<P>Danger level: High
+<P>Exhibit name: Containers of Grey Death virus
 <P>Date of aquisition: 2051
 <P>
-<P>Notes: A nanovirus invented by Bob Page by picking a large number and multiplying it. Has something to do with 17 and 23... Not going into all the details of manufacturng the virus and the cure. The UC's just make it from air. Made in Hong Kong VL facility. Ships to North America by The Wall Cloud supertanker. The NSF suspects the U.S. government made it to get rid of population growth. They must never know we're using it blackmail the Senators and government officials.
+<P>Notes: Deadly diseases touched all nations of the world. Before the cure was discovered, AIDS made a long-feared comeback. With that dread virus no longer a threat, however, other opportunistic viral plagues hit the country hard. Millions have fallen prey to antibiotic-resistant diseases long thought to be under control. Resistant strains of tuberculosis hit the developing nations, particularly India, very hard. And a researcher’s misguided attempt to procure samples of the deadly 1918 flu virus from bodies buried under the North Polar icecap unleashed the disease on the world once again. In 1918, that virus killed more people than all the 20th century wars that followed – it did the same in the 21st century, killing millions. Together, these pandemics left the population notably smaller than it was a hundred years earlier. And that just set the stage for the man-made Gray Death nano-virus…
+<P>
+<P>It was at this time that the company known as Page Enterprises came to prominence. Initially a genetic engineering lab, Page Enterprises, through its VersaLife division was instrumental in fighting off the diseases and pandemics of the 21st century. Needless to say this left Page quite wealthy and powerful. He branched out into all fields of human scientific endeavor – and commerce. The Page Enterprises and VersaLife logos soon became ubiquitous. 

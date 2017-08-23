@@ -8,3 +8,5 @@
 <FILE=06_Bulletin09,Ahnenerbe>
 <FILE=06_Bulletin10,Bones Of The Desposyni>
 <FILE=06_Bulletin11,The Dentons' Car>
+<FILE=06_Bulletin12,Paul Denton>
+<FILE=06_Bulletin13,Philip Mead>

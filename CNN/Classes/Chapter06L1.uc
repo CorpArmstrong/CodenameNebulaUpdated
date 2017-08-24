@@ -7,7 +7,6 @@ var bool bLasersOn;
 var LaserSecurityDispatcher laserDipatcher;
 var bool bFirstFrame;
 
-var name scriptedPawnTag;
 var () name CamTag;
 var int TantalusSkillLevel;
 
@@ -18,11 +17,7 @@ var int TantalusSkillLevel;
 // ----------------------------------------------------------------------
 function FirstFrame()
 {
-	local ScriptedPawn pawn;
 	Super.FirstFrame();
-
-	foreach AllActors(class 'ScriptedPawn', pawn, scriptedPawnTag)
-		pawn.EnterWorld();
 }
 
 function InitStateMachine()
@@ -151,5 +146,4 @@ function ProcessLasers()
 defaultproperties
 {
 	CamTag='
-	scriptedPawnTag=Secretary
 }

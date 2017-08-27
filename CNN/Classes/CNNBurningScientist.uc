@@ -79,7 +79,7 @@ function Timer()
 DefaultProperties
 {
     Flammability=30.000000
-	detroyDelay=0.1
+	destroyDelay=0.1
     bCanBeBurned=true
     bAlliancesChanged=False
     Orders=Standing

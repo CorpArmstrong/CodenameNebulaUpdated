@@ -18,6 +18,7 @@ class AiHUDInfoLinkDisplay expands HUDInfoLinkDisplay;
 function SetSpeaker(String bindName, String displayName)
 {
     local String portraitStringName;
+	local DeusExLevelInfo info;
 
     winName.SetText(displayName);
 
@@ -32,8 +33,24 @@ function SetSpeaker(String bindName, String displayName)
     {
         portraitStringName = "InfoPortraits." $ Left(bindName, 19);//16
     }
+	
+	// Okay, we have a special case for Paul Denton who, like JC, 
+	// has five different portraits based on what the player selected
+	// when starting the game.  Therefore we have to pick the right
+	// portrait.
+
+	if (bindName == "PaulDenton")
+		portraitStringName = portraitStringName $ "_" $ Chr(49 + player.PlayerSkin);
+
+	// Another hack for Bob Page, to use a different portrait on Mission15.
+	if (bindName == "BobPage")
+	{
+		info = player.GetLevelInfo();
+
+		if ((info != None) && (info.MissionNumber == 15))
+			portraitStringName = "InfoPortraits.BobPageAug";
+	}
 
     // Get a pointer to the portrait
     speakerPortrait = Texture(DynamicLoadObject(portraitStringName, class'Texture'));
 }
-

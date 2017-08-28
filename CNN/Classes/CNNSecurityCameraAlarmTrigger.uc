@@ -35,3 +35,8 @@ function Touch(Actor Other)
         Super.Touch(Other);
     }
 }
+
+defaultproperties
+{
+	cameraTag=SecurityCamera
+}

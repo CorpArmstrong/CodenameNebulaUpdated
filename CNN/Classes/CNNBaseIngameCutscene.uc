@@ -126,27 +126,42 @@ function RestoreSoundVolume()
 
 function SendPlayerOnceToGame()
 {
-    if (flags.GetBool(convNamePlayed) && !isArrivalCompleted)
-    {
-        if (DeusExRootWindow(player.rootWindow) != none)
-        {
-            DeusExRootWindow(player.rootWindow).ClearWindowStack();
-        }
-
-		Player.Invisible(false);
-
-        /*
-		if (player.IsInState('Interpolating'))
-        {
-            Log("Camera interpolation path is longer than conversation!");
-            Log("Terminating interpolation!");
-            BroadcastMessage("Terminating interpolation!");
-            SetPhysics(PHYS_Walking);
-            player.GoToState('PlayerWalking');
-            Level.Game.SendPlayer(player, "Mutiny");
-        }*/
-
-        Level.Game.SendPlayer(player, sendToLocation);
-    }
+	if (flags.GetBool(convNamePlayed) && !isArrivalCompleted)
+	{
+		FinishCinematic();
+		SendPlayer();
+	}
 }
 
+// ----------------------------------------------------------------------
+// FinishCinematic()
+// ----------------------------------------------------------------------
+
+function FinishCinematic()
+{
+	local CameraPoint cPoint;
+
+	// Loop through all the CameraPoints and set the "nextPoint"
+	// to None will will effectively cause them to halt.
+
+	foreach player.AllActors(class'CameraPoint', cPoint)
+	{
+		cPoint.nextPoint = None;
+		cPoint.Destroy();
+	}
+}
+
+function SendPlayer()
+{
+	if (DeusExRootWindow(player.rootWindow) != none)
+	{
+		DeusExRootWindow(player.rootWindow).ClearWindowStack();
+	}
+
+	Player.Invisible(false);
+	
+	if (!player.IsInState('Interpolating'))
+	{
+		Level.Game.SendPlayer(player, sendToLocation);
+	}
+}

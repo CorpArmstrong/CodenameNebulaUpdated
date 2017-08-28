@@ -51,14 +51,10 @@ defaultproperties
      FragType=Class'DeusEx.PaperFragment'
      ItemName="Cardboard Box (Edited)"
      bBlockSight=True
-     //Mesh=LodMesh'DeusExDeco.BoxMedium'
      CollisionRadius=42.000000
-     CollisionHeight=30.000000
+     CollisionHeight=5.000000
      Mass=50.000000
      Buoyancy=60.000000
-	 //
-	 Mesh2=LodMesh'DeusExCharacters.GM_Trench_CarcassB'
-     Mesh3=LodMesh'DeusExCharacters.GM_Trench_CarcassC'
      Mesh=LodMesh'DeusExCharacters.GM_Trench_Carcass'
      MultiSkins(0)=Texture'DeusExCharacters.Skins.PaulDentonTex0'
      MultiSkins(1)=Texture'DeusExCharacters.Skins.PaulDentonTex2'

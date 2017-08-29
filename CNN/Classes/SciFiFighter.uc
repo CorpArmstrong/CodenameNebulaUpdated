@@ -2,7 +2,7 @@
 // SciFiFighter.
 ///////////////////////////////////////////////////
 
-class SciFiFighter extends Actor;
+class SciFiFighter extends Vehicles;
 
 #exec MESH IMPORT MESH=SciFiFighter ANIVFILE=MODELS\SciFiFighter_a.3d DATAFILE=MODELS\SciFiFighter_d.3d X=0 Y=0 Z=0
 #exec MESH ORIGIN MESH=SciFiFighter X=0 Y=0 Z=0

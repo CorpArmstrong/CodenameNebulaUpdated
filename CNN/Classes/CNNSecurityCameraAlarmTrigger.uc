@@ -9,16 +9,26 @@
 class CNNSecurityCameraAlarmTrigger expands CNNTrigger;
 
 var() name cameraTag;
+var() bool bToggleAllCameras;
 
 function TriggerCameraAlarm()
 {
     local SecurityCamera secCam;
 
-    foreach AllActors(class 'SecurityCamera', secCam, cameraTag)
-    {
-        secCam.bNoAlarm = !secCam.bNoAlarm;
-		BroadcastMessage("SecurityCamera bNoAlarm = " $secCam.bNoAlarm);
-    }
+	if (!bToggleAllCameras)
+	{
+		foreach AllActors(class 'SecurityCamera', secCam, cameraTag)
+		{
+			secCam.bNoAlarm = !secCam.bNoAlarm;
+		}
+	}
+    else
+	{
+		foreach AllActors(class 'SecurityCamera', secCam)
+		{
+			secCam.bNoAlarm = !secCam.bNoAlarm;
+		}
+	}
 }
 
 function Trigger(Actor Other, Pawn Instigator)
@@ -39,4 +49,5 @@ function Touch(Actor Other)
 defaultproperties
 {
 	cameraTag=SecurityCamera
+	bToggleAllCameras=True
 }

@@ -6,6 +6,7 @@ class Chapter06L1 expands MissionScript;
 var bool bLasersOn;
 var LaserSecurityDispatcher laserDipatcher;
 var bool bFirstFrame;
+var(ChangeLevelOnDeath) string levelName;
 
 var () name CamTag;
 var int TantalusSkillLevel;
@@ -43,8 +44,14 @@ function PreTravel()
 // ----------------------------------------------------------------------
 function Timer()
 {
+	
 	local LaserSecurityDispatcher LSD;	// Lucy in the Sky with Diamonds :)   
 
+	if (player.IsInState('Dying'))
+	{
+		Level.Game.SendPlayer(player, levelName);
+	}
+	
 	if (player != None)
 	{
 		if (!bFirstFrame)
@@ -146,4 +153,5 @@ function ProcessLasers()
 defaultproperties
 {
 	CamTag='
+	levelName="06_OpheliaL2#HumanServer"
 }

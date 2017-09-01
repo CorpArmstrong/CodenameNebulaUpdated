@@ -160,8 +160,8 @@ function SendPlayer()
 
 	Player.Invisible(false);
 	
-	if (!player.IsInState('Interpolating'))
-	{
+	//if (!player.IsInState('Interpolating'))
+	//{
 		Level.Game.SendPlayer(player, sendToLocation);
-	}
+	//}
 }

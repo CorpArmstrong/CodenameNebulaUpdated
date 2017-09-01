@@ -5,12 +5,15 @@ del /q Textures\*.*
 del /q System\*.*
 
 :: Packing Maps
+copy ..\Maps\Entry.dx											Maps\
 copy ..\Maps\CNNentry.dx										Maps\
 copy ..\Maps\05_MoonIntro.dx									Maps\
 copy ..\Maps\06_OpheliaDocks.dx									Maps\
 copy ..\Maps\06_OpheliaL1.dx									Maps\
+copy ..\Maps\06_OpheliaL2.dx									Maps\
 
 cd Maps\
+ren CNNentry.dx DX.dx
 echo . > dummy.txt
 cd ..
 
@@ -18,7 +21,7 @@ cd ..
 copy ..\Music\Ogg\f_demo_with_bass.ogg							Music\Ogg\
 copy ..\Music\Ogg\Mysterious_SciFi_Music_THE_LAST_FRONTIER.ogg	Music\Ogg\
 copy ..\Music\Ogg\win_xp_is_shit.ogg							Music\Ogg\
-copy ..\Music\Ogg\Solar_Smoke_Post_Silence_07_The_Spark.ogg		Music\Ogg\
+copy "..\Music\Ogg\Solar_Smoke_Post_Silence _07_The_Spark.ogg"	Music\Ogg\
 :: Add songs from ApocalypseInside here.
 
 cd Music\Ogg\
@@ -35,8 +38,6 @@ copy ..\Textures\CNNTextures.utx								Textures\
 cd Textures\
 echo . > dummy.txt
 cd ..
-
-:: Package Sounds ???
 
 :: Package System
 copy ..\System\ApocalypseInside.u								System\

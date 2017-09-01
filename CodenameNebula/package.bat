@@ -30,10 +30,14 @@ cd ..\..
 
 :: Package Textures
 copy ..\Textures\AiInfoPortraits.utx							Textures\
+copy ..\Textures\AITex.utx										Textures\
+copy ..\Textures\PFADTex.utx									Textures\
+copy ..\Textures\ArtPieces.utx									Textures\
 copy ..\Textures\X3.utx											Textures\
 copy ..\Textures\X3tex.utx										Textures\
 copy ..\Textures\GenFX.utx										Textures\
 copy ..\Textures\CNNTextures.utx								Textures\
+::copy ..\Textures\AIStalk.utx									Textures\
 
 cd Textures\
 echo . > dummy.txt
@@ -54,6 +58,8 @@ copy ..\System\CNNAudio*.u										System\
 copy ..\System\CNN.ini											System\
 copy ..\System\CNNUser.ini										System\
 copy ..\System\CNNStart.bat										System\
+copy ..\System\PFAD.u											System\
+copy ..\System\GaussGun.u										System\
 
 cd System\
 echo . > dummy.txt

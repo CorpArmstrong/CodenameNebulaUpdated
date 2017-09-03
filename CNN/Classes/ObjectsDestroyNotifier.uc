@@ -5,8 +5,10 @@
 
 class ObjectsDestroyNotifier extends Actor;
 
+var() name goalCompleteName;
+
 const OBJECTS_COUNT = 16;
-var bool bStartPolling;
+var bool bPolling;
 var DeusExPlayer player;
 
 struct ObervableObject
@@ -23,7 +25,7 @@ function PostBeginPlay()
 {
     player = DeusExPlayer(GetPlayerPawn());
     FindObjects();
-    bStartPolling = true;
+    bPolling = true;
     Super.PostBeginPlay();
 }
 
@@ -44,6 +46,7 @@ function FindObjects()
 function PollObjects()
 {
     local int i;
+	local int deletedObjectsCounter;
 
     for (i = 0; i < OBJECTS_COUNT; i++)
     {
@@ -53,25 +56,34 @@ function PollObjects()
             if (objects[i].actr.bDeleteMe)
             {
                 objects[i].tag = '';
+				objects[i].goalName = '';
                 objects[i].actr = none;
                 objects[i].bDestroyed = true;
-
-                if (player != none)
-                {
-                    player.GoalCompleted(objects[i].goalName);
-                }
-
-                objects[i].goalName = '';
+				deletedObjectsCounter++;
             }
         }
+		else
+		{
+			deletedObjectsCounter++;
+		}
     }
+	
+	if (deletedObjectsCounter == OBJECTS_COUNT)
+	{
+		bPolling = false;
+		
+		if (player != none)
+		{
+			player.GoalCompleted(goalCompleteName);
+		}
+	}
 }
 
 simulated function Tick(float TimeDelta)
 {
     Super.Tick(TimeDelta);
 
-    if (bStartPolling)
+    if (bPolling)
     {
         PollObjects();
     }
@@ -82,7 +94,7 @@ function Destroyed()
     local int i;
     Super.Destroyed();
 
-    bStartPolling = false;
+    bPolling = false;
 
     for (i = 0; i < OBJECTS_COUNT; i++)
     {
@@ -94,4 +106,3 @@ function Destroyed()
         }
     }
 }
-

@@ -58,7 +58,7 @@ function Explode(/*optional vector HitLocation*/)
 defaultproperties
 {
 	MinHealth=0.000000
-	CarcassType=Class'CNN.TestFMCarcass'
+	CarcassType=Class'CNN.AvatarCarcass'
 	WalkingSpeed=0.200000
 	bCanBleed=True
 	bShowPain=False

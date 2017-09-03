@@ -632,7 +632,6 @@ defaultproperties
     MenuThemeName="Tantalus theme"
     HUDThemeName="Tantalus theme"
     strStartMap="05_MoonIntro"
-	//strStartMap="06_OpheliaL1"
     CarcassType=Class'JCDentonMaleCarcass'
     Mesh=LodMesh'DeusExCharacters.GM_Trench'
     MultiSkins(0)=Texture'CNN.Skins.TantalusFace'

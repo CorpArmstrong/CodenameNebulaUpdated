@@ -23,7 +23,7 @@ defaultproperties
 
     skillClasses(7)=Class'SkillTech'
 
-    skillClasses(8)=Class'AiSkillBionics' //was Medicine
+    skillClasses(8)=Class'SkillMedicine'
 
     skillClasses(9)=Class'SkillComputer'
 

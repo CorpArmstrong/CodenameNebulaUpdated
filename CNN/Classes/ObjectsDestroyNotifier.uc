@@ -7,7 +7,7 @@ class ObjectsDestroyNotifier extends Actor;
 
 var() name goalCompleteName;
 
-const OBJECTS_COUNT = 16;
+const OBJECTS_COUNT = 32;
 var bool bPolling;
 var DeusExPlayer player;
 
@@ -19,7 +19,7 @@ struct ObervableObject
     var bool bDestroyed;
 };
 
-var(ObservableObjects) ObervableObject objects[16];
+var(ObservableObjects) ObervableObject objects[32];
 
 function PostBeginPlay()
 {
@@ -34,12 +34,19 @@ function FindObjects()
     local Actor actr;
     local int i;
 
-    for (i = 0; i < OBJECTS_COUNT; i++)
+    for (i = 0; i < ArrayCount(objects); i++)
     {
-        foreach AllActors(class'Actor', actr, objects[i].tag)
-        {
-            objects[i].actr = actr;
-        }
+		if (objects[i].tag != '')
+		{
+			foreach AllActors(class'Actor', actr, objects[i].tag)
+			{
+				objects[i].actr = actr;
+			}
+		}
+		else
+		{
+			objects[i].bDestroyed = true;
+		}
     }
 }
 
@@ -48,7 +55,7 @@ function PollObjects()
     local int i;
 	local int deletedObjectsCounter;
 
-    for (i = 0; i < OBJECTS_COUNT; i++)
+    for (i = 0; i < ArrayCount(objects); i++)
     {
         if (objects[i].actr != none && !objects[i].bDestroyed)
         {
@@ -96,7 +103,7 @@ function Destroyed()
 
     bPolling = false;
 
-    for (i = 0; i < OBJECTS_COUNT; i++)
+    for (i = 0; i < ArrayCount(objects); i++)
     {
         if (objects[i].actr != none)
         {

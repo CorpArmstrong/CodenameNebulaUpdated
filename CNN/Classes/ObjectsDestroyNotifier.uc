@@ -7,7 +7,6 @@ class ObjectsDestroyNotifier extends Actor;
 
 var() name goalCompleteName;
 
-const OBJECTS_COUNT = 32;
 var bool bPolling;
 var DeusExPlayer player;
 
@@ -75,7 +74,7 @@ function PollObjects()
 		}
     }
 	
-	if (deletedObjectsCounter == OBJECTS_COUNT)
+	if (deletedObjectsCounter == ArrayCount(objects))
 	{
 		bPolling = false;
 		
@@ -113,3 +112,29 @@ function Destroyed()
         }
     }
 }
+
+/*
+defaultproperties
+{
+	objects[0].tag=LibertyEvidence
+	objects[1]=BigTank
+	objects[2]=CarEvidence
+	objects[3]=BuddhaEvidence
+	objects[4]=PaulDentonCarcassEvidence
+	objects[5]=JosephManderleyCarcassEvidence
+	objects[6]=MeadCarcassEvidence
+	objects[7]=DeusExMoverMonaLisa
+	objects[8]=AlienCarcassEvidence
+	objects[9]=DeusExMoverRocket1
+	objects[10]=DeusExMoverRocket2
+	objects[11]=DeusExMoverRocket3
+	objects[12]=SkullEvidence1
+	objects[13]=SkullEvidence2
+	objects[14]=SkullEvidence3
+	objects[15]=BoneEvidence1
+	objects[16]=BoneEvidence2
+	objects[17]=BoneEvidence3
+	objects[18]=BoneEvidence4
+	objects[19]=BoneEvidence5
+}
+*/

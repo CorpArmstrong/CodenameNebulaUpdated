@@ -113,28 +113,26 @@ function Destroyed()
     }
 }
 
-/*
 defaultproperties
 {
-	objects[0].tag=LibertyEvidence
-	objects[1]=BigTank
-	objects[2]=CarEvidence
-	objects[3]=BuddhaEvidence
-	objects[4]=PaulDentonCarcassEvidence
-	objects[5]=JosephManderleyCarcassEvidence
-	objects[6]=MeadCarcassEvidence
-	objects[7]=DeusExMoverMonaLisa
-	objects[8]=AlienCarcassEvidence
-	objects[9]=DeusExMoverRocket1
-	objects[10]=DeusExMoverRocket2
-	objects[11]=DeusExMoverRocket3
-	objects[12]=SkullEvidence1
-	objects[13]=SkullEvidence2
-	objects[14]=SkullEvidence3
-	objects[15]=BoneEvidence1
-	objects[16]=BoneEvidence2
-	objects[17]=BoneEvidence3
-	objects[18]=BoneEvidence4
-	objects[19]=BoneEvidence5
+	objects(0)=(tag=LibertyEvidence)
+	objects(1)=(tag=BigTank)
+	objects(2)=(tag=CarEvidence)
+	objects(3)=(tag=BuddhaEvidence)
+	objects(4)=(tag=PaulDentonCarcassEvidence)
+	objects(5)=(tag=JosephManderleyCarcassEvidence)
+	objects(6)=(tag=MeadCarcassEvidence)
+	objects(7)=(tag=DeusExMoverMonaLisa)
+	objects(8)=(tag=AlienCarcassEvidence)
+	objects(9)=(tag=DeusExMoverRocket1)
+	objects(10)=(tag=DeusExMoverRocket2)
+	objects(11)=(tag=DeusExMoverRocket3)
+	objects(12)=(tag=SkullEvidence1)
+	objects(13)=(tag=SkullEvidence2)
+	objects(14)=(tag=SkullEvidence3)
+	objects(15)=(tag=BoneEvidence1)
+	objects(16)=(tag=BoneEvidence2)
+	objects(17)=(tag=BoneEvidence3)
+	objects(18)=(tag=BoneEvidence4)
+	objects(19)=(tag=BoneEvidence5)
 }
-*/

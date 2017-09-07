@@ -6,10 +6,8 @@
 class ObjectsDestroyNotifier extends Actor;
 
 var() name goalCompleteName;
-
 var bool bPolling;
-var() int aliveObjectsCounter;
-var int oldDestroyCounter;
+var int aliveObjectsCounter;
 
 struct ObservableObject
 {
@@ -53,39 +51,39 @@ function PollObjects()
     {
         if (objects[i].actr != none)
         {
-            // bDeleteMe is set shortly after Destroy() is called
-            if (objects[i].actr.bDeleteMe)
-            {
-				DeusExPlayer(GetPlayerPawn()).ClientMessage("Destroyed: " $ objects[i].tag);
-                objects[i].tag = '';
-                objects[i].actr = none;
-				destroyedObjectsCounter++;
-            }
+			if (objects[i].actr.bDeleteMe ||
+				(objects[i].actr.IsA('DeusExMover') && DeusExMover(objects[i].actr).bDestroyed))
+			{
+				HandleDestroyedObject(i, destroyedObjectsCounter);
+			}
         }
 		else
 		{
-			objects[i].tag = '';
 			destroyedObjectsCounter++;
 		}
     }
 	
-	// If we're actually destroyed something:
-	if (oldDestroyCounter < destroyedObjectsCounter)
-	{
-		--aliveObjectsCounter;
-		DeusExPlayer(GetPlayerPawn()).ClientMessage("You have to destroy: " $
-					aliveObjectsCounter $ " more objects!");
-	}
-	
-	oldDestroyCounter = destroyedObjectsCounter;
-	
 	if (destroyedObjectsCounter == ArrayCount(objects))
 	{
 		bPolling = false;
-		
 		DeusExPlayer(GetPlayerPawn()).GoalCompleted(goalCompleteName);
-		DeusExPlayer(GetPlayerPawn()).ClientMessage("Goal completed: Destroy all evidence!");
 	}
+}
+
+function HandleDestroyedObject(int index, int destroyedObjectsCounter)
+{
+	DeusExPlayer(GetPlayerPawn()).ClientMessage("Destroyed: " $ objects[index].tag);
+	objects[index].tag = '';
+	objects[index].actr = none;
+	destroyedObjectsCounter++;
+	
+	if (aliveObjectsCounter > 0)
+	{
+		--aliveObjectsCounter;
+	}
+		
+	DeusExPlayer(GetPlayerPawn()).ClientMessage("You have to destroy: " $
+					aliveObjectsCounter $ " more objects!");
 }
 
 simulated function Tick(float TimeDelta)

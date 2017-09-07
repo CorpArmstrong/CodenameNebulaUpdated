@@ -70,6 +70,9 @@ function CheckIntroFlags()
         // After we've teleported back and map has reloaded
         // set the flag, to skip recursive intro call.
         IsArrivalCompleted = true;
+		
+		// Make sure player is not hidden after interpolation state.
+		player.bHidden = false;
     }
 
     if (!IsArrivalCompleted)
@@ -159,9 +162,5 @@ function SendPlayer()
 	}
 
 	Player.Invisible(false);
-	
-	//if (!player.IsInState('Interpolating'))
-	//{
-		Level.Game.SendPlayer(player, sendToLocation);
-	//}
+	Level.Game.SendPlayer(player, sendToLocation);
 }

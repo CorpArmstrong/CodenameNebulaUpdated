@@ -4,8 +4,8 @@
 class Chapter06L1 expands MissionScript;
 
 var bool bLasersOn;
+var bool bFirstFramePassed;
 var LaserSecurityDispatcher laserDipatcher;
-var bool bFirstFrame;
 var(ChangeLevelOnDeath) string levelName;
 
 var () name CamTag;
@@ -44,49 +44,47 @@ function PreTravel()
 // ----------------------------------------------------------------------
 function Timer()
 {
-	
-	local LaserSecurityDispatcher LSD;	// Lucy in the Sky with Diamonds :)   
-
-	if (player.IsInState('Dying'))
+	if (player != none)
 	{
-		Level.Game.SendPlayer(player, levelName);
-	}
-	
-	if (player != None)
-	{
-		if (!bFirstFrame)
+		if (!bFirstFramePassed)
 		{
-			bFirstFrame = true;
-			
-			foreach AllActors(class'LaserSecurityDispatcher', LSD)
-			{
-				laserDipatcher = LSD;
-			}
-			
-			if (laserDipatcher == None)
-			{
-				laserDipatcher = Spawn(class'LaserSecurityDispatcher');
-			}
-			
-			TantalusSkillLevel = Player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
-
-			if (TantalusSkillLevel == 2.00)
-			{
-				flags.SetBool('French_Elementary', true);
-			}
-			
-			// State 0: Go to State 1
-			if (!flags.GetBool('laserSecurityWorks'))
-			{
-				flags.SetBool('laserSecurityWorks', false);
-				bLasersOn = true;
-			}
+			bFirstFramePassed = true;
+			PrepareFirstFrame();
 		}
 		
 		ProcessLasers();
+		
+		if (player.IsInState('Dying'))
+		{
+			Level.Game.SendPlayer(player, levelName);
+		}
 	}
 	
 	Super.Timer();
+}
+
+function PrepareFirstFrame()
+{
+	local LaserSecurityDispatcher LSD;	// Lucy in the Sky with Diamonds :)	
+		
+	foreach AllActors(class'LaserSecurityDispatcher', LSD)
+	{
+		laserDipatcher = LSD;
+	}
+	
+	TantalusSkillLevel = Player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
+
+	if (TantalusSkillLevel == 2.00)
+	{
+		flags.SetBool('French_Elementary', true);
+	}
+	
+	// Security System State 0: Go to State 1
+	if (!flags.GetBool('laserSecurityWorks'))
+	{
+		flags.SetBool('laserSecurityWorks', false);
+		bLasersOn = true;
+	}
 }
 
 function ProcessLasers()
@@ -112,11 +110,8 @@ function ProcessLasers()
 				if (Cam.Tag == 'SCam1' && !Cam.bActive)
 				{
 					player.ToggleCameraState(cam, none);
-					player.ClientMessage("cam+");
 				}
 			}
-
-			player.ClientMessage("TogleOn âêëþ÷èë");
 		}
 
 		bLasersOn = true;
@@ -139,11 +134,8 @@ function ProcessLasers()
 				if (Cam.Tag == 'SCam1' && Cam.bActive)
 				{
 					player.ToggleCameraState(cam, none);
-					player.ClientMessage("cam-");
 				}
 			}
-
-			player.ClientMessage("TogleOff âûêëþ÷èë");
 		}
 
 		bLasersOn = false;
@@ -152,6 +144,7 @@ function ProcessLasers()
 
 defaultproperties
 {
-	CamTag='
+	//CamTag='
 	levelName="06_OpheliaL2#HumanServer"
+	//levelName="05_MoonIntro#TwoWeeksLater"
 }

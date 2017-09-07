@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// Class:    ObjectsDetroyNotifier
+// Class:    ObjectsDestroyNotifier
 // Author:   CorpArmstrong
 //-----------------------------------------------------------------------
 
@@ -8,21 +8,19 @@ class ObjectsDestroyNotifier extends Actor;
 var() name goalCompleteName;
 
 var bool bPolling;
-var DeusExPlayer player;
+var() int aliveObjectsCounter;
+var int oldDestroyCounter;
 
-struct ObervableObject
+struct ObservableObject
 {
     var() name tag;
-    var() name goalName;
-    var Actor actr;
-    var bool bDestroyed;
+    var private Actor actr;
 };
 
-var(ObservableObjects) ObervableObject objects[32];
+var(ObservableObjects) ObservableObject objects[32];
 
 function PostBeginPlay()
 {
-    player = DeusExPlayer(GetPlayerPawn());
     FindObjects();
     bPolling = true;
     Super.PostBeginPlay();
@@ -40,11 +38,8 @@ function FindObjects()
 			foreach AllActors(class'Actor', actr, objects[i].tag)
 			{
 				objects[i].actr = actr;
+				++aliveObjectsCounter;
 			}
-		}
-		else
-		{
-			objects[i].bDestroyed = true;
 		}
     }
 }
@@ -52,36 +47,44 @@ function FindObjects()
 function PollObjects()
 {
     local int i;
-	local int deletedObjectsCounter;
-
+	local int destroyedObjectsCounter;
+	
     for (i = 0; i < ArrayCount(objects); i++)
     {
-        if (objects[i].actr != none && !objects[i].bDestroyed)
+        if (objects[i].actr != none)
         {
             // bDeleteMe is set shortly after Destroy() is called
             if (objects[i].actr.bDeleteMe)
             {
+				DeusExPlayer(GetPlayerPawn()).ClientMessage("Destroyed: " $ objects[i].tag);
                 objects[i].tag = '';
-				objects[i].goalName = '';
                 objects[i].actr = none;
-                objects[i].bDestroyed = true;
-				deletedObjectsCounter++;
+				destroyedObjectsCounter++;
             }
         }
 		else
 		{
-			deletedObjectsCounter++;
+			objects[i].tag = '';
+			destroyedObjectsCounter++;
 		}
     }
 	
-	if (deletedObjectsCounter == ArrayCount(objects))
+	// If we're actually destroyed something:
+	if (oldDestroyCounter < destroyedObjectsCounter)
+	{
+		--aliveObjectsCounter;
+		DeusExPlayer(GetPlayerPawn()).ClientMessage("You have to destroy: " $
+					aliveObjectsCounter $ " more objects!");
+	}
+	
+	oldDestroyCounter = destroyedObjectsCounter;
+	
+	if (destroyedObjectsCounter == ArrayCount(objects))
 	{
 		bPolling = false;
 		
-		if (player != none)
-		{
-			player.GoalCompleted(goalCompleteName);
-		}
+		DeusExPlayer(GetPlayerPawn()).GoalCompleted(goalCompleteName);
+		DeusExPlayer(GetPlayerPawn()).ClientMessage("Goal completed: Destroy all evidence!");
 	}
 }
 
@@ -107,7 +110,6 @@ function Destroyed()
         if (objects[i].actr != none)
         {
             objects[i].tag = '';
-            objects[i].goalName = '';
             objects[i].actr = none;
         }
     }
@@ -115,6 +117,7 @@ function Destroyed()
 
 defaultproperties
 {
+	goalCompleteName=BurnEvidence
 	objects(0)=(tag=LibertyEvidence)
 	objects(1)=(tag=BigTank)
 	objects(2)=(tag=CarEvidence)

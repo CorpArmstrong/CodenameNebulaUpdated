@@ -32,6 +32,7 @@ DefaultProperties
 	Orders=Standing
     Tag=Secretary
     Style=STY_Translucent
+	AmbientGlow=140
     Texture=FireTexture'Effects.Electricity.AirTaserFX1'
     ScaleGlow=0.200000
     MultiSkins(0)=Texture'DeusExCharacters.Skins.Female4Tex0'

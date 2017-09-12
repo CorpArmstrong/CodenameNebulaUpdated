@@ -8,24 +8,20 @@ var() bool isLoopConfusing;
 var   bool isLoopConfusingNow;
 var() float confusionDuration;
 
-//var bool isAlreadyRunning;
 var Actor device;
 
 singular function ActivatedON()
 {
 	isLoopConfusingNow = isLoopConfusing;
 
-
-		if (isLoopConfusingNow)
-		{
-//			isAlreadyRunning = true;
-			SetTimer(0.01, false);
-		}
-		else
-		{
-			SeekAndConfuse();
-		}
-
+	if (isLoopConfusingNow)
+	{
+		SetTimer(0.01, false);
+	}
+	else
+	{
+		SeekAndConfuse();
+	}
 
 	super.ActivatedON();
 }
@@ -33,19 +29,18 @@ singular function ActivatedON()
 singular function ActivatedOFF()
 {
     isLoopConfusingNow = false;
-//    isAlreadyRunning = false;
-    DebugInfo("+TimerConfuse inside ActivatedOFF.");
+    //DebugInfo("+TimerConfuse inside ActivatedOFF.");
 	super.ActivatedOFF();
 }
 
 function Timer()
 {
-	DebugInfo("+TimerConfuse inside timer.");
+	//DebugInfo("+TimerConfuse inside timer.");
 	if (isLoopConfusingNow)
 	{
 		SeekAndConfuse();
 		SetTimer(confusionDuration, false);
-		DebugInfo("+TimerConfuse inside loopconfusing.");
+		//DebugInfo("+TimerConfuse inside loopconfusing.");
 	}
 }
 
@@ -56,7 +51,7 @@ function SeekAndConfuse()
 		if (device.IsA('HackableDevices') || device.IsA('AutoTurret'))
 		{
 			device.TakeDamage(0, none, device.Location, vect(0,0,0), 'EMP');
-			DebugInfo("+TimerConfuse inside confuse.");
+			//DebugInfo("+TimerConfuse inside confuse.");
 		}
 	}
 }

@@ -4,7 +4,6 @@
 class Chapter06L1 expands MissionScript;
 
 var bool bLasersOn;
-var bool bFirstFramePassed;
 var LaserSecurityDispatcher laserDipatcher;
 var(ChangeLevelOnDeath) string levelName;
 
@@ -19,6 +18,7 @@ var int TantalusSkillLevel;
 function FirstFrame()
 {
 	Super.FirstFrame();
+	PrepareFirstFrame();
 }
 
 function InitStateMachine()
@@ -46,12 +46,6 @@ function Timer()
 {
 	if (player != none)
 	{
-		if (!bFirstFramePassed)
-		{
-			bFirstFramePassed = true;
-			PrepareFirstFrame();
-		}
-		
 		ProcessLasers();
 		
 		if (player.IsInState('Dying'))
@@ -144,7 +138,5 @@ function ProcessLasers()
 
 defaultproperties
 {
-	//CamTag='
 	levelName="06_OpheliaL2#HumanServer"
-	//levelName="05_MoonIntro#TwoWeeksLater"
 }

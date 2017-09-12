@@ -624,6 +624,24 @@ function InvokeUIScreen(Class<DeusExBaseWindow> windowClass)
     }
 }
 
+function ToggleCameraStateNoDebugMessage(SecurityCamera cam)
+{
+   if (cam.bActive)
+   {
+      cam.UnTrigger(none, none);	
+      cam.team = -1;
+   }
+   else            
+   {
+      MakeCameraAlly(cam);
+      cam.Trigger(none, none);
+   }
+         
+   // Make sure the camera isn't in bStasis=True
+   // so it responds to our every whim.
+   cam.bStasis = False;         
+}
+
 defaultproperties
 {
     TruePlayerName="Blake Denton"

@@ -350,11 +350,11 @@ function InitializeSubSystems()
         SkillSystem.SetPlayer(Self);
     }
 
-   if ((Level.Netmode == NM_Standalone) || (!bBeltIsMPInventory))
-   {
-      // Give the player a keyring
-      //CreateKeyRing();
-   }
+	if ((Level.Netmode == NM_Standalone) || (!bBeltIsMPInventory))
+	{
+		// Give the player a keyring
+		CreateKeyRing();
+	}
 }
 
 //   Let HDTP know that Tantalus is not JC denton.

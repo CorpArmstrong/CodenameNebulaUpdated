@@ -1,0 +1,11 @@
+bInvincible=true
+bHighlight=false
+bBlockActors=false
+bBlockPlayers=false
+bCollideActors=false
+bUnlit=true
+Style=STY_Masked
+ScaleGlow=0.000000
+
+TrapSoldiers
+TrapBot

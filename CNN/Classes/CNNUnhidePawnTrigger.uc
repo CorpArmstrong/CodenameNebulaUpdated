@@ -27,7 +27,7 @@ function UnhidePawns()
 				
 				sp.SetCollision(true, true, true);
 				
-				sp.bUnlit = true;
+				sp.bUnlit = false;
 				sp.Style = STY_None;
 				sp.ScaleGlow = 1;
 			}

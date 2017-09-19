@@ -2,7 +2,7 @@
 // CNNCreditsWindow
 //=============================================================================
 class CNNCreditsWindow extends CreditsWindow;
-/*
+
 var string textPackage;
 
 // ----------------------------------------------------------------------
@@ -13,7 +13,7 @@ function ProcessText()
 {
     local DeusExTextParser parser;
 
-    PrintPicture(CreditsBannerTextures, 2, 1, 505, 75);
+	PrintPicture(CreditsBannerTextures, 1, 1, 512, 64);
     PrintLn();
 
     // First check to see if we have a name
@@ -23,7 +23,7 @@ function ProcessText()
         parser = new(None) Class'DeusExTextParser';
 
         // Attempt to find the text object
-        if (parser.OpenText(textName,textPackage))
+        if (parser.OpenText(textName, textPackage))
         {
             while(parser.ProcessText())
                 ProcessTextTag(parser);
@@ -31,25 +31,28 @@ function ProcessText()
             parser.CloseText();
         }
 
-    CriticalDelete(parser);
-    }
+		CriticalDelete(parser);
+	}
 
     ProcessFinished();
 }
-*/
+
+// ----------------------------------------------------------------------
+// ProcessFinished()
+// ----------------------------------------------------------------------
+
+function ProcessFinished()
+{
+	PrintLn();
+	PrintPicture(TeamPhotoTextures, 1, 1, 256, 256);
+}
 
 defaultproperties
-{ 
-	CreditsBannerTextures(0)=Texture'CNN.codenamenebula'
-	CreditsBannerTextures(1)=none
-    //CreditsBannerTextures(0)=Texture'DeusExUI.UserInterface.CreditsBanner_1'
-    //CreditsBannerTextures(1)=Texture'DeusExUI.UserInterface.CreditsBanner_2'
-    TeamPhotoTextures(0)=Texture'DeusExUI.UserInterface.TeamFront_1'
-    TeamPhotoTextures(1)=Texture'DeusExUI.UserInterface.TeamFront_2'
-    TeamPhotoTextures(2)=Texture'DeusExUI.UserInterface.TeamFront_3'
-    creditsEndSoundLength=4.000000
-    maxRandomPhrases=5
-    ScrollMusicString="Credits_Music.Credits_Music"
+{
+	CreditsBannerTextures(0)=Texture'CNN.codenamenebula_credits'
+	TeamPhotoTextures(0)=Texture'CNN.chester_credits'
+	creditsEndSoundLength=4.000000
+	ScrollMusicString="Credits_Music.Credits_Music"
 	textName=CNNCredits
-    //textPackage=CNN
-} 
+	textPackage="CNN"
+}

@@ -26,7 +26,9 @@ class CNNTextures expands Object abstract;
 #exec TEXTURE IMPORT FILE=Textures\paulsshirt.pcx NAME=paulsshirt GROUP=Skins MIPS=Off
 #exec TEXTURE IMPORT FILE=Textures\apocalypseinside.pcx NAME=apocalypseinside
 #exec TEXTURE IMPORT FILE=Textures\codenamenebula.pcx NAME=codenamenebula
+#exec TEXTURE IMPORT FILE=Textures\codenamenebula_credits.pcx NAME=codenamenebula_credits
 #exec TEXTURE IMPORT FILE=Textures\chester.bmp NAME=chester
+#exec TEXTURE IMPORT FILE=Textures\chester_credits.bmp NAME=chester_credits
 //from Nihilum
 #exec TEXTURE IMPORT NAME=RusCopTex2 FILE=Textures\RusCopTex2.pcx GROUP=Skins
 #exec TEXTURE IMPORT NAME=RusCopTex0 FILE=Textures\RusCopTex0.pcx GROUP=Skins FLAGS=2

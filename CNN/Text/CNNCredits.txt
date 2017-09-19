@@ -1,14 +1,14 @@
 <P>Dev Team
 <P>
-<P>Artem “Tantalus” D
+<P>Artem "Tantalus" D
 <P>Project director, Lead Writer, Lead Level Designer, Texture Designer, Junior Programmer, Soundtrack
 <P>
 <P>
-<P>Dmitriy “CorpArmstrong” Fedykovych
+<P>Dmitriy "CorpArmstrong" Fedykovych
 <P>Senior Programmer, Writer, Assistant Level Designer, Soundtrack
 <P>
 <P>
-<P>Evgeniy “JJoe” Bortnik
+<P>Evgeniy "JJoe" Bortnik
 <P>Junior Programmer, 3D Modeller, Assistant Level Designer
 <P>
 <P>
@@ -18,12 +18,12 @@
 <P>
 <P>
 <P>Voice Actors
-<P>Artem “Tantalus” D
+<P>Artem "Tantalus" D
 <P>
 <P>Tantalus, Uber Alles
 <P>
 <P>
-<P>Dustin “Crimsan” Ludwig
+<P>Dustin "Crimsan" Ludwig
 <P>
 <P>Howard Strong
 <P>
@@ -41,8 +41,8 @@
 <P>
 <P>Textures used:
 <P>
-<P>12/2015 Sci-fi textures by Milosh-Andrich milosh–andrich.deviantart.com/art/Sci-fi-pack-01-335182027
-<P>milosh–andrich.deviantart.com/art/Sci-fi-pack-03-335294667
+<P>12/2015 Sci-fi textures by Milosh-Andrich milosh-andrich.deviantart.com/art/Sci-fi-pack-01-335182027
+<P>milosh-andrich.deviantart.com/art/Sci-fi-pack-03-335294667
 <P>STALKERProject files by Lurker
 <P>
 <P>Mods used:

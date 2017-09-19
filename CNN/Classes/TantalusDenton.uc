@@ -193,7 +193,7 @@ function ShowIntro(optional bool bStartNewGame)
 function ShowCredits(optional bool bLoadIntro)
 {
     local DeusExRootWindow root;
-    local CNNCreditsWindowTest winCredits;
+    local CNNCreditsWindow winCredits;
 
     root = DeusExRootWindow(rootWindow);
 
@@ -201,12 +201,9 @@ function ShowCredits(optional bool bLoadIntro)
     {
         // Show the credits screen and force the game not to pause
         // if we're showing the credits after the endgame
-        winCredits = CNNCreditsWindowTest(root.InvokeMenuScreen(Class'CNNCreditsWindowTest', bLoadIntro));
+        winCredits = CNNCreditsWindow(root.InvokeMenuScreen(Class'CNNCreditsWindow', bLoadIntro));
         winCredits.SetLoadIntro(bLoadIntro);
     }
-	
-	//DeusExRootWindow(rootWindow).hud.msgLog.PlayLogSound(Sound'LogNoteAdded');
-	//AddNote(optional String strNote, optional Bool bUserNote, optional bool bShowInLog);
 }
 
 exec function ShowCreditsTest()

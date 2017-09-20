@@ -6,8 +6,6 @@
 #define MyAppPublisher "DeusGroup, Inc."
 #define MyAppURL "https://apocalypseinside.heraldic.cloud/"
 
-#define TargetIniDir "{app}\System"
-
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
@@ -42,13 +40,14 @@ Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 
 [Files]
 Source: "E:\Games\DeusEx\steamapps\common\Deus Ex\CodenameNebula\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 
-[Files]
-Source: {tmp}\{#TargetIniName}; DestDir: {#TargetIniDir}; Flags:external; Permissions: users-modify;
+[Run]
+Filename: "{app}\CNNInstallUtil.EXE"; Flags: nowait skipifsilent
+;Description: "Setup will now create ini-files"; StatusMsg: "Creating ini-files..."; Flags: postinstall nowait skipifsilent checked
 
 ;[Code]
-

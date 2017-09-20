@@ -76,12 +76,11 @@ function PrepareFirstFrame()
 		flags.SetBool('French_Elementary', true);
 	}
 	
-	// Security System State 0: Go to State 1
+	// Security System State 0: Go to State 2
 	if (!flags.GetBool('laserSecurityWorks'))
 	{
 		flags.SetBool('laserSecurityWorks', false);
 		bLasersOn = true;
-		//sCam.bActive = false;
 	}
 }
 
@@ -115,7 +114,7 @@ function TurnOnLasers()
 	}
 
 	bLasersOn = true;
-	TantalusDenton(player).ToggleCameraStateNoDebugMessage(sCam);
+    SetSecurityCamera_bNoAlarm(false);
 }
 
 function TurnOffLasers()
@@ -133,7 +132,12 @@ function TurnOffLasers()
 	}
 
 	bLasersOn = false;
-	TantalusDenton(player).ToggleCameraStateNoDebugMessage(sCam);
+    SetSecurityCamera_bNoAlarm(true);
+}
+
+function SetSecurityCamera_bNoAlarm(bool bNoAlarm)
+{
+    sCam.bNoAlarm = bNoAlarm;
 }
 
 defaultproperties

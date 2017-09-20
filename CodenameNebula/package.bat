@@ -65,8 +65,8 @@ copy ..\System\AiScreen.u												System\
 copy ..\System\CNN.u													System\
 copy ..\System\CNNText.u												System\
 copy ..\System\CNNAudio*.u												System\
-::copy ..\System\CNN.ini													System\
-::copy ..\System\CNNUser.ini												System\
+copy ..\System\CNN.ini													System\
+copy ..\System\CNNUser.ini												System\
 copy ..\System\CNNStart.bat												System\
 copy ..\System\PFAD.u													System\
 copy ..\System\GaussGun.u												System\

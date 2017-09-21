@@ -62,6 +62,9 @@ copy ..\System\ApocalypseInside.ini										System\
 copy ..\System\Apocalypse_Inside.u										System\
 copy ..\System\AiScreen.u												System\
 
+copy ..\System\DXOgg.u                                                  System\
+copy ..\System\DXOgg.dll                                                System\
+
 copy ..\System\CNN.u													System\
 copy ..\System\CNNText.u												System\
 copy ..\System\CNNAudio*.u												System\

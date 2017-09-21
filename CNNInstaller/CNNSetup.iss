@@ -46,6 +46,8 @@ Source: "E:\Games\DeusEx\steamapps\common\Deus Ex\CodenameNebula\*"; DestDir: "{
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{app}\Play Codename Nebula"; Filename: "{app}\..\System\DeusEx.EXE"; WorkingDir: "{app}\..\System\"; Parameters: "-ini={app}\System\CNN.ini -userini={app}\System\CNNUser.ini"; IconFilename: "{app}\cnnico.ico";
+Name: "{group}\Play Codename Nebula"; Filename: "{app}\..\System\DeusEx.EXE"; WorkingDir: "{app}\..\System\"; Parameters: "-ini={app}\System\CNN.ini -userini={app}\System\CNNUser.ini"; IconFilename: "{app}\cnnico.ico";
 
 [Run]
 Filename: "{app}\CNNInstallUtil.EXE"; Flags: nowait skipifsilent

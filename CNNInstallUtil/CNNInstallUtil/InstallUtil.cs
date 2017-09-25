@@ -52,6 +52,8 @@ namespace CNNInstallUtil
                     Console.WriteLine("Error: file {0} doesn't exists!", originalDeusExUserIni.FullName);
                     Console.WriteLine("Skipping copy file.");
                 }
+
+                CopyMusicFiles(pathToSystem, pathToModSystem);
             }
             else
             {
@@ -109,6 +111,45 @@ namespace CNNInstallUtil
             iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "Music\\*.umx"));
 
             File.WriteAllLines(pathToFile, iniKeyValues.ToArray());
+        }
+
+        private void CopyMusicFiles(string pathToSystem, string pathToModSystem)
+        {
+            string pathToMusic = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).ToString(), "Music");
+            string pathToOggMusic = Path.Combine(pathToMusic, "Ogg");
+            string pathToModOggMusic = Path.Combine(currentPath, "Music\\Ogg");
+
+            DirectoryInfo musicDirInfo = new DirectoryInfo(pathToMusic);
+            DirectoryInfo oggMusicDirInfo = new DirectoryInfo(pathToOggMusic);
+            DirectoryInfo oggMusicModDirInfo = new DirectoryInfo(pathToModOggMusic);
+
+            FileInfo dxOggDLLFile = new FileInfo(Path.Combine(pathToSystem, "DXOgg.dll"));
+            FileInfo dxOggFile = new FileInfo(Path.Combine(pathToSystem, "DXOgg.u"));
+
+            if (!musicDirInfo.Exists)
+            {
+                Console.WriteLine("Error: directory {0} doesn't exists!", pathToMusic);
+                Console.WriteLine("Creating directory!");
+                Directory.CreateDirectory(pathToMusic); // unauthorized exception?
+            }
+
+            if (!oggMusicDirInfo.Exists)
+            {
+                Console.WriteLine("Error: directory {0} doesn't exists!", pathToOggMusic);
+                Console.WriteLine("Creating directory!");
+                Directory.CreateDirectory(pathToOggMusic); // unauthorized exception?
+            }
+
+            File.Copy(dxOggDLLFile.FullName, Path.Combine(pathToSystem, dxOggDLLFile.Name), true);
+            File.Copy(dxOggFile.FullName, Path.Combine(pathToSystem, dxOggFile.Name), true);
+
+            foreach (FileInfo oggFile in oggMusicModDirInfo.GetFiles())
+            {
+                Console.WriteLine("Copy file: {0}", oggFile.Name);
+                File.Copy(oggFile.FullName, Path.Combine(pathToOggMusic, oggFile.Name), true);
+            }
+
+            Console.WriteLine("Done copying ogg music!");
         }
     }
 }

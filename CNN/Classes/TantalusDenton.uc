@@ -161,8 +161,12 @@ exec function ShowMainMenu()
     info = GetLevelInfo();
 
     root = DeusExRootWindow(rootWindow);
+    
     if (root != None)
-        root.InvokeMenu(class'CNN.ApocalypseInsideMenuMain');
+    {
+        //root.InvokeMenu(class'CNN.ApocalypseInsideMenuMain');
+        root.InvokeMenu(class'CNN.CNNMenuMainTest');
+    }
 }
 
 // ----------------------------------------------------------------------

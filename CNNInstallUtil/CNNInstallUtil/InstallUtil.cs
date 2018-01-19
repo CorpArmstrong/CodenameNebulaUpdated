@@ -96,19 +96,32 @@ namespace CNNInstallUtil
         {
             List<string> iniKeyValues = new List<string>(File.ReadAllLines(pathToFile));
 
-            int idx1 = iniKeyValues.FindIndex(x => x.StartsWith("Class="));
-            iniKeyValues[idx1] = "Class=CNN.TantalusDenton";
+            int index = iniKeyValues.FindIndex(x => x.StartsWith("Class="));
 
-            int idx2 = iniKeyValues.FindIndex(x => x.StartsWith("DefaultGame="));
-            iniKeyValues[idx2] = "DefaultGame=CNN.CNNGameInfo";
+            if (index >= 0)
+            {
+                iniKeyValues[index] = "Class=CNN.TantalusDenton";
+                index = -1;
+            }
+            
+            index = iniKeyValues.FindIndex(x => x.StartsWith("DefaultGame="));
+
+            if (index >= 0)
+            {
+                iniKeyValues[index] = "DefaultGame=CNN.CNNGameInfo";
+                index = -1;
+            }
 
             int propertiesIdx = iniKeyValues.FindIndex(x => x.StartsWith("[Core.System]"));
 
-            iniKeyValues.Insert(++propertiesIdx, "SavePath=" + Path.Combine(currentPath, "Save"));
-            iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "Maps\\*.dx"));
-            iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "System\\*.u"));
-            iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "Textures\\*.utx"));
-            iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "Music\\*.umx"));
+            if (propertiesIdx >= 0)
+            {
+                iniKeyValues.Insert(++propertiesIdx, "SavePath=" + Path.Combine(currentPath, "Save"));
+                iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "Maps\\*.dx"));
+                iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "System\\*.u"));
+                iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "Textures\\*.utx"));
+                iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "Music\\*.umx"));
+            }
 
             File.WriteAllLines(pathToFile, iniKeyValues.ToArray());
         }
@@ -145,7 +158,7 @@ namespace CNNInstallUtil
 
             foreach (FileInfo oggFile in oggMusicModDirInfo.GetFiles())
             {
-                Console.WriteLine("Copy file: {0}", oggFile.Name);
+                Console.WriteLine("Copying file: {0}", oggFile.Name);
                 File.Copy(oggFile.FullName, Path.Combine(pathToOggMusic, oggFile.Name), true);
             }
 

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CNNInstallUtil
+﻿namespace CNNInstallUtil
 {
     class Program
     {

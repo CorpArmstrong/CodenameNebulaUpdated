@@ -57,6 +57,7 @@ event TravelPostAccept()
 			MultiSkins[5] = None;
             MultiSkins[6] = Texture'DeusExCharacters.Skins.FramesTex2';
             MultiSkins[7] = FireTexture'Effects.Laser.LaserSpot2';
+			Texture = Texture'DeusExItems.Skins.PinkMaskTex';
             //MultiSkins[7] = FireTexture'Effects.Fire.Spark_Electric'; //causes ucc to return error
         break;
         case 2:

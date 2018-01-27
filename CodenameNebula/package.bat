@@ -74,7 +74,7 @@ copy ..\System\CNNStart.bat												System\
 copy ..\System\PFAD.u													System\
 copy ..\System\GaussGun.u												System\
 copy ..\System\DXRVNewVehicles.u										System\
-copy ..\CNNInstallUtil\CNNInstallUtil\bin\Debug\CNNInstallUtil.exe		.\
+copy ..\CNNInstallUtil\CNNInstallUtil\bin\Release\CNNInstallUtil.exe		.\
 
 cd System\
 echo . > dummy.txt

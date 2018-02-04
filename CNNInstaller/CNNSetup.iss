@@ -5,6 +5,7 @@
 #define MyAppVersion "1.1"
 #define MyAppPublisher "DeusGroup, Inc."
 #define MyAppURL "https://apocalypseinside.heraldic.cloud/"
+#define SetupDir "E:\Games\DeusEx\steamapps\common\Deus Ex"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -21,12 +22,13 @@ AppUpdatesURL={#MyAppURL}
 ;DefaultDirName={pf}\CodenameNebula
 DefaultDirName={sd}\Games\DeusEx\CodenameNebula
 DefaultGroupName={#MyAppName}
-AllowNoIcons=yes
-LicenseFile=E:\Games\DeusEx\steamapps\common\Deus Ex\CNNInstaller\InfoLicense.txt
-InfoBeforeFile=E:\Games\DeusEx\steamapps\common\Deus Ex\CNNInstaller\InfoBeforeInstall.txt
-InfoAfterFile=E:\Games\DeusEx\steamapps\common\Deus Ex\CNNInstaller\InfoAfterInstall.txt
-OutputDir=E:\Games\DeusEx\steamapps\common\Deus Ex\CNNInstaller\
-OutputBaseFilename=CodenameNebula_v1.1
+;AllowNoIcons=yes
+LicenseFile={#SetupDir}\CNNInstaller\InfoLicense.txt
+InfoBeforeFile={#SetupDir}\CNNInstaller\InfoBeforeInstall.txt
+InfoAfterFile={#SetupDir}\CNNInstaller\InfoAfterInstall.txt
+OutputDir=E:\Games\CNNInstaller\
+OutputBaseFilename=CodenameNebula_v1.2.1
+SetupIconFile={#SetupDir}\CodenameNebula\cnnico.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -40,7 +42,7 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 
 [Files]
-Source: "E:\Games\DeusEx\steamapps\common\Deus Ex\CodenameNebula\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SetupDir}\CodenameNebula\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 

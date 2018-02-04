@@ -22,12 +22,10 @@ AppUpdatesURL={#MyAppURL}
 ;DefaultDirName={pf}\CodenameNebula
 DefaultDirName={sd}\Games\DeusEx\CodenameNebula
 DefaultGroupName={#MyAppName}
-;AllowNoIcons=yes
 LicenseFile={#SetupDir}\CNNInstaller\InfoLicense.txt
 InfoBeforeFile={#SetupDir}\CNNInstaller\InfoBeforeInstall.txt
-InfoAfterFile={#SetupDir}\CNNInstaller\InfoAfterInstall.txt
 OutputDir=E:\Games\CNNInstaller\
-OutputBaseFilename=CodenameNebula_v1.2.1
+OutputBaseFilename=CodenameNebula_v1.2.2
 SetupIconFile={#SetupDir}\CodenameNebula\cnnico.ico
 Compression=lzma
 SolidCompression=yes
@@ -44,15 +42,12 @@ Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 [Files]
 Source: "{#SetupDir}\CodenameNebula\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-
 [Icons]
-Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\cnnico.ico";
 Name: "{app}\Play Codename Nebula"; Filename: "{app}\..\System\DeusEx.EXE"; WorkingDir: "{app}\..\System\"; Parameters: "-ini={app}\System\CNN.ini -userini={app}\System\CNNUser.ini"; IconFilename: "{app}\cnnico.ico";
 Name: "{group}\Play Codename Nebula"; Filename: "{app}\..\System\DeusEx.EXE"; WorkingDir: "{app}\..\System\"; Parameters: "-ini={app}\System\CNN.ini -userini={app}\System\CNNUser.ini"; IconFilename: "{app}\cnnico.ico";
 
 [Run]
 Filename: "{app}\CNNInstallUtil.EXE"; Flags: nowait skipifsilent
-;Description: "Setup will now create ini-files"; StatusMsg: "Creating ini-files..."; Flags: postinstall nowait skipifsilent checked
 
 ;[Code]

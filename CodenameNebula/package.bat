@@ -16,6 +16,7 @@ copy ..\Maps\06_OpheliaL2.dx											Maps\
 
 cd Maps\
 ren CNNentry.dx DX.dx
+copy DX.dx CNNEntry.dx
 echo . > dummy.txt
 cd ..
 

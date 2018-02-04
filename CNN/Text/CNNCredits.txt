@@ -1,15 +1,15 @@
 <P>Dev Team
 <P>
 <P>Artem "Tantalus" D
-<P>Project director, Lead Writer, Lead Level Designer, Texture Designer, Junior Programmer, Soundtrack
+<P>Project director, Lead Writer, Lead Level Designer, Texture Designer, Programmer, Soundtrack
 <P>
 <P>
 <P>Dmitriy "CorpArmstrong" Fedykovych
-<P>Senior Programmer, Writer, Assistant Level Designer, Soundtrack
+<P>Assistant director, Lead Programmer, Assistant Writer, Assistant Level Designer, Soundtrack
 <P>
 <P>
 <P>Evgeniy "JJoe" Bortnik
-<P>Junior Programmer, 3D Modeller, Assistant Level Designer
+<P>Programmer, 3D Modeller, Assistant Level Designer
 <P>
 <P>
 <P>Andrievskaya Veronika

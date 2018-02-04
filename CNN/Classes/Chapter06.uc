@@ -39,4 +39,3 @@ defaultproperties
     actorTag=MagdaleneDenton
 	levelName="06_OpheliaL2#HumanServer"
 }
-

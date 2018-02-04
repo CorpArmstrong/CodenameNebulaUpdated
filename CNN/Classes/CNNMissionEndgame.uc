@@ -6,6 +6,29 @@ class CNNMissionEndgame extends MissionEndgame;
 // Do nothing!
 function ExplosionEffects() {}
 
+// ----------------------------------------------------------------------
+// Timer()
+//
+// Main state machine for the mission
+// ----------------------------------------------------------------------
+
+function Timer()
+{
+    Super.Timer();
+    
+    if (!bQuotePrinted)
+    {
+        PrintEndgameQuote(0);
+    }
+
+	endgameTimer += checkTime;
+
+	if (endgameTimer > endgameDelays[0])
+    {
+		FinishCinematic();
+    }
+}
+
 defaultproperties
 {
      endgameDelays(0)=13.000000

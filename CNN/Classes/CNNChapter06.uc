@@ -20,5 +20,5 @@ function Timer()
 
 defaultproperties
 {
-	levelName="99_Endgame1"
+	levelName="Mutiny"
 }

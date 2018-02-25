@@ -59,6 +59,7 @@ function ToggleOff()
 
 defaultproperties
 {
+	bIsOn=false
      Delay=20.000000
      targetTag(0)=LaserEmittersMoverFR
      targetTag(1)=LaserEmittersMoverFL

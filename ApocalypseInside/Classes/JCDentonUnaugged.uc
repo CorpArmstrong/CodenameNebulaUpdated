@@ -4,6 +4,10 @@ function bool Facelift(bool bOn)
 {
 }
 
+function SetSkin(DeusExPlayer player)
+{
+}
+
 defaultproperties
 {
 	bInvincible=True

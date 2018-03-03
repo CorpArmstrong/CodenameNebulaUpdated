@@ -62,6 +62,7 @@ function DoLevelStuff()
 
 function GivePlayerHisAugs()
 {
+		
     if(flags.GetBool('HasMuscleAug') && !flags.GetBool('PlayerGotMuscleAug'))
     {
         Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugMuscle');

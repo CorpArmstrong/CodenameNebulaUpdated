@@ -2,8 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Codename Nebula"
-#define MyAppVersion "1.1"
-#define MyAppPublisher "DeusGroup, Inc."
+#define MyAppVersion "1.2.2"
+#define MyAppPublisher "Heraldic"
 #define MyAppURL "https://apocalypseinside.heraldic.cloud/"
 #define SetupDir "E:\Games\DeusEx\steamapps\common\Deus Ex"
 
@@ -24,7 +24,7 @@ DefaultDirName={sd}\Games\DeusEx\CodenameNebula
 DefaultGroupName={#MyAppName}
 LicenseFile={#SetupDir}\CNNInstaller\InfoLicense.txt
 InfoBeforeFile={#SetupDir}\CNNInstaller\InfoBeforeInstall.txt
-OutputDir=E:\Games\CNNInstaller\
+OutputDir=E:\Games\CNNInstaller
 OutputBaseFilename=CodenameNebula_v1.2.2
 SetupIconFile={#SetupDir}\CodenameNebula\cnnico.ico
 Compression=lzma

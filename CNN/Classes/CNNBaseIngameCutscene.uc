@@ -20,6 +20,7 @@ function InitStateMachine()
 {
     Super.InitStateMachine();
     CheckIntroFlags();
+	player.bCheatsEnabled = true;
 }
 
 // ----------------------------------------------------------------------
@@ -162,5 +163,9 @@ function SendPlayer()
 	}
 
 	Player.Invisible(false);
+	//flags.SetBool('PlayerTraveling', false, true, 0);
+	//playerbHidden = false;
+		//player.Visibility = Default.Visibility;
+		//player.bDetectable = true;
 	Level.Game.SendPlayer(player, sendToLocation);
 }

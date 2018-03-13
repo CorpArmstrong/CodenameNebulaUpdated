@@ -1,15 +1,15 @@
 class CNNNetworkTerminalSecurity extends CNNNetworkTerminalSecurityBase;
 
-var() name dispatcherTag;
+var() name conTrigTag;
 
 var DeusExPlayer player;
-var Dispatcher disp;
+var CNNConversTrigger conTrig;
 
 var() name conversationTag;
 
 event InitWindow()
 {
-    local Dispatcher _disp;
+    local CNNConversTrigger _conTrig;
     super.InitWindow();
 
     player = DeusExPlayer(GetPlayerPawn());
@@ -17,10 +17,10 @@ event InitWindow()
     if (player != none)
     {
         player.BroadcastMessage("Player found!");
-        foreach player.AllActors(class'Dispatcher', _disp, dispatcherTag)
+        foreach player.AllActors(class'CNNConversTrigger', _conTrig, conTrigTag)
         {
-            player.BroadcastMessage("Dispatcher found!");
-            disp = _disp;
+            player.BroadcastMessage("ConTrig found!");
+            conTrig = _conTrig;
             break;
         }
     }
@@ -31,7 +31,7 @@ function OnLoginAction()
     if (!AreSpecialOptionsAvailable(true))
     {
         PlayBark();
-        player.BroadcastMessage("After triggering dispatcher!");
+        player.BroadcastMessage("After triggering conversation!");
     }
 
     super.OnLoginAction();
@@ -39,14 +39,14 @@ function OnLoginAction()
 
 function PlayBark()
 {
-    if (player != none && disp != none)
+    if (player != none && conTrig != none)
     {
-        player.BroadcastMessage("Triggering dispatcher!");
-        disp.Trigger(none, player);
+        player.BroadcastMessage("Triggering conversation!");
+        conTrig.Trigger(none, player);
     }
 }
 
 DefaultProperties
 {
-    dispatcherTag=DispatcherUberAlles
+    conTrigTag=CnnConversTriggerSeesUberAlles
 }

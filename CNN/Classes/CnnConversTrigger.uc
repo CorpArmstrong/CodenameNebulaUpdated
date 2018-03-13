@@ -20,34 +20,44 @@ singular function ActivatedON()
 	bSuccess = True;
 
 	if (player == None)
+    {
 		return;
+    }
 
 	if (CheckFlag != '')
 	{
 		if (!player.flagBase.GetBool(CheckFlag))
+        {
 			bSuccess = bCheckFalse;
-		else
+        }
+        else
+        {
 			bSuccess = !bCheckFalse;
+        }
 	}
 
 	if ((BindName != "") && (ConversationTag != ''))
 	{
 		foreach AllActors(class'Actor', A)
+        {
 			if (A.BindName == BindName)
 			{
 				conOwner = A;
 				break;
 			}
-
+        }
 
 		if (bSuccess)
+        {
 			if (player.StartConversationByName(ConversationTag, conOwner, false, bForcePlay))
+            {
 				//Super.Trigger(Other, Instigator);
 				super.ActivatedON();
+            }
+        }
 	}
 }
 
 DefaultProperties
 {
-
 }

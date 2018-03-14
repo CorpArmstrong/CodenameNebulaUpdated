@@ -651,6 +651,28 @@ function ToggleCameraStateNoDebugMessage(SecurityCamera cam)
    cam.bStasis = False;         
 }
 
+function SetInvisible(bool B)
+{
+	
+	if ( !bAdmin && (Level.Netmode != NM_Standalone) )
+		return;
+
+	if (B)
+	{
+		bHidden = true;
+		Visibility = 0;
+		// DEUS_EX STM - added AI invisibility
+		bDetectable = false;
+	}
+	else
+	{
+		bHidden = false;
+		Visibility = Default.Visibility;
+		// DEUS_EX STM - added AI invisibility
+		bDetectable = true;
+	}	
+}
+
 defaultproperties
 {
     TruePlayerName="Blake Denton"

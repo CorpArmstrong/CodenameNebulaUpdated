@@ -20,7 +20,6 @@ function InitStateMachine()
 {
     Super.InitStateMachine();
     CheckIntroFlags();
-	player.bCheatsEnabled = true;
 }
 
 // ----------------------------------------------------------------------
@@ -162,7 +161,7 @@ function SendPlayer()
 		DeusExRootWindow(player.rootWindow).ClearWindowStack();
 	}
 
-	Player.Invisible(false);
+	TantalusDenton(Player).SetInvisible(false);
 	//flags.SetBool('PlayerTraveling', false, true, 0);
 	//playerbHidden = false;
 		//player.Visibility = Default.Visibility;

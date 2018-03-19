@@ -1,6 +1,7 @@
 # Excluded:
 !System/DXOg*
 !System/OpenMapInUE1.bat
+!CNN/
 
 # Ignore files in root directory
 /*.*

@@ -11,10 +11,10 @@ var (UpsDamage) bool  bDamagePawns;            // if they are not invincible
 var (UpsDamage) float DecorDamageRadius;
 var (UpsDamage) float DecorDamage;
 var (UpsDamage) name  DecorDamageType;
-var (UpsDamage) bool  bDamageDxDecoration;     // if they breakable
+var (UpsDamage) bool  bDamageDxDecoration;      // if they breakable
 
 var (UpsDamage) float CnnMoverBlowUpRadius;
-var (UpsDamage) bool  bBlowUp_CnnMovers;       // if they breakable
+var (UpsDamage) bool  bBlowUp_CnnMovers;        // if they breakable
 
 var (UpsVisualEffects) bool  bPulsation;
 var (UpsVisualEffects) bool  bRotating;
@@ -22,7 +22,12 @@ var (UpsVisualEffects) bool  bRotating;
 var (UpsVisualEffects) float PulsationTime;
 var (UpsVisualEffects) float PulsationRange;
 
-var (UpsVisualEffects) int RotationSpeed;     // one turn around self per thisnumber of seconds
+var (UpsVisualEffects) int RotationSpeed;       // one turn around self per thisnumber of seconds
+
+var (UPSBehaviour) bool ShouldDefendHome;
+
+// Max distance before returning home
+var (UPSBehaviour) float FleeMaxDistance;
 
 var Pawn pPawn;
 
@@ -338,6 +343,16 @@ function Tick(float deltaTime)
 
 	// call event when trigger in radius
 	// will be realized like a collision with CNNSimpleTrigger
+    
+    if (bDefendHome && Orders == 'Guarding' && OrderTag != '')
+    {
+        if (VSize(HomeLoc - self.Location) >= FleeMaxDistance)
+        {
+            // Change orders for UPS here, go to home base.
+            //GotoState('Fleeing');
+            //function SetOrders(Name orderName, optional Name newOrderTag, optional bool bImmediate)
+        }
+    }
 }
 
 function SelfDestructionGrenades()
@@ -419,4 +434,5 @@ defaultproperties
     bHateInjury=False
     DrawType=DT_Sprite
     CollisionHeight=50.000000
+    FleeMaxDistance=640
 }

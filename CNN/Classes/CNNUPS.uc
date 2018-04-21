@@ -344,13 +344,14 @@ function Tick(float deltaTime)
 	// call event when trigger in radius
 	// will be realized like a collision with CNNSimpleTrigger
     
-    if (bDefendHome && Orders == 'Guarding' && OrderTag != '')
+    if (VSize(HomeLoc - self.Location) >= FleeMaxDistance &&
+        !IsInState('RunningTo') && OrderTag != '')
     {
         if (VSize(HomeLoc - self.Location) >= FleeMaxDistance)
         {
             // Change orders for UPS here, go to home base.
-            //GotoState('Fleeing');
-            //function SetOrders(Name orderName, optional Name newOrderTag, optional bool bImmediate)
+            //SetOrders('RunningTo', OrderTag, true);
+            BroadcastMessage("SetOrders:(OrderTag)" $ OrderTag);
         }
     }
 }
@@ -434,5 +435,5 @@ defaultproperties
     bHateInjury=False
     DrawType=DT_Sprite
     CollisionHeight=50.000000
-    FleeMaxDistance=640
+    FleeMaxDistance=1940
 }

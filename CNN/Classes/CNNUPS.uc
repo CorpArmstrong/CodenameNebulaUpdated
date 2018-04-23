@@ -24,11 +24,6 @@ var (UpsVisualEffects) float PulsationRange;
 
 var (UpsVisualEffects) int RotationSpeed;       // one turn around self per thisnumber of seconds
 
-var (UPSBehaviour) bool ShouldDefendHome;
-
-// Max distance before returning home
-var (UPSBehaviour) float FleeMaxDistance;
-
 var Pawn pPawn;
 
 var JJElecEmitter em[18];
@@ -343,17 +338,6 @@ function Tick(float deltaTime)
 
 	// call event when trigger in radius
 	// will be realized like a collision with CNNSimpleTrigger
-    
-    if (VSize(HomeLoc - self.Location) >= FleeMaxDistance &&
-        !IsInState('RunningTo') && OrderTag != '')
-    {
-        if (VSize(HomeLoc - self.Location) >= FleeMaxDistance)
-        {
-            // Change orders for UPS here, go to home base.
-            //SetOrders('RunningTo', OrderTag, true);
-            BroadcastMessage("SetOrders:(OrderTag)" $ OrderTag);
-        }
-    }
 }
 
 function SelfDestructionGrenades()
@@ -436,4 +420,7 @@ defaultproperties
     DrawType=DT_Sprite
     CollisionHeight=50.000000
     FleeMaxDistance=1940
+    Orders=Guarding
+    OrderTag=OpenAirlock
+    bAlwaysPatrol=True
 }

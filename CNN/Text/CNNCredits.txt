@@ -1,4 +1,4 @@
-<P>Dev Team
+<P>Dev Team:
 <P>
 <P>Artem "Tantalus" D
 <P>Project director, Lead Writer, Lead Level Designer, Texture Designer, Programmer, Soundtrack
@@ -16,25 +16,43 @@
 <P>Additional level design, consultant.
 <P>
 <P>
+<P>Pavel Marianenko
+<P>Lead writer, game design
 <P>
-<P>Voice Actors
+<P>
+<P>Pavel Mosunov
+<P>Additional 3D modelling
+<P>
+<P>
+<P>Max Yakimenko
+<P>Lead sound design
+<P>
+<P>
+<P>Artem Dubson
+<P>Additional 3D modelling
+<P>
+<P>
+<P>Iowa Paschenko
+<P>Sketching
+<P>
+<P>
+<P>
+<P>Voice Actors:
+<P>
 <P>Artem "Tantalus" D
 <P>
 <P>Tantalus, Uber Alles
 <P>
 <P>
 <P>Dustin "Crimsan" Ludwig
-<P>
 <P>Howard Strong
 <P>
 <P>
 <P>Giuseppse Mandamus
-<P>
 <P>Janus
 <P>
 <P>
 <P>Mario Mandamus
-<P>
 <P>Captain Valiante
 <P>
 <P>
@@ -45,16 +63,14 @@
 <P>milosh-andrich.deviantart.com/art/Sci-fi-pack-03-335294667
 <P>STALKERProject files by Lurker
 <P>
+<P>
+<P>
 <P>Mods used:
 <P>
 <P>Prototype candybars
-<P>
 <P>Precipitation mod
-<P>
 <P>New vehicles by Deadalus08
-<P>
 <P>New Vision
-<P>
 <P>HDTP
 <P>
 <P>
@@ -67,11 +83,17 @@
 <P>
 <P>Win XP is shit by CorpArmstrong
 <P>
+<P>Finger F**k by CorpArmstrong
+<P>
+<P>Who Am I by Tantalus Denton
+<P>
+<P>Anthem by Tantalus Denton
+<P>
 <P>
 <P>
 <P>Original Apocalypse Inside soundtrack composed by Project X-3
-<P>
 <P>https://soundcloud.com/project_x-3/sets/deus-ex-apocalypse-inside-soundtrack
+<P>
 <P>
 <P>
 <P>In memory of Chester Bennington (1976-2017)

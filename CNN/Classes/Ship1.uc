@@ -20,4 +20,5 @@ defaultproperties
 {
     DrawType=DT_Mesh
     Mesh=Ship1
+	ItemName="The Ivanhoe"
 }

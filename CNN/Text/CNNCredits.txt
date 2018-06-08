@@ -17,7 +17,7 @@
 <P>
 <P>
 <P>Pavel Marianenko
-<P>Lead writer, game design
+<P>Writer, game design
 <P>
 <P>
 <P>Pavel Mosunov
@@ -25,7 +25,7 @@
 <P>
 <P>
 <P>Max Yakimenko
-<P>Lead sound design
+<P>Sound design
 <P>
 <P>
 <P>Artem Dubson
@@ -88,12 +88,6 @@
 <P>Win XP is shit by CorpArmstrong
 <P>
 <P>Finger F**k by CorpArmstrong
-<P>
-<P>Who Am I by Tantalus Denton
-<P>
-<P>Anthem by Tantalus Denton
-<P>
-<P>
 <P>
 <P>Original Apocalypse Inside soundtrack composed by Project X-3
 <P>https://soundcloud.com/project_x-3/sets/deus-ex-apocalypse-inside-soundtrack

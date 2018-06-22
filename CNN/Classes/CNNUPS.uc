@@ -414,7 +414,6 @@ defaultproperties
     CarcassType=None
     bInvincible=True
     bHidden=True
-    HomeTag=UpsHomeBase
     bFearIndirectInjury=False
     bHateInjury=False
     DrawType=DT_Sprite

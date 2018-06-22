@@ -11,6 +11,7 @@ function PlayDogBark()
 defaultproperties
 {
      CarcassType=Class'DeusEx.DobermanCarcass'
+     InitialInventory(0)=(Inventory=Class'CNN.CNNUPSWeapon',Count=1)
      WalkingSpeed=0.200000
      GroundSpeed=250.000000
      WaterSpeed=50.000000

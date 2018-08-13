@@ -60,8 +60,14 @@ function Timer()
 }
 
 // ----------------------------------------------------------------------
+// DoLevelStuff
+//
+// Write level-specific logic here.
+// ----------------------------------------------------------------------
 
-function DoLevelStuff() {} // Write level-specific logic here.
+function DoLevelStuff()
+{
+}
 
 function CheckIntroFlags()
 {
@@ -70,9 +76,9 @@ function CheckIntroFlags()
         // After we've teleported back and map has reloaded
         // set the flag, to skip recursive intro call.
         IsArrivalCompleted = true;
-		
-		// Make sure player is not hidden after interpolation state.
-		player.bHidden = false;
+
+        // Make sure player is not hidden after interpolation state.
+        player.bHidden = false;
     }
 
     if (!IsArrivalCompleted)
@@ -93,7 +99,7 @@ function StartConversationWithActor()
         {
             DeusExRootWindow(player.rootWindow).ResetFlags();
 
-            foreach AllActors(class'Actor', actorToSpeak, actorTag)
+            foreach AllActors(class 'Actor', actorToSpeak, actorTag)
                 break;
 
             if (actorToSpeak != none)
@@ -104,8 +110,8 @@ function StartConversationWithActor()
             else
             {
                 Log("Conversation actor not found! Teleporting to start!");
-            	flags.SetBool(convNamePlayed, true, true, 0);
-			}
+                flags.SetBool(convNamePlayed, true, true, 0);
+            }
         }
     }
 }
@@ -129,11 +135,11 @@ function RestoreSoundVolume()
 
 function SendPlayerOnceToGame()
 {
-	if (flags.GetBool(convNamePlayed) && !isArrivalCompleted)
-	{
-		FinishCinematic();
-		SendPlayer();
-	}
+    if (flags.GetBool(convNamePlayed) && !isArrivalCompleted)
+    {
+        FinishCinematic();
+        SendPlayer();
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -142,29 +148,30 @@ function SendPlayerOnceToGame()
 
 function FinishCinematic()
 {
-	local CameraPoint cPoint;
+    local CameraPoint cPoint;
 
-	// Loop through all the CameraPoints and set the "nextPoint"
-	// to None will will effectively cause them to halt.
-
-	foreach player.AllActors(class'CameraPoint', cPoint)
-	{
-		cPoint.nextPoint = None;
-		cPoint.Destroy();
-	}
+    // Loop through all the CameraPoints and set the "nextPoint"
+    // to None will will effectively cause them to halt.
+    foreach player.AllActors(class 'CameraPoint', cPoint)
+    {
+        cPoint.nextPoint = None;
+        cPoint.Destroy();
+    }
 }
 
 function SendPlayer()
 {
-	if (DeusExRootWindow(player.rootWindow) != none)
-	{
-		DeusExRootWindow(player.rootWindow).ClearWindowStack();
-	}
+    if (DeusExRootWindow(player.rootWindow) != none)
+    {
+        DeusExRootWindow(player.rootWindow).ClearWindowStack();
+    }
 
-	TantalusDenton(Player).SetInvisible(false);
-	//flags.SetBool('PlayerTraveling', false, true, 0);
-	//playerbHidden = false;
-		//player.Visibility = Default.Visibility;
-		//player.bDetectable = true;
-	Level.Game.SendPlayer(player, sendToLocation);
+    TantalusDenton(Player).SetInvisible(false);
+
+    //flags.SetBool('PlayerTraveling', false, true, 0);
+    //playerbHidden = false;
+    //player.Visibility = Default.Visibility;
+    //player.bDetectable = true;
+
+    Level.Game.SendPlayer(player, sendToLocation);
 }

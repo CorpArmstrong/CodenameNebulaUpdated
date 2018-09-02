@@ -162,7 +162,7 @@ exec function ShowMainMenu()
     info = GetLevelInfo();
 
     root = DeusExRootWindow(rootWindow);
-    
+
     if (root != None)
     {
         //root.InvokeMenu(class'CNN.ApocalypseInsideMenuMain');
@@ -177,7 +177,9 @@ exec function ShowMainMenu()
 function ShowIntro(optional bool bStartNewGame)
 {
     if (DeusExRootWindow(rootWindow) != None)
+    {
         DeusExRootWindow(rootWindow).ClearWindowStack();
+    }
 
     bStartNewGameAfterIntro = bStartNewGame;
 
@@ -213,7 +215,7 @@ function ShowCredits(optional bool bLoadIntro)
 
 exec function ShowCreditsTest()
 {
-	ShowCredits(true); 
+	ShowCredits(true);
 }
 
 // ----------------------------------------------------------------------
@@ -228,8 +230,9 @@ function UpdatePlayerSkin()
         break;
 
     if (uber != None)
+    {
         uber.SetSkin(Self);
-
+    }
 }
 
 //invokes new hud initially for infolinks. found how to do it on http://www.offtopicproductions.com/tacks/CustomInfolinkPortraits/GameReaction%20Forums%20-%20Custom%20InfoLink%20Portraits.htm
@@ -328,7 +331,9 @@ function InitializeSubSystems()
 
     // Spawn the BarkManager
     if (BarkManager == None)
+    {
         BarkManager = Spawn(class'BarkManager', Self);
+    }
 
     // Spawn the Color Manager
     CreateColorThemeManager();
@@ -359,9 +364,9 @@ function InitializeSubSystems()
         SkillSystem.SetPlayer(Self);
     }
 
+    // Give the player a keyring
 	if ((Level.Netmode == NM_Standalone) || (!bBeltIsMPInventory))
 	{
-		// Give the player a keyring
 		CreateKeyRing();
 	}
 }
@@ -623,10 +628,13 @@ function InvokeUIScreen(Class<DeusExBaseWindow> windowClass)
 {
     local DeusExRootWindow root;
     root = DeusExRootWindow(rootWindow);
+
     if (root != None)
     {
         if ( root.IsKeyDown( IK_Alt ) || root.IsKeyDown( IK_Shift ) || root.IsKeyDown( IK_Ctrl ))
+        {
             return;
+        }
 
         // Method second param is boolean bNoPause
         root.InvokeUIScreen(windowClass, true);
@@ -637,25 +645,26 @@ function ToggleCameraStateNoDebugMessage(SecurityCamera cam)
 {
    if (cam.bActive)
    {
-      cam.UnTrigger(none, none);	
+      cam.UnTrigger(none, none);
       cam.team = -1;
    }
-   else            
+   else
    {
       MakeCameraAlly(cam);
       cam.Trigger(none, none);
    }
-         
+
    // Make sure the camera isn't in bStasis=True
    // so it responds to our every whim.
-   cam.bStasis = False;         
+   cam.bStasis = False;
 }
 
 function SetInvisible(bool B)
 {
-	
-	if ( !bAdmin && (Level.Netmode != NM_Standalone) )
+	if (!bAdmin && (Level.Netmode != NM_Standalone))
+    {
 		return;
+    }
 
 	if (B)
 	{
@@ -670,7 +679,7 @@ function SetInvisible(bool B)
 		Visibility = Default.Visibility;
 		// DEUS_EX STM - added AI invisibility
 		bDetectable = true;
-	}	
+	}
 }
 
 defaultproperties

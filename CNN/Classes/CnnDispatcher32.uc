@@ -23,7 +23,6 @@ enum EWaitingMode
 	EWM_WaitAfter,
 };
 
-
 var(Dispatcher) SEventCall EventCalls[32];
 var(Dispatcher) EWaitingMode WaitingMode;
 
@@ -60,14 +59,16 @@ Begin:
 	{
 		case EWM_WaitBefore:
 
-			for( i=0; i<ArrayCount(EventCalls); i++ )
+			for (i = 0; i < ArrayCount(EventCalls); i++)
 			{
-				if( EventCalls[i].eventName != '' )
+				if (EventCalls[i].eventName != '')
 				{
-					Sleep( EventCalls[i].eventWait );
+					Sleep(EventCalls[i].eventWait);
 
-					foreach AllActors( class 'Actor', Target, EventCalls[i].EventName )
-						Target.Trigger( Self, GetPlayerPawn() );
+					foreach AllActors(class 'Actor', Target, EventCalls[i].EventName)
+					{
+						Target.Trigger( Self, GetPlayerPawn());
+					}
 				}
 			}
 
@@ -75,12 +76,14 @@ Begin:
 
 		case EWM_WaitAfter:
 
-			for( i=0; i<ArrayCount(EventCalls); i++ )
+			for (i = 0; i < ArrayCount(EventCalls); i++)
 			{
-				if( EventCalls[i].eventName != '' )
+				if (EventCalls[i].eventName != '')
 				{
-					foreach AllActors( class 'Actor', Target, EventCalls[i].EventName )
-						Target.Trigger( Self, GetPlayerPawn() );
+					foreach AllActors(class 'Actor', Target, EventCalls[i].EventName)
+					{
+						Target.Trigger(Self, GetPlayerPawn());
+					}
 
 					Sleep( EventCalls[i].eventWait );
 				}
@@ -93,8 +96,6 @@ Begin:
 	super.ActivatedON(); // calls events, and restore bEnabled if it's needs
 }
 
-
 DefaultProperties
 {
-
 }

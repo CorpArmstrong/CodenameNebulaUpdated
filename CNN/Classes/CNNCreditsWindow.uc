@@ -55,18 +55,16 @@ event DestroyWindow()
 {
     bLoadIntro = false;
     player.Level.Game.SendPlayer(player, "cnnentry");
-    
+
 	Super.DestroyWindow();
 }
 
 defaultproperties
 {
-	CreditsBannerTextures(0)=Texture'CNN.codenamenebula_credits'
-	TeamPhotoTextures(0)=Texture'CNN.chester_credits'
-	creditsEndSoundLength=4.000000
-    ScrollMusicString=""
-    // Don't use vanilla music in credits
-    //ScrollMusicString="Credits_Music.Credits_Music"
-	textName=CNNCredits
-	textPackage="CNN"
+    CreditsBannerTextures(0)=Texture'CNN.codenamenebula_credits'
+    TeamPhotoTextures(0)=Texture'CNN.chester_credits'
+    creditsEndSoundLength=4.000000
+    ScrollMusicString="" // Don't use vanilla music in credits
+    textName=CNNCredits
+    textPackage="CNN"
 }

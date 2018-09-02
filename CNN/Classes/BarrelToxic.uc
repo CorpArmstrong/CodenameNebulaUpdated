@@ -10,7 +10,9 @@ var ParticleGenerator ToxicDrip;
 function Destroyed()
 {
 	if (ToxicDrip != None)
+	{
 		ToxicDrip.DelayedDestroy();
+	}
 
 	Super.Destroyed();
 }
@@ -21,6 +23,7 @@ function PostBeginPlay()
 	SetBase(Owner);
 
 	ToxicDrip = Spawn(class'ParticleGenerator', Self,, Location + vect(0,0,1) * CollisionHeight * 0.6, rot(16384,0,0));
+
 	if (ToxicDrip != None)
 	{
 		ToxicDrip.bParticlesUnlit = True;
@@ -40,20 +43,20 @@ function PostBeginPlay()
 
 defaultproperties
 {
-     HitPoints=30
-     bInvincible=True
-     bFlammable=False
-     bUnlit=True
-     ItemName="Helium-3 Barrel"
-     bBlockSight=True
-     Mesh=LodMesh'CNN.BarrelToxic'
-     CollisionRadius=19.000000
-     CollisionHeight=28.500000
-     LightType=LT_Steady
-     LightEffect=LE_FireWeaver
-     LightBrightness=96
-     LightHue=100
-     LightRadius=8
-     Mass=80.000000
-     Buoyancy=90.000000
+	HitPoints=30
+	bInvincible=True
+	bFlammable=False
+    bUnlit=True
+	ItemName="Helium-3 Barrel"
+	bBlockSight=True
+	Mesh=LodMesh'CNN.BarrelToxic'
+	CollisionRadius=19.000000
+	CollisionHeight=28.500000
+	LightType=LT_Steady
+	LightEffect=LE_FireWeaver
+	LightBrightness=96
+	LightHue=100
+	LightRadius=8
+	Mass=80.000000
+	Buoyancy=90.000000
 }

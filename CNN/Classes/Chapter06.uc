@@ -1,7 +1,6 @@
 //-----------------------------------------------------------
 // Mission Docks
 //-----------------------------------------------------------
-
 class Chapter06 extends CNNBaseIngameCutscene;
 
 var(ChangeLevelOnDeath) string levelName;
@@ -21,7 +20,7 @@ function DoLevelStuff()
     {
 		flags.SetBool('French_Elementary', True);
     }
-	
+
 	if (flags.GetBool('MagdaleneDisappearsInDocks') && !flags.GetBool('AllObjectsDestroyed'))
 	{
 	    foreach AllActors(class'Dispatcher', returnDispatcher, 'ReturnToLevelDispatcher')
@@ -37,5 +36,5 @@ defaultproperties
     conversationName=ApproachingOphelia
     convNamePlayed=ApproachingOphelia_Played
     actorTag=MagdaleneDenton
-	levelName="06_OpheliaL2#HumanServer"
+    levelName="06_OpheliaL2#HumanServer"
 }

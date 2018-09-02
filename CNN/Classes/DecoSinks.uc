@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoSinks expands Object
+class DecoSinks expands Object
 	abstract;
 
 // Sink1

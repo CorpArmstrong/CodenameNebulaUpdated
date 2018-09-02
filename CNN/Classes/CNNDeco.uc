@@ -1,8 +1,7 @@
 //=============================================================================
 // CNNDeco.
 //=============================================================================
-class CNNDeco extends DeusExDecoration
-	abstract;
+class CNNDeco extends DeusExDecoration abstract;
 
 defaultproperties
 {

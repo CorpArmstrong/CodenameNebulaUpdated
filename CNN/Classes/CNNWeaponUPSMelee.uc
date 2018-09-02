@@ -1,15 +1,15 @@
 //-----------------------------------------------------------
-// just like WeaponDogBite but without sounds
+// Just like WeaponDogBite but without sounds
 //-----------------------------------------------------------
 class CNNWeaponUPSMelee expands WeaponNPCMelee;
 
-DefaultProperties
+defaultproperties
 {
-     ShotTime=0.500000
-     HitDamage=15
-     maxRange=80
-     AccurateRange=80
-     Misc1Sound=None;
-     Misc2Sound=None;
-     Misc3Sound=None;
+    ShotTime=0.500000
+    HitDamage=15
+    maxRange=80
+    AccurateRange=80
+    Misc1Sound=none;
+    Misc2Sound=none;
+    Misc3Sound=none;
 }

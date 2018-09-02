@@ -1,8 +1,7 @@
 //-----------------------------------------------------------
 // SpawnTrigger
 //-----------------------------------------------------------
-
-class SpawnTrigger expands CNNTrigger;
+class SpawnTrigger extends CNNTrigger;
 
 var () name ScriptedPawnTag;
 

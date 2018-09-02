@@ -67,7 +67,7 @@ function BeginPlay()
 					break;
 		case SC_Magnesium:	MultiSkins[1] = Texture'ChemicalCannisterTex11';
 					ItemName = "Magnesium (Mg)";
-					break;	
+					break;
 		case SC_Molybdenum:	MultiSkins[1] = Texture'ChemicalCannisterTex12';
 					ItemName = "Molybdenum (Mo)";
 					break;
@@ -100,13 +100,13 @@ function BeginPlay()
 
 defaultproperties
 {
-     HitPoints=10
-     bInvincible=True
-     bFlammable=False
-     ItemName="Chemical Cannister"
-     Mesh=LodMesh'CNN.ChemicalCannister'
-     CollisionRadius=8.000000
-     CollisionHeight=8.500000
-     Mass=20.000000
-     Buoyancy=40.000000
+	HitPoints=10
+	bInvincible=True
+	bFlammable=False
+	ItemName="Chemical Cannister"
+	Mesh=LodMesh'CNN.ChemicalCannister'
+	CollisionRadius=8.000000
+	CollisionHeight=8.500000
+	Mass=20.000000
+	Buoyancy=40.000000
 }

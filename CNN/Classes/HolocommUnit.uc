@@ -2,7 +2,6 @@
 // Class:    HolocommUnit
 // Author:   CorpArmstrong
 //-----------------------------------------------------------------------
-
 class HolocommUnit extends CNNTrigger;
 
 struct SpawnInfo
@@ -47,7 +46,6 @@ function PostBeginPlay()
 
     // Check first entry in ContactInfo list,
     // maybe there is already a hologram needs to be shown.
-
     if (!contacts[0].bInitiallyHidden)
     {
         SetAndSpawnActor(contacts[0]);
@@ -139,7 +137,6 @@ function Trigger(Actor Other, Pawn Instigator)
 // ============================================================================
 // Tick
 // ============================================================================
-
 simulated function Tick(float TimeDelta)
 {
     Super.Tick(TimeDelta);

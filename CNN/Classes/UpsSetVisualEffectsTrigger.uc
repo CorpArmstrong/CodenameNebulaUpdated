@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
-//
+// UpsSetVisualEffectsTrigger
 //-----------------------------------------------------------
-class UpsSetVisualEffectsTrigger expands CNNSimpleTrigger;
+class UpsSetVisualEffectsTrigger extends CNNSimpleTrigger;
 
 var (UpsSetVisualEffects) name CnnUpsTag;
 
@@ -13,10 +13,9 @@ var (UpsSetVisualEffects) float PulsationRange;
 
 var (UpsSetVisualEffects) int RotationSpeed;     // one turn around self per thisnumber of seconds
 
-
 function ActivatedON()
 {
-local CNNUPS cnnUps;
+	local CNNUPS cnnUps;
 
 	foreach AllActors(class'CNNUPS', cnnUps, CnnUpsTag)
 	{
@@ -32,16 +31,12 @@ local CNNUPS cnnUps;
 	super.ActivatedON();
 }
 
-DefaultProperties
+defaultproperties
 {
 	CnnUpsTag=CNNUPS
-
-	// the most "Excited" state of UPS
 	bPulsation=true
 	bRotating=true
-
 	PulsationTime=0.25
 	PulsationRange=2
-
 	RotationSpeed=20000.0
 }

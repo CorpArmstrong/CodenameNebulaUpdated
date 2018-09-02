@@ -1,4 +1,5 @@
 //-----------------------------------------------------------
+// PostBeginTrigger
 // That trigger needs when we must Call event at level start
 //-----------------------------------------------------------
 class PostBeginTrigger expands CNNSimpleTrigger;
@@ -7,14 +8,17 @@ var(Trigger) enum ECallAtEvent
 {
 	ECAE_PostPostBeginPlay,
 	ECAE_PostBeginPlay,
-}CallAtEvent;
+} CallAtEvent;
 
 function PostBeginPlay()
 {
-	if ( CallAtEvent == ECAE_PostBeginPlay )
+	if (CallAtEvent == ECAE_PostBeginPlay)
 	{
-		if(!bEnabled)
+		if (!bEnabled)
+		{
 			return;
+		}
+
 		DebugInfo("PostBeginPlay()");
 		ActivatedON();
 	}
@@ -22,22 +26,22 @@ function PostBeginPlay()
 
 function PostPostBeginPlay()
 {
-	if ( CallAtEvent == ECAE_PostPostBeginPlay )
+	if (CallAtEvent == ECAE_PostPostBeginPlay)
 	{
-		if(!bEnabled)
+		if (!bEnabled)
+		{
 			return;
+		}
+
 		DebugInfo("PostPostBeginPlay()");
 		ActivatedON();
 	}
 }
 
-//var (Event) name OnPostBeginPlay;
-//var (Event) name OnPostPostBeginPlay;
-
-DefaultProperties
+defaultproperties
 {
 	bOnlyOnce=true
 	CollisionRadius=0.000000
 	CollisionHeight=0.000000
-	bCollideActors=False
+	bCollideActors=false
 }

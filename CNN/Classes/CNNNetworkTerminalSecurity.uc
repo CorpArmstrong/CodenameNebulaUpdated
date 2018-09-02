@@ -13,10 +13,11 @@ event InitWindow()
     super.InitWindow();
 
     player = DeusExPlayer(GetPlayerPawn());
-    
+
     if (player != none)
     {
         player.BroadcastMessage("Player found!");
+
         foreach player.AllActors(class'CNNConversTrigger', _conTrig, conTrigTag)
         {
             player.BroadcastMessage("ConTrig found!");
@@ -46,7 +47,7 @@ function PlayBark()
     }
 }
 
-DefaultProperties
+defaultproperties
 {
     conTrigTag=CnnConversTriggerSeesUberAlles
 }

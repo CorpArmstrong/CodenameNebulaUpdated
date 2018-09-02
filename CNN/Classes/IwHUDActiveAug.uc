@@ -19,7 +19,7 @@ function DrawHotKey(GC gc)
 {
 	gc.SetAlignments(HALIGN_Right, VALIGN_Top);
 	gc.SetFont(Font'FontTiny');
-	
+
 	// Draw Dropshadow
 	gc.SetTextColor(colBlack);
 	gc.DrawText(16, 1, 15, 8, hotKeyString);
@@ -66,21 +66,22 @@ function UpdateAugIconStatus()
 
 	aug = Augmentation(GetClientObject());
 
-	if (aug != None)
+	if (aug != none)
 	{
 		if (aug.IsActive())
+		{
 			colItemIcon = colAugActive;
+		}
 		else
+		{
 			colItemIcon = colAugInactive;
+		}
 	}
 }
 
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
-
 defaultproperties
 {
-     colAugActive=(R=255,G=255)
-     colAugInactive=(R=100,G=100,B=100)
-     colItemIcon=(B=0)
+	colAugActive=(R=255,G=255)
+	colAugInactive=(R=100,G=100,B=100)
+	colItemIcon=(B=0)
 }

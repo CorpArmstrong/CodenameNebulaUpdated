@@ -1,3 +1,6 @@
+//=============================================================================
+// OpheliaUI.
+//=============================================================================
 class OpheliaUI extends Secretary;
 
 var () bool bUseBlinking;
@@ -11,11 +14,11 @@ function Tick(float deltaTime)
 function BlinkActor()
 {
 	local float blinkValue;
-	
+
 	if (bUseBlinking)
 	{
 		blinkValue = FRand();
-		
+
 		if (blinkValue > 0.5)
 		{
 			DrawType = DT_None;
@@ -27,7 +30,7 @@ function BlinkActor()
 	}
 }
 
-DefaultProperties
+defaultproperties
 {
 	Orders=Standing
     Tag=Secretary

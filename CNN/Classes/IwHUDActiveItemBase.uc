@@ -17,6 +17,7 @@ var Texture icon;
 var Texture texBackground;
 
 var byte IconIndex;
+
 // ----------------------------------------------------------------------
 // InitWindow()
 // ----------------------------------------------------------------------
@@ -24,9 +25,7 @@ var byte IconIndex;
 event InitWindow()
 {
 	Super.InitWindow();
-
 	SetSize(iconWidth, iconHeight);
-	//SetPos(32,32);
 }
 
 // ----------------------------------------------------------------------
@@ -34,16 +33,14 @@ event InitWindow()
 // ----------------------------------------------------------------------
 
 event DrawWindow(GC gc)
-{	
+{
 	Super.DrawWindow(gc);
 
-	if (icon != None)
+	if (icon != none)
 	{
 		// Now draw the icon
 		gc.SetStyle(iconDrawStyle);
 		gc.SetTileColor(colItemIcon);
-		
-		//gc.DrawTexture(IconPosX, IconPosY, 32, 32, 0, 0, icon);
 		gc.DrawStretchedTexture(3, 3, 28, 28, 0, 0, 32, 32, Icon);
 	}
 
@@ -66,7 +63,6 @@ function DrawBackground(GC gc)
 {
 	gc.SetStyle(backgroundDrawStyle);
 	gc.SetTileColor(colBackground);
-	//gc.DrawTexture(0, 0, width, height, 0, 0, texBackground);
 }
 
 // ----------------------------------------------------------------------
@@ -85,9 +81,13 @@ function SetIcon(Texture newIcon)
 function SetIconMasked(bool bNewMask)
 {
 	if (bNewMask)
+	{
 		iconDrawStyle = DSTY_Masked;
+	}
 	else
+	{
 		iconDrawStyle = DSTY_Translucent;
+	}
 }
 
 // ----------------------------------------------------------------------
@@ -100,16 +100,13 @@ function SetObject(object newClientObject)
 {
 }
 
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
-
 defaultproperties
 {
-     colItemIcon=(R=255,G=255,B=255)
-     iconDrawStyle=DSTY_Translucent
-     IconWidth=48
-     IconHeight=48
-     IconPosX=2
-     IconPosY=2
-     texBackground=Texture'DeusExUI.UserInterface.HUDIconsBackground'
+	colItemIcon=(R=255,G=255,B=255)
+	iconDrawStyle=DSTY_Translucent
+	IconWidth=48
+	IconHeight=48
+	IconPosX=2
+	IconPosY=2
+	texBackground=Texture'DeusExUI.UserInterface.HUDIconsBackground'
 }

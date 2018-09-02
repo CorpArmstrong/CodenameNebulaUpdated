@@ -1,5 +1,5 @@
 //=============================================================================
-// ApocalypseInsideHUD.
+// CNNHUD.
 //=============================================================================
 class CNNHUD expands DeusExHUD;
 
@@ -12,8 +12,6 @@ event InitWindow()
     local DeusExRootWindow root;
     local DeusExPlayer player;
 
-    //Super.InitWindow();
-
     // Get a pointer to the root window
     root = DeusExRootWindow(GetRootWindow());
 
@@ -25,7 +23,6 @@ event InitWindow()
 
     ammo            = HUDAmmoDisplay(NewChild(Class'HUDAmmoDisplay'));
     hit             = HUDHitDisplay(NewChild(Class'IwHUDHitDisplay'));
-    //hit             = HUDHitDisplay(NewChild(Class'HUDHitDisplay'));
     cross           = Crosshair(NewChild(Class'Crosshair'));
 
     belt            = HUDObjectBelt(NewChild(Class'IwHUDObjectBelt'));
@@ -59,14 +56,18 @@ event InitWindow()
 
 function HUDInfoLinkDisplay CreateInfoLinkWindow()
 {
-    if ( infolink != None )
-        return None;
+    if (infolink != none)
+    {
+        return none;
+    }
 
     infolink = HUDInfoLinkDisplay(NewChild(Class'AiHUDInfoLinkDisplay'));
 
     // Hide Log window
-    if ( msgLog != None )
+    if (msgLog != none)
+    {
         msgLog.Hide();
+    }
 
     infolink.AskParentForReconfigure();
 

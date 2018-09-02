@@ -14,7 +14,7 @@ var bool bLazersMoveInsideNow;
 
 function Timer()
 {
-    if(bIsOn)
+    if (bIsOn)
 	{
 		SendMessages();
 	}
@@ -31,7 +31,7 @@ function SendMessages()
 	{
 		foreach AllActors(class 'Mover', m, targetTag[i])
 		{
-			m.Trigger(Self, None);
+			m.Trigger(Self, none);
 		}
 	}
 }
@@ -59,10 +59,10 @@ function ToggleOff()
 
 defaultproperties
 {
-	bIsOn=false
-     Delay=20.000000
-     targetTag(0)=LaserEmittersMoverFR
-     targetTag(1)=LaserEmittersMoverFL
-     targetTag(2)=LaserEmittersMoverBR
-     targetTag(3)=LaserEmittersMoverBL
+    bIsOn=false
+    Delay=20.000000
+    targetTag(0)=LaserEmittersMoverFR
+    targetTag(1)=LaserEmittersMoverFL
+    targetTag(2)=LaserEmittersMoverBR
+    targetTag(3)=LaserEmittersMoverBL
 }

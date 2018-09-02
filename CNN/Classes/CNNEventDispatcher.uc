@@ -34,9 +34,9 @@ state Dispatch
 state ProcessEvents
 {
     Begin:
-    for(counter = 0; counter < ArrayCount(CodeEventClasses); counter++)
+    for (counter = 0; counter < ArrayCount(CodeEventClasses); counter++)
     {
-        if(CodeEventClasses[counter] != none)
+        if (CodeEventClasses[counter] != none)
         {
             Sleep(CodeEventDelays[counter]);
             InstantiateEventCommandWithCheck(CodeEventClasses[counter]);

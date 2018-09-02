@@ -9,34 +9,34 @@ var(SpawnData) float spawnRate;
 var bool bSpawning;
 var int spawnCounter;
 var float nextSpawn;
- 
+
 var float internalCounter;
- 
+
 function Trigger(Actor Other, Pawn Instigator)
 {
 	bSpawning = !bSpawning;
     Super.Trigger(Other, Instigator);
 }
- 
+
 function StopSpawning()
 {
     bSpawning = false;
     BroadcastMessage("Inside StopSpawning!");
 }
- 
+
 // ============================================================================
 // Tick
 // ============================================================================
- 
+
 simulated function Tick(float TimeDelta)
 {
 	Super.Tick(TimeDelta);
- 	
-	if(bSpawning && spawnCounter < spawnLimit)
+
+	if (bSpawning && spawnCounter < spawnLimit)
 	{
  		BroadcastMessage("InternalCounter: " $ internalCounter $ "; nextSpawn: " $ nextSpawn);
  		internalCounter += TimeDelta;
- 
+
  		if (internalCounter > nextSpawn)
  		{
  			nextSpawn = internalCounter + spawnRate;

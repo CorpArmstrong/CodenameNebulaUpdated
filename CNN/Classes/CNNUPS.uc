@@ -41,7 +41,7 @@ function PostBeginPlay()
     {
         em[i] = Spawn(class'JJElecEmitter', self);
         em[i].SetLocation(self.Location + vect(0, 0, 25));
-        
+
         if (i < 12)
         {
            em[i].AttachTag = self.Tag;
@@ -97,7 +97,7 @@ function PostBeginPlay()
 
     spheres[0].Style = STY_Normal;
     spheres[0].bUnlit = true;
-    
+
     //spheres[0].bCollideActors = true; // for red rays
 
     // front
@@ -119,7 +119,7 @@ function PostBeginPlay()
     // up probably
     em[8].SetRotation(rot(16384, 0, 0));
     em[9].SetRotation(rot(16384, 0, 0));
-    
+
     // down probably
     em[10].SetRotation(rot(49152, 0, 0));
     em[11].SetRotation(rot(49152, 0, 0));
@@ -286,21 +286,18 @@ function Tick(float deltaTime)
 	{
 		foreach AllActors(class'ScriptedPawn', sPawn)
         {
-			if (!sPawn.bInvincible && sPawn.Tag != self.Tag )
+			if (!sPawn.bInvincible && sPawn.Tag != self.Tag &&
+               (VSize(sPawn.Location - self.Location) <= PawnDamageRadius))
             {
-				if (VSize(sPawn.Location - self.Location) <= PawnDamageRadius)
-                {
-					sPawn.TakeDamage(PawnDamage, self, sPawn.Location, vect(0, 0, 0), PawnDamageType);
-                }
+				sPawn.TakeDamage(PawnDamage, self, sPawn.Location, vect(0, 0, 0), PawnDamageType);
             }
         }
 
-       	if(pPawn == none)
+       	if (pPawn == none)
         {
             pPawn = GetPlayerPawn();
         }
-
-		if(pPawn != none)
+        else
         {
 			if (VSize(pPawn.Location - self.Location) <= PawnDamageRadius)
             {
@@ -398,28 +395,27 @@ defaultproperties
 	PawnDamageRadius=150
 	PawnDamage=1000
 	PawnDamageType=Exploded
-	bDamagePawns=True
+	bDamagePawns=true
 	DecorDamageRadius=320
 	DecorDamage=1000
 	DecorDamageType=Exploded
-	bDamageDxDecoration=False // do not use please
+	bDamageDxDecoration=false // do not use please
 	CnnMoverBlowUpRadius=320
-	bBlowUp_CnnMovers=True
+	bBlowUp_CnnMovers=true
 	bPulsation=true
 	bRotating=false
 	PulsationTime=2          // number of second is one cycle
 	PulsationRange=1.25      // scale from 1 to number and number to 1
 	RotationSpeed=20000.0
-    bPlayDying=False
-    CarcassType=None
-    bInvincible=True
-    bHidden=True
-    bFearIndirectInjury=False
-    bHateInjury=False
+    bPlayDying=false
+    CarcassType=none
+    bInvincible=true
+    bHidden=true
+    bFearIndirectInjury=false
+    bHateInjury=false
     DrawType=DT_Sprite
     CollisionHeight=50.000000
-    FleeMaxDistance=1940
     Orders=Guarding
     OrderTag=OpenAirlock
-    bAlwaysPatrol=True
+    bAlwaysPatrol=true
 }

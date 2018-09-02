@@ -1,16 +1,15 @@
 //=============================================================================
 // Sinks.
 //=============================================================================
-class Sinks extends DeusExDecoration
-	abstract;
+class Sinks extends DeusExDecoration abstract;
 
 defaultproperties
 {
-     bPushable=False
-     bHighLight=False
-     bInvincible=True
-     bCanBeBase=True
-     bBlockSight=True
-     Physics=PHYS_None
-     ItemName="Sink"
+	bPushable=false
+	bHighLight=false
+	bInvincible=true
+	bCanBeBase=true
+	bBlockSight=true
+	Physics=PHYS_None
+	ItemName="Sink"
 }

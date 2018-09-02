@@ -23,7 +23,6 @@ function InitStateMachine()
     CheckIntroFlags();
 }
 
-
 // ----------------------------------------------------------------------
 // FirstFrame()
 //
@@ -33,7 +32,6 @@ function InitStateMachine()
 function FirstFrame()
 {
 	Super.FirstFrame();
-	//StartConversationWithActor(); Intro will start in first person mode and the convo will be interactive.
 }
 
 // ----------------------------------------------------------------------
@@ -57,7 +55,6 @@ function PreTravel()
 function Timer()
 {
 	Super.Timer();
-    //SendPlayerOnceToGame();
 	GivePlayerHisAugs();
 }
 
@@ -81,13 +78,17 @@ function CheckIntroFlags()
 }
 
 function GivePlayerHisAugs()
-{	
-	if(flags.GetBool('HasMuscleAug') && !flags.GetBool('PlayerGotMuscleAug')) {
+{
+	if (flags.GetBool('HasMuscleAug') && !flags.GetBool('PlayerGotMuscleAug'))
+	{
 		Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugMuscle');
 		flags.SetBool('PlayerGotMuscleAug', true, true, 0);
 	}
-	if(flags.GetBool('HasCombatAug'))
+
+	if (flags.GetBool('HasCombatAug'))
+	{
 		Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugCombat');
+	}
 }
 
 function StartConversationWithActor()
@@ -101,7 +102,8 @@ function StartConversationWithActor()
 			foreach AllActors(class'Actor', actorToSpeak, actorTag)
 				break;
 
-			if (actorToSpeak != none) {
+			if (actorToSpeak != none)
+			{
 				player.StartConversationByName(conversationName, actorToSpeak, false, true);
 			}
 
@@ -126,15 +128,14 @@ function SendPlayerOnceToGame()
 {
 	if (flags.GetBool(CutsceneEndFlagName) && !isIntroCompleted)
 	{
-		if (DeusExRootWindow(player.rootWindow) != none) {
+		if (DeusExRootWindow(player.rootWindow) != none)
+		{
 			DeusExRootWindow(player.rootWindow).ClearWindowStack();
 		}
-			Level.Game.SendPlayer(player, sendToLocation);
-		
-	}
-	
-}
 
+		Level.Game.SendPlayer(player, sendToLocation);
+	}
+}
 
 defaultproperties
 {

@@ -1,3 +1,6 @@
+//=============================================================================
+// EventCommandTurnOnTriggerLight.
+//=============================================================================
 class EventCommandTurnOnTriggerLight extends EventCommand;
 
 var TriggerLight triggerLightActor;

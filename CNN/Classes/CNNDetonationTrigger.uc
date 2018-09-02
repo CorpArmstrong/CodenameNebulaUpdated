@@ -2,7 +2,6 @@
 // Class:    CNNDetonationTrigger
 // Author:   CorpArmstrong
 //-----------------------------------------------------------------------
-
 class CNNDetonationTrigger extends CNNTrigger;
 
 const OBJECTS_COUNT = 16;
@@ -20,7 +19,7 @@ function DestroyObjects()
 {
     local Actor actr;
 	local int i;
-	
+
 	for (i = 0; i < ArrayCount(objects); i++)
     {
 		if (objects[i].tag != '')
@@ -29,11 +28,11 @@ function DestroyObjects()
 			{
 				BroadcastMessage("Object: " $ actr.tag);
 				objects[i].tag = '';
-				actr.TakeDamage(300, none, vect(0,0,0), vect(0,0,0), 'Shot');
+				actr.TakeDamage(300, none, vect(0, 0, 0), vect(0, 0, 0), 'Shot');
 			}
-		}        
+		}
     }
-	
+
 	BroadcastMessage("All objects destroyed!");
 	DeusExPlayer(GetPlayerPawn()).flagbase.SetBool('AllObjectsDestroyed', true);
 }

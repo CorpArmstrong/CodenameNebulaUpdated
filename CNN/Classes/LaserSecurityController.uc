@@ -14,15 +14,15 @@ function PostBeginPlay()
 {
     local LaserSecurityDispatcher LSD;	// Lucy in the Sky with Diamonds :)
 	local SecurityCamera cam;
-    
+
     flags = DeusExPlayer(GetPlayerPawn()).flagBase;
     isSecurityActive = flags.GetBool('laserSecurityWorks');
-    
+
     foreach AllActors(class'LaserSecurityDispatcher', LSD)
 	{
 		laserDispatcher = LSD;
 	}
-	
+
 	foreach AllActors(class'SecurityCamera', Cam, CamTag)
 	{
 		sCam = cam;
@@ -49,13 +49,13 @@ function Trigger(Actor Other, Pawn Instigator)
 function TurnOnLasers()
 {
 	local DamageLaserTrigger A;
-    
+
 	foreach AllActors(class'DamageLaserTrigger', A)
 	{
-		A.Trigger(None, None);
+		A.Trigger(none, none);
 	}
 
-	if (laserDispatcher != None)
+	if (laserDispatcher != none)
 	{
 		laserDispatcher.ToggleOn();
 	}
@@ -69,13 +69,13 @@ function TurnOnLasers()
 function TurnOffLasers()
 {
 	local DamageLaserTrigger A;
-    
+
 	foreach AllActors(class'DamageLaserTrigger', A)
 	{
-		A.UnTrigger(None, None);
+		A.UnTrigger(none, none);
 	}
 
-	if (laserDispatcher != None)
+	if (laserDispatcher != none)
 	{
 		laserDispatcher.ToggleOff();
 	}

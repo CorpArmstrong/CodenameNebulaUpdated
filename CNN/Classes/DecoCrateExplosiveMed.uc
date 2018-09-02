@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoCrateExplosiveMed expands Object
+class DecoCrateExplosiveMed expands Object
 	abstract;
 
 //CrateExplosiveMed

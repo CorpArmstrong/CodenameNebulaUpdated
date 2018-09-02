@@ -12,7 +12,6 @@ const DAMAGE_AMOUNT = 3.33;
 const DAMAGE_PERIOD = 2;
 
 var bool bTimerOn;
-
 var DeusExPlayer _player;
 
 // ----------------------------------------------------------------------
@@ -21,15 +20,16 @@ var DeusExPlayer _player;
 // set up the augmentation and skill systems
 // ----------------------------------------------------------------------
 
-function PostBeginPlay() {
+function PostBeginPlay()
+{
 	vc = vect(0, 0, 0);
 }
 
-
-function Tick(float deltaTime) {
-
+function Tick(float deltaTime)
+{
 	// First time, assign player.
-	if (_player == none) {
+	if (_player == none)
+	{
 		_player = DeusExPlayer(GetPlayerPawn());
 		_player.Energy = 2;
 		self.AttachTag = _player.Tag;
@@ -57,8 +57,9 @@ function Tick(float deltaTime) {
 	super.Tick(deltaTime);
 }
 
-function adjustDamageTimer(bool isOn) {
-	if(isOn)
+function adjustDamageTimer(bool isOn)
+{
+	if (isOn)
 	{
 		if (!bTimerOn)
 		{
@@ -69,18 +70,20 @@ function adjustDamageTimer(bool isOn) {
 	}
 	else
 	{
-		if (bTimerOn) {
+		if (bTimerOn)
+		{
 			SetTimer(0.01, false);
 			bTimerOn = false;
 		}
 	}
 }
 
-function Timer() {
+function Timer()
+{
 	DeusExPlayer(GetPlayerPawn()).ClientMessage("My energy is depleted. Until I recharge I will suffer from withdrawal.");
 	DeusExPlayer(GetPlayerPawn()).TakeDamage(DAMAGE_AMOUNT, none, vc, vc, 'Shocked');
 }
 
-DefaultProperties {
-
+DefaultProperties
+{
 }

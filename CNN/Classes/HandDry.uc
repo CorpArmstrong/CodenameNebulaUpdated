@@ -25,7 +25,7 @@ function BeginPlay()
 
 function Timer()
 {
-	bUsing = False;
+	bUsing = false;
 }
 
 function Frob(actor Frobber, Inventory frobWith)
@@ -33,26 +33,26 @@ function Frob(actor Frobber, Inventory frobWith)
 	Super.Frob(Frobber, frobWith);
 
 	if (bUsing)
+	{
 		return;
+	}
 
-	SetTimer(4.0, False);
-	bUsing = True;
-
-	//PlaySound(sound'AirBreath',,,, 128);
+	SetTimer(4.0, false);
+	bUsing = true;
 }
 
 defaultproperties
 {
-     HitPoints=50
-     minDamageThreshold=50
-     bInvincible=False
-     FragType=Class'CNN.AiMetalFragment'
-     ItemName="Automatic HandDry"
-     bPushable=False
-     Physics=PHYS_None
-     Mesh=LodMesh'CNN.HandDry'
-     CollisionRadius=11.200000
-     CollisionHeight=8.000000
-     Mass=25.000000
-     Buoyancy=50.000000
+	HitPoints=50
+	minDamageThreshold=50
+	bInvincible=false
+	FragType=Class'CNN.AiMetalFragment'
+	ItemName="Automatic HandDry"
+	bPushable=false
+	Physics=PHYS_None
+	Mesh=LodMesh'CNN.HandDry'
+	CollisionRadius=11.200000
+	CollisionHeight=8.000000
+	Mass=25.000000
+	Buoyancy=50.000000
 }

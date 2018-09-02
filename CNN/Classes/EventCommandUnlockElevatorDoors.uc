@@ -1,3 +1,6 @@
+//=============================================================================
+// EventCommandUnlockElevatorDoors.
+//=============================================================================
 class EventCommandUnlockElevatorDoors extends EventCommand;
 
 var DeusExMover elevatorDoor;
@@ -13,5 +16,5 @@ function ExecuteEvent()
 
 defaultproperties
 {
-	elevatorDoorTag=doors_docking
+    elevatorDoorTag=doors_docking
 }

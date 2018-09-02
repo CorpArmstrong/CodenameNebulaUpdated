@@ -8,9 +8,10 @@ var() string conversationName;
 function Frob(Actor Frobber, Inventory frobWith)
 {
     local DeusExPlayer player;
+    
     player = DeusExPlayer(Frobber);
 
-    if (player != None)
+    if (player != none)
     {
         player.StartDataLinkTransmission(conversationName);
     }
@@ -19,7 +20,7 @@ function Frob(Actor Frobber, Inventory frobWith)
 defaultproperties
 {
     conversationName="DL_AlexIntro"
-    bInvincible=True
+    bInvincible=true
     ItemName="Voice Tape"
     Texture=Texture'DeusExItems.Skins.DataCubeTex2'
     // Replace mesh here (use some kind of tape player mesh).

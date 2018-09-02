@@ -1,7 +1,9 @@
-//We want it to look like this:
+//=============================================================================
+// ImportConversations.
+//=============================================================================
+class ImportConversations expands Object abstract;
 
-class ImportConversations expands Object
-abstract;
+// We want it to look like this:
 
 // Import conversations
 #exec CONVERSATION IMPORT FILE="Conversations\MoonCNN.Con"

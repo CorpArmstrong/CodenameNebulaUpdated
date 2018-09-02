@@ -1,6 +1,5 @@
 class AlienCarcassEvidence extends BoxMedium;
 
-
 defaultproperties
 {
      HitPoints=10

@@ -1,12 +1,15 @@
+//=============================================================================
+// Chapter05.
+//=============================================================================
 class MagdaleneDenton extends Magdalene;
 
 defaultproperties
 {
-	bInvincible=True
-	bImportant=True
-	bCanBleed=False
-	bShowPain=False
-	InitialAlliances(0)=(AllianceName=Player,AllianceLevel=1.000000,bPermanent=True)
+	bInvincible=true
+	bImportant=true
+	bCanBleed=false
+	bShowPain=false
+	InitialAlliances(0)=(AllianceName=Player,AllianceLevel=1.000000,bPermanent=true)
 	Alliance=Player
 	Mesh=LodMesh'DeusExCharacters.GFM_Dress'
     MultiSkins(0)=Texture'DeusExCharacters.Skins.NicoletteDuClareTex0'

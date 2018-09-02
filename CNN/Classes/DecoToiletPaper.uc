@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoToiletPaper expands Object
+class DecoToiletPaper expands Object
 	abstract;
 
 //ToiletPaper

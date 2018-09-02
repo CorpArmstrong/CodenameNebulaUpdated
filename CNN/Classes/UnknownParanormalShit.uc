@@ -1,20 +1,14 @@
 //-----------------------------------------------------------
-//
+// UnknownParanormalShit
 //-----------------------------------------------------------
-class UnknownParanormalShit expands Doberman;
+class UnknownParanormalShit extends Doberman;
 
 function PlayDogBark()
 {
     // do nothing
-/*
-	if (FRand() < 0.5)
-		PlaySound(sound'DogLargeBark2', SLOT_None);
-	else
-		PlaySound(sound'DogLargeBark3', SLOT_None);
-*/
 }
 
 defaultproperties
 {
-     Mesh=LodMesh'DeusExDeco.Barrel1'
+    Mesh=LodMesh'DeusExDeco.Barrel1'
 }

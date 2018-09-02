@@ -37,18 +37,25 @@ event Tick(float deltaTime)
         if (bCountDown)
         {
             time -= deltaTime;
+
             if (time < 0)
+            {
                 time = 0;
+            }
 
             if (time <= criticalTime)
+            {
                 timerWin.bCritical = True;
+            }
         }
         else
         {
             time += deltaTime;
 
             if (time >= criticalTime)
+            {
                 timerWin.bCritical = True;
+            }
         }
 
         timerWin.time = time;
@@ -78,16 +85,22 @@ function Trigger(Actor Other, Pawn EventInstigator)
     player = DeusExPlayer(EventInstigator);
 
     if (player == None)
+    {
         return;
+    }
 
     Super.Trigger(Other, EventInstigator);
 
     if (timerWin == None)
     {
         if (bCountDown)
+        {
             time = startTime;
+        }
         else
+        {
             time = 0;
+        }
 
         timerWin = DeusExRootWindow(player.rootWindow).hud.CreateTimerWindow();
         timerWin.time = time;
@@ -111,7 +124,9 @@ function FindAndSetDispatcher()
     local Dispatcher dp;
 
     foreach AllActors(class'Dispatcher', dp, timerEventTag)
+    {
         disp = dp;
+    }
 
     BroadcastMessage("Dispatcher name: " $  disp.Name);
 }
@@ -138,13 +153,13 @@ function TimerEvent()
 
 defaultproperties
 {
-     timerEventTag=LabEndingSuccessDispatcher
-     timerStarted="Survive!"
-     timerStopped="You've survived!"
-     bCountDown=True
-     StartTime=60.000000
-     criticalTime=10.000000
-     destroyDelay=5.000000
-     Message="Countdown"
-     bStatic=False
+    timerEventTag=LabEndingSuccessDispatcher
+    timerStarted="Survive!"
+    timerStopped="You've survived!"
+    bCountDown=True
+    StartTime=60.000000
+    criticalTime=10.000000
+    destroyDelay=5.000000
+    Message="Countdown"
+    bStatic=False
 }

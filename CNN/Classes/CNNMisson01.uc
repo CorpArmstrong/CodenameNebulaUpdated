@@ -54,7 +54,7 @@ function Timer()
 						}
 					}
 
-					player.ClientMessage("TogleOn включил");
+					player.ClientMessage("TogleOn пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
 				}
 
 				bLasersOn = true;
@@ -82,7 +82,7 @@ function Timer()
 			       		}
 			       }
 
-               	   player.ClientMessage("TogleOff выключил");
+               	   player.ClientMessage("TogleOff пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
 				}
 
 				bLasersOff = true;
@@ -98,7 +98,6 @@ function Timer()
 defaultproperties
 {
 	CamTag=''
-	//sendToLocation="50_OpheliaL1_Burning_Cutscene#loc2"
 	sendToLocation="50_OpheliaL1-v25"
 	conversationName=OpheliaUICutscene
 	actorTag=Secretary

@@ -1,6 +1,6 @@
 class AnnaNavarreAi extends AnnaNavarre;
 
-function bool Facelift(bool bOn) 
+function bool Facelift(bool bOn)
 {
 }
 

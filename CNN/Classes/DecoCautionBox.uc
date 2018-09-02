@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoCautionBox expands Object
+class DecoCautionBox expands Object
 	abstract;
 
 // CautionBox

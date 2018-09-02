@@ -15,5 +15,5 @@ class CandybarMy expands Actor;
 
 defaultproperties
 {
-     DrawType=DT_Mesh
+    DrawType=DT_Mesh
 }

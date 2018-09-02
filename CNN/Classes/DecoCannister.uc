@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoCannister expands Object
+class DecoCannister expands Object
 	abstract;
 
 #exec OBJ LOAD FILE=Effects // Needed for the Armor_Adaptative_SFX FireTexture

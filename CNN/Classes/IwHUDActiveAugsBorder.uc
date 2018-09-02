@@ -16,8 +16,7 @@ event InitWindow()
     Super.InitWindow();
 
     SetSize(128,400);
-    // Create *ALL* the icons, but hide them.
-    CreateIcons();
+    CreateIcons(); // Create *ALL* the icons, but hide them.
 }
 
 // ----------------------------------------------------------------------
@@ -29,9 +28,8 @@ function CreateIcons()
     local int keyIndex;
     local IwHUDActiveAug iconWindow;
 
-    for(keyIndex=FirstKeyNum; keyIndex<=LastKeyNum; keyIndex++)
+    for (keyIndex = FirstKeyNum; keyIndex <= LastKeyNum; keyIndex++)
     {
-        //iconWindow = IwHUDActiveAug(winIcons.NewChild(Class'IwHUDActiveAug'));
         iconWindow = IwHUDActiveAug(NewChild(Class'IwHUDActiveAug'));
         iconWindow.SetKeyNum(keyIndex);
         iconWindow.Hide();
@@ -50,12 +48,12 @@ function ClearAugmentationDisplay()
     // Loop through all our children and check to see if
     // we have a match.
 
-    //currentWindow = winIcons.GetTopChild();
     currentWindow = GetTopChild();
-    while(currentWindow != None)
+
+    while (currentWindow != none)
     {
         currentWindow.Hide();
-        currentWindow.SetClientObject(None);
+        currentWindow.SetClientObject(none);
         currentWindow = currentWindow.GetLowerSibling();
     }
 
@@ -72,17 +70,14 @@ function AddIcon(Texture newIcon, Object saveObject)
 {
     local IwHUDActiveAug augItem;
     local IwHUDActiveItemBase curItem;
-
-//  local Window currentWindow;
-//  local Window nextWindow;
     local byte AugInd;
-    local byte i,i2;
+    local byte i, i2;
 
     augItem = FindAugWindowByKey(Augmentation(saveObject));
 
-    if (augItem != None)
+    if (augItem != none)
     {
-        augItem.IconIndex = iconcount+1;
+        augItem.IconIndex = iconcount + 1;
 
         augItem.SetIcon(newIcon);
         augItem.SetClientObject(saveObject);
@@ -91,27 +86,32 @@ function AddIcon(Texture newIcon, Object saveObject)
 
         // Hide if there are no icons visible
         if (++iconCount == 1)
+        {
             Show();
+        }
 
         if (iconCount > 1)
         {
-            for (i=1; i<iconCount; i++)
+            for (i = 1; i < iconCount; i++)
             {
                 curItem = GetItemFromPos(i);
-                if (IwHUDActiveAug(curItem).HotKeyNum > augItem.HotKeyNum) //IwHUDActiveAug(GetItemFromPos(i))
+
+                if (IwHUDActiveAug(curItem).HotKeyNum > augItem.HotKeyNum)
                 {
                     AugInd = i;
-                    for (i2=iconCount-1; i2>=AugInd; i2--)
+
+                    for (i2 = iconCount - 1; i2 >= AugInd; i2--)
                     {
                         curItem = GetItemFromPos(i2);
                         curItem.IconIndex++;
+
                         if ((i2) % 2 == 0)
                         {
-                            curItem.SetPos(70,(i2) * 23.4 + 10);
+                            curItem.SetPos(70, (i2) * 23.4 + 10);
                         }
                         else
                         {
-                            curItem.SetPos(30,(i2) * 23.4 + 10);
+                            curItem.SetPos(30, (i2) * 23.4 + 10);
                         }
                     }
 
@@ -120,14 +120,16 @@ function AddIcon(Texture newIcon, Object saveObject)
                 }
             }
         }
+
         AugInd = augItem.IconIndex;
-        if ((AugInd-1) % 2 == 0) //even
+
+        if ((AugInd - 1) % 2 == 0)
         {
-            augItem.SetPos(70,(AugInd-1) * 23.4 + 10);
+            augItem.SetPos(70, (AugInd - 1) * 23.4 + 10);
         }
         else
         {
-            augItem.SetPos(30,(AugInd-1) * 23.4 + 10);
+            augItem.SetPos(30, (AugInd - 1) * 23.4 + 10);
         }
     }
 }
@@ -147,16 +149,16 @@ function RemoveObject(Object removeObject)
     // Loop through all our children and check to see if
     // we have a match.
 
-    //currentWindow = winIcons.GetTopChild();
     currentWindow = GetBottomChild(false);
-    while(currentWindow != None)
+
+    while(currentWindow != none)
     {
         nextWindow = currentWindow.GetHigherSibling(false);
 
         if (IwHUDActiveAug(currentWindow).HotKeyNum == Augmentation(removeObject).HotKeyNum)
         {
             currentWindow.Hide();
-            currentWindow.SetClientObject(None);
+            currentWindow.SetClientObject(none);
 
             // Hide if there are no icons visible
             if (--iconCount == 0)
@@ -171,26 +173,25 @@ function RemoveObject(Object removeObject)
 
             break;
         }
-        currentWindow = nextWindow;
 
+        currentWindow = nextWindow;
     }
 
     if (iconCount >= AugInd)
     {
-        for (i=AugInd+1; i<=iconCount+1; i++)
+        for (i = AugInd + 1; i <= iconCount + 1; i++)
         {
             curItem = GetItemFromPos(i);
-
             curItem.IconIndex--;
+
             if ((i) % 2 == 0)
             {
-                curItem.SetPos(70,(i-2) * 23.4 + 10);
+                curItem.SetPos(70, (i - 2) * 23.4 + 10);
             }
             else
             {
-                curItem.SetPos(30,(i-2) * 23.4 + 10);
+                curItem.SetPos(30, (i - 2) * 23.4 + 10);
             }
-
         }
     }
 }
@@ -207,10 +208,9 @@ function IwHUDActiveAug FindAugWindowByKey(Augmentation anAug)
     // Loop through all our children and check to see if
     // we have a match.
 
-    //currentWindow = winIcons.GetTopChild(False);
     currentWindow = GetTopChild(False);
 
-    while(currentWindow != None)
+    while(currentWindow != none)
     {
         if (IwHUDActiveAug(currentWindow).HotKeyNum == anAug.HotKeyNum)
         {
@@ -218,7 +218,7 @@ function IwHUDActiveAug FindAugWindowByKey(Augmentation anAug)
             break;
         }
 
-        currentWindow = currentWindow.GetLowerSibling(False);
+        currentWindow = currentWindow.GetLowerSibling(false);
     }
 
     return IwHUDActiveAug(foundWindow);
@@ -233,9 +233,9 @@ function UpdateAugIconStatus(Augmentation aug)
     local IwHUDActiveAug iconWindow;
 
     // First make sure this object isn't already in the window
-    //iconWindow = IwHUDActiveAug(winIcons.GetTopChild());
     iconWindow = IwHUDActiveAug(GetTopChild());
-    while(iconWindow != None)
+
+    while(iconWindow != none)
     {
         // Abort if this object already exists!!
         if (iconWindow.GetClientObject() == aug)
@@ -243,32 +243,25 @@ function UpdateAugIconStatus(Augmentation aug)
             iconWindow.UpdateAugIconStatus();
             break;
         }
+
         iconWindow = IwHUDActiveAug(iconWindow.GetLowerSibling());
     }
 }
 
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
-
 defaultproperties
 {
-     FirstKeyNum=3
-     LastKeyNum=12
-     texBorder1=Texture'CNN.UserInterface.UBHUD_Aug_1'
-     //texBorderTop=Texture'fgrhk.UserInterface.UBHUD_Aug_e_top'
-     texBorderCenter=Texture'CNN.UserInterface.UBHUD_Aug_e'
-     //texBorderBottom=Texture'fgrhk.UserInterface.UBHUD_Aug_e_bottom'
-     //texBorderTopO=Texture'fgrhk.UserInterface.UBHUD_Aug_o_top'
-     //texBorderCenterO=Texture'fgrhk.UserInterface.UBHUD_Aug_o_middle'
-     //texBorderBottomO=Texture'fgrhk.UserInterface.UBHUD_Aug_o_bottom'
-     centerheight=47
-     borderTopMargin=7
-     borderBottomMargin=6
-     borderWidth=128 //48
-     topHeight=64
-     topOffset=64
-     bottomHeight=64
-     bottomOffset=64
-     tilePosX=0
-     tilePosY=0
+    FirstKeyNum=3
+    LastKeyNum=12
+    texBorder1=Texture'CNN.UserInterface.UBHUD_Aug_1'
+    texBorderCenter=Texture'CNN.UserInterface.UBHUD_Aug_e'
+    centerheight=47
+    borderTopMargin=7
+    borderBottomMargin=6
+    borderWidth=128
+    topHeight=64
+    topOffset=64
+    bottomHeight=64
+    bottomOffset=64
+    tilePosX=0
+    tilePosY=0
 }

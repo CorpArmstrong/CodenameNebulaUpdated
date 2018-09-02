@@ -1,5 +1,5 @@
 //=============================================================================
-// Ashtray.
+// TowelRack.
 //=============================================================================
 class TowelRack extends DeusExDecoration;
 
@@ -28,6 +28,7 @@ function BeginPlay()
 		case SC_Clean:	MultiSkins[0] = Texture'TowelRackTex1'; break;
 		case SC_Filthy:	MultiSkins[0] = Texture'TowelRackTex2'; break;
 	}
+
 	switch (TowelColor)
 	{
 		case SC_Blue: 	MultiSkins[1] = Texture'TowelTex1'; break;
@@ -38,17 +39,17 @@ function BeginPlay()
 
 defaultproperties
 {
-     HitPoints=20
-     minDamageThreshold=50
-     bInvincible=False
-     FragType=Class'CNN.AIMetalFragment'
-     bHighlight=False
-     ItemName="Towel Rack"
-     bPushable=False
-     Physics=PHYS_None
-     Mesh=LodMesh'CNN.TowelRack'
-     CollisionRadius=20.000000
-     CollisionHeight=15.000000
-     Mass=20.000000
-     Buoyancy=40.000000
+	HitPoints=20
+	minDamageThreshold=50
+	bInvincible=false
+	FragType=Class'CNN.AIMetalFragment'
+	bHighlight=false
+	ItemName="Towel Rack"
+	bPushable=false
+	Physics=PHYS_None
+	Mesh=LodMesh'CNN.TowelRack'
+	CollisionRadius=20.000000
+	CollisionHeight=15.000000
+	Mass=20.000000
+	Buoyancy=40.000000
 }

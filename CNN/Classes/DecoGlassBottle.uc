@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoGlassBottle expands Object
+class DecoGlassBottle expands Object
 	abstract;
 
 // GlassBottle

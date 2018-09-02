@@ -46,7 +46,7 @@ function PollObjects()
 {
     local int i;
 	local int destroyedObjectsCounter;
-	
+
     for (i = 0; i < ArrayCount(objects); i++)
     {
         if (objects[i].actr != none)
@@ -62,7 +62,7 @@ function PollObjects()
 			destroyedObjectsCounter++;
 		}
     }
-	
+
 	if (destroyedObjectsCounter == ArrayCount(objects))
 	{
 		bPolling = false;
@@ -76,12 +76,12 @@ function HandleDestroyedObject(int index, int destroyedObjectsCounter)
 	objects[index].tag = '';
 	objects[index].actr = none;
 	destroyedObjectsCounter++;
-	
+
 	if (aliveObjectsCounter > 0)
 	{
 		--aliveObjectsCounter;
 	}
-		
+
 	DeusExPlayer(GetPlayerPawn()).ClientMessage("You have to destroy: " $
 					aliveObjectsCounter $ " more objects!");
 }

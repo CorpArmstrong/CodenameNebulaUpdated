@@ -11,6 +11,6 @@ function FirstFrame()
 {
 }
 
-DefaultProperties
+defaultproperties
 {
 }

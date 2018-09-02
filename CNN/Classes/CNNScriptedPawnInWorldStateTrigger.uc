@@ -5,7 +5,7 @@
 //  This trigger will process scripted pawns's world
 //  presence i.e methods EnterWorld(), LeaveWorld()
 //  based on bInWorld property value.
-//  bInWorld = True - means EnterWorld(), otherwise LeaveWorld();
+//  bInWorld = true - means EnterWorld(), otherwise LeaveWorld();
 //  Works like basic trigger, but with multiple entries (8)
 //-----------------------------------------------------------
 
@@ -57,4 +57,3 @@ function Touch(Actor Other)
         Super.Touch(Other);
     }
 }
-

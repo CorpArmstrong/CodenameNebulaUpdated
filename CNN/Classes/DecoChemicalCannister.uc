@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoChemicalCannister expands Object
+class DecoChemicalCannister expands Object
 	abstract;
 
 // ChemicalCannister

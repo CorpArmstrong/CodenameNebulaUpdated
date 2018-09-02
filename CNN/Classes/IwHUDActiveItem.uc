@@ -15,8 +15,7 @@ event InitWindow()
 	Super.InitWindow();
 
 	CreateEnergyBar();
-
-	bTickEnabled = TRUE;
+	bTickEnabled = true;
 }
 
 // ----------------------------------------------------------------------
@@ -28,22 +27,21 @@ event InitWindow()
 event Tick(float deltaSeconds)
 {
 	local ChargedPickup item;
-
 	item = ChargedPickup(GetClientObject());
 
-   if ((item != None) && (Player.PlayerIsRemoteClient()))
-      if (!VerifyItemCarried())
-      {
-        Player.RemoveChargedDisplay(item);
-        item = None;
-      }
+	if ((item != none) && (Player.PlayerIsRemoteClient()))
+	{
+		if (!VerifyItemCarried())
+		{
+			Player.RemoveChargedDisplay(item);
+			item = none;
+		}
+	}
 
-
-	if ((item != None) && (winEnergy != None))
+	if ((item != none) && (winEnergy != none))
 	{
 		winEnergy.SetCurrentValue(item.GetCurrentCharge());
 	}
-  
 }
 
 // ----------------------------------------------------------------------
@@ -54,11 +52,11 @@ function CreateEnergyBar()
 {
 	winEnergy = ProgressBarWindow(NewChild(Class'ProgressBarWindow'));
 	winEnergy.SetSize(32, 2);
-	winEnergy.UseScaledColor(True);
+	winEnergy.UseScaledColor(true);
 	winEnergy.SetPos(1, 30);
 	winEnergy.SetValues(0, 100);
 	winEnergy.SetCurrentValue(0);
-	winEnergy.SetVertical(False);
+	winEnergy.SetVertical(false);
 }
 
 // ----------------------------------------------------------------------
@@ -69,24 +67,23 @@ function CreateEnergyBar()
 
 function bool VerifyItemCarried()
 {
-   local inventory CurrentItem;
-   local bool bFound;
+	local inventory CurrentItem;
+	local bool bFound;
 
-   bFound = false;
-   
-   for (CurrentItem = player.Inventory; ((CurrentItem != None) && (!bFound)); CurrentItem = CurrentItem.inventory)
-   {
-      if (CurrentItem == GetClientObject())
-         bFound = true;
-   }
+	bFound = false;
 
-   return bFound;
+	for (CurrentItem = player.Inventory; ((CurrentItem != none) && (!bFound)); CurrentItem = CurrentItem.inventory)
+	{
+		if (CurrentItem == GetClientObject())
+		{
+			bFound = true;
+		}
+	}
+
+	return bFound;
 }
-
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
 
 defaultproperties
 {
-     iconDrawStyle=DSTY_Masked
+	iconDrawStyle=DSTY_Masked
 }

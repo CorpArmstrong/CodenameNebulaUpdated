@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoGasCan expands Object
+class DecoGasCan expands Object
 	abstract;
 
 // GasCan

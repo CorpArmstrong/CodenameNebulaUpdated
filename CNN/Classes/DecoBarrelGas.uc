@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoBarrelGas expands Object
+class DecoBarrelGas expands Object
 	abstract;
 
 // BarrelGas

@@ -1,5 +1,6 @@
 //-----------------------------------------------------------
-// one ugly thing for some places
+// FlipFlagTrigger
+// One ugly thing for some places
 //-----------------------------------------------------------
 class FlipFlagTrigger expands CNNSimpleTrigger;
 
@@ -12,13 +13,13 @@ function ActivatedON()
 {
 	local DeusExPlayer player;
 	local bool flagValue;
-	local int  flagExpiration;
+	local int flagExpiration;
 
-	if ( flagName != '' )
+	if (flagName != '')
 	{
 		player = DeusExPlayer(GetPlayerPawn());
 
-		if ( player != None )
+		if (player != none)
 		{
 			flagValue = player.flagBase.GetBool(flagName);
 			flagExpiration = player.flagBase.GetExpiration(flagName, FLAG_Bool);
@@ -31,25 +32,25 @@ function ActivatedON()
 			}
 			else
 			{
-				player.flagBase.SetBool(flagName, flagValue,, flagExpiration);
+				player.flagBase.SetBool(flagName, flagValue, , flagExpiration);
 			}
 
-			if ( flagValue )
+			if (flagValue)
+			{
 				GameLog(strWhenTrue);
+			}
 			else
+			{
 				GameLog(strWhenFalse);
-
+			}
 		}
-
 	}
-
-
 
 	super.ActivatedON();
 }
 
-DefaultProperties
+defaultproperties
 {
-	strWhenTrue="Flag become True";
-	strWhenFalse="Flag become False";
+	strWhenTrue="Flag become true";
+	strWhenFalse="Flag become false";
 }

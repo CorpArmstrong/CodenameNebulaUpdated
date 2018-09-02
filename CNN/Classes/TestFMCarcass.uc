@@ -1,5 +1,6 @@
 //-----------------------------------------------------------
-//  Test cop carcass to demonstate corpse burning effect
+// TestFMCarcass
+// Test cop carcass to demonstate corpse burning effect
 //-----------------------------------------------------------
 class TestFMCarcass extends CopCarcass;
 
@@ -43,7 +44,7 @@ function StartFire()
 {
     isBurning = true;
     Inflammation();
-    SetTimer(Flammability-5, false);
+    SetTimer(Flammability - 5, false);
 }
 
 function StopFire()
@@ -60,13 +61,14 @@ function Inflammation()
 
 	for (i = 0; i < 8; i++)
 	{
-		loc.X = 0.9*CollisionRadius * (1.0-2.0*FRand());
-		loc.Y = 0.9*CollisionRadius * (1.0-2.0*FRand());
-		loc.Z = 0.9*CollisionHeight * (1.0-2.0*FRand());
+		loc.X = 0.9 * CollisionRadius * (1.0 - 2.0 * FRand());
+		loc.Y = 0.9 * CollisionRadius * (1.0 - 2.0 * FRand());
+		loc.Z = 0.9 * CollisionHeight * (1.0 - 2.0 * FRand());
 		loc += Location;
-		f = Spawn(class'Fire', Self,, loc);
 
-        if (f != None)
+		f = Spawn(class'Fire', Self, , loc);
+
+        if (f != none)
 		{
 			f.DrawScale = FRand() + 1.0;
 			f.LifeSpan = Flammability;
@@ -74,15 +76,19 @@ function Inflammation()
 			// turn off the sound and lights for all but the first one
 			if (i > 0)
 			{
-				f.AmbientSound = None;
+				f.AmbientSound = none;
 				f.LightType = LT_None;
 			}
 
 			// turn on/off extra fire and smoke
 			if (FRand() < 0.5)
+			{
 				f.smokeGen.Destroy();
+			}
 			if (FRand() < 0.5)
+			{
 				f.AddFire(1.5);
+			}
 		}
     }
 }
@@ -110,11 +116,10 @@ function Timer()
     }
 }
 
-DefaultProperties
+defaultproperties
 {
-     MinScaleGlow=0.07
-	 GlowFadeDownSpeed=0.1
-     Flammability=30.000000
-     isBurning=false
+	MinScaleGlow=0.07
+	GlowFadeDownSpeed=0.1
+	Flammability=30.000000
+	isBurning=false
 }
-

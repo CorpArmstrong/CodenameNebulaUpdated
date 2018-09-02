@@ -20,7 +20,7 @@ function FirstFrame()
 function PrepareFirstFrame()
 {
 	local int tantalusSkillLevel;
-	
+
 	tantalusSkillLevel = player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
 
 	if (tantalusSkillLevel == 2.00)
@@ -32,7 +32,7 @@ function PrepareFirstFrame()
 function Timer()
 {
 	Super.Timer();
-	
+
 	if (player.IsInState('Dying'))
 	{
 		Level.Game.SendPlayer(player, levelName);
@@ -41,5 +41,5 @@ function Timer()
 
 defaultproperties
 {
-	levelName="06_OpheliaL2#HumanServer"
+    levelName="06_OpheliaL2#HumanServer"
 }

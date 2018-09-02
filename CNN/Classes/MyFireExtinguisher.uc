@@ -1,10 +1,10 @@
 //-----------------------------------------------------------
-//
+// MyFireExtinguisher
 //-----------------------------------------------------------
-class MyFireExtinguisher expands FireExtinguisher;
+class MyFireExtinguisher extends FireExtinguisher;
 
 defaultproperties
 {
-     ItemName="My Fire Extinguisher"
-     Description="My fucking chemical fire extinguisher."
+    ItemName="My Fire Extinguisher"
+    Description="My fucking chemical fire extinguisher."
 }

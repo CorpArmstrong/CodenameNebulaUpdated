@@ -30,7 +30,7 @@ var bool isPressed;
 var Vector	lastLoc, rpcLocation;
 var bool	bIsMoving;
 
-replication 
+replication
 {
 	reliable if ( Role == ROLE_Authority )
 		rpcLocation;
@@ -223,7 +223,7 @@ function Bump(actor Other)
 }
 
 simulated function Tick( float deltaTime )
-{						  	
+{
 	if ( Level.NetMode != NM_Standalone )
 	{
 		if ( Role == ROLE_Authority )
@@ -250,19 +250,19 @@ simulated function Tick( float deltaTime )
 
 defaultproperties
 {
-     ButtonType=BT_Blank
-     buttonLitTime=0.500000
-     buttonSound1=Sound'DeusExSounds.Generic.Beep1'
-     bInvincible=True
-     ItemName="Button"
-     bPushable=False
-     Physics=PHYS_None
-     RemoteRole=ROLE_SimulatedProxy
-     Mesh=LodMesh'CNN.Button1B'
-     CollisionRadius=2.000000
-     CollisionHeight=2.000000
-     bCollideWorld=False
-     bBlockActors=False
-     Mass=5.000000
-     Buoyancy=2.000000
+	ButtonType=BT_Blank
+	buttonLitTime=0.500000
+	buttonSound1=Sound'DeusExSounds.Generic.Beep1'
+	bInvincible=True
+	ItemName="Button"
+	bPushable=False
+	Physics=PHYS_None
+	RemoteRole=ROLE_SimulatedProxy
+	Mesh=LodMesh'CNN.Button1B'
+	CollisionRadius=2.000000
+	CollisionHeight=2.000000
+	bCollideWorld=False
+	bBlockActors=False
+	Mass=5.000000
+	Buoyancy=2.000000
 }

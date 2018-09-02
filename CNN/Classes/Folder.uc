@@ -24,11 +24,11 @@ function BeginPlay()
 
 defaultproperties
 {
-     bCanBeBase=True
-     ItemName="Documents Folder"
-     Mesh=LodMesh'CNN.Folder'
-     CollisionRadius=9.000000
-     CollisionHeight=0.200000
-     Mass=1.000000
-     Buoyancy=4.000000
+	bCanBeBase=true
+	ItemName="Documents Folder"
+	Mesh=LodMesh'CNN.Folder'
+	CollisionRadius=9.000000
+	CollisionHeight=0.200000
+	Mass=1.000000
+	Buoyancy=4.000000
 }

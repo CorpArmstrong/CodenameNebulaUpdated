@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoTowelRack expands Object
+class DecoTowelRack expands Object
 	abstract;
 
 // TowelRack

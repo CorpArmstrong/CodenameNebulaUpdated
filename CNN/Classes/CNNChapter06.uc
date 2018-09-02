@@ -20,5 +20,5 @@ function Timer()
 
 defaultproperties
 {
-	levelName="Mutiny"
+    levelName="Mutiny"
 }

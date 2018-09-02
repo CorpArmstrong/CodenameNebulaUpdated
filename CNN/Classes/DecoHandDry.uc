@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoHandDry expands Object
+class DecoHandDry expands Object
 	abstract;
 
 // HandDry

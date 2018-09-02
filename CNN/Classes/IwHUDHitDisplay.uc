@@ -3,7 +3,6 @@
 //=============================================================================
 class IwHUDHitDisplay expands HUDHitDisplay;
 
-
 #exec TEXTURE IMPORT FILE="Textures\NewHUDHitDisplay_Head.pcx"    NAME="NewHUDHitDisplay_Head" GROUP="UserInterface" MIPS=Off
 #exec TEXTURE IMPORT FILE="Textures\NewHUDHitDisplay_Torso.pcx"   NAME="NewHUDHitDisplay_Torso" GROUP="UserInterface" MIPS=Off
 #exec TEXTURE IMPORT FILE="Textures\NewHUDHitDisplay_ArmRight.pcx" NAME="NewHUDHitDisplay_ArmRight" GROUP="UserInterface" MIPS=Off
@@ -12,7 +11,6 @@ class IwHUDHitDisplay expands HUDHitDisplay;
 #exec TEXTURE IMPORT FILE="Textures\NewHUDHitDisplay_LegLeft.pcx"    NAME="NewHUDHitDisplay_LegLeft" GROUP="UserInterface" MIPS=Off
 #exec TEXTURE IMPORT FILE="Textures\NewHUDHitDisplay_Body.pcx"    NAME="NewHUDHitDisplay_Body" GROUP="UserInterface" MIPS=Off
 
-
 // ----------------------------------------------------------------------
 // InitWindow()
 // ----------------------------------------------------------------------
@@ -20,10 +18,7 @@ class IwHUDHitDisplay expands HUDHitDisplay;
 event InitWindow()
 {
     local window bodyWin;
-
-    //Super.InitWindow();
-
-    bTickEnabled = True;
+    bTickEnabled = true;
 
     Hide();
 
@@ -41,7 +36,6 @@ event InitWindow()
     bodyWin = NewChild(Class'Window');
     bodyWin.SetBackground(Texture'NewHUDHitDisplay_Body');
     bodyWin.SetBackgroundStyle(DSTY_Translucent);
-    //bodyWin.SetConfiguration(24, 15, 34, 68);
     bodyWin.SetConfiguration(12, 4, 64, 128);
     bodyWin.SetTileColor(colArmor);
     bodyWin.Lower();
@@ -59,9 +53,6 @@ event InitWindow()
 
 function DrawBackground(GC gc)
 {
-//  gc.SetStyle(backgroundDrawStyle);
-//  gc.SetTileColor(colBackground);
-//  gc.DrawTexture(11, 11, 60, 76, 0, 0, texBackground);
 }
 
 // ----------------------------------------------------------------------
@@ -70,23 +61,12 @@ function DrawBackground(GC gc)
 
 function DrawBorder(GC gc)
 {
-//log("DrawBorder");
-    if (bDrawBorder)
-    {
-//      gc.SetStyle(borderDrawStyle);
-//      gc.SetTileColor(colBorder);
-//      gc.DrawTexture(0, 0, 84, 106, 0, 0, texBorder);
-    }
-
 }
-
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
 
 defaultproperties
 {
-     colArmor=(R=74,G=148,B=172)
-     O2Text="O2"
-     EnergyText="Emc2"
-     bDrawBorder=false
+    colArmor=(R=74,G=148,B=172)
+    O2Text="O2"
+    EnergyText="Emc2"
+    bDrawBorder=false
 }

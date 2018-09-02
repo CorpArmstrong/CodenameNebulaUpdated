@@ -34,26 +34,22 @@ function TouchOUT()
 state Dispatch
 {
 Begin:
-	//disable('ActivatedON');
 	disable('Trigger');
-	for( i=0; i<ArrayCount(OutEvents); i++ )
+
+	for (i = 0; i < ArrayCount(OutEvents); i++)
 	{
-		if( OutEvents[i] != '' )
+		if ( OutEvents[i] != '' )
 		{
 			Sleep( OutDelays[i] );
 			foreach AllActors( class 'Actor', Target, OutEvents[i] )
 				Target.Trigger( Self, GetPlayerPawn() );
 		}
-		//else
-		//	Sleep( OutDelays[i] );
 	}
-	//enable('ActivatedON');
+
 	enable('Trigger');
 	super.ActivatedON(); // calls events, and restore bEnabled if it's needs
 }
 
-
 DefaultProperties
 {
-
 }

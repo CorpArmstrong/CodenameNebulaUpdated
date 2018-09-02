@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
-//
+// UnknownParanormalShitCarcass
 //-----------------------------------------------------------
-class UnknownParanormalShitCarcass expands DobermanCarcass;
+class UnknownParanormalShitCarcass extends DobermanCarcass;
 
 defaultproperties
 {

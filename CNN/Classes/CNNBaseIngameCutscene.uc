@@ -166,12 +166,12 @@ function SendPlayer()
         DeusExRootWindow(player.rootWindow).ClearWindowStack();
     }
 
-    TantalusDenton(Player).SetInvisible(false);
+    //TantalusDenton(Player).SetInvisible(false);
 
-    //flags.SetBool('PlayerTraveling', false, true, 0);
-    //playerbHidden = false;
-    //player.Visibility = Default.Visibility;
-    //player.bDetectable = true;
+    Player.bHidden = false;
+    Player.Visibility = Player.Default.Visibility;
+    // DEUS_EX STM - added AI invisibility
+    Player.bDetectable = true;
 
     Level.Game.SendPlayer(player, sendToLocation);
 }

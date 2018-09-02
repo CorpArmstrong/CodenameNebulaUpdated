@@ -12,9 +12,13 @@ function DeusExBaseWindow InvokeMenuScreen(Class<DeusExBaseWindow> newScreen, op
 
     // Check to see if a menu is visible.  If so, hide it first.
     if (( MenuUIMenuWindow(GetTopWindow()) != None ) || ( MenuUIScreenWindow(GetTopWindow()) != None ))
+    {
         newWindow = PushWindow(newScreen, True, bNoPause);
+    }
     else
+    {
         newWindow = PushWindow(newScreen, False, bNoPause);
+    }
 
     // Pause the game
     //if (!bNoPause)

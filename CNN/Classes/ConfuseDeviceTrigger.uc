@@ -29,18 +29,15 @@ singular function ActivatedON()
 singular function ActivatedOFF()
 {
     isLoopConfusingNow = false;
-    //DebugInfo("+TimerConfuse inside ActivatedOFF.");
 	super.ActivatedOFF();
 }
 
 function Timer()
 {
-	//DebugInfo("+TimerConfuse inside timer.");
 	if (isLoopConfusingNow)
 	{
 		SeekAndConfuse();
 		SetTimer(confusionDuration, false);
-		//DebugInfo("+TimerConfuse inside loopconfusing.");
 	}
 }
 
@@ -51,12 +48,11 @@ function SeekAndConfuse()
 		if (device.IsA('HackableDevices') || device.IsA('AutoTurret'))
 		{
 			device.TakeDamage(0, none, device.Location, vect(0,0,0), 'EMP');
-			//DebugInfo("+TimerConfuse inside confuse.");
 		}
 	}
 }
 
-DefaultProperties
+defaultproperties
 {
 	confusionDuration=5.01
 }

@@ -1,5 +1,5 @@
 //-----------------------------------------------------------
-//
+// SetClickableTrigger
 //-----------------------------------------------------------
 class SetClickableTrigger expands CNNSimpleTrigger;
 
@@ -20,23 +20,18 @@ function ActivatedON()
 {
 	local DeusExDecoration dec;
 
-	if ( DeusExDecorationTag != '' )
+	if (DeusExDecorationTag != '')
 	{
 		foreach AllActors(class'DeusExDecoration', dec, DeusExDecorationTag)
 		{
 			switch (SetDec_CollideActors)
 			{
 				case ECBV_SetToTrue:
-					//dec.bCollideActors = true;
-					//( optional bool NewColActors, optional bool NewBlockActors, optional bool NewBlockPlayers );
 					dec.SetCollision(true, dec.bBlockActors, dec.bBlockPlayers);
 					break;
-
 				case ECBV_SetToFalse:
-					//dec.bCollideActors = false;
 					dec.SetCollision(false, dec.bBlockActors, dec.bBlockPlayers);
 					break;
-
 			}
 
 			switch (SetDec_OnlyTriggerable)
@@ -44,7 +39,6 @@ function ActivatedON()
 				case ECBV_SetToTrue:
 					dec.bOnlyTriggerable = true;
 					break;
-
 				case ECBV_SetToFalse:
 					dec.bOnlyTriggerable = false;
 					break;
@@ -55,7 +49,6 @@ function ActivatedON()
 				case ECBV_SetToTrue:
 					dec.bHighlight = true;
 					break;
-
 				case ECBV_SetToFalse:
 					dec.bHighlight = false;
 					break;
@@ -64,7 +57,6 @@ function ActivatedON()
 	}
 }
 
-DefaultProperties
+defaultproperties
 {
-
 }

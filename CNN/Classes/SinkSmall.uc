@@ -24,9 +24,9 @@ function BeginPlay()
 
 defaultproperties
 {
-     Mesh=LodMesh'CNN.Sink1'
-     CollisionRadius=20.000000
-     CollisionHeight=3.500000
-     Mass=25.000000
-     Buoyancy=50.000000
+	Mesh=LodMesh'CNN.Sink1'
+	CollisionRadius=20.000000
+	CollisionHeight=3.500000
+	Mass=25.000000
+	Buoyancy=50.000000
 }

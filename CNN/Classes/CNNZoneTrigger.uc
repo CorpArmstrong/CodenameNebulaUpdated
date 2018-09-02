@@ -23,8 +23,8 @@ function TriggerZone()
         zInfo.DamageType = zoneDamageType;
         zInfo.ZoneVelocity = zoneVelocity;
 		zInfo.DamagePerSec = zoneDamagePerSec;
-		BroadcastMessage("zoneTag = " $zInfo.Tag);
-		BroadcastMessage("zoneVelocity = " $zInfo.ZoneVelocity);
+		BroadcastMessage("zoneTag = " $ zInfo.Tag);
+		BroadcastMessage("zoneVelocity = " $ zInfo.ZoneVelocity);
     }
 }
 

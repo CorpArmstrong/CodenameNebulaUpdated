@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoClipBOard expands Object
+class DecoClipBOard expands Object
 	abstract;
 
 // ClipBoard

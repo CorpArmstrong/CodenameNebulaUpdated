@@ -47,5 +47,3 @@ function Touch(Actor Other)
         Super.Touch(Other);
     }
 }
-
-

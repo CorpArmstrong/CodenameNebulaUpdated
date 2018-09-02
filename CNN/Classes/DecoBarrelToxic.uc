@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoBarrelToxic expands Object
+class DecoBarrelToxic expands Object
 	abstract;
 
 // For BarrelToxic

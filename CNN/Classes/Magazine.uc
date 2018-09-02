@@ -34,11 +34,11 @@ function BeginPlay()
 
 defaultproperties
 {
-     bCanBeBase=True
-     ItemName="Magazine"
-     Mesh=LodMesh'CNN.Magazine'
-     CollisionRadius=13.600000
-     CollisionHeight=5.000000
-     Mass=2.000000
-     Buoyancy=4.000000
+	bCanBeBase=true
+	ItemName="Magazine"
+	Mesh=LodMesh'CNN.Magazine'
+	CollisionRadius=13.600000
+	CollisionHeight=5.000000
+	Mass=2.000000
+	Buoyancy=4.000000
 }

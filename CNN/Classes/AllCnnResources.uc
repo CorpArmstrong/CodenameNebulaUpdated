@@ -1,6 +1,3 @@
-//-----------------------------------------------------------
-//
-//-----------------------------------------------------------
 class AllCnnResources expands Object;
 
 //
@@ -38,5 +35,4 @@ class AllCnnResources expands Object;
 
 DefaultProperties
 {
-
 }

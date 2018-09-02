@@ -1,9 +1,12 @@
+//=============================================================================
+// NYLibertyTopEvidence.
+//=============================================================================
 class NYLibertyTopEvidence extends CarWrecked;
 
 defaultproperties
 {
-	bCanBeBase=True
-	bInvincible=False
+	bCanBeBase=true
+	bInvincible=false
 	Physics=PHYS_None
 	Mesh=LodMesh'DeusExDeco.NYLibertyTop'
 	CollisionRadius=500.000000

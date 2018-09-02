@@ -57,8 +57,6 @@ function Timer()
     SendPlayerOnceToGame();
 }
 
-// ----------------------------------------------------------------------
-
 function CheckIntroFlags()
 {
 	if (flags.GetBool('isIntroPlayed'))
@@ -89,7 +87,8 @@ function StartConversationWithActor()
 			foreach AllActors(class'Actor', actorToSpeak, actorTag)
 				break;
 
-			if (actorToSpeak != none) {
+			if (actorToSpeak != none)
+			{
 				player.StartConversationByName(conversationName, actorToSpeak, false, true);
 			}
 
@@ -114,7 +113,8 @@ function SendPlayerOnceToGame()
 {
 	if (flags.GetBool('isIntroPlayed') && !isIntroCompleted)
 	{
-		if (DeusExRootWindow(player.rootWindow) != none) {
+		if (DeusExRootWindow(player.rootWindow) != none)
+		{
 			DeusExRootWindow(player.rootWindow).ClearWindowStack();
 		}
 

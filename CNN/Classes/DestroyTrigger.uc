@@ -1,5 +1,5 @@
 //-----------------------------------------------------------
-//
+// DestroyTrigger
 //-----------------------------------------------------------
 class DestroyTrigger expands CNNTrigger;
 
@@ -14,39 +14,41 @@ function Trigger(Actor Other, Pawn Instigator)
     local Actor A;
     local DestroyTriggerExpectant Expectant;
 
-// =================================
-        player = DeusExPlayer(GetPlayerPawn());
+    player = DeusExPlayer(GetPlayerPawn());
 
 	if (ScriptedPawnTag != '')
 	{
-        if ( player != none && player.IsInState('Conversation') )
+        if (player != none && player.IsInState('Conversation'))
         {
             Expectant = Spawn(class'DestroyTriggerExpectant', none);
             Expectant.ScriptedPawnTag = ScriptedPawnTag;
             Expectant.TurnOn();
         }
         else
-			foreach AllActors( class 'ScriptedPawn', P, ScriptedPawnTag )
+        {
+			foreach AllActors(class 'ScriptedPawn', P, ScriptedPawnTag)
+            {
    	            P.Destroy();
+            }
+        }
 	}
 
-    if ( AnyActorTag != '' )
+    if (AnyActorTag != '')
     {
 		self.MsgBox("AnyActorTag != ''");
 
-		foreach AllActors( class 'Actor', A, AnyActorTag )
+		foreach AllActors(class 'Actor', A, AnyActorTag)
 		{
 			self.MsgBox("one finded");
 			A.Destroy();
 		}
-
 	}
 
-    if ( DestroyByClassName != '' )
+    if (DestroyByClassName != '')
     {
 		self.MsgBox("DestroyByClassName != ''");
 
-		foreach AllActors( class 'Actor', A )
+		foreach AllActors(class 'Actor', A)
 		{
 			if (A.IsA(DestroyByClassName))
 			{
@@ -55,7 +57,6 @@ function Trigger(Actor Other, Pawn Instigator)
 		}
 	}
 
-// =================================
 	Super.Trigger(Other, Instigator);
 }
 
@@ -67,7 +68,6 @@ function Touch(Actor Other)
 
 	if (IsRelevant(Other))
 	{
-
         player = DeusExPlayer(GetPlayerPawn());
 
         if (player != none && player.IsInState('Conversation'))
@@ -77,8 +77,12 @@ function Touch(Actor Other)
             Expectant.TurnOn();
         }
         else
-            foreach AllActors( class 'ScriptedPawn', A, ScriptedPawnTag )
+        {
+            foreach AllActors(class 'ScriptedPawn', A, ScriptedPawnTag)
+            {
                 A.Destroy();
+            }
+        }
 
 		Super.Touch(Other);
 	}

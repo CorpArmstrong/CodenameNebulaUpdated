@@ -49,5 +49,5 @@ function Touch(Actor Other)
 defaultproperties
 {
 	cameraTag=SecurityCamera
-	bToggleAllCameras=True
+	bToggleAllCameras=true
 }

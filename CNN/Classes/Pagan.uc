@@ -1,6 +1,9 @@
+//=============================================================================
+// Pagan.
+//=============================================================================
 class Pagan extends CNNBurningScientist;
 
 defaultproperties
 {
-CarcassType=Class'CNN.DrIsaacCarcass'
+    CarcassType=Class'CNN.DrIsaacCarcass'
 }

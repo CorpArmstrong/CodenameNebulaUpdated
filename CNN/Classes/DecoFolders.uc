@@ -1,7 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-Class DecoFolders expands Object
+class DecoFolders expands Object
 	abstract;
 
 // Folder

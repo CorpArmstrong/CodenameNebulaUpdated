@@ -1,16 +1,13 @@
 //-----------------------------------------------------------
-//
+// JJElecEmitter
 //-----------------------------------------------------------
 class JJElecEmitter extends ElectricityEmitter;
 
 var () float maxDistanse;
 var () float changePosTime;
 var () float accumTime;
+
 var rotator rot;
-//var rotator rot1;
-//var rotator rot2;
-//var vector vec1;
-//var vector vec2;
 
 function PostBeginPlay()
 {
@@ -30,40 +27,23 @@ function CalcTrace(float deltaTime)
 	if (!bHiddenBeam)
 	{
 		// set up the random beam stuff
-
-		if ( accumTime >= changePosTime )
+		if (accumTime >= changePosTime)
 		{
             accumTime -= accumTime;
             accumTime += 0.000001;
-        ////////////////////
-//        vec1 = vect(0,1,0);
 
-//		r.Pitch = Int((0.5 - FRand()) * randomAngle);
-//		r.Yaw = Int((0.5 - FRand()) * randomAngle);
-//		r.Roll = Int((0.5 - FRand()) * randomAngle);
-//		vec2 = vect(0,1,0) >> r;
-
-		rot.Pitch = Int((0.5 - FRand()) * randomAngle);
-		rot.Yaw = Int((0.5 - FRand()) * randomAngle);
-		rot.Roll = Int((0.5 - FRand()) * randomAngle);
-
-        ////////////////////
+            rot.Pitch = Int((0.5 - FRand()) * randomAngle);
+            rot.Yaw = Int((0.5 - FRand()) * randomAngle);
+            rot.Roll = Int((0.5 - FRand()) * randomAngle);
         }
         else
         {
-            //rot = interpolateRotation( changePosTime / accumTime, rot(0,0,0), rot(0,0,0));
-
-            //jjV = interpolateVector( changePosTime / accumTime, vec1, vec2 );
-            //rot = rotator(jjV);
-
             accumTime += deltaTime;
         }
 
-
-
 		StartTrace = Location;
 		EndTrace = Location + maxDistanse * vector(Rotation + rot);
-		HitActor = None;
+		HitActor = none;
 
 		foreach TraceTexture(class'Actor', target, texName, texGroup, texFlags, HitLocation, HitNormal, EndTrace, StartTrace)
 		{
@@ -85,40 +65,39 @@ function CalcTrace(float deltaTime)
 		lastDamageTime += deltaTime;
 
 		// shock whatever gets in the beam
-		if ((HitActor != None) && (lastDamageTime >= damageTime))
+		if ((HitActor != none) && (lastDamageTime >= damageTime))
 		{
 			sP = ScriptedPawn(HitActor);
-			if ( sP != none )
+
+			if (sP != none)
 			{
-				if ( !sP.bInvincible )
+				if (!sP.bInvincible)
 				{
-					sP.TakeDamage(damageAmount, Instigator, HitLocation, vect(0,0,0), 'Shocked');
+					sP.TakeDamage(damageAmount, Instigator, HitLocation, vect(0, 0, 0), 'Shocked');
 					lastDamageTime = 0;
 				}
 			}
 			else
 			{
-				HitActor.TakeDamage(damageAmount, Instigator, HitLocation, vect(0,0,0), 'Shocked');
+				HitActor.TakeDamage(damageAmount, Instigator, HitLocation, vect(0, 0, 0), 'Shocked');
 				lastDamageTime = 0;
 			}
 		}
-		//else
-		//{
-		//	HitLocation = Location + maxDistanse * vector(Rotation + rot);
-		//}    // was commented for fix some bugs
 
-		if (LaserIterator(RenderInterface) != None)
+		if (LaserIterator(RenderInterface) != none)
+        {
 			LaserIterator(RenderInterface).AddBeam(0, Location, Rotation + rot, VSize(Location - HitLocation));
+        }
 	}
 }
 
 defaultproperties
 {
-     maxDistanse=5000.0
-     changePosTime=1.000000
-     randomAngle=12000.000000
-     DamageAmount=1
-     damageTime=0.500000
-     bFlicker=False
-     flickerTime=0.800000
+    maxDistanse=5000.0
+    changePosTime=1.000000
+    randomAngle=12000.000000
+    DamageAmount=1
+    damageTime=0.500000
+    bFlicker=false
+    flickerTime=0.800000
 }

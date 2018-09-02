@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
-//
+// SilentUPS
 //-----------------------------------------------------------
-class SilentUPS expands CNNUPS;
+class SilentUPS extends CNNUPS;
 
 function PostBeginPlay()
 {
@@ -11,6 +11,6 @@ function PostBeginPlay()
 
 	for (i = 0; i < ArrayCount(em); i++)
 	{
-		em[i].AmbientSound = None;
+		em[i].AmbientSound = none;
 	}
 }

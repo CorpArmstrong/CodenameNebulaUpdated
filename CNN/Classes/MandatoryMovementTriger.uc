@@ -1,5 +1,5 @@
 //-----------------------------------------------------------
-//
+// MandatoryMovementTriger
 //-----------------------------------------------------------
 class MandatoryMovementTriger expands CNNTrigger;
 
@@ -32,17 +32,17 @@ function MovePawn()
     local SpawnPoint NewPosPlace;
     local Pawn MovedPawn;
 
-    NewPosPlace = None;
+    NewPosPlace = none;
 
     foreach AllActors(class 'SpawnPoint', NewPosPlace, SpawnPointTag)
     {
-    	if (NewPosPlace != None)
+    	if (NewPosPlace != none)
 		{
 			break;
 		}
 	}
 
-    if (NewPosPlace != None)
+    if (NewPosPlace != none)
     {
         switch(MovingType)
         {
@@ -52,7 +52,7 @@ function MovePawn()
             case MT_MovePawn:
                 foreach AllActors(class 'Pawn', MovedPawn, MovedPawnTag)
                 {
-                    if (MovedPawn != None)
+                    if (MovedPawn != none)
                     {
                         break;
                     }
@@ -62,7 +62,7 @@ function MovePawn()
                 break;
         }
 
-        if (MovedPawn != None)
+        if (MovedPawn != none)
         {
             MovedPawn.SetLocation(NewPosPlace.Location);
             MovedPawn.SetRotation(NewPosPlace.Rotation);

@@ -4,7 +4,7 @@ defaultproperties
 {
     InitialInventory(0)=(Inventory=Class'DeusEx.WeaponFlamethrower')
     Tag=DrIsaac
-    bSelected=True
+    bSelected=true
     BindName="Isaac"
     BarkBindName="Isaac"
     FamiliarName="Dr. Isaac"

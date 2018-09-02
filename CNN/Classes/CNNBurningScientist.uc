@@ -1,3 +1,6 @@
+//=============================================================================
+// CNNBurningScientist.
+//=============================================================================
 class CNNBurningScientist extends ScientistMale;
 
 var() float Flammability;			// How long does the object burn?
@@ -13,12 +16,10 @@ function TakeDamage(int Damage, Pawn EventInstigator, vector HitLocation, vector
     {
 		isBurning = true;
 		StartFire();
-		//PlayAnimPivot('Jump', 3, 0.1);
-		//PlayAnim(Sequence, Rate, TweenTime);
 		LoopAnim('Panic', 3, 0.1, Flammability);
 		SetTimer(Flammability + destroyDelay, false);
 	}
-	
+
 	if (DamageType == 'AlmostKilled')
 	{
 		super.TakeDamage(Damage, EventInstigator, HitLocation, Momentum, 'Shot');
@@ -33,13 +34,14 @@ function StartFire()
 
     for (i = 0; i < 8; i++)
 	{
-		loc.X = 0.9*CollisionRadius * (1.0-2.0*FRand());
-		loc.Y = 0.9*CollisionRadius * (1.0-2.0*FRand());
-		loc.Z = 0.9*CollisionHeight * (1.0-2.0*FRand());
+		loc.X = 0.9 * CollisionRadius * (1.0 - 2.0 * FRand());
+		loc.Y = 0.9 * CollisionRadius * (1.0 - 2.0 * FRand());
+		loc.Z = 0.9 * CollisionHeight * (1.0 - 2.0 * FRand());
 		loc += Location;
+
 		f = Spawn(class'Fire', Self,, loc);
 
-        if (f != None)
+        if (f != none)
 		{
 			f.DrawScale = FRand() + 1.0;
 			f.LifeSpan = Flammability;
@@ -47,15 +49,20 @@ function StartFire()
 			// turn off the sound and lights for all but the first one
 			if (i > 0)
 			{
-				f.AmbientSound = None;
+				f.AmbientSound = none;
 				f.LightType = LT_None;
 			}
 
 			// turn on/off extra fire and smoke
 			if (FRand() < 0.5)
+			{
 				f.smokeGen.Destroy();
+			}
+
 			if (FRand() < 0.5)
+			{
 				f.AddFire(1.5);
+			}
 		}
     }
 }
@@ -73,28 +80,28 @@ function ExtinguishFire()
 function Timer()
 {
 	ExtinguishFire();
-	self.TakeDamage(300, none, vect(0,0,0), vect(0,0,0), 'AlmostKilled');
+	self.TakeDamage(300, none, vect(0, 0, 0), vect(0, 0, 0), 'AlmostKilled');
 }
 
-DefaultProperties
+defaultproperties
 {
     Flammability=30.000000
 	destroyDelay=0.1
     bCanBeBurned=true
-    bAlliancesChanged=False
+    bAlliancesChanged=false
     Orders=Standing
     HomeTag=Start
     HomeExtent=128.000000
-    bHateShot=False
-    bHateInjury=False
-    bReactFutz=True
-    bReactPresence=False
-    bReactAlarm=True
-    bReactCarcass=True
-    bFearHacking=True
-    bFearInjury=True
-    bFearAlarm=False
-    bFearProjectiles=True
+    bHateShot=false
+    bHateInjury=false
+    bReactFutz=true
+    bReactPresence=false
+    bReactAlarm=true
+    bReactCarcass=true
+    bFearHacking=true
+    bFearInjury=true
+    bFearAlarm=false
+    bFearProjectiles=true
     MaxProvocations=2
     InitialAlliances(0)=(AllianceName=Player)
     InitialAlliances(1)=(AllianceName=mj12)
@@ -108,10 +115,10 @@ DefaultProperties
     Skin=Texture'DeusExItems.Skins.PinkMaskTex'
     Mesh=LodMesh'DeusExCharacters.GM_DressShirt_S'
     MultiSkins(0)=Texture'DeusExCharacters.Skins.HarleyFilbenTex0'
-    MultiSkins(1)=None
-    MultiSkins(2)=None
+    MultiSkins(1)=none
+    MultiSkins(2)=none
     MultiSkins(3)=Texture'DeusExCharacters.Skins.PantsTex10'
-    MultiSkins(4)=None
+    MultiSkins(4)=none
     MultiSkins(5)=Texture'DeusExCharacters.Skins.ChefTex1'
     BindName="Pagan"
     BarkBindName="Biotechnitian"

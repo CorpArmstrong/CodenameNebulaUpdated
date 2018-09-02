@@ -1,3 +1,6 @@
+//=============================================================================
+// ToggleActorLifecycleTrigger.
+//=============================================================================
 class ToggleActorLifecycleTrigger extends CNNTrigger;
 
 var() class<Actor> actorType;
@@ -60,15 +63,16 @@ function ToggleActorLifecycle()
     if (!bActorAlive)
     {
         currentActor = Spawn(actorType,,, spawnLocation, spawnRotation);
+
         if (currentActor.IsA('Trigger'))
         {
             currentActor.Trigger(self, DeusExPlayer(GetPlayerPawn()));
         }
+
         bActorAlive = true;
     }
     else
     {
-        //currentActor.Destroy();
         CNNSimpleActorSpawner(currentActor).StopSpawning();
         bActorAlive = false;
     }

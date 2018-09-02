@@ -1,5 +1,5 @@
 //-----------------------------------------------------------
-//
+// SetHideTrigger
 //-----------------------------------------------------------
 class SetHideTrigger expands CNNSimpleTrigger;
 
@@ -10,12 +10,14 @@ function ActivatedON()
 {
 	local Actor A;
 
-	foreach AllActors( class'Actor', A, ActorTag )
+	foreach AllActors(class'Actor', A, ActorTag)
+	{
 		A.bHidden = ActorHideValue;
+	}
 
 	super.ActivatedON();
 }
 
-DefaultProperties
+defaultproperties
 {
 }

@@ -1,3 +1,6 @@
+//=============================================================================
+// EventCommandToggleGravity.
+//=============================================================================
 class EventCommandToggleGravity extends EventCommand;
 
 var ZoneInfo gravityZoneInfo;
@@ -41,7 +44,7 @@ function ExecuteEvent()
     }
 }
 
-DefaultProperties
+defaultproperties
 {
     zoneInfoTag=ZoneInfoSimulatedGravity
     physicsActorTag=SimulatedPhysics

@@ -568,3 +568,4 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 Maps/value.dx
+AI/

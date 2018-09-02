@@ -37,10 +37,10 @@ event TravelPostAccept()
     switch(PlayerSkin)
     {
         case 0:
-            flags.SetBool('Bias_Templar',True);
+            flags.SetBool('Bias_UNATCO',True);
             MultiSkins[0] = Texture'CNN.Skins.TantalusFace';
-            MultiSkins[1] = Texture'DeusExCharacters.Skins.StantonDowdTex2';
-            MultiSkins[2] = Texture'DeusExCharacters.Skins.MJ12TroopTex1';
+            MultiSkins[1] = Texture'DeusExCharacters.Skins.SmugglerTex2';
+            MultiSkins[2] = Texture'DeusExCharacters.Skins.ThugMale3Tex2';
             MultiSkins[3] = Texture'CNN.Skins.TantalusFace';
             MultiSkins[4] = Texture'DeusExCharacters.Skins.JockTex1';
             MultiSkins[5] = Texture'DeusExCharacters.Skins.SmugglerTex2';
@@ -52,23 +52,26 @@ event TravelPostAccept()
             MultiSkins[0] = Texture'CNN.Skins.TantalusAsian';
             MultiSkins[1] = Texture'DeusExCharacters.Skins.JockTex2';
             MultiSkins[2] = Texture'DeusExCharacters.Skins.ThugMaleTex3';
-            MultiSkins[3] = Texture'CNN.Skins.TantalusFace';
-            MultiSkins[4] = Texture'DeusExCharacters.Skins.PaulDentonTex1';
-            MultiSkins[5] = Texture'DeusExItems.Skins.PinkMaskTex';
-            MultiSkins[6] = Texture'DeusExCharacters.Skins.FramesTex4';
+			MultiSkins[3] = None;
+            MultiSkins[4] = Texture'DeusExCharacters.Skins.SmugglerTex1';
+			MultiSkins[5] = None;
+            MultiSkins[6] = Texture'DeusExCharacters.Skins.FramesTex2';
+            MultiSkins[7] = FireTexture'Effects.Laser.LaserSpot2';
+			Texture = Texture'DeusExItems.Skins.PinkMaskTex';
             //MultiSkins[7] = FireTexture'Effects.Fire.Spark_Electric'; //causes ucc to return error
         break;
         case 2:
             flags.SetBool('Bias_MJ12',True);
-            Mesh=LodMesh'DeusExCharacters.GM_Suit';
-            MultiSkins[0] = Texture'CNN.Skins.TantalusBlack';
-            MultiSkins[1] = Texture'DeusExCharacters.Skins.LowerClassMale2Tex2';
-            MultiSkins[2] = Texture'DeusExItems.Skins.PinkMaskTex';
-            MultiSkins[3] = Texture'DeusExCharacters.Skins.MIBTex1';
-            MultiSkins[4] = Texture'DeusExCharacters.Skins.MIBTex1';
-            MultiSkins[5] = Texture'DeusExCharacters.Skins.FramesTex4';
+            Mesh=LodMesh'DeusExCharacters.GM_DressShirt_B';
+            MultiSkins[0] = Texture'DeusExCharacters.Skins.ThugMale3Tex1';
+            MultiSkins[1] = Texture'DeusExCharacters.Skins.MJ12TroopTex1';
+			MultiSkins[2] = None;
+            MultiSkins[3] = Texture'CNN.Skins.TantalusBlack';
+			MultiSkins[4] = None;
+            MultiSkins[5] = Texture'DeusExItems.Skins.GrayMaskTex';
             MultiSkins[6] = FireTexture'Effects.Laser.LaserSpot2';
-            MultiSkins[7] = Texture'DeusExItems.Skins.PinkMaskTex';
+			MultiSkins[7] = None;
+			Texture = Texture'DeusExItems.Skins.PinkMaskTex';
         break;
         case 3:
             flags.SetBool('Bias_NSF',True);
@@ -83,15 +86,15 @@ event TravelPostAccept()
             //MultiSkins[7] = FireTexture'Effects.water.WaterDrop1';
         break;
         case 4:
-            flags.SetBool('Bias_UNATCO',True);
+            flags.SetBool('Bias_Templar',True);
             MultiSkins[0] = Texture'CNN.Skins.TantalusGoatee';
-            MultiSkins[1] = Texture'DeusExCharacters.Skins.SmugglerTex2';
-            MultiSkins[2] = Texture'DeusExCharacters.Skins.ThugMale3Tex2';
-            MultiSkins[3] = Texture'DeusExCharacters.Skins.JCDentonTex0';
-            MultiSkins[4] = Texture'DeusExCharacters.Skins.JCDentonTex1';
+            MultiSkins[1] = Texture'DeusExCharacters.Skins.StantonDowdTex2';
+			MultiSkins[2] = Texture'DeusExCharacters.Skins.MJ12TroopTex1';
+			MultiSkins[3] = None;
+            MultiSkins[4] = Texture'DeusExCharacters.Skins.JockTex1';
             MultiSkins[5] = Texture'DeusExCharacters.Skins.SmugglerTex2';
             MultiSkins[6] = Texture'DeusExCharacters.Skins.FramesTex4';
-            MultiSkins[7] = FireTexture'Effects.Fire.SparkFX1';
+            MultiSkins[7] = FireTexture'Effects.Laser.LaserSpot2';
         break;
     }
 
@@ -159,8 +162,11 @@ exec function ShowMainMenu()
     info = GetLevelInfo();
 
     root = DeusExRootWindow(rootWindow);
+    
     if (root != None)
+    {
         root.InvokeMenu(class'CNN.ApocalypseInsideMenuMain');
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -187,11 +193,11 @@ function ShowIntro(optional bool bStartNewGame)
 //
 // allows us to use custom credits window
 // ----------------------------------------------------------------------
-/*
+
 function ShowCredits(optional bool bLoadIntro)
 {
     local DeusExRootWindow root;
-    local burdenCreditsWindow winCredits;
+    local CNNCreditsWindow winCredits;
 
     root = DeusExRootWindow(rootWindow);
 
@@ -199,11 +205,15 @@ function ShowCredits(optional bool bLoadIntro)
     {
         // Show the credits screen and force the game not to pause
         // if we're showing the credits after the endgame
-        winCredits = burdenCreditsWindow(root.InvokeMenuScreen(Class'burdenCreditsWindow', bLoadIntro));
+        winCredits = CNNCreditsWindow(root.InvokeMenuScreen(Class'CNNCreditsWindow', bLoadIntro));
         winCredits.SetLoadIntro(bLoadIntro);
     }
 }
-*/
+
+exec function ShowCreditsTest()
+{
+	ShowCredits(true); 
+}
 
 // ----------------------------------------------------------------------
 // UpdatePlayerSkin()
@@ -348,11 +358,11 @@ function InitializeSubSystems()
         SkillSystem.SetPlayer(Self);
     }
 
-   if ((Level.Netmode == NM_Standalone) || (!bBeltIsMPInventory))
-   {
-      // Give the player a keyring
-      //CreateKeyRing();
-   }
+	if ((Level.Netmode == NM_Standalone) || (!bBeltIsMPInventory))
+	{
+		// Give the player a keyring
+		CreateKeyRing();
+	}
 }
 
 //   Let HDTP know that Tantalus is not JC denton.
@@ -622,14 +632,54 @@ function InvokeUIScreen(Class<DeusExBaseWindow> windowClass)
     }
 }
 
+function ToggleCameraStateNoDebugMessage(SecurityCamera cam)
+{
+   if (cam.bActive)
+   {
+      cam.UnTrigger(none, none);	
+      cam.team = -1;
+   }
+   else            
+   {
+      MakeCameraAlly(cam);
+      cam.Trigger(none, none);
+   }
+         
+   // Make sure the camera isn't in bStasis=True
+   // so it responds to our every whim.
+   cam.bStasis = False;         
+}
+
+function SetInvisible(bool B)
+{
+	
+	if ( !bAdmin && (Level.Netmode != NM_Standalone) )
+		return;
+
+	if (B)
+	{
+		bHidden = true;
+		Visibility = 0;
+		// DEUS_EX STM - added AI invisibility
+		bDetectable = false;
+	}
+	else
+	{
+		bHidden = false;
+		Visibility = Default.Visibility;
+		// DEUS_EX STM - added AI invisibility
+		bDetectable = true;
+	}	
+}
+
 defaultproperties
 {
-    TruePlayerName="Tantalus Denton"
+    TruePlayerName="Blake Denton"
     BindName=Tantalus
     Credits=0
     MenuThemeName="Tantalus theme"
     HUDThemeName="Tantalus theme"
-    strStartMap="05_MoonIntro"
+    strStartMap="AiPrologue"
     CarcassType=Class'JCDentonMaleCarcass'
     Mesh=LodMesh'DeusExCharacters.GM_Trench'
     MultiSkins(0)=Texture'CNN.Skins.TantalusFace'
@@ -640,8 +690,8 @@ defaultproperties
     MultiSkins(5)=Texture'DeusExCharacters.Skins.SmugglerTex2'
     MultiSkins(6)=Texture'DeusExCharacters.Skins.FramesTex4'
     MultiSkins(7)=FireTexture'Effects.Laser.LaserSpot2'
-    FamiliarName="Tantalus Denton"
-    UnfamiliarName="Tantalus Denton"
+    FamiliarName="Tantalus"
+    UnfamiliarName="Tantalus"
     Tag="TantalusTag"
     Energy=100.00
     EnergyMax=100.00

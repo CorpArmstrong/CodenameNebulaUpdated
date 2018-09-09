@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
-//
+// CArmstrongAliveCarcass
 //-----------------------------------------------------------
-class CArmstrongAliveCarcass expands DeusExCarcass;
+class CArmstrongAliveCarcass extends DeusExCarcass;
 
 defaultproperties
 {
@@ -19,4 +19,5 @@ defaultproperties
     MultiSkins(6)=Texture'DeusExItems.Skins.PinkMaskTex'
     MultiSkins(7)=Texture'DeusExItems.Skins.PinkMaskTex'
     CollisionRadius=40.000000
+    bInvincible=true
 }

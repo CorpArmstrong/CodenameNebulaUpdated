@@ -5,7 +5,7 @@ class ClipBoard extends InformationDevices;
 
 defaultproperties
 {
-    bCanBeBase=True
+    bCanBeBase=true
     ItemName="ClipBoard"
     Mesh=LodMesh'CNN.ClipBoard'
     CollisionRadius=12.000000

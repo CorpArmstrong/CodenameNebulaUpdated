@@ -1,3 +1,6 @@
+//-----------------------------------------------------------
+// CNNDamageTrigger.
+//-----------------------------------------------------------
 class CNNDamageTrigger extends DamageTrigger;
 
 var() name destroyActorTag;
@@ -5,13 +8,13 @@ var() name destroyActorTag;
 function Trigger(Actor Other, Pawn Instigator)
 {
     MakeDamage();
-    Super.Trigger(Other, Instigator);
+    super.Trigger(Other, Instigator);
 }
 
 function MakeDamage()
 {
     local Actor actorToDamage;
-    
+
     foreach AllActors(class 'Actor', actorToDamage, destroyActorTag)
     {
         actorToDamage.TakeDamage(damageAmount,

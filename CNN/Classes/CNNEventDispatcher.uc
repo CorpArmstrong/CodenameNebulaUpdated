@@ -16,13 +16,16 @@ state Dispatch
 {
     Begin:
     disable('Trigger');
-    for( i=0; i<ArrayCount(OutEvents); i++ )
+    for (i = 0; i < ArrayCount(OutEvents); i++)
     {
-        if( OutEvents[i] != '' )
+        if (OutEvents[i] != '')
         {
-            Sleep( OutDelays[i] );
-            foreach AllActors( class 'Actor', Target, OutEvents[i] )
-                Target.Trigger( Self, Instigator );
+            Sleep(OutDelays[i]);
+
+            foreach AllActors(class 'Actor', Target, OutEvents[i])
+            {
+                Target.Trigger(self, Instigator);
+            }
         }
     }
     enable('Trigger');

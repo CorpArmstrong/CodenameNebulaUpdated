@@ -5,10 +5,10 @@ class Barrel3 extends Containers;
 
 defaultproperties
 {
-    bInvincible=True
-    bFlammable=False
+    bInvincible=true
+    bFlammable=false
     ItemName="Radioactive Barrel"
-    bBlockSight=True
+    bBlockSight=true
     Mesh=LodMesh'CNN.Barrel3'
     CollisionRadius=19.000000
     CollisionHeight=30.000000

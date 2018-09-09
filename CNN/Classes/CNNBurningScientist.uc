@@ -3,27 +3,27 @@
 //=============================================================================
 class CNNBurningScientist extends ScientistMale;
 
-var() float Flammability;			// How long does the object burn?
-var() float destroyDelay;			// after timer has expired, kill scientist.
+var() float Flammability;           // How long does the object burn?
+var() float destroyDelay;           // after timer has expired, kill scientist.
 var() bool bCanBeBurned;
 
 var bool isBurning;
 
 function TakeDamage(int Damage, Pawn EventInstigator, vector HitLocation, vector Momentum, name DamageType)
 {
-	if (((DamageType == 'Burned') || (DamageType == 'Flamed'))
-			&& bCanBeBurned && !isBurning)
+    if (((DamageType == 'Burned') || (DamageType == 'Flamed'))
+        && bCanBeBurned && !isBurning)
     {
-		isBurning = true;
-		StartFire();
-		LoopAnim('Panic', 3, 0.1, Flammability);
-		SetTimer(Flammability + destroyDelay, false);
-	}
+        isBurning = true;
+        StartFire();
+        LoopAnim('Panic', 3, 0.1, Flammability);
+        SetTimer(Flammability + destroyDelay, false);
+    }
 
-	if (DamageType == 'AlmostKilled')
-	{
-		super.TakeDamage(Damage, EventInstigator, HitLocation, Momentum, 'Shot');
-	}
+    if (DamageType == 'AlmostKilled')
+    {
+        super.TakeDamage(Damage, EventInstigator, HitLocation, Momentum, 'Shot');
+    }
 }
 
 function StartFire()
@@ -33,60 +33,60 @@ function StartFire()
     local vector loc;
 
     for (i = 0; i < 8; i++)
-	{
-		loc.X = 0.9 * CollisionRadius * (1.0 - 2.0 * FRand());
-		loc.Y = 0.9 * CollisionRadius * (1.0 - 2.0 * FRand());
-		loc.Z = 0.9 * CollisionHeight * (1.0 - 2.0 * FRand());
-		loc += Location;
+    {
+        loc.X = 0.9 * CollisionRadius * (1.0 - 2.0 * FRand());
+        loc.Y = 0.9 * CollisionRadius * (1.0 - 2.0 * FRand());
+        loc.Z = 0.9 * CollisionHeight * (1.0 - 2.0 * FRand());
+        loc += Location;
 
-		f = Spawn(class'Fire', Self,, loc);
+        f = Spawn(class'Fire', Self,, loc);
 
         if (f != none)
-		{
-			f.DrawScale = FRand() + 1.0;
-			f.LifeSpan = Flammability;
+        {
+            f.DrawScale = FRand() + 1.0;
+            f.LifeSpan = Flammability;
 
-			// turn off the sound and lights for all but the first one
-			if (i > 0)
-			{
-				f.AmbientSound = none;
-				f.LightType = LT_None;
-			}
+            // turn off the sound and lights for all but the first one
+            if (i > 0)
+            {
+                f.AmbientSound = none;
+                f.LightType = LT_None;
+            }
 
-			// turn on/off extra fire and smoke
-			if (FRand() < 0.5)
-			{
-				f.smokeGen.Destroy();
-			}
+            // turn on/off extra fire and smoke
+            if (FRand() < 0.5)
+            {
+                f.smokeGen.Destroy();
+            }
 
-			if (FRand() < 0.5)
-			{
-				f.AddFire(1.5);
-			}
-		}
+            if (FRand() < 0.5)
+            {
+                f.AddFire(1.5);
+            }
+        }
     }
 }
 
 function ExtinguishFire()
 {
-	local Fire f;
+    local Fire f;
 
     foreach BasedActors(class'Fire', f)
-	{
+    {
         f.Destroy();
-	}
+    }
 }
 
 function Timer()
 {
-	ExtinguishFire();
-	self.TakeDamage(300, none, vect(0, 0, 0), vect(0, 0, 0), 'AlmostKilled');
+    ExtinguishFire();
+    self.TakeDamage(300, none, vect(0, 0, 0), vect(0, 0, 0), 'AlmostKilled');
 }
 
 defaultproperties
 {
     Flammability=30.000000
-	destroyDelay=0.1
+    destroyDelay=0.1
     bCanBeBurned=true
     bAlliancesChanged=false
     Orders=Standing

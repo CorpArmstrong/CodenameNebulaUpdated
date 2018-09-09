@@ -1,7 +1,7 @@
 //=============================================================================
 // CNNHUD.
 //=============================================================================
-class CNNHUD expands DeusExHUD;
+class CNNHUD extends DeusExHUD;
 
 // ----------------------------------------------------------------------
 // InitWindow()
@@ -33,10 +33,10 @@ event InitWindow()
     hms             = HUDMultiSkills(NewChild(Class'HUDMultiSkills'));
 
     // Create the InformationWindow
-    info = HUDInformationDisplay(NewChild(Class'HUDInformationDisplay', False));
+    info = HUDInformationDisplay(NewChild(Class'HUDInformationDisplay', false));
 
     // Create the log window
-    msgLog  = HUDLogDisplay(NewChild(Class'HUDLogDisplay', False));
+    msgLog  = HUDLogDisplay(NewChild(Class'HUDLogDisplay', false));
     msgLog.SetLogTimeout(player.GetLogTimeout());
 
     frobDisplay = FrobDisplayWindow(NewChild(Class'FrobDisplayWindow'));
@@ -48,10 +48,10 @@ event InitWindow()
     startDisplay = HUDMissionStartTextDisplay(NewChild(Class'HUDMissionStartTextDisplay', False));
 
     // Bark display
-    barkDisplay = HUDBarkDisplay(NewChild(Class'HUDBarkDisplay', False));
+    barkDisplay = HUDBarkDisplay(NewChild(Class'HUDBarkDisplay', false));
 
     // Received Items Display
-    receivedItems = HUDReceivedDisplay(NewChild(Class'HUDReceivedDisplay', False));
+    receivedItems = HUDReceivedDisplay(NewChild(Class'HUDReceivedDisplay', false));
 }
 
 function HUDInfoLinkDisplay CreateInfoLinkWindow()
@@ -70,6 +70,5 @@ function HUDInfoLinkDisplay CreateInfoLinkWindow()
     }
 
     infolink.AskParentForReconfigure();
-
     return infolink;
 }

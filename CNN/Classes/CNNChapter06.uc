@@ -1,21 +1,24 @@
+//-----------------------------------------------------------
+// CNNChapter06.
+//-----------------------------------------------------------
 class CNNChapter06 extends MissionScript;
 
 var(ChangeLevelOnDeath) string levelName;
 
 function InitStateMachine()
 {
-    Super.InitStateMachine();
+    super.InitStateMachine();
     FirstFrame();
 }
 
 function Timer()
 {
-    Super.Timer();
+    super.Timer();
 
-	if (player.IsInState('Dying'))
-	{
-		Level.Game.SendPlayer(player, levelName);
-	}
+    if (player.IsInState('Dying'))
+    {
+        Level.Game.SendPlayer(player, levelName);
+    }
 }
 
 defaultproperties

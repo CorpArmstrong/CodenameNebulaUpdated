@@ -8,7 +8,7 @@ defaultproperties
     HitPoints=10
     FragType=Class'DeusEx.PaperFragment'
     ItemName="BoardBox"
-    bBlockSight=True
+    bBlockSight=true
     Mesh=LodMesh'CNN.BoardBoxSmall'
     CollisionRadius=14.500000
     CollisionHeight=8.500000

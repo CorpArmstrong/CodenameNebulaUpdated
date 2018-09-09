@@ -100,7 +100,9 @@ function StartConversationWithActor()
             DeusExRootWindow(player.rootWindow).ResetFlags();
 
             foreach AllActors(class 'Actor', actorToSpeak, actorTag)
+            {
                 break;
+            }
 
             if (actorToSpeak != none)
             {
@@ -154,7 +156,7 @@ function FinishCinematic()
     // to None will will effectively cause them to halt.
     foreach player.AllActors(class 'CameraPoint', cPoint)
     {
-        cPoint.nextPoint = None;
+        cPoint.nextPoint = none;
         cPoint.Destroy();
     }
 }

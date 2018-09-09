@@ -13,37 +13,35 @@ class CnnDispatcher32 expands CNNSimpleTrigger;
 
 struct SEventCall
 {
-	var() name eventName;
-	var() float eventWait;
+    var() name eventName;
+    var() float eventWait;
 };
 
 enum EWaitingMode
 {
-	EWM_WaitBefore,
-	EWM_WaitAfter,
+    EWM_WaitBefore,
+    EWM_WaitAfter,
 };
 
 var(Dispatcher) SEventCall EventCalls[32];
 var(Dispatcher) EWaitingMode WaitingMode;
 
-//var (Dispatcher) name  OutEvents[32]; // Events to generate.
-//var (Dispatcher) float OutDelays[32]; // Relative delays before generating events.
 var int i;
 
 function ActivatedON()
 {
-	bEnabled = false;      // prevent to triggering\touching
-	gotostate('Dispatch');
+    bEnabled = false;      // prevent to triggering\touching
+    gotostate('Dispatch');
 }
 
+// Touches is dont works with dispatcher
 function TouchIN()
 {
-	// Touches is dont works with dispatcher
 }
 
 function TouchOUT()
 {
-	// nothing
+    // nothing
 }
 
 //
@@ -52,50 +50,41 @@ function TouchOUT()
 state Dispatch
 {
 Begin:
-	//disable('ActivatedON');
-	disable('Trigger');
+    disable('Trigger');
 
-	switch (WaitingMode)
-	{
-		case EWM_WaitBefore:
+    switch (WaitingMode)
+    {
+        case EWM_WaitBefore:
+            for (i = 0; i < ArrayCount(EventCalls); i++)
+            {
+                if (EventCalls[i].eventName != '')
+                {
+                    Sleep(EventCalls[i].eventWait);
 
-			for (i = 0; i < ArrayCount(EventCalls); i++)
-			{
-				if (EventCalls[i].eventName != '')
-				{
-					Sleep(EventCalls[i].eventWait);
+                    foreach AllActors(class 'Actor', Target, EventCalls[i].EventName)
+                    {
+                    	Target.Trigger(self, GetPlayerPawn());
+                    }
+                }
+            }
+            break;
 
-					foreach AllActors(class 'Actor', Target, EventCalls[i].EventName)
-					{
-						Target.Trigger( Self, GetPlayerPawn());
-					}
-				}
-			}
+            case EWM_WaitAfter:
+                for (i = 0; i < ArrayCount(EventCalls); i++)
+                {
+                    if (EventCalls[i].eventName != '')
+                    {
+                        foreach AllActors(class 'Actor', Target, EventCalls[i].EventName)
+                        {
+                            Target.Trigger(self, GetPlayerPawn());
+                        }
 
-			break;
+                        Sleep( EventCalls[i].eventWait );
+                    }
+                }
+                break;
+    }
 
-		case EWM_WaitAfter:
-
-			for (i = 0; i < ArrayCount(EventCalls); i++)
-			{
-				if (EventCalls[i].eventName != '')
-				{
-					foreach AllActors(class 'Actor', Target, EventCalls[i].EventName)
-					{
-						Target.Trigger(Self, GetPlayerPawn());
-					}
-
-					Sleep( EventCalls[i].eventWait );
-				}
-			}
-
-			break;
-	}
-
-	enable('Trigger');
-	super.ActivatedON(); // calls events, and restore bEnabled if it's needs
-}
-
-DefaultProperties
-{
+    enable('Trigger');
+    super.ActivatedON(); // calls events, and restore bEnabled if it's needs
 }

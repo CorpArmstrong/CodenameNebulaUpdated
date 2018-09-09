@@ -13,30 +13,29 @@ function InitStateMachine()
 
 function FirstFrame()
 {
-	Super.FirstFrame();
-	PrepareFirstFrame();
+    Super.FirstFrame();
+    PrepareFirstFrame();
 }
 
 function PrepareFirstFrame()
 {
-	local int tantalusSkillLevel;
+    local int tantalusSkillLevel;
+    tantalusSkillLevel = player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
 
-	tantalusSkillLevel = player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
-
-	if (tantalusSkillLevel == 2.00)
-	{
-		flags.SetBool('French_Elementary', true);
-	}
+    if (tantalusSkillLevel == 2.00)
+    {
+        flags.SetBool('French_Elementary', true);
+    }
 }
 
 function Timer()
 {
-	Super.Timer();
+    Super.Timer();
 
-	if (player.IsInState('Dying'))
-	{
-		Level.Game.SendPlayer(player, levelName);
-	}
+    if (player.IsInState('Dying'))
+    {
+        Level.Game.SendPlayer(player, levelName);
+    }
 }
 
 defaultproperties

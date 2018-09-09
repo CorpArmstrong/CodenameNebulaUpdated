@@ -1,3 +1,6 @@
+//-----------------------------------------------------------
+// CNNEventTimer.
+//-----------------------------------------------------------
 class CNNEventTimer extends Keypoint;
 
 var(CNNEventTimerArgs) name timerEventTag;
@@ -16,21 +19,21 @@ var bool bDone;
 var Dispatcher disp;
 
 //
-// count up or down depending on what the settings are
+// Count up or down depending on what the settings are
 //
 event Tick(float deltaTime)
 {
-    if (timerWin != None)
+    if (timerWin != none)
     {
-    	if (!bDone && timerWin.time == 0)
-    	{
-    		StopTimer();
-    		TimerEvent();
-		}
+        if (!bDone && timerWin.time == 0)
+        {
+            StopTimer();
+            TimerEvent();
+        }
 
         if (bDone)
         {
-            timerWin.bFlash = True;
+            timerWin.bFlash = true;
             return;
         }
 
@@ -45,7 +48,7 @@ event Tick(float deltaTime)
 
             if (time <= criticalTime)
             {
-                timerWin.bCritical = True;
+                timerWin.bCritical = true;
             }
         }
         else
@@ -54,7 +57,7 @@ event Tick(float deltaTime)
 
             if (time >= criticalTime)
             {
-                timerWin.bCritical = True;
+                timerWin.bCritical = true;
             }
         }
 
@@ -67,31 +70,30 @@ event Tick(float deltaTime)
 //
 function Timer()
 {
-	if (timerWin != None)
-	{
-		timerWin.Destroy();
-	}
+    if (timerWin != none)
+    {
+        timerWin.Destroy();
+    }
 }
 
 //
-// start or stop the timer
+// Start or stop the timer
 //
 function Trigger(Actor Other, Pawn EventInstigator)
 {
     local DeusExPlayer player;
 
-	FindAndSetDispatcher();
-
+    FindAndSetDispatcher();
     player = DeusExPlayer(EventInstigator);
 
-    if (player == None)
+    if (player == none)
     {
         return;
     }
 
-    Super.Trigger(Other, EventInstigator);
+    super.Trigger(Other, EventInstigator);
 
-    if (timerWin == None)
+    if (timerWin == none)
     {
         if (bCountDown)
         {
@@ -110,10 +112,10 @@ function Trigger(Actor Other, Pawn EventInstigator)
         PlaySound(sound'Beep3', SLOT_Misc);
         player.ClientMessage(timerStarted);
     }
-    else if (!bDone && (timerWin != None))
+    else if (!bDone && (timerWin != none))
     {
-        bDone = True;
-        SetTimer(destroyDelay, False);
+        bDone = true;
+        SetTimer(destroyDelay, false);
         PlaySound(sound'Beep3', SLOT_Misc);
         player.ClientMessage(timerStopped);
     }
@@ -133,9 +135,9 @@ function FindAndSetDispatcher()
 
 function StopTimer()
 {
-	timerWin.bFlash = True;
-	bDone = True;
-    SetTimer(destroyDelay, False);
+    timerWin.bFlash = true;
+    bDone = true;
+    SetTimer(destroyDelay, false);
     PlaySound(sound'Beep3', SLOT_Misc);
     BroadcastMessage(timerStopped);
 }
@@ -146,7 +148,7 @@ function TimerEvent()
 
     if (disp != none)
     {
-       	BroadcastMessage("Dispatcher is not null!");
+        BroadcastMessage("Dispatcher is not null!");
 	    disp.Trigger(self, DeusExPlayer(GetPlayerPawn()));
     }
 }
@@ -156,10 +158,10 @@ defaultproperties
     timerEventTag=LabEndingSuccessDispatcher
     timerStarted="Survive!"
     timerStopped="You've survived!"
-    bCountDown=True
+    bCountDown=true
     StartTime=60.000000
     criticalTime=10.000000
     destroyDelay=5.000000
     Message="Countdown"
-    bStatic=False
+    bStatic=false
 }

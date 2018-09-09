@@ -5,7 +5,6 @@
 //  This trigger will set gravity vector for specified ZoneInfo.
 //  Physics can be applied on actors using 'physicsActorTag' param.
 //-----------------------------------------------------------------
-
 class CNNGravityTrigger extends CNNTrigger;
 
 var(GravityInfo) name zoneInfoTag;
@@ -36,7 +35,7 @@ function ApplyGravity()
 function Trigger(Actor Other, Pawn Instigator)
 {
     ApplyGravity();
-    Super.Trigger(Other, Instigator);
+    super.Trigger(Other, Instigator);
 }
 
 function Touch(Actor Other)
@@ -44,6 +43,6 @@ function Touch(Actor Other)
     if (IsRelevant(Other))
     {
         ApplyGravity();
-        Super.Touch(Other);
+        super.Touch(Other);
     }
 }

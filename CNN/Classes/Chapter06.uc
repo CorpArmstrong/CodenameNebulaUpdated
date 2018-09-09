@@ -10,24 +10,24 @@ var Dispatcher returnDispatcher;
 function DoLevelStuff()
 {
     if (player.IsInState('Dying'))
-	{
-		Level.Game.SendPlayer(player, levelName);
-	}
+    {
+        Level.Game.SendPlayer(player, levelName);
+    }
 
     TantalusSkillLevel = Player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
 
     if (TantalusSkillLevel == 2.00)
     {
-		flags.SetBool('French_Elementary', True);
+        flags.SetBool('French_Elementary', true);
     }
 
-	if (flags.GetBool('MagdaleneDisappearsInDocks') && !flags.GetBool('AllObjectsDestroyed'))
-	{
-	    foreach AllActors(class'Dispatcher', returnDispatcher, 'ReturnToLevelDispatcher')
-		{
-			returnDispatcher.Trigger(self, player);
-		}
-	}
+    if (flags.GetBool('MagdaleneDisappearsInDocks') && !flags.GetBool('AllObjectsDestroyed'))
+    {
+        foreach AllActors(class'Dispatcher', returnDispatcher, 'ReturnToLevelDispatcher')
+        {
+            returnDispatcher.Trigger(self, player);
+        }
+    }
 }
 
 defaultproperties

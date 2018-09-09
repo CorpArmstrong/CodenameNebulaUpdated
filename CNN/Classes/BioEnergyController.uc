@@ -22,68 +22,68 @@ var DeusExPlayer _player;
 
 function PostBeginPlay()
 {
-	vc = vect(0, 0, 0);
+    vc = vect(0, 0, 0);
 }
 
 function Tick(float deltaTime)
 {
-	// First time, assign player.
-	if (_player == none)
-	{
-		_player = DeusExPlayer(GetPlayerPawn());
-		_player.Energy = 2;
-		self.AttachTag = _player.Tag;
-	}
+    // First time, assign player.
+    if (_player == none)
+    {
+        _player = DeusExPlayer(GetPlayerPawn());
+        _player.Energy = 2;
+        self.AttachTag = _player.Tag;
+    }
 
-	// Check if player isn't dead, if so - turn off the timer.
-	if (_player != none)
-	{
-		//_player.ClientMessage("your Chinese skill is");
-		if (_player.Energy > 0)
-		{
-			adjustDamageTimer(false);
-		}
-		else
-		{
-	    	adjustDamageTimer(true);
-		}
-	}
-	else
-	{
-		SetTimer(0.01, false);
-		bTimerOn = false;
-	}
+    // Check if player isn't dead, if so - turn off the timer.
+    if (_player != none)
+    {
+        //_player.ClientMessage("your Chinese skill is");
+        if (_player.Energy > 0)
+        {
+            adjustDamageTimer(false);
+        }
+        else
+        {
+            adjustDamageTimer(true);
+        }
+    }
+    else
+    {
+        SetTimer(0.01, false);
+        bTimerOn = false;
+    }
 
-	super.Tick(deltaTime);
+    super.Tick(deltaTime);
 }
 
 function adjustDamageTimer(bool isOn)
 {
-	if (isOn)
-	{
-		if (!bTimerOn)
-		{
-			DeusExPlayer(GetPlayerPawn()).ClientMessage("Test method12122.");
-			SetTimer(DAMAGE_PERIOD, true);
-			bTimerOn = true;
-		}
-	}
-	else
-	{
-		if (bTimerOn)
-		{
-			SetTimer(0.01, false);
-			bTimerOn = false;
-		}
-	}
+    if (isOn)
+    {
+        if (!bTimerOn)
+        {
+            DeusExPlayer(GetPlayerPawn()).ClientMessage("Test method12122.");
+            SetTimer(DAMAGE_PERIOD, true);
+            bTimerOn = true;
+        }
+    }
+    else
+    {
+        if (bTimerOn)
+        {
+            SetTimer(0.01, false);
+            bTimerOn = false;
+        }
+    }
 }
 
 function Timer()
 {
-	DeusExPlayer(GetPlayerPawn()).ClientMessage("My energy is depleted. Until I recharge I will suffer from withdrawal.");
-	DeusExPlayer(GetPlayerPawn()).TakeDamage(DAMAGE_AMOUNT, none, vc, vc, 'Shocked');
+    DeusExPlayer(GetPlayerPawn()).ClientMessage("My energy is depleted. Until I recharge I will suffer from withdrawal.");
+    DeusExPlayer(GetPlayerPawn()).TakeDamage(DAMAGE_AMOUNT, none, vc, vc, 'Shocked');
 }
 
-DefaultProperties
+defaultproperties
 {
 }

@@ -12,52 +12,47 @@ var(ConversationTrigger) bool bForcePlay; // new parameter, use with 3th person 
 // we send event only if dialog was started
 singular function ActivatedON()
 {
-	local DeusExPlayer player;
-	local bool bSuccess;
-	local Actor A, conOwner;
+    local DeusExPlayer player;
+    local bool bSuccess;
+    local Actor A, conOwner;
 
-	player = DeusExPlayer(GetPlayerPawn());
-	bSuccess = True;
+    player = DeusExPlayer(GetPlayerPawn());
+    bSuccess = true;
 
-	if (player == None)
+    if (player == none)
     {
-		return;
+        return;
     }
 
-	if (CheckFlag != '')
-	{
-		if (!player.flagBase.GetBool(CheckFlag))
+    if (CheckFlag != '')
+    {
+        if (!player.flagBase.GetBool(CheckFlag))
         {
-			bSuccess = bCheckFalse;
+            bSuccess = bCheckFalse;
         }
         else
         {
-			bSuccess = !bCheckFalse;
+            bSuccess = !bCheckFalse;
         }
-	}
+    }
 
-	if ((BindName != "") && (ConversationTag != ''))
-	{
-		foreach AllActors(class'Actor', A)
+    if ((BindName != "") && (ConversationTag != ''))
+    {
+        foreach AllActors(class'Actor', A)
         {
-			if (A.BindName == BindName)
-			{
-				conOwner = A;
-				break;
-			}
-        }
-
-		if (bSuccess)
-        {
-			if (player.StartConversationByName(ConversationTag, conOwner, false, bForcePlay))
+            if (A.BindName == BindName)
             {
-				//Super.Trigger(Other, Instigator);
-				super.ActivatedON();
+                conOwner = A;
+                break;
             }
         }
-	}
-}
 
-DefaultProperties
-{
+        if (bSuccess)
+        {
+            if (player.StartConversationByName(ConversationTag, conOwner, false, bForcePlay))
+            {
+                super.ActivatedON();
+            }
+        }
+    }
 }

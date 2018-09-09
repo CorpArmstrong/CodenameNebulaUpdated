@@ -5,7 +5,7 @@ class BobPageHolo extends BobPage;
 
 defaultproperties
 {
-	Orders=Standing
+    Orders=Standing
     bShowPain=false
     bHateShot=false
     bHateInjury=false

@@ -33,6 +33,6 @@ class AllCnnResources expands Object;
 //
 #exec Texture Import File=Textures\S_CNNTrig.pcx Name=S_CNNTrig Mips=Off Flags=2
 
-DefaultProperties
+defaultproperties
 {
 }

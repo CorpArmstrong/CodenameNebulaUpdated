@@ -1,11 +1,11 @@
 //-----------------------------------------------------------
-//
+// CNNDog
 //-----------------------------------------------------------
 class CNNDog extends Dog;
 
 function PlayDogBark()
 {
-	// None.
+    // None.
 }
 
 defaultproperties

@@ -8,7 +8,7 @@ defaultproperties
     HitPoints=10
     FragType=Class'DeusEx.PaperFragment'
     ItemName="CautionBox"
-    bBlockSight=True
+    bBlockSight=true
     Mesh=LodMesh'CNN.CautionBox'
     CollisionRadius=28.200000
     CollisionHeight=20.000000

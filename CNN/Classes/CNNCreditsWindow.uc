@@ -13,7 +13,7 @@ function ProcessText()
 {
     local DeusExTextParser parser;
 
-	PrintPicture(CreditsBannerTextures, 1, 1, 512, 64);
+    PrintPicture(CreditsBannerTextures, 1, 1, 512, 64);
     PrintLn();
 
     // First check to see if we have a name
@@ -26,13 +26,15 @@ function ProcessText()
         if (parser.OpenText(textName, textPackage))
         {
             while(parser.ProcessText())
+            {
                 ProcessTextTag(parser);
+            }
 
             parser.CloseText();
         }
 
-		CriticalDelete(parser);
-	}
+        CriticalDelete(parser);
+    }
 
     ProcessFinished();
 }
@@ -43,8 +45,8 @@ function ProcessText()
 
 function ProcessFinished()
 {
-	PrintLn();
-	PrintPicture(TeamPhotoTextures, 1, 1, 256, 256);
+    PrintLn();
+    PrintPicture(TeamPhotoTextures, 1, 1, 256, 256);
 }
 
 // ----------------------------------------------------------------------
@@ -55,8 +57,7 @@ event DestroyWindow()
 {
     bLoadIntro = false;
     player.Level.Game.SendPlayer(player, "cnnentry");
-
-	Super.DestroyWindow();
+    super.DestroyWindow();
 }
 
 defaultproperties

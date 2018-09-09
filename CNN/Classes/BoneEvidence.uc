@@ -1,3 +1,6 @@
+//-----------------------------------------------------------
+// BoneEvidence
+//-----------------------------------------------------------
 class BoneEvidence extends BoxSmall;
 
 defaultproperties
@@ -5,7 +8,7 @@ defaultproperties
     HitPoints=100
     FragType=Class'DeusEx.WoodFragment'
     ItemName="a Bone of a Desposyni"
-    bBlockSight=True
+    bBlockSight=true
     CollisionRadius=42.000000
     CollisionHeight=5.000000
     Mass=50.000000

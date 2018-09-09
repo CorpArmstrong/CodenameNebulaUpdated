@@ -1,3 +1,6 @@
+//-----------------------------------------------------------
+// CNNEventTrigger.
+//-----------------------------------------------------------
 class CNNEventTrigger extends Trigger;
 
 var(CodeEvent) class<EventCommand> codeEventClass;
@@ -29,8 +32,4 @@ function EventCommand GetCodeEvent()
         break;
 
     return EventCommand(evs);
-}
-
-defaultproperties
-{
 }

@@ -5,26 +5,26 @@ class ChemicalCannister extends Containers;
 
 enum ESkinColor
 {
-	SC_Antinomy,
-	SC_Arsenic,
-	SC_Barium,
-	SC_Californium,
-	SC_Cesium,
-	SC_Copper,
-	SC_Fermium,
-	SC_Gallium,
-	SC_Hassium,
-	SC_Iridium,
-	SC_Magnesium,
-	SC_Molybdenum,
-	SC_Osmium,
-	SC_Radium,
-	SC_Selenium,
-	SC_Sodium,
-	SC_Technetium,
-	SC_Tellurium,
-	SC_Vanadium,
-	SC_Yttrium
+    SC_Antinomy,
+    SC_Arsenic,
+    SC_Barium,
+    SC_Californium,
+    SC_Cesium,
+    SC_Copper,
+    SC_Fermium,
+    SC_Gallium,
+    SC_Hassium,
+    SC_Iridium,
+    SC_Magnesium,
+    SC_Molybdenum,
+    SC_Osmium,
+    SC_Radium,
+    SC_Selenium,
+    SC_Sodium,
+    SC_Technetium,
+    SC_Tellurium,
+    SC_Vanadium,
+    SC_Yttrium
 };
 
 var() ESkinColor SkinColor;
@@ -101,8 +101,8 @@ function BeginPlay()
 defaultproperties
 {
 	HitPoints=10
-	bInvincible=True
-	bFlammable=False
+	bInvincible=true
+	bFlammable=false
 	ItemName="Chemical Cannister"
 	Mesh=LodMesh'CNN.ChemicalCannister'
 	CollisionRadius=8.000000

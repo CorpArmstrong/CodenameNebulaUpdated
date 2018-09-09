@@ -5,10 +5,10 @@ class BarrelGas extends Containers;
 
 defaultproperties
 {
-    bInvincible=True
-    bFlammable=False
+    bInvincible=true
+    bFlammable=false
     ItemName="Gas Barrel"
-    bBlockSight=True
+    bBlockSight=true
     Mesh=LodMesh'CNN.BarrelGas'
     CollisionRadius=21.600000
     CollisionHeight=26.500000

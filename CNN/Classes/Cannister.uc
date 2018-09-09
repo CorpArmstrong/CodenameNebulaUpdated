@@ -6,8 +6,8 @@ class Cannister extends Containers;
 defaultproperties
 {
     HitPoints=10
-    bInvincible=True
-    bFlammable=False
+    bInvincible=true
+    bFlammable=false
     ItemName="Helium-3 Cannister"
     Mesh=LodMesh'CNN.Cannister'
     CollisionRadius=8.500000

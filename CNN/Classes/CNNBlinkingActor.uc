@@ -1,3 +1,6 @@
+//-----------------------------------------------------------
+// CNNBlinkingActor.
+//-----------------------------------------------------------
 class CNNBlinkingActor extends Male1;
 
 var () bool bUseBlinking;
@@ -10,24 +13,24 @@ function Tick(float deltaTime)
 
 function BlinkActor()
 {
-	local float blinkValue;
+    local float blinkValue;
 
-	if (bUseBlinking)
-	{
-		blinkValue = FRand();
+    if (bUseBlinking)
+    {
+        blinkValue = FRand();
 
-		if (blinkValue > 0.5)
-		{
-			DrawType = DT_None;
-		}
-		else
-		{
-			DrawType = DT_Mesh;
-		}
-	}
+        if (blinkValue > 0.5)
+        {
+            DrawType = DT_None;
+        }
+        else
+        {
+            DrawType = DT_Mesh;
+        }
+    }
 }
 
-DefaultProperties
+defaultproperties
 {
     bUseBlinking=true
 }

@@ -12,26 +12,26 @@ var private FlagBase flags;
 
 function PostBeginPlay()
 {
-    local LaserSecurityDispatcher LSD;	// Lucy in the Sky with Diamonds :)
-	local SecurityCamera cam;
+    local LaserSecurityDispatcher LSD;  // Lucy in the Sky with Diamonds :)
+    local SecurityCamera cam;
 
     flags = DeusExPlayer(GetPlayerPawn()).flagBase;
     isSecurityActive = flags.GetBool('laserSecurityWorks');
 
     foreach AllActors(class'LaserSecurityDispatcher', LSD)
-	{
-		laserDispatcher = LSD;
-	}
+    {
+        laserDispatcher = LSD;
+    }
 
-	foreach AllActors(class'SecurityCamera', Cam, CamTag)
-	{
-		sCam = cam;
-	}
+    foreach AllActors(class'SecurityCamera', Cam, CamTag)
+    {
+        sCam = cam;
+    }
 
-	if (!flags.GetBool('Meet1InspRoom_Played'))
-	{
-		TurnOffLasers();
-	}
+    if (!flags.GetBool('Meet1InspRoom_Played'))
+    {
+        TurnOffLasers();
+    }
 }
 
 function Trigger(Actor Other, Pawn Instigator)
@@ -48,19 +48,19 @@ function Trigger(Actor Other, Pawn Instigator)
 
 function TurnOnLasers()
 {
-	local DamageLaserTrigger A;
+    local DamageLaserTrigger A;
 
-	foreach AllActors(class'DamageLaserTrigger', A)
-	{
-		A.Trigger(none, none);
-	}
+    foreach AllActors(class'DamageLaserTrigger', A)
+    {
+        A.Trigger(none, none);
+    }
 
-	if (laserDispatcher != none)
-	{
-		laserDispatcher.ToggleOn();
-	}
+    if (laserDispatcher != none)
+    {
+        laserDispatcher.ToggleOn();
+    }
 
-	flags.SetBool('laserSecurityWorks', true);
+    flags.SetBool('laserSecurityWorks', true);
     isSecurityActive = true;
 
     SetSecurityCamera_bNoAlarm(false);
@@ -68,19 +68,19 @@ function TurnOnLasers()
 
 function TurnOffLasers()
 {
-	local DamageLaserTrigger A;
+    local DamageLaserTrigger A;
 
-	foreach AllActors(class'DamageLaserTrigger', A)
-	{
-		A.UnTrigger(none, none);
-	}
+    foreach AllActors(class'DamageLaserTrigger', A)
+    {
+        A.UnTrigger(none, none);
+    }
 
-	if (laserDispatcher != none)
-	{
-		laserDispatcher.ToggleOff();
-	}
+    if (laserDispatcher != none)
+    {
+        laserDispatcher.ToggleOff();
+    }
 
-	flags.SetBool('laserSecurityWorks', false);
+    flags.SetBool('laserSecurityWorks', false);
     isSecurityActive = false;
 
     SetSecurityCamera_bNoAlarm(true);

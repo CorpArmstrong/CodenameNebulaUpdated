@@ -1,8 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-class DecoChemicalCannister expands Object
-	abstract;
+class DecoChemicalCannister extends Object abstract;
 
 // ChemicalCannister
 
@@ -36,7 +35,3 @@ class DecoChemicalCannister expands Object
 #exec TEXTURE IMPORT NAME=ChemicalCannisterTex21 FILE=Models\ChemicalCannister_Y.pcx GROUP="Skins"
 #exec MESHMAP SETTEXTURE MESHMAP=ChemicalCannister NUM=0 TEXTURE=ChemicalCannisterTex1
 #exec MESHMAP SETTEXTURE MESHMAP=ChemicalCannister NUM=1 TEXTURE=ChemicalCannisterTex2
-
-defaultproperties
-{
-}

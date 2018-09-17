@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 // DestroyTrigger
 //-----------------------------------------------------------
-class DestroyTrigger expands CNNTrigger;
+class DestroyTrigger extends CNNTrigger;
 
 var () name ScriptedPawnTag;
 var () name AnyActorTag;
@@ -16,8 +16,8 @@ function Trigger(Actor Other, Pawn Instigator)
 
     player = DeusExPlayer(GetPlayerPawn());
 
-	if (ScriptedPawnTag != '')
-	{
+    if (ScriptedPawnTag != '')
+    {
         if (player != none && player.IsInState('Conversation'))
         {
             Expectant = Spawn(class'DestroyTriggerExpectant', none);
@@ -26,7 +26,7 @@ function Trigger(Actor Other, Pawn Instigator)
         }
         else
         {
-			foreach AllActors(class 'ScriptedPawn', P, ScriptedPawnTag)
+            foreach AllActors(class 'ScriptedPawn', P, ScriptedPawnTag)
             {
    	            P.Destroy();
             }
@@ -35,29 +35,29 @@ function Trigger(Actor Other, Pawn Instigator)
 
     if (AnyActorTag != '')
     {
-		self.MsgBox("AnyActorTag != ''");
+        self.MsgBox("AnyActorTag != ''");
 
-		foreach AllActors(class 'Actor', A, AnyActorTag)
-		{
-			self.MsgBox("one finded");
-			A.Destroy();
-		}
+        foreach AllActors(class 'Actor', A, AnyActorTag)
+        {
+            self.MsgBox("one finded");
+            A.Destroy();
+        }
 	}
 
     if (DestroyByClassName != '')
     {
-		self.MsgBox("DestroyByClassName != ''");
+        self.MsgBox("DestroyByClassName != ''");
 
-		foreach AllActors(class 'Actor', A)
-		{
-			if (A.IsA(DestroyByClassName))
-			{
-				A.Destroy();
-			}
-		}
-	}
+        foreach AllActors(class 'Actor', A)
+        {
+            if (A.IsA(DestroyByClassName))
+            {
+                A.Destroy();
+            }
+        }
+    }
 
-	Super.Trigger(Other, Instigator);
+    super.Trigger(Other, Instigator);
 }
 
 function Touch(Actor Other)
@@ -66,8 +66,8 @@ function Touch(Actor Other)
     local ScriptedPawn A;
     local DestroyTriggerExpectant Expectant;
 
-	if (IsRelevant(Other))
-	{
+    if (IsRelevant(Other))
+    {
         player = DeusExPlayer(GetPlayerPawn());
 
         if (player != none && player.IsInState('Conversation'))
@@ -84,10 +84,6 @@ function Touch(Actor Other)
             }
         }
 
-		Super.Touch(Other);
-	}
-}
-
-defaultproperties
-{
+        super.Touch(Other);
+    }
 }

@@ -1,11 +1,11 @@
 //-----------------------------------------------------------
-//
+// CNNMover
 //-----------------------------------------------------------
-class CNNMover expands DeusExMover;
+class CNNMover extends DeusExMover;
 
-DefaultProperties
+defaultproperties
 {
-	bBreakable=true
-	bFrobbable=false
-	bHighlight=false
+    bBreakable=true
+    bFrobbable=false
+    bHighlight=false
 }

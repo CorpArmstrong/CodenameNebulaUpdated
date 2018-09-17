@@ -1,7 +1,7 @@
 //=============================================================================
 // GlassBottle.
 //=============================================================================
-class GlassBottle expands DeusExDecoration;
+class GlassBottle extends DeusExDecoration;
 
 defaultproperties
 {

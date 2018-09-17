@@ -1,11 +1,9 @@
 //=============================================================================
 // Custom Items.
 //=============================================================================
-class DecoAmmoPlasma2 expands Object
-	abstract;
+class DecoAmmoPlasma2 extends Object abstract;
 
 // For the PlasmaRifle
-
 #exec TEXTURE IMPORT NAME=LargeIconAmmoPlasma2Rifle FILE=Textures\Icons\LargeIconAmmoPlasma2Rifle.pcx GROUP="Icons" MIPS=Off
 #exec TEXTURE IMPORT NAME=BeltIconAmmoPlasma2 FILE=Textures\Icons\SmallIconAmmoPlasma2.pcx GROUP="Icons" MIPS=Off
 #exec TEXTURE IMPORT NAME=FlatFXTex49 FILE=Textures\Effects\FlatFXTex49.pcx GROUP="Skins" MIPS=Off
@@ -25,7 +23,3 @@ class DecoAmmoPlasma2 expands Object
 
 #exec TEXTURE IMPORT NAME=AmmoPlasma2Tex1  FILE=Models\AmmoPlasma2_a.pcx GROUP="Skins"
 #exec MESHMAP SETTEXTURE MESHMAP=AmmoPlasma2 NUM=0  TEXTURE=AmmoPlasma2Tex1
-
-defaultproperties
-{
-}

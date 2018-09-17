@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 // DestroyTriggerExpectant
 //-----------------------------------------------------------
-class DestroyTriggerExpectant expands CNNActor;
+class DestroyTriggerExpectant extends CNNActor;
 
 var () float CheckDelay;
 var () name ScriptedPawnTag;

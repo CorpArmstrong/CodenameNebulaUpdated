@@ -1,8 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-class DecoButton1B expands Object
-	abstract;
+class DecoButton1B extends Object abstract;
 
 //-----------------------------------------------------------------------------
 // Switches and Buttons
@@ -41,7 +40,3 @@ class DecoButton1B expands Object
 #exec TEXTURE IMPORT NAME=Button1BTex23 FILE=Models\Button1BTex23.pcx GROUP="Skins
 #exec TEXTURE IMPORT NAME=Button1BTex24 FILE=Models\Button1BTex24.pcx GROUP="Skins
 #exec MESHMAP SETTEXTURE MESHMAP=Button1B NUM=0 TEXTURE=Button1BTex23
-
-defaultproperties
-{
-}

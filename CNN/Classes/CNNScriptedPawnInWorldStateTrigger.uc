@@ -9,7 +9,7 @@
 //  Works like basic trigger, but with multiple entries (8)
 //-----------------------------------------------------------
 
-class CNNScriptedPawnInWorldStateTrigger expands CNNTrigger;
+class CNNScriptedPawnInWorldStateTrigger extends CNNTrigger;
 
 struct PawnsInWorldState
 {
@@ -46,7 +46,7 @@ function ProcessScriptedPawnInWorldState()
 function Trigger(Actor Other, Pawn Instigator)
 {
     ProcessScriptedPawnInWorldState();
-    Super.Trigger(Other, Instigator);
+    super.Trigger(Other, Instigator);
 }
 
 function Touch(Actor Other)
@@ -54,6 +54,6 @@ function Touch(Actor Other)
     if (IsRelevant(Other))
     {
         ProcessScriptedPawnInWorldState();
-        Super.Touch(Other);
+        super.Touch(Other);
     }
 }

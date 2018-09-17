@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 // CNNDoorSignalLight
 //-----------------------------------------------------------
-class CNNDoorSignalLight expands CageLight; // make CNNActor descendant
+class CNNDoorSignalLight extends CageLight; // make CNNActor descendant
 
 function bool Facelift(bool bOn)
 {
@@ -25,7 +25,7 @@ function UnTrigger(Actor Other, Pawn Instigator)
     LightType=LT_None;
 }
 
-DefaultProperties
+defaultproperties
 {
     Mesh=LodMesh'CNN.CLight'
     Skin=Texture'CNN.NCL_Red';

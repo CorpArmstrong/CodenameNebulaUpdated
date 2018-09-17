@@ -137,58 +137,58 @@ function PostBeginPlay()
 
 function Tick(float deltaTime)
 {
-	local int i;
-	local vector tmpVect;
-	local int tmpInt;
-	local rotator tmpRotator;
+    local int i;
+    local vector tmpVect;
+    local int tmpInt;
+    local rotator tmpRotator;
 
-	local float spherePulseValue;
-	local float sphereRadius;
+    local float spherePulseValue;
+    local float sphereRadius;
 
-	local vector coordsSmallBall, coordsCentralBall;
+    local vector coordsSmallBall, coordsCentralBall;
 
-	local ScriptedPawn sPawn;
-	local DeusExDecoration decor;
-	local CNNMover mover;
+    local ScriptedPawn sPawn;
+    local DeusExDecoration decor;
+    local CNNMover mover;
 
-	super.Tick(deltaTime);
+    super.Tick(deltaTime);
 
-	if (bRotating)
-	{
-		for(i = 0; i < 12; i++)
-		{
-			tmpRotator.Pitch = 0;
-			tmpRotator.Yaw = RotationSpeed;
-			tmpRotator.Roll = 0;
-			tmpRotator *= deltaTime;
-			em[i].SetRotation(em[i].Rotation + tmpRotator);
-		}
-	}
-
-	if (bPulsation)
-	{
-		// current puls period
-		// output 0.0 - 1.0
-		spherePulseValue = (level.TimeSeconds % PulsationTime) / PulsationTime;
-
-		// current puls value
-		// input  0.0 - 0.5 - 1.0
-		// output 0.0 - 1.0 - 0.0
-		if (spherePulseValue > 0.5)
+    if (bRotating)
+    {
+        for(i = 0; i < 12; i++)
         {
-			spherePulseValue = 1 - spherePulseValue;
+            tmpRotator.Pitch = 0;
+            tmpRotator.Yaw = RotationSpeed;
+            tmpRotator.Roll = 0;
+            tmpRotator *= deltaTime;
+            em[i].SetRotation(em[i].Rotation + tmpRotator);
+        }
+    }
+
+    if (bPulsation)
+    {
+        // current puls period
+        // output 0.0 - 1.0
+        spherePulseValue = (level.TimeSeconds % PulsationTime) / PulsationTime;
+
+        // current puls value
+        // input  0.0 - 0.5 - 1.0
+        // output 0.0 - 1.0 - 0.0
+        if (spherePulseValue > 0.5)
+        {
+            spherePulseValue = 1 - spherePulseValue;
         }
 
-		spherePulseValue *= 2;
+        spherePulseValue *= 2;
 
-		for (i = 0; i < 3; i ++)
-		{
-			sphereRadius = 0.2f * (i + 1);
+        for (i = 0; i < 3; i ++)
+        {
+            sphereRadius = 0.2f * (i + 1);
 
-			spheres[i].DrawScale = sphereRadius +
-				(sphereRadius * (PulsationRange - 1) * spherePulseValue);
-		}
-	}
+            spheres[i].DrawScale = sphereRadius +
+                (sphereRadius * (PulsationRange - 1) * spherePulseValue);
+        }
+    }
 
     /*
     ## rotating small red balls
@@ -281,96 +281,96 @@ function Tick(float deltaTime)
     tmpVect *= -1;
     em[17].SetRotation(rotator(tmpVect));
 
-	//damage to Pawns
-	if (bDamagePawns)
-	{
-		foreach AllActors(class'ScriptedPawn', sPawn)
+    //damage to Pawns
+    if (bDamagePawns)
+    {
+        foreach AllActors(class'ScriptedPawn', sPawn)
         {
-			if (!sPawn.bInvincible && sPawn.Tag != self.Tag &&
+            if (!sPawn.bInvincible && sPawn.Tag != self.Tag &&
                (VSize(sPawn.Location - self.Location) <= PawnDamageRadius))
             {
-				sPawn.TakeDamage(PawnDamage, self, sPawn.Location, vect(0, 0, 0), PawnDamageType);
+                sPawn.TakeDamage(PawnDamage, self, sPawn.Location, vect(0, 0, 0), PawnDamageType);
             }
         }
 
-       	if (pPawn == none)
+        if (pPawn == none)
         {
             pPawn = GetPlayerPawn();
         }
         else
         {
-			if (VSize(pPawn.Location - self.Location) <= PawnDamageRadius)
+            if (VSize(pPawn.Location - self.Location) <= PawnDamageRadius)
             {
-				pPawn.TakeDamage(PawnDamage, self, pPawn.Location, vect(0, 0, 0), PawnDamageType);
-            }
-        }
-	}
-
-	//damage to decorations
-    if (bDamageDxDecoration)
-    {
-    	foreach AllActors(class'DeusExDecoration', decor)
-        {
-			if (VSize(decor.Location - self.Location) <= DecorDamageRadius)
-            {
-				decor.TakeDamage(DecorDamage, self, decor.Location, vect(0, 0, 0), DecorDamageType);
+                pPawn.TakeDamage(PawnDamage, self, pPawn.Location, vect(0, 0, 0), PawnDamageType);
             }
         }
     }
 
-	//destroying movers
-	if (bBlowUp_CnnMovers)
+    //damage to decorations
+    if (bDamageDxDecoration)
     {
-		foreach AllActors(class'CNNMover', mover)
+        foreach AllActors(class'DeusExDecoration', decor)
         {
-			if (VSize(mover.Location - self.Location) <= CnnMoverBlowUpRadius)
+            if (VSize(decor.Location - self.Location) <= DecorDamageRadius)
             {
-				if (mover.bBreakable)
+                decor.TakeDamage(DecorDamage, self, decor.Location, vect(0, 0, 0), DecorDamageType);
+            }
+        }
+    }
+
+    //destroying movers
+    if (bBlowUp_CnnMovers)
+    {
+        foreach AllActors(class'CNNMover', mover)
+        {
+            if (VSize(mover.Location - self.Location) <= CnnMoverBlowUpRadius)
+            {
+                if (mover.bBreakable)
                 {
-					mover.BlowItUp(self);
+                    mover.BlowItUp(self);
                 }
             }
         }
     }
 
-	// call event when trigger in radius
-	// will be realized like a collision with CNNSimpleTrigger
+    // call event when trigger in radius
+    // will be realized like a collision with CNNSimpleTrigger
 }
 
 function SelfDestructionGrenades()
 {
     local int i;
 
-	for (i = 0; i < ArrayCount(grenades); i++)
-	{
-		grenades[i] = Spawn(class'LAM', none);
-		grenades[i].SetPhysics(PHYS_None);
-		grenades[i].AttachTag = self.Tag;
-		grenades[i].bHidden = true;
-		grenades[i].fuseLength = 0.01;
-		grenades[i].bDisabled = true;
-		grenades[i].SetCollision(false, false, false);
-	}
+    for (i = 0; i < ArrayCount(grenades); i++)
+    {
+        grenades[i] = Spawn(class'LAM', none);
+        grenades[i].SetPhysics(PHYS_None);
+        grenades[i].AttachTag = self.Tag;
+        grenades[i].bHidden = true;
+        grenades[i].fuseLength = 0.01;
+        grenades[i].bDisabled = true;
+        grenades[i].SetCollision(false, false, false);
+    }
 
-	grenades[0].SetLocation(self.Location + vect(+50, 0, -25));
-	grenades[1].SetLocation(self.Location + vect(-50, 0, -25));
-	grenades[2].SetLocation(self.Location + vect(0, +50, -25));
-	grenades[3].SetLocation(self.Location + vect(0, -50, -25));
+    grenades[0].SetLocation(self.Location + vect(+50, 0, -25));
+    grenades[1].SetLocation(self.Location + vect(-50, 0, -25));
+    grenades[2].SetLocation(self.Location + vect(0, +50, -25));
+    grenades[3].SetLocation(self.Location + vect(0, -50, -25));
 }
 
 function SelfDestruction()
 {
     local int i;
 
-	self.bInvincible = false;
-	self.SetCollision(true, true, true);
+    self.bInvincible = false;
+    self.SetCollision(true, true, true);
 
-	for (i = 0; i < ArrayCount(grenades); i++)
-	{
-		grenades[i].bDisabled = false;
-		grenades[i].bDamaged = true;
-		grenades[i].Explode(grenades[i].Location, Vector(grenades[i].Rotation));
-	}
+    for (i = 0; i < ArrayCount(grenades); i++)
+    {
+        grenades[i].bDisabled = false;
+        grenades[i].bDamaged = true;
+        grenades[i].Explode(grenades[i].Location, Vector(grenades[i].Rotation));
+    }
 }
 
 function Destroyed()
@@ -387,26 +387,26 @@ function Destroyed()
        spheres[i].Destroy();
     }
 
-	Super.Destroyed();
+	super.Destroyed();
 }
 
 defaultproperties
 {
-	PawnDamageRadius=150
-	PawnDamage=1000
-	PawnDamageType=Exploded
-	bDamagePawns=true
-	DecorDamageRadius=320
-	DecorDamage=1000
-	DecorDamageType=Exploded
-	bDamageDxDecoration=false // do not use please
-	CnnMoverBlowUpRadius=320
-	bBlowUp_CnnMovers=true
-	bPulsation=true
-	bRotating=false
-	PulsationTime=2          // number of second is one cycle
-	PulsationRange=1.25      // scale from 1 to number and number to 1
-	RotationSpeed=20000.0
+    PawnDamageRadius=150
+    PawnDamage=1000
+    PawnDamageType=Exploded
+    bDamagePawns=true
+    DecorDamageRadius=320
+    DecorDamage=1000
+    DecorDamageType=Exploded
+    bDamageDxDecoration=false // do not use please
+    CnnMoverBlowUpRadius=320
+    bBlowUp_CnnMovers=true
+    bPulsation=true
+    bRotating=false
+    PulsationTime=2          // number of second is one cycle
+    PulsationRange=1.25      // scale from 1 to number and number to 1
+    RotationSpeed=20000.0
     bPlayDying=false
     CarcassType=none
     bInvincible=true

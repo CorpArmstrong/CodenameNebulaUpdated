@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 // DrJohnson
 //-----------------------------------------------------------
-class DrJohnson expands CNNCivilian;
+class DrJohnson extends CNNCivilian;
 
 defaultproperties
 {

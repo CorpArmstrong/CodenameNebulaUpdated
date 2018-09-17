@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 // Just like WeaponDogBite but without sounds
 //-----------------------------------------------------------
-class CNNWeaponUPSMelee expands WeaponNPCMelee;
+class CNNWeaponUPSMelee extends WeaponNPCMelee;
 
 defaultproperties
 {

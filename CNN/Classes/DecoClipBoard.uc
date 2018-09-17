@@ -1,8 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-class DecoClipBOard expands Object
-	abstract;
+class DecoClipBOard extends Object abstract;
 
 // ClipBoard
 
@@ -15,7 +14,3 @@ class DecoClipBOard expands Object
 
 #exec TEXTURE IMPORT NAME=ClipBoardTex1  FILE=Models\ClipBoard_a.pcx GROUP="Skins"
 #exec MESHMAP SETTEXTURE MESHMAP=ClipBoard NUM=0  TEXTURE=ClipBoardTex1
-
-defaultproperties
-{
-}

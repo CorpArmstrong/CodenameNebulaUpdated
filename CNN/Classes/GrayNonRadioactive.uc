@@ -8,17 +8,17 @@ class GrayNonRadioactive extends Animal;
 function ComputeFallDirection(float totalTime, int numFrames,
                               out vector moveDir, out float stopTime)
 {
-	// Determine direction, and how long to slide
-	if (AnimSequence == 'DeathFront')
-	{
-		moveDir = Vector(DesiredRotation) * Default.CollisionRadius * 2.0;
-		stopTime = totalTime * 0.7;
-	}
-	else if (AnimSequence == 'DeathBack')
-	{
-		moveDir = -Vector(DesiredRotation) * Default.CollisionRadius * 1.8;
-		stopTime = totalTime * 0.65;
-	}
+    // Determine direction, and how long to slide
+    if (AnimSequence == 'DeathFront')
+    {
+        moveDir = Vector(DesiredRotation) * Default.CollisionRadius * 2.0;
+        stopTime = totalTime * 0.7;
+    }
+    else if (AnimSequence == 'DeathBack')
+    {
+        moveDir = -Vector(DesiredRotation) * Default.CollisionRadius * 1.8;
+        stopTime = totalTime * 0.65;
+    }
 }
 
 function bool FilterDamageType(Pawn instigatedBy, Vector hitLocation,
@@ -201,7 +201,7 @@ function PlayTakingHit(EHitLocation hitPos)
 				animName = 'HitBack';
 				break;
 		}
-        
+
 		pivot = vect(0, 0, 0);
 	}
 

@@ -12,7 +12,3 @@ var int playLength;                 // Erkki: play time of animation in seconds
 var Name sequence;                  // Animation Sequence
 var Bool bFinishAnim;               // Wait until animation finishes
 var Bool bLoopAnim;                 // Loop Animation
-
-defaultproperties
-{
-}

@@ -1,36 +1,36 @@
 //=============================================================================
 // CNNRandomSounds.
 //=============================================================================
-class CNNRandomSounds expands RandomSounds;
+class CNNRandomSounds extends RandomSounds;
 
 var() name StopSoundsFlag;
 var DeusExPlayer player;
 
 function Tick(float deltaTime)
 {
-	Super.Tick(deltaTime);
+    super.Tick(deltaTime);
 
-	if (player != none && player.flagBase.GetBool(StopSoundsFlag))
-	{
-		bPlaying = False;
-		AmbientSound = none;
-		Disable('Tick');
-	}
+    if (player != none && player.flagBase.GetBool(StopSoundsFlag))
+    {
+        bPlaying = false;
+        AmbientSound = none;
+        Disable('Tick');
+    }
 }
 
 function PostBeginPlay()
 {
-	local DeusExPlayer dp;
-	Super.PostBeginPlay();
-	player = DeusExPlayer(getPlayerPawn());
+    local DeusExPlayer dp;
+    super.PostBeginPlay();
+    player = DeusExPlayer(getPlayerPawn());
 
-	foreach AllActors(class'DeusExPlayer', dp)
-	{
-		player = dp;
-	}
+    foreach AllActors(class'DeusExPlayer', dp)
+    {
+        player = dp;
+    }
 }
 
 defaultproperties
 {
-	StopSoundsFlag=StopFlag;
+    StopSoundsFlag=StopFlag;
 }

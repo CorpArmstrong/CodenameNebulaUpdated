@@ -1,7 +1,7 @@
 //=============================================================================
 // Gratewindow.
 //=============================================================================
-class gratewindow expands Decoration;
+class gratewindow extends Decoration;
 
 defaultproperties
 {

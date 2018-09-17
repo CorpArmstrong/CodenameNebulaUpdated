@@ -20,7 +20,7 @@ function ProcessText()
     if (textName != '')
     {
         // Create the text parser
-        parser = new(None) Class'DeusExTextParser';
+        parser = new(none) Class'DeusExTextParser';
 
         // Attempt to find the text object
         if (parser.OpenText(textName, textPackage))

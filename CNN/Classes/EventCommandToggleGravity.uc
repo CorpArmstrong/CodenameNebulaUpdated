@@ -26,21 +26,21 @@ function ExecuteEvent()
 
     if (isGravityApplied)
     {
-	    gravityZoneInfo.ZoneGravity = vect(0, 0, -850);
+        gravityZoneInfo.ZoneGravity = vect(0, 0, -850);
 
-		foreach AllActors(class 'Actor', physicsActor, physicsActorTag)
-    	{
+        foreach AllActors(class 'Actor', physicsActor, physicsActorTag)
+        {
             physicsActor.SetPhysics(PHYS_Falling);
-    	}
+        }
     }
     else
     {
-    	gravityZoneInfo.ZoneGravity = vect(0, 0, -1);
+        gravityZoneInfo.ZoneGravity = vect(0, 0, -1);
 
         foreach AllActors(class 'Actor', physicsActor, physicsActorTag)
-    	{
+        {
             physicsActor.SetPhysics(PHYS_None);
-    	}
+        }
     }
 }
 
@@ -48,5 +48,5 @@ defaultproperties
 {
     zoneInfoTag=ZoneInfoSimulatedGravity
     physicsActorTag=SimulatedPhysics
-	eventCommandTag=EC_ToggleGravity
+    eventCommandTag=EC_ToggleGravity
 }

@@ -1,3 +1,6 @@
+//-----------------------------------------------------------
+// CNNUPSWeapon
+//-----------------------------------------------------------
 class CNNUPSWeapon extends WeaponDogBite;
 
 defaultproperties

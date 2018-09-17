@@ -1,3 +1,6 @@
+//-----------------------------------------------------------
+// DoctorIsaac
+//-----------------------------------------------------------
 class DoctorIsaac extends ScientistMale;
 
 defaultproperties

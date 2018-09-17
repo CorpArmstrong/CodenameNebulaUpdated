@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
-//
+// CNNTrigger
 //-----------------------------------------------------------
-class CNNTrigger expands Trigger;
+class CNNTrigger extends Trigger;
 
 function MsgBox (string message)
 {

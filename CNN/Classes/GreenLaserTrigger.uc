@@ -26,29 +26,29 @@ var vector actorLocation;		// last known location of actor that triggered alarm
 
 singular function Touch(Actor Other)
 {
-	// does nothing when touched
+    // does nothing when touched
 }
 
 function BeginAlarm()
 {
-	AmbientSound = Sound'Klaxon';
-	SoundVolume = 128;
-	SoundRadius = 64;
-	lastAlarmTime = Level.TimeSeconds;
-	AIStartEvent('Alarm', EAITYPE_Audio, SoundVolume / 255.0, 25 * (SoundRadius + 1));
+    AmbientSound = Sound'Klaxon';
+    SoundVolume = 128;
+    SoundRadius = 64;
+    lastAlarmTime = Level.TimeSeconds;
+    AIStartEvent('Alarm', EAITYPE_Audio, SoundVolume / 255.0, 25 * (SoundRadius + 1));
 
-	// make sure we can't go into stasis while we're alarming
-	bStasis = False;
+    // make sure we can't go into stasis while we're alarming
+    bStasis = False;
 }
 
 function EndAlarm()
 {
-	AmbientSound = none;
-	lastAlarmTime = 0;
-	AIEndEvent('Alarm', EAITYPE_Audio);
+    AmbientSound = none;
+    lastAlarmTime = 0;
+    AIEndEvent('Alarm', EAITYPE_Audio);
 
-	// reset our stasis info
-	bStasis = Default.bStasis;
+    // reset our stasis info
+    bStasis = Default.bStasis;
 }
 
 function Tick(float deltaTime)

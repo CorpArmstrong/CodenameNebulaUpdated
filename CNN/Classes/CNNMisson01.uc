@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 // Mission01 - Lower level (low level)
 //-----------------------------------------------------------
-class CNNMisson01 expands CNNBaseIngameCutscene;
+class CNNMisson01 extends CNNBaseIngameCutscene;
 
 var bool bLasersOn, bLasersOff;
 var LaserSecurityDispatcher laserDipatcher;

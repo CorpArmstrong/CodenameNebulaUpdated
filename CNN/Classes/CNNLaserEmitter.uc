@@ -1,125 +1,125 @@
 //-----------------------------------------------------------
-//
+// CNNLaserEmitter
 //-----------------------------------------------------------
-class CNNLaserEmitter expands LaserEmitter;
+class CNNLaserEmitter extends LaserEmitter;
 
 var() Texture laserSpotTex;
 var() Texture SkinTex;
 
 function CalcTrace(float deltaTime)
 {
-	local vector StartTrace, EndTrace, HitLocation, HitNormal, Reflection;
-	local actor target;
-	local int i, texFlags;
-	local name texName, texGroup;
+    local vector StartTrace, EndTrace, HitLocation, HitNormal, Reflection;
+    local actor target;
+    local int i, texFlags;
+    local name texName, texGroup;
 
-	StartTrace = Location;
-	EndTrace = Location + 5000 * vector(Rotation);
-	HitActor = none;
+    StartTrace = Location;
+    EndTrace = Location + 5000 * vector(Rotation);
+    HitActor = none;
 
-	// trace the path of the reflected beam and draw points at each hit
-	for (i = 0; i < ArrayCount(spot); i++)
-	{
-		foreach TraceTexture(class'Actor', target, texName, texGroup, texFlags, HitLocation, HitNormal, EndTrace, StartTrace)
-		{
-			if ((target.DrawType == DT_None) || target.IsA('Triggers')) // JJ change here
-			{
-				// do nothing - keep on tracing
-			}
-			else if (target == Level)                            // JJ change here
-			{
-				break;
-			}
-			else
-			{
-				HitActor = target;
-				break;
-			}
-		}
+    // trace the path of the reflected beam and draw points at each hit
+    for (i = 0; i < ArrayCount(spot); i++)
+    {
+        foreach TraceTexture(class'Actor', target, texName, texGroup, texFlags, HitLocation, HitNormal, EndTrace, StartTrace)
+        {
+            if ((target.DrawType == DT_None) || target.IsA('Triggers')) // JJ change here
+            {
+                // do nothing - keep on tracing
+            }
+            else if (target == Level)                         // JJ change here
+            {
+                break;
+            }
+            else
+            {
+                HitActor = target;
+                break;
+            }
+        }
 
-		// draw first beam
-		if (i == 0)
-		{
-			if (LaserIterator(RenderInterface) != none)
-			{
-				LaserIterator(RenderInterface)
-					.AddBeam(i,
-							 Location,
-							 Rotation,
-							 VSize(Location - HitLocation));
-			}
-		}
-		else
-		{
-			if (LaserIterator(RenderInterface) != none)
-			{
-				LaserIterator(RenderInterface)
-					.AddBeam(i,
-							 StartTrace - HitNormal,
-							 Rotator(Reflection),
-							 VSize(StartTrace - HitLocation - HitNormal));
-			}
-		}
+        // draw first beam
+        if (i == 0)
+        {
+            if (LaserIterator(RenderInterface) != none)
+            {
+                LaserIterator(RenderInterface)
+                    .AddBeam(i,
+                             Location,
+                             Rotation,
+                             VSize(Location - HitLocation));
+            }
+        }
+        else
+        {
+            if (LaserIterator(RenderInterface) != none)
+            {
+                LaserIterator(RenderInterface)
+                    .AddBeam(i,
+                             StartTrace - HitNormal,
+                             Rotator(Reflection),
+                             VSize(StartTrace - HitLocation - HitNormal));
+            }
+        }
 
-		if (spot[i] == none)
-		{
-			spot[i] = Spawn(class'LaserSpot', Self, , HitLocation, Rotator(HitNormal));
+        if (spot[i] == none)
+        {
+            spot[i] = Spawn(class'LaserSpot', self, , HitLocation, Rotator(HitNormal));
 
-			if (bBlueBeam && (spot[i] != none))
-			{
-				spot[i].Skin = Texture'LaserSpot2';
-			}
-			else
-			{
-				spot[i].Skin = laserSpotTex;
-			}
-		}
-		else
-		{
-			spot[i].SetLocation(HitLocation);
-			spot[i].SetRotation(Rotator(HitNormal));
-		}
+            if (bBlueBeam && (spot[i] != none))
+            {
+                spot[i].Skin = Texture'LaserSpot2';
+            }
+            else
+            {
+                spot[i].Skin = laserSpotTex;
+            }
+        }
+        else
+        {
+            spot[i].SetLocation(HitLocation);
+            spot[i].SetRotation(Rotator(HitNormal));
+        }
 
-		// don't reflect any more if we don't hit a mirror
-		// 0x08000000 is the PF_Mirrored flag from UnObj.h
-		if ((texFlags & 0x08000000) == 0)
-		{
-			// kill all of the other spots after this one
-			if (i < ArrayCount(spot) - 1)
-			{
-				do
-				{
-					i++;
+        // don't reflect any more if we don't hit a mirror
+        // 0x08000000 is the PF_Mirrored flag from UnObj.h
+        if ((texFlags & 0x08000000) == 0)
+        {
+            // kill all of the other spots after this one
+            if (i < ArrayCount(spot) - 1)
+            {
+                do
+                {
+                    i++;
 
-					if (spot[i] != none)
-					{
-						spot[i].Destroy();
-						spot[i] = none;
+                    if (spot[i] != none)
+                    {
+                        spot[i].Destroy();
+                        spot[i] = none;
 
-						if (LaserIterator(RenderInterface) != none)
-						{
-							LaserIterator(RenderInterface).DeleteBeam(i);
-						}
-					}
-				} until (i >= ArrayCount(spot) - 1);
-			}
+                        if (LaserIterator(RenderInterface) != none)
+                        {
+                            LaserIterator(RenderInterface).DeleteBeam(i);
+                        }
+                    }
+                } until (i >= ArrayCount(spot) - 1);
+            }
 
-			return;
-		}
+            return;
+        }
 
-		Reflection = MirrorVectorByNormal(Normal(HitLocation - StartTrace), HitNormal);
-		StartTrace = HitLocation + HitNormal;
-		EndTrace = Reflection * 10000;
-	}
+        Reflection = MirrorVectorByNormal(Normal(HitLocation - StartTrace), HitNormal);
+        StartTrace = HitLocation + HitNormal;
+        EndTrace = Reflection * 10000;
+    }
 }
 
 function BeginPlay()
 {
-	proxy.Skin = SkinTex;
+    proxy.Skin = SkinTex;
 }
 
 defaultproperties
 {
-	laserSpotTex=Texture'DeusExDeco.Skins.AlarmLightTex8'
-	SkinTex=Texture'DeusExDeco.Skins.Button1Tex24'
+    laserSpotTex=Texture'DeusExDeco.Skins.AlarmLightTex8'
+    SkinTex=Texture'DeusExDeco.Skins.Button1Tex24'
 }

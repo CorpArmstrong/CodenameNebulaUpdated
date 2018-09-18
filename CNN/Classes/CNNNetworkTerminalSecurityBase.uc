@@ -1,8 +1,11 @@
+//-----------------------------------------------------------
+// CNNNetworkTerminalSecurityBase
+//-----------------------------------------------------------
 class CNNNetworkTerminalSecurityBase extends NetworkTerminal;
 
 function CloseScreen(String action)
 {
-	Super.CloseScreen(action);
+	super.CloseScreen(action);
 
     switch(action)
     {

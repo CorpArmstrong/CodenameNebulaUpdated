@@ -1,3 +1,6 @@
+//-----------------------------------------------------------
+// CNNNetworkTerminalSecurity
+//-----------------------------------------------------------
 class CNNNetworkTerminalSecurity extends CNNNetworkTerminalSecurityBase;
 
 var() name conTrigTag;

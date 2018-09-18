@@ -1,3 +1,6 @@
+//-----------------------------------------------------------
+// CNNRootWindow
+//-----------------------------------------------------------
 class CNNRootWindow extends DeusExRootWindow;
 
 // ----------------------------------------------------------------------
@@ -11,13 +14,14 @@ function DeusExBaseWindow InvokeMenuScreen(Class<DeusExBaseWindow> newScreen, op
     local DeusExBaseWindow newWindow;
 
     // Check to see if a menu is visible.  If so, hide it first.
-    if (( MenuUIMenuWindow(GetTopWindow()) != None ) || ( MenuUIScreenWindow(GetTopWindow()) != None ))
+    if ((MenuUIMenuWindow(GetTopWindow()) != none ) ||
+        (MenuUIScreenWindow(GetTopWindow()) != none ))
     {
-        newWindow = PushWindow(newScreen, True, bNoPause);
+        newWindow = PushWindow(newScreen, true, bNoPause);
     }
     else
     {
-        newWindow = PushWindow(newScreen, False, bNoPause);
+        newWindow = PushWindow(newScreen, false, bNoPause);
     }
 
     // Pause the game

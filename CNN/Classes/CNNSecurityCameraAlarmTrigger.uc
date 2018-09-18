@@ -15,26 +15,26 @@ function TriggerCameraAlarm()
 {
     local SecurityCamera secCam;
 
-	if (!bToggleAllCameras)
-	{
-		foreach AllActors(class 'SecurityCamera', secCam, cameraTag)
-		{
-			secCam.bNoAlarm = !secCam.bNoAlarm;
-		}
-	}
+    if (!bToggleAllCameras)
+    {
+        foreach AllActors(class 'SecurityCamera', secCam, cameraTag)
+        {
+            secCam.bNoAlarm = !secCam.bNoAlarm;
+        }
+    }
     else
-	{
-		foreach AllActors(class 'SecurityCamera', secCam)
-		{
-			secCam.bNoAlarm = !secCam.bNoAlarm;
-		}
-	}
+    {
+        foreach AllActors(class 'SecurityCamera', secCam)
+        {
+            secCam.bNoAlarm = !secCam.bNoAlarm;
+        }
+    }
 }
 
 function Trigger(Actor Other, Pawn Instigator)
 {
     TriggerCameraAlarm();
-    Super.Trigger(Other, Instigator);
+    super.Trigger(Other, Instigator);
 }
 
 function Touch(Actor Other)
@@ -42,12 +42,12 @@ function Touch(Actor Other)
     if (IsRelevant(Other))
     {
         TriggerCameraAlarm();
-        Super.Touch(Other);
+        super.Touch(Other);
     }
 }
 
 defaultproperties
 {
-	cameraTag=SecurityCamera
-	bToggleAllCameras=true
+    cameraTag=SecurityCamera
+    bToggleAllCameras=true
 }

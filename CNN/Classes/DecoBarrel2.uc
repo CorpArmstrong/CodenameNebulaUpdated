@@ -1,8 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-class DecoBarrel2 expands Object
-	abstract;
+class DecoBarrel2 extends Object abstract;
 
 //-----------------------------------------------------------------------------
 // Crates
@@ -18,7 +17,3 @@ class DecoBarrel2 expands Object
 
 #exec TEXTURE IMPORT NAME=Barrel2Tex1 FILE=Models\Barrel2_a.pcx GROUP="Skins"
 #exec MESHMAP SETTEXTURE MESHMAP=Barrel2 NUM=0 TEXTURE=Barrel2Tex1
-
-defaultproperties
-{
-}

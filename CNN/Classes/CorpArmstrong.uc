@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 // CorpArmstrong
 //-----------------------------------------------------------
-class CorpArmstrong expands CNNMilitary;
+class CorpArmstrong extends CNNMilitary;
 
 defaultproperties
 {

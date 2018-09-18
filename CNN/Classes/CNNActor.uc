@@ -2,7 +2,3 @@
 // CNNActor.
 //-----------------------------------------------------------
 class CNNActor extends Actor;
-
-defaultproperties
-{
-}

@@ -1,8 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-class DecoCandle1 expands Object
-	abstract;
+class DecoCandle1 extends Object abstract;
 
 //-----------------------------------------------------------------------------
 // Lamps & Lights
@@ -17,7 +16,3 @@ class DecoCandle1 expands Object
 #exec TEXTURE IMPORT NAME=Candle1Tex1 FILE=Models\Candle1_a.pcx GROUP="Skins"
 #exec MESHMAP SETTEXTURE MESHMAP=Candle1 NUM=0 TEXTURE=Candle1Tex1
 #exec MESHMAP SETTEXTURE MESHMAP=Candle1 NUM=1 TEXTURE=Effects.Fire.OneFlame_J
-
-defaultproperties
-{
-}

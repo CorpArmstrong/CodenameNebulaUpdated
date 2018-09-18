@@ -1,3 +1,6 @@
+//-----------------------------------------------------------
+// CNNSimpleActorSpawner
+//-----------------------------------------------------------
 class CNNSimpleActorSpawner extends CNNTrigger;
 
 var(SpawnData) class<ScriptedPawn> actorType;
@@ -14,8 +17,8 @@ var float internalCounter;
 
 function Trigger(Actor Other, Pawn Instigator)
 {
-	bSpawning = !bSpawning;
-    Super.Trigger(Other, Instigator);
+    bSpawning = !bSpawning;
+    super.Trigger(Other, Instigator);
 }
 
 function StopSpawning()
@@ -30,25 +33,25 @@ function StopSpawning()
 
 simulated function Tick(float TimeDelta)
 {
-	Super.Tick(TimeDelta);
+    super.Tick(TimeDelta);
 
-	if (bSpawning && spawnCounter < spawnLimit)
-	{
- 		BroadcastMessage("InternalCounter: " $ internalCounter $ "; nextSpawn: " $ nextSpawn);
- 		internalCounter += TimeDelta;
+    if (bSpawning && spawnCounter < spawnLimit)
+    {
+        BroadcastMessage("InternalCounter: " $ internalCounter $ "; nextSpawn: " $ nextSpawn);
+        internalCounter += TimeDelta;
 
- 		if (internalCounter > nextSpawn)
- 		{
- 			nextSpawn = internalCounter + spawnRate;
- 			Spawn(actorType, self).SetOrders(orderName, orderTag);
- 			spawnCounter++;
- 			BroadcastMessage("Spawned actor! num: " $ spawnCounter);
- 		}
- 	}
- 	else
- 	{
- 		BroadcastMessage("Don't spawn anymore!");
- 	}
+        if (internalCounter > nextSpawn)
+        {
+            nextSpawn = internalCounter + spawnRate;
+            Spawn(actorType, self).SetOrders(orderName, orderTag);
+            spawnCounter++;
+            BroadcastMessage("Spawned actor! num: " $ spawnCounter);
+        }
+    }
+    else
+    {
+        BroadcastMessage("Don't spawn anymore!");
+    }
 }
 
 defaultproperties

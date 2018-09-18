@@ -1,8 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-class DecoBoardBoxSmall expands Object
-	abstract;
+class DecoBoardBoxSmall extends Object abstract;
 
 //-----------------------------------------------------------------------------
 // Crates
@@ -18,7 +17,3 @@ class DecoBoardBoxSmall expands Object
 
 #exec TEXTURE IMPORT NAME=BoardBoxSmallTex1 FILE=Models\BoardBoxSmall_a.pcx GROUP="Skins"
 #exec MESHMAP SETTEXTURE MESHMAP=BoardBoxSmall NUM=0 TEXTURE=BoardBoxSmallTex1
-
-defaultproperties
-{
-}

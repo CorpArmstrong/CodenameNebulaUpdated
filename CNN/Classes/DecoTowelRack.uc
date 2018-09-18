@@ -1,11 +1,9 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-class DecoTowelRack expands Object
-	abstract;
+class DecoTowelRack extends Object abstract;
 
 // TowelRack
-
 #exec MESH IMPORT MESH=TowelRack ANIVFILE=Models\TowelRack_a.3d DATAFILE=Models\TowelRack_d.3d
 #exec MESH SEQUENCE MESH=TowelRack SEQ=All STARTFRAME=0 NUMFRAMES=1
 #exec MESH SEQUENCE MESH=TowelRack SEQ=Still STARTFRAME=0 NUMFRAMES=1
@@ -18,7 +16,3 @@ class DecoTowelRack expands Object
 #exec TEXTURE IMPORT NAME=TowelTex3 FILE=Models\Towel_c.pcx GROUP="Skins"
 #exec MESHMAP SETTEXTURE MESHMAP=TowelRack NUM=0 TEXTURE=TowelRackTex1
 #exec MESHMAP SETTEXTURE MESHMAP=TowelRack NUM=1 TEXTURE=TowelTex1
-
-defaultproperties
-{
-}

@@ -1,7 +1,6 @@
 //=============================================================================
 // ColorThemeHUD_ApostleMod
 //=============================================================================
-
 class ColorThemeHUD_ApostleMod extends ColorThemeHUD;
 
 defaultproperties

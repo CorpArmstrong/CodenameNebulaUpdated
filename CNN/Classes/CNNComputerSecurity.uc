@@ -1,3 +1,6 @@
+//-----------------------------------------------------------
+// CNNComputerSecurity
+//-----------------------------------------------------------
 class CNNComputerSecurity extends ComputerSecurity;
 
 function ResumeDataLinks()

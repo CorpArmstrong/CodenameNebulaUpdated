@@ -14,18 +14,18 @@ function ExplosionEffects() {}
 
 function Timer()
 {
-    Super.Timer();
+    super.Timer();
 
     if (!bQuotePrinted)
     {
         PrintEndgameQuote(0);
     }
 
-	endgameTimer += checkTime;
+    endgameTimer += checkTime;
 
 	if (endgameTimer > endgameDelays[0])
     {
-		FinishCinematic();
+        FinishCinematic();
     }
 }
 

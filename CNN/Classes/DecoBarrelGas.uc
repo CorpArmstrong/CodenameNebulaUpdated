@@ -1,8 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-class DecoBarrelGas expands Object
-	abstract;
+class DecoBarrelGas extends Object abstract;
 
 // BarrelGas
 
@@ -15,7 +14,3 @@ class DecoBarrelGas expands Object
 
 #exec TEXTURE IMPORT NAME=BarrelGasTex1 FILE=Models\BarrelGas_a.pcx GROUP="Skins"
 #exec MESHMAP SETTEXTURE MESHMAP=BarrelGas NUM=0 TEXTURE=BarrelGasTex1
-
-defaultproperties
-{
-}

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
-//
+// CNNSimpleTrigger
 //-----------------------------------------------------------
-class CNNSimpleTrigger expands Triggers;
+class CNNSimpleTrigger extends Triggers;
 
 var (Trigger) bool bEnabled;
 var (Trigger) bool bOnlyOnce; // is incompartible with ActOffEvent
@@ -22,16 +22,16 @@ var (Trigger) name TouchByClass;
 
 var (Trigger) enum ECheckCollisionEvery
 {
-	CCE_NeverCheck,
-	CCE_EveryTick,
-	CCE_dot1sec,
-	CCE_dot2sec,
-	CCE_dot3sec,
-	CCE_dot5sec,
-	CCE_1sec,
-	CCE_2sec,
-	CCE_3sec,
-	CCE_5sec,
+    CCE_NeverCheck,
+    CCE_EveryTick,
+    CCE_dot1sec,
+    CCE_dot2sec,
+    CCE_dot3sec,
+    CCE_dot5sec,
+    CCE_1sec,
+    CCE_2sec,
+    CCE_3sec,
+    CCE_5sec,
 } CheckCollisionEvery;
 
 var float CollisionTimeDelay;
@@ -46,45 +46,44 @@ var (Events) bool UntrigWhenActON;
 
 function BeginPlay()
 {
-	super.BeginPlay();
+    super.BeginPlay();
 
-	switch (CheckCollisionEvery)
-	{
-		case CCE_EveryTick:
-			CollisionTimeDelay = 0;
-			break;
-		case CCE_dot1sec:
-			CollisionTimeDelay = 0.1;
-			break;
-		case CCE_dot2sec:
-			CollisionTimeDelay = 0.2;
-			break;
-		case CCE_dot3sec:
-			CollisionTimeDelay = 0.3;
-			break;
-		case CCE_dot5sec:
-			CollisionTimeDelay = 0.5;
-			break;
-		case CCE_1sec:
-			CollisionTimeDelay = 1;
-			break;
-		case CCE_2sec:
-			CollisionTimeDelay = 2;
-			break;
-		case CCE_3sec:
-			CollisionTimeDelay = 3;
-			break;
-		case CCE_5sec:
-			CollisionTimeDelay = 5;
-			break;
+    switch (CheckCollisionEvery)
+    {
+        case CCE_EveryTick:
+            CollisionTimeDelay = 0;
+            break;
+        case CCE_dot1sec:
+            CollisionTimeDelay = 0.1;
+            break;
+        case CCE_dot2sec:
+            CollisionTimeDelay = 0.2;
+            break;
+        case CCE_dot3sec:
+            CollisionTimeDelay = 0.3;
+            break;
+        case CCE_dot5sec:
+            CollisionTimeDelay = 0.5;
+            break;
+        case CCE_1sec:
+            CollisionTimeDelay = 1;
+            break;
+        case CCE_2sec:
+            CollisionTimeDelay = 2;
+            break;
+        case CCE_3sec:
+            CollisionTimeDelay = 3;
+            break;
+        case CCE_5sec:
+            CollisionTimeDelay = 5;
+            break;
+    }
 
-	}
-
-	NextCheckAfter = CollisionTimeDelay;
+    NextCheckAfter = CollisionTimeDelay;
 }
 
 
-function DebugInfo (string message)
+function DebugInfo(string message)
 {
     local String mess;
 
@@ -93,24 +92,24 @@ function DebugInfo (string message)
         return;
     }
 
-	if(bShowTime)
+    if(bShowTime)
     {
-		mess = "" $ level.TimeSeconds;
+        mess = "" $ level.TimeSeconds;
     }
 
-	if(bShowName)
+    if(bShowName)
     {
-		mess = mess @ self.Name;
+        mess = mess @ self.Name;
     }
 
-	if (bShowTag)
+    if (bShowTag)
     {
-		mess = mess @ self.Tag;
+        mess = mess @ self.Tag;
     }
 
     mess = mess $ ":" @ message;
 
-	GameLog(mess);
+    GameLog(mess);
 }
 
 
@@ -122,22 +121,22 @@ function GameLog(string message)
 
     if (player != none)
     {
-	    player.clientMessage(message);
+        player.clientMessage(message);
     }
 }
 
 // detect touching (true/false)
 function bool IsTouchTo(Actor Other)
 {
-	local vector distance;
-	local vector distanceInPlane;
+    local vector distance;
+    local vector distanceInPlane;
 
-	distance = self.Location - Other.Location;
+    distance = self.Location - Other.Location;
 
-	distanceInPlane = distance;
-	distanceInPlane.Z = 0;
+    distanceInPlane = distance;
+    distanceInPlane.Z = 0;
 
-	distance.Z = abs(distance.Z);
+    distance.Z = abs(distance.Z);
 
     if (distance.Z <= ((self.CollisionHeight + Other.CollisionHeight) / 2) &&
        (VSize(distanceInPlane) <= (self.CollisionRadius + Other.CollisionRadius)))
@@ -145,7 +144,7 @@ function bool IsTouchTo(Actor Other)
         return true;
     }
 
-	return false;
+    return false;
 }
 
 
@@ -153,157 +152,157 @@ function bool IsTouchTo(Actor Other)
 // (calls CheckActorsTouch() with time interval)
 function TouchProcessing(float fDT)
 {
-	local bool bPrevInsideValue;
+    local bool bPrevInsideValue;
 
-	// time managament (time delay)
+    // time managament (time delay)
     NextCheckAfter -= fDT;
 
-	if (NextCheckAfter > 0)
+    if (NextCheckAfter > 0)
     {
-		return;
+    	return;
     }
-	else
+    else
     {
-		NextCheckAfter = CollisionTimeDelay;
+    	NextCheckAfter = CollisionTimeDelay;
     }
 
-	// save previous value
-	bPrevInsideValue = bObjectInside;
+    // save previous value
+    bPrevInsideValue = bObjectInside;
 
-	// verify is Object Inside ?
-	bObjectInside = CheckActorsTouch();
+    // verify is Object Inside ?
+    bObjectInside = CheckActorsTouch();
 
-	//detectiong Touch and UnTouch
-	if (bPrevInsideValue != bObjectInside)
-	{
-		if (!bPrevInsideValue && bObjectInside)
+    //detectiong Touch and UnTouch
+    if (bPrevInsideValue != bObjectInside)
+    {
+        if (!bPrevInsideValue && bObjectInside)
         {
-			TouchIN();
+            TouchIN();
         }
 
-		if (bPrevInsideValue && !bObjectInside)
+        if (bPrevInsideValue && !bObjectInside)
         {
-			TouchOUT();
+            TouchOUT();
         }
-	}
+    }
 }
 
 // make checking collision
 // with selected TouchProximityType
 function bool CheckActorsTouch()
 {
-	local DeusExPlayer player;
-	local Actor actr;
-	local ScriptedPawn sPawn;
-	local bool result;
+    local DeusExPlayer player;
+    local Actor actr;
+    local ScriptedPawn sPawn;
+    local bool result;
 
-	result = false;
+    result = false;
 
     switch (TouchProximityType)
-	{
-		case TPT_TouchToPlayer:
+    {
+        case TPT_TouchToPlayer:
 
             player = DeusExPlayer(GetPlayerPawn()); // not for multiplayer games
 
 		    if (player != none)
             {
-		    	return IsTouchTo(player);
+                return IsTouchTo(player);
             }
-			break;
+            break;
 
-		case TPT_TouchByClass:
+        case TPT_TouchByClass:
 
             foreach AllActors(class 'Actor', actr)
-			{
-				if (actr.IsA(TouchByClass) && IsTouchTo(actr))
+            {
+                if (actr.IsA(TouchByClass) && IsTouchTo(actr))
                 {
                     result = true;
                 }
-			}
-			break;
+            }
+            break;
 
-		case TPT_TouchByTag:
+        case TPT_TouchByTag:
 
             foreach AllActors(class 'ScriptedPawn', sPawn)
-       		{
-				if (sPawn.Tag == TouchByTag && IsTouchTo(sPawn))
+            {
+                if (sPawn.Tag == TouchByTag && IsTouchTo(sPawn))
                 {
                     result = true;
                 }
-	        }
-			break;
-	}
+            }
+            break;
+    }
 
-	return result;
+    return result;
 }
 
 function Tick(float fDT)
 {
-	super.Tick(fDT);
+    super.Tick(fDT);
 
-	if (CheckCollisionEvery != CCE_NeverCheck && bEnabled)
+    if (CheckCollisionEvery != CCE_NeverCheck && bEnabled)
     {
-		TouchProcessing(fDT);
+        TouchProcessing(fDT);
     }
-	else
+    else
     {
-		// Maybe will be better without this line.
-		// When trigger will be ENABLED,
-		// by special trigger, bObjectInside will be processed
-		// specialy for that "wake up".
-		// But now this functionality is not used
-		// and that special trigger is not written.
-		bObjectInside = false;
+        // Maybe will be better without this line.
+        // When trigger will be ENABLED,
+        // by special trigger, bObjectInside will be processed
+        // specialy for that "wake up".
+        // But now this functionality is not used
+        // and that special trigger is not written.
+        bObjectInside = false;
     }
 }
 
 function TouchIN() // analog Touch
 {
-	if (!bEnabled)
+    if (!bEnabled)
     {
-		return;
+        return;
     }
 
-	DebugInfo("TouchIN()");
-	ActivatedON();
+    DebugInfo("TouchIN()");
+    ActivatedON();
 }
 
 
 function TouchOUT() // analog UnTouch
 {
-	if (!bEnabled)
+    if (!bEnabled)
     {
-		return;
+        return;
     }
 
-	DebugInfo("TouchOUT()");
-	ActivatedOFF();
+    DebugInfo("TouchOUT()");
+    ActivatedOFF();
 }
 
 
 function Trigger(Actor Other, Pawn EventInstigator)
 {
-	if (!bEnabled)
+    if (!bEnabled)
     {
-		return;
+        return;
     }
 
-	DebugInfo("Trigger()");
-	ActivatedON();
-	super.Trigger(Other, EventInstigator);
+    DebugInfo("Trigger()");
+    ActivatedON();
+    super.Trigger(Other, EventInstigator);
 }
 
 
-function UnTrigger( Actor Other, Pawn EventInstigator )
+function UnTrigger(Actor Other, Pawn EventInstigator)
 {
-	if (!bEnabled)
+    if (!bEnabled)
     {
-		return;
+        return;
     }
 
-	DebugInfo("UnTrigger()");
-	ActivatedOFF();
-	super.UnTrigger( Other, EventInstigator );
+    DebugInfo("UnTrigger()");
+    ActivatedOFF();
+    super.UnTrigger(Other, EventInstigator);
 }
 
 
@@ -311,23 +310,23 @@ function ActivatedON() // when trigger become activated
 {
     local Actor A;
 
-	// [...] <- your actions
+    // [...] <- your actions
 
-	// or super.ActivatedON()
+    // or super.ActivatedON()
 
-	// you can use Event for activating somethig or deactivating
-	if (Event != '')
+    // you can use Event for activating somethig or deactivating
+    if (Event != '')
     {
-		foreach AllActors(class 'Actor', A, Event)
+        foreach AllActors(class 'Actor', A, Event)
         {
             // without PlayerPawn some functionality maybe will lost
-			if (!UntrigWhenActON)
+            if (!UntrigWhenActON)
             {
-				A.Trigger( self, GetPlayerPawn());
+                A.Trigger(self, GetPlayerPawn());
             }
-			else
+            else
             {
-				A.UnTrigger( self, GetPlayerPawn());
+                A.UnTrigger(self, GetPlayerPawn());
             }
         }
     }
@@ -340,34 +339,34 @@ function ActivatedOFF() // when trigger is deactivated
 {
     local Actor A;
 
-	// [...] <- your actions
+    // [...] <- your actions
 
-	// or super.ActivatedOFF()
+    // or super.ActivatedOFF()
 
-	// you can UnTrig your general event - when activating is OFF
-	if (Event != '' && UntrigWhenActOFF)
+    // you can UnTrig your general event - when activating is OFF
+    if (Event != '' && UntrigWhenActOFF)
     {
-		foreach AllActors(class 'Actor', A, Event)
+        foreach AllActors(class 'Actor', A, Event)
         {
-			A.UnTrigger(self, GetPlayerPawn()); // without PlayerPawn some functionality maybe will lost
+            A.UnTrigger(self, GetPlayerPawn()); // without PlayerPawn some functionality maybe will lost
         }
     }
 
-	// and you can use this event for activating somethig
-	if (EventActOFF != '')
+    // and you can use this event for activating somethig
+    if (EventActOFF != '')
     {
-		foreach AllActors(class 'Actor', A, EventActOFF)
+        foreach AllActors(class 'Actor', A, EventActOFF)
         {
-			A.Trigger(self, GetPlayerPawn()); // without PlayerPawn some functionality maybe will lost
+            A.Trigger(self, GetPlayerPawn()); // without PlayerPawn some functionality maybe will lost
         }
     }
 }
 
 defaultproperties
 {
-	bEnabled=true; // InitialyActive - analog
-	bOnlyOnce=false;
-	bShowTime=true;
-	TouchProximityType=TPT_TouchByTag;
-	Texture=Texture'CNN.S_CNNTrig';
+    bEnabled=true; // InitialyActive - analog
+    bOnlyOnce=false;
+    bShowTime=true;
+    TouchProximityType=TPT_TouchByTag;
+    Texture=Texture'CNN.S_CNNTrig';
 }

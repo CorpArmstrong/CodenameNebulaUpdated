@@ -1,6 +1,9 @@
+//-----------------------------------------------------------
+// EventCommand
+//-----------------------------------------------------------
 class EventCommand extends Actor;
 
-var(TAG) name eventCommandTag; 
+var(TAG) name eventCommandTag;
 
 function ExecuteEvent()
 {
@@ -9,5 +12,5 @@ function ExecuteEvent()
 defaultproperties
 {
     bHidden=true
-	eventCommandTag=EC_Empty
+    eventCommandTag=EC_Empty
 }

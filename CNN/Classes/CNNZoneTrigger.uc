@@ -6,8 +6,7 @@
 //  1) ZoneDamage
 //  2) ZoneVelocity
 //-----------------------------------------------------------
-
-class CNNZoneTrigger expands CNNTrigger;
+class CNNZoneTrigger extends CNNTrigger;
 
 var(TargetZone) name zoneTag;
 var(TargetZone) name zoneDamageType;
@@ -31,7 +30,7 @@ function TriggerZone()
 function Trigger(Actor Other, Pawn Instigator)
 {
     TriggerZone();
-    Super.Trigger(Other, Instigator);
+    super.Trigger(Other, Instigator);
 }
 
 function Touch(Actor Other)
@@ -39,6 +38,6 @@ function Touch(Actor Other)
     if (IsRelevant(Other))
     {
         TriggerZone();
-        Super.Touch(Other);
+        super.Touch(Other);
     }
 }

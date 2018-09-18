@@ -1,8 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-class DecoBarrelToxic expands Object
-	abstract;
+class DecoBarrelToxic extends Object abstract;
 
 // For BarrelToxic
 
@@ -19,7 +18,3 @@ class DecoBarrelToxic expands Object
 
 #exec TEXTURE IMPORT NAME=BarrelToxicTex1 FILE=Models\BarrelToxic_a.pcx GROUP="Skins"
 #exec MESHMAP SETTEXTURE MESHMAP=BarrelToxic NUM=0 TEXTURE=BarrelToxicTex1
-
-defaultproperties
-{
-}

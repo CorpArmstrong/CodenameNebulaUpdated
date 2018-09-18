@@ -1,8 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-class DecoCautionBox expands Object
-	abstract;
+class DecoCautionBox extends Object abstract;
 
 // CautionBox
 
@@ -15,7 +14,3 @@ class DecoCautionBox expands Object
 
 #exec TEXTURE IMPORT NAME=CautionBoxTex1 FILE=Models\CautionBox_a.pcx GROUP="Skins"
 #exec MESHMAP SETTEXTURE MESHMAP=CautionBox NUM=0 TEXTURE=CautionBoxTex1
-
-defaultproperties
-{
-}

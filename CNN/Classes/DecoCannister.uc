@@ -1,8 +1,7 @@
 //=============================================================================
 // Custom Decorations.
 //=============================================================================
-class DecoCannister expands Object
-	abstract;
+class DecoCannister extends Object abstract;
 
 #exec OBJ LOAD FILE=Effects // Needed for the Armor_Adaptative_SFX FireTexture
 
@@ -18,7 +17,3 @@ class DecoCannister expands Object
 #exec TEXTURE IMPORT NAME=CannisterTex1 FILE=Models\Cannister_a.pcx GROUP="Skins" FLAGS=2
 #exec MESHMAP SETTEXTURE MESHMAP=Cannister NUM=0 TEXTURE=CannisterTex1
 #exec MESHMAP SETTEXTURE MESHMAP=Cannister NUM=1 TEXTURE=Effects.Electricity.Armor_Adaptive_SFX
-
-defaultproperties
-{
-}

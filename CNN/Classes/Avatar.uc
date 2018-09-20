@@ -18,7 +18,7 @@ defaultproperties
     bShowPain=false
     ShadowScale=1.000000
     InitialAlliances(0)=(AllianceName=Player,AllianceLevel=-1.000000,bPermanent=true)
-    InitialInventory(0)=(Inventory=Class'DeusEx.WeaponSword')
+    InitialInventory(0)=(Inventory=Class'DeusEx.WeaponCombatKnife')
     WalkSound=Sound'DeusExSounds.Animal.KarkianFootstep'
     bSpawnBubbles=false
     bCanSwim=true

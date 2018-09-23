@@ -5,12 +5,11 @@ class SilentUPS extends CNNUPS;
 
 function PostBeginPlay()
 {
-	local int i;
+    local int i;
+    super.PostBeginPlay();
 
-	super.PostBeginPlay();
-
-	for (i = 0; i < ArrayCount(em); i++)
-	{
-		em[i].AmbientSound = none;
-	}
+    for (i = 0; i < ArrayCount(em); i++)
+    {
+        em[i].AmbientSound = none;
+    }
 }

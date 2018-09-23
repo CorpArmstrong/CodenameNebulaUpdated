@@ -12,17 +12,17 @@ var DeusExPlayer player;
 
 function InitStateMachine()
 {
-	Super.InitStateMachine();
+    super.InitStateMachine();
 
-	// Destroy all flags!
-	if (flags != none)
-	{
-		flags.DeleteAllFlags();
-	}
+    // Destroy all flags!
+    if (flags != none)
+    {
+        flags.DeleteAllFlags();
+    }
 
-	// Set the PlayerTraveling flag (always want it set for
-	// the intro and endgames)
-	flags.SetBool('PlayerTraveling', true, true, 0);
+    // Set the PlayerTraveling flag (always want it set for
+    // the intro and endgames)
+    flags.SetBool('PlayerTraveling', true, true, 0);
 }
 
 // ----------------------------------------------------------------------
@@ -33,30 +33,30 @@ function InitStateMachine()
 
 function FirstFrame()
 {
-	local BobPage bob;
+    local BobPage bob;
 
-	Super.FirstFrame();
+    super.FirstFrame();
 
-	if (player != none)
-	{
-		// Make sure all the flags are deleted.
-		DeusExRootWindow(Player.rootWindow).ResetFlags();
+    if (player != none)
+    {
+        // Make sure all the flags are deleted.
+        DeusExRootWindow(Player.rootWindow).ResetFlags();
 
-		// Find our buddy Bob, because he has the conversation!
-		foreach AllActors(class'BobPage', bob)
-			break;
+        // Find our buddy Bob, because he has the conversation!
+        foreach AllActors(class'BobPage', bob)
+            break;
 
-		if (bob != none)
-		{
-			// Start the conversation
-			player.StartConversationByName('Intro', bob, false, true);
-		}
+        if (bob != none)
+        {
+            // Start the conversation
+            player.StartConversationByName('Intro', bob, false, true);
+        }
 
-		// turn down the sound so we can hear the speech
-		savedSoundVolume = SoundVolume;
-		SoundVolume = 32;
-		Player.SetInstantSoundVolume(SoundVolume);
-	}
+        // turn down the sound so we can hear the speech
+        savedSoundVolume = SoundVolume;
+        SoundVolume = 32;
+        Player.SetInstantSoundVolume(SoundVolume);
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -67,11 +67,11 @@ function FirstFrame()
 
 function PreTravel()
 {
-	// restore the sound volume
-	SoundVolume = savedSoundVolume;
-	Player.SetInstantSoundVolume(SoundVolume);
+    // restore the sound volume
+    SoundVolume = savedSoundVolume;
+    Player.SetInstantSoundVolume(SoundVolume);
 
-	Super.PreTravel();
+    super.PreTravel();
 }
 
 // ----------------------------------------------------------------------
@@ -82,19 +82,15 @@ function PreTravel()
 
 function Timer()
 {
-	Super.Timer();
+    super.Timer();
 
-	// After the Intro conversation is over, tell the player to go on
-	// to the next map (which will either be the main menu map or
-	// the first game mission if we're starting a new game.
+    // After the Intro conversation is over, tell the player to go on
+    // to the next map (which will either be the main menu map or
+    // the first game mission if we're starting a new game.
 
-	if (flags.GetBool('Intro_Played'))
-	{
-		flags.SetBool('Intro_Played', false, , 1);
-		Level.Game.SendPlayer(player, "Intro#testmap");
-	}
-}
-
-defaultproperties
-{
+    if (flags.GetBool('Intro_Played'))
+    {
+        flags.SetBool('Intro_Played', false, , 1);
+        Level.Game.SendPlayer(player, "Intro#testmap");
+    }
 }

@@ -1,7 +1,7 @@
 //=============================================================================
 // ImportConversations.
 //=============================================================================
-class ImportConversations expands Object abstract;
+class ImportConversations extends Object abstract;
 
 // We want it to look like this:
 
@@ -17,9 +17,3 @@ class ImportConversations expands Object abstract;
 // Intro/Endgame
 
 // AI Barks
-
-// yeah
-
-defaultproperties
-{
-}

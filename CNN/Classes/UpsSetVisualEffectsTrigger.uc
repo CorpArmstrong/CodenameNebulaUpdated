@@ -15,28 +15,28 @@ var (UpsSetVisualEffects) int RotationSpeed;     // one turn around self per thi
 
 function ActivatedON()
 {
-	local CNNUPS cnnUps;
+    local CNNUPS cnnUps;
 
-	foreach AllActors(class'CNNUPS', cnnUps, CnnUpsTag)
-	{
-		cnnUps.bPulsation = self.bPulsation;
-		cnnUps.bRotating = self.bPulsation;
+    foreach AllActors(class'CNNUPS', cnnUps, CnnUpsTag)
+    {
+        cnnUps.bPulsation = self.bPulsation;
+        cnnUps.bRotating = self.bPulsation;
 
-		cnnUps.PulsationTime = self.PulsationTime;
-		cnnUps.PulsationRange = self.PulsationRange;
+        cnnUps.PulsationTime = self.PulsationTime;
+        cnnUps.PulsationRange = self.PulsationRange;
 
-		cnnUps.RotationSpeed = self.RotationSpeed;
-	}
+        cnnUps.RotationSpeed = self.RotationSpeed;
+    }
 
-	super.ActivatedON();
+    super.ActivatedON();
 }
 
 defaultproperties
 {
-	CnnUpsTag=CNNUPS
-	bPulsation=true
-	bRotating=true
-	PulsationTime=0.25
-	PulsationRange=2
-	RotationSpeed=20000.0
+    CnnUpsTag=CNNUPS
+    bPulsation=true
+    bRotating=true
+    PulsationTime=0.25
+    PulsationRange=2
+    RotationSpeed=20000.0
 }

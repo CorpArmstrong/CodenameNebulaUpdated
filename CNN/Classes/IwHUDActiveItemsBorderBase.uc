@@ -1,9 +1,7 @@
 //=============================================================================
 // IwHUDActiveItemsBorderBase
 //=============================================================================
-
-class IwHUDActiveItemsBorderBase extends HUDBaseWindow
-	abstract;
+class IwHUDActiveItemsBorderBase extends HUDBaseWindow abstract;
 
 var Window winIcons;
 var int iconCount;
@@ -36,10 +34,9 @@ var int tilePosY;
 
 event InitWindow()
 {
-	Super.InitWindow();
-
-	CreateTileWindow();
-	Hide();
+    super.InitWindow();
+    CreateTileWindow();
+    Hide();
 }
 
 // ----------------------------------------------------------------------
@@ -56,35 +53,35 @@ function CreateTileWindow()
 
 function DrawBorder(GC gc)
 {
-	local int i;
-	i = 0;
+    local int i;
+    i = 0;
 
-	if ((bDrawBorder) && (iconCount > 0))
-	{
-		gc.SetStyle(borderDrawStyle);
-		gc.SetTileColor(colBorder);
+    if ((bDrawBorder) && (iconCount > 0))
+    {
+        gc.SetStyle(borderDrawStyle);
+        gc.SetTileColor(colBorder);
 
-		if (iconCount == 1)
-		{
-			gc.DrawTexture(0, 0, width, topHeight, 0, 0, texBorder1);
-		}
-		else if (iconCount % 2 == 0)
-		{
-			for (i = 0; i < (iconCount / 2); i++)
-			{
-				gc.DrawPattern(0, centerheight * i, width, 128, 0, 0, texBorderCenter);
-			}
-		}
-		else if (iconCount % 2 != 0)
-		{
-			for (i = 0; i < iconCount / 2; i++)
-			{
-				gc.DrawPattern(0, centerheight * i, width, 128, 0, 0, texBorderCenter);
-			}
+        if (iconCount == 1)
+        {
+            gc.DrawTexture(0, 0, width, topHeight, 0, 0, texBorder1);
+        }
+        else if (iconCount % 2 == 0)
+        {
+            for (i = 0; i < (iconCount / 2); i++)
+            {
+            	gc.DrawPattern(0, centerheight * i, width, 128, 0, 0, texBorderCenter);
+            }
+        }
+        else if (iconCount % 2 != 0)
+        {
+            for (i = 0; i < iconCount / 2; i++)
+            {
+            	gc.DrawPattern(0, centerheight * i, width, 128, 0, 0, texBorderCenter);
+            }
 
-			gc.DrawTexture(0, centerheight * i, width, topHeight, 0, 0, texBorder1);
-		}
-	}
+            gc.DrawTexture(0, centerheight * i, width, topHeight, 0, 0, texBorder1);
+        }
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -93,57 +90,57 @@ function DrawBorder(GC gc)
 
 function AddIcon(Texture newIcon, Object saveObject)
 {
-	local IwHUDActiveItemBase activeItem;
-	local IwHUDActiveItemBase iconWindow;
+    local IwHUDActiveItemBase activeItem;
+    local IwHUDActiveItemBase iconWindow;
 
-	// First make sure this object isn't already in the window
-	iconWindow = IwHUDActiveItemBase(GetTopChild());
+    // First make sure this object isn't already in the window
+    iconWindow = IwHUDActiveItemBase(GetTopChild());
 
-	while(iconWindow != none)
-	{
-		// Abort if this object already exists!!
-		if (iconWindow.GetClientObject() == saveObject)
-		{
-			return;
-		}
+    while (iconWindow != none)
+    {
+        // Abort if this object already exists!!
+        if (iconWindow.GetClientObject() == saveObject)
+        {
+            return;
+        }
 
-		iconWindow = IwHUDActiveItemBase(iconWindow.GetLowerSibling());
-	}
+        iconWindow = IwHUDActiveItemBase(iconWindow.GetLowerSibling());
+    }
 
-	// Hide if there are no icons visible
-	if (++iconCount == 1)
-	{
-		Show();
-	}
+    // Hide if there are no icons visible
+    if (++iconCount == 1)
+    {
+        Show();
+    }
 
-	if (saveObject.IsA('Augmentation'))
-	{
-		activeItem = IwHUDActiveItemBase(NewChild(Class'IwHUDActiveAug'));
-	}
-	else
-	{
-		activeItem = IwHUDActiveItemBase(NewChild(Class'IwHUDActiveItem'));
-	}
+    if (saveObject.IsA('Augmentation'))
+    {
+        activeItem = IwHUDActiveItemBase(NewChild(Class'IwHUDActiveAug'));
+    }
+    else
+    {
+        activeItem = IwHUDActiveItemBase(NewChild(Class'IwHUDActiveItem'));
+    }
 
-	if (activeItem != none)
-	{
-		if (iconcount % 2 == 0)
-		{
-			activeItem.SetPos(32, iconcount * 23.4 - 13);
-		}
-		else
-		{
-			activeItem.SetPos(70, iconcount * 23.4 - 13);
-		}
+    if (activeItem != none)
+    {
+        if (iconcount % 2 == 0)
+        {
+            activeItem.SetPos(32, iconcount * 23.4 - 13);
+        }
+        else
+        {
+            activeItem.SetPos(70, iconcount * 23.4 - 13);
+        }
 
-		activeItem.IconIndex = iconcount;
-	}
+        activeItem.IconIndex = iconcount;
+    }
 
-	activeItem.SetIcon(newIcon);
-	activeItem.SetClientObject(saveObject);
-	activeItem.SetObject(saveObject);
+    activeItem.SetIcon(newIcon);
+    activeItem.SetClientObject(saveObject);
+    activeItem.SetObject(saveObject);
 
-	AskParentForReconfigure();
+    AskParentForReconfigure();
 }
 
 // ----------------------------------------------------------------------
@@ -152,73 +149,73 @@ function AddIcon(Texture newIcon, Object saveObject)
 
 function RemoveObject(Object removeObject)
 {
-	local Window currentWindow;
-	local Window nextWindow;
-	local byte ItemInd;
-	local byte i;
+    local Window currentWindow;
+    local Window nextWindow;
+    local byte ItemInd;
+    local byte i;
 
-	// Loop through all our children and check to see if we have a match.
+    // Loop through all our children and check to see if we have a match.
 
-	currentWindow = GetBottomChild(false);
+    currentWindow = GetBottomChild(false);
 
-	while (currentWindow != none)
-	{
-		nextWindow = currentWindow.GetHigherSibling(false);
+    while (currentWindow != none)
+    {
+        nextWindow = currentWindow.GetHigherSibling(false);
 
-		if (currentWindow.GetClientObject() == removeObject)
-		{
-			currentWindow.Hide();
-			currentWindow.SetClientObject(none);
+        if (currentWindow.GetClientObject() == removeObject)
+        {
+            currentWindow.Hide();
+            currentWindow.SetClientObject(none);
 
-			// Hide if there are no icons visible
-			if (--iconCount == 0)
-			{
-				Hide();
-				AskParentForReconfigure();
-				return;
-			}
+            // Hide if there are no icons visible
+            if (--iconCount == 0)
+            {
+                Hide();
+                AskParentForReconfigure();
+                return;
+            }
 
-			ItemInd = IwHUDActiveItemBase(currentWindow).IconIndex;
-			break;
-		}
+            ItemInd = IwHUDActiveItemBase(currentWindow).IconIndex;
+            break;
+        }
 
-		currentWindow = nextWindow;
-	}
+        currentWindow = nextWindow;
+    }
 
-	if (iconCount >= ItemInd)
-	{
-		for (i = ItemInd + 1; i <= iconCount + 1; i++)
-		{
-			currentWindow = GetTopChild();
+    if (iconCount >= ItemInd)
+    {
+        for (i = ItemInd + 1; i <= iconCount + 1; i++)
+        {
+            currentWindow = GetTopChild();
 
-			while (currentWindow != none)
-			{
-				nextWindow = currentWindow.GetLowerSibling();
+            while (currentWindow != none)
+            {
+                nextWindow = currentWindow.GetLowerSibling();
 
-				if (IwHUDActiveItemBase(currentWindow).IconIndex == i)
-				{
-					IwHUDActiveItemBase(currentWindow).IconIndex--;
+                if (IwHUDActiveItemBase(currentWindow).IconIndex == i)
+                {
+                    IwHUDActiveItemBase(currentWindow).IconIndex--;
 
-					if ((i - 1) % 2 == 0)
-					{
-						currentWindow.SetPos(32, (i - 1) * 23.4 - 13);
-					}
-					else
-					{
-						currentWindow.SetPos(70, (i - 1) * 23.4 - 13);
-					}
+                    if ((i - 1) % 2 == 0)
+                    {
+                        currentWindow.SetPos(32, (i - 1) * 23.4 - 13);
+                    }
+                    else
+                    {
+                        currentWindow.SetPos(70, (i - 1) * 23.4 - 13);
+                    }
 
-					break;
-				}
-				else
-				{
-					currentWindow = nextWindow;
-				}
-			}
-		}
-	}
+                    break;
+                }
+                else
+                {
+                    currentWindow = nextWindow;
+                }
+            }
+        }
+    }
 
-	AskParentForReconfigure();
+    AskParentForReconfigure();
 }
 
 // ----------------------------------------------------------------------
@@ -227,8 +224,8 @@ function RemoveObject(Object removeObject)
 
 function RemoveAllIcons()
 {
-	DestroyAllChildren();
-	iconCount = 0;
+    DestroyAllChildren();
+    iconCount = 0;
 }
 
 // ----------------------------------------------------------------------
@@ -238,8 +235,8 @@ function RemoveAllIcons()
 event ParentRequestedPreferredSize(bool bWidthSpecified, out float preferredWidth,
                                    bool bHeightSpecified, out float preferredHeight)
 {
-	preferredWidth  = borderWidth;
-	preferredHeight = preferredHeight + borderTopMargin + borderBottomMargin;
+    preferredWidth  = borderWidth;
+    preferredHeight = preferredHeight + borderTopMargin + borderBottomMargin;
 }
 
 // ----------------------------------------------------------------------
@@ -248,27 +245,23 @@ event ParentRequestedPreferredSize(bool bWidthSpecified, out float preferredWidt
 
 function IwHUDActiveItemBase GetItemFromPos(byte ItemPos)
 {
-	local IwHUDActiveItemBase ActiveItem;
-	local Window currentWindow;
-	local Window nextWindow;
+    local IwHUDActiveItemBase ActiveItem;
+    local Window currentWindow;
+    local Window nextWindow;
 
-	currentWindow = GetBottomChild(false);
+    currentWindow = GetBottomChild(false);
 
-	while(currentWindow != none)
-	{
-		nextWindow = currentWindow.GetHigherSibling(false);
+    while(currentWindow != none)
+    {
+        nextWindow = currentWindow.GetHigherSibling(false);
 
-		if (IwHUDActiveItemBase(currentWindow).IconIndex == ItemPos)
-		{
-			return IwHUDActiveItemBase(currentWindow);
-		}
+        if (IwHUDActiveItemBase(currentWindow).IconIndex == ItemPos)
+        {
+            return IwHUDActiveItemBase(currentWindow);
+        }
 
-		currentWindow = nextWindow;
-	}
+        currentWindow = nextWindow;
+    }
 
-	return none;
-}
-
-defaultproperties
-{
+    return none;
 }

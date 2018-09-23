@@ -1,7 +1,6 @@
 //=============================================================================
 // IwHUDActiveItemsBorder
 //=============================================================================
-
 class IwHUDActiveItemsBorder extends IwHUDActiveItemsBorderBase;
 
 #exec TEXTURE IMPORT FILE="Textures\UBHUD_Aug_e2.pcx"   NAME="UBHUD_Aug_e" GROUP="UserInterface" MIPS=Off
@@ -13,7 +12,7 @@ class IwHUDActiveItemsBorder extends IwHUDActiveItemsBorderBase;
 
 event InitWindow()
 {
-    Super.InitWindow();
+    super.InitWindow();
     SetSize(128,400);
 }
 

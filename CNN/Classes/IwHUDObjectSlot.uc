@@ -1,7 +1,7 @@
 //=============================================================================
 // IwHUDObjectSlot
 //=============================================================================
-class IwHUDObjectSlot expands HUDObjectSlot;
+class IwHUDObjectSlot extends HUDObjectSlot;
 
 #exec TEXTURE IMPORT FILE="Textures\UBHUD_Belt_Selected.pcx" NAME="UBHUD_Belt_Selected" GROUP="UserInterface" MIPS=Off
 

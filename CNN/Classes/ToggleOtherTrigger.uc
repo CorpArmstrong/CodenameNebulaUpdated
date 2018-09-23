@@ -2,54 +2,50 @@
 // ToggleOtherTrigger
 // This trigger used for enabling or disabling other triggers
 //-----------------------------------------------------------
-class ToggleOtherTrigger expands CNNSimpleTrigger;
+class ToggleOtherTrigger extends CNNSimpleTrigger;
 
 struct ToggleTriggersInfo
 {
-	var () Name TriggerTag;
-	var () bool bEnabled;
+    var () Name TriggerTag;
+    var () bool bEnabled;
 };
 
 var () ToggleTriggersInfo ToggleTriggers[8];
 
 function ActivatedON()
 {
-	local int i;
-	local int j;
-	local Trigger trig;
-	local CNNSimpleTrigger cnnTrig;
-	local bool findedSome;
+    local int i;
+    local int j;
+    local Trigger trig;
+    local CNNSimpleTrigger cnnTrig;
+    local bool findedSome;
 
-	for (i = 0; i < 8; i++)
-	{
-		if (ToggleTriggers[i].TriggerTag != '')
-		{
-			findedSome = false;
+    for (i = 0; i < 8; i++)
+    {
+        if (ToggleTriggers[i].TriggerTag != '')
+        {
+            findedSome = false;
 
-			foreach AllActors(class 'Trigger', trig, ToggleTriggers[i].TriggerTag)
-			{
-				trig.bInitiallyActive = ToggleTriggers[i].bEnabled;
-				findedSome = true;
-				DebugInfo(trig.Tag @ "==" @ trig.bInitiallyActive);
-			}
+            foreach AllActors(class 'Trigger', trig, ToggleTriggers[i].TriggerTag)
+            {
+                trig.bInitiallyActive = ToggleTriggers[i].bEnabled;
+                findedSome = true;
+                DebugInfo(trig.Tag @ "==" @ trig.bInitiallyActive);
+            }
 
-			foreach AllActors(class 'CNNSimpleTrigger', cnnTrig, ToggleTriggers[i].TriggerTag)
-			{
-				cnnTrig.bEnabled = ToggleTriggers[i].bEnabled;
-				findedSome = true;
-				DebugInfo(cnnTrig.Tag @ "==" @ cnnTrig.bEnabled);
-			}
+            foreach AllActors(class 'CNNSimpleTrigger', cnnTrig, ToggleTriggers[i].TriggerTag)
+            {
+                cnnTrig.bEnabled = ToggleTriggers[i].bEnabled;
+                findedSome = true;
+                DebugInfo(cnnTrig.Tag @ "==" @ cnnTrig.bEnabled);
+            }
 
-			if (!findedSome)
-			{
-				DebugInfo("Not finded any" @ ToggleTriggers[i].TriggerTag);
-			}
-		}
-	}
+            if (!findedSome)
+            {
+                DebugInfo("Not finded any" @ ToggleTriggers[i].TriggerTag);
+            }
+        }
+    }
 
-	super.ActivatedON();
-}
-
-defaultproperties
-{
+    super.ActivatedON();
 }

@@ -8,34 +8,34 @@ var () bool bUseBlinking;
 function Tick(float deltaTime)
 {
     super.Tick(deltaTime);
-	BlinkActor();
+    BlinkActor();
 }
 
 function BlinkActor()
 {
-	local float blinkValue;
+    local float blinkValue;
 
-	if (bUseBlinking)
-	{
-		blinkValue = FRand();
+    if (bUseBlinking)
+    {
+        blinkValue = FRand();
 
-		if (blinkValue > 0.5)
-		{
-			DrawType = DT_None;
-		}
-		else
-		{
-			DrawType = DT_Mesh;
-		}
-	}
+        if (blinkValue > 0.5)
+        {
+            DrawType = DT_None;
+        }
+        else
+        {
+            DrawType = DT_Mesh;
+        }
+    }
 }
 
 defaultproperties
 {
-	Orders=Standing
+    Orders=Standing
     Tag=Secretary
     Style=STY_Translucent
-	AmbientGlow=140
+    AmbientGlow=140
     Texture=FireTexture'Effects.Electricity.AirTaserFX1'
     ScaleGlow=0.200000
     MultiSkins(0)=Texture'DeusExCharacters.Skins.Female4Tex0'
@@ -49,5 +49,5 @@ defaultproperties
     BindName="OpheliaUI"
     FamiliarName="User Interface"
     UnfamiliarName="User Interface"
-	bUseBlinking=true
+    bUseBlinking=true
 }

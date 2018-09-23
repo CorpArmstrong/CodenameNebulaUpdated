@@ -8,19 +8,15 @@ var () name PawnTag;
 
 function ActivatedON()
 {
-	local CNNUPS p;
+    local CNNUPS p;
 
-	foreach AllActors(class'CNNUPS', p)
-	{
-		if (p.Tag == PawnTag)
-		{
-			p.SelfDestruction();
-		}
-	}
+    foreach AllActors(class'CNNUPS', p)
+    {
+        if (p.Tag == PawnTag)
+        {
+            p.SelfDestruction();
+        }
+    }
 
-	super.ActivatedON();
-}
-
-defaultproperties
-{
+    super.ActivatedON();
 }

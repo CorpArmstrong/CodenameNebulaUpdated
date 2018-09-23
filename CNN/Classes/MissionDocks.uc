@@ -10,7 +10,3 @@ function InitStateMachine()
 function FirstFrame()
 {
 }
-
-defaultproperties
-{
-}

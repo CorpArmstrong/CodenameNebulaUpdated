@@ -1,7 +1,6 @@
 //=============================================================================
 // IwHUDActiveItemsDisplay
 //=============================================================================
-
 class IwHUDActiveItemsDisplay extends HUDActiveItemsDisplay;
 
 var IwHUDActiveAugsBorder  testwinAugsContainer;
@@ -13,10 +12,9 @@ var IwHUDActiveItemsBorder testwinItemsContainer;
 
 event InitWindow()
 {
-	Super.InitWindow();
-
-	CreateContainerWindows();
-	Hide();
+    super.InitWindow();
+    CreateContainerWindows();
+    Hide();
 }
 
 // ----------------------------------------------------------------------
@@ -25,8 +23,8 @@ event InitWindow()
 
 function CreateContainerWindows()
 {
-	testwinAugsContainer  = IwHUDActiveAugsBorder(NewChild(Class'IwHUDActiveAugsBorder'));
-	testwinItemsContainer = IwHUDActiveItemsBorder(NewChild(Class'IwHUDActiveItemsBorder'));
+    testwinAugsContainer  = IwHUDActiveAugsBorder(NewChild(Class'IwHUDActiveAugsBorder'));
+    testwinItemsContainer = IwHUDActiveItemsBorder(NewChild(Class'IwHUDActiveItemsBorder'));
 }
 
 
@@ -36,16 +34,16 @@ function CreateContainerWindows()
 
 function AddIcon(Texture newIcon, Object saveObject)
 {
-	if (saveObject.IsA('Augmentation'))
-	{
-		testwinAugsContainer.AddIcon(newIcon, saveObject);
-	}
-	else
-	{
-		testwinItemsContainer.AddIcon(newIcon, saveObject);
-	}
+    if (saveObject.IsA('Augmentation'))
+    {
+        testwinAugsContainer.AddIcon(newIcon, saveObject);
+    }
+    else
+    {
+        testwinItemsContainer.AddIcon(newIcon, saveObject);
+    }
 
-	AskParentForReconfigure();
+    AskParentForReconfigure();
 }
 
 // ----------------------------------------------------------------------
@@ -54,16 +52,16 @@ function AddIcon(Texture newIcon, Object saveObject)
 
 function RemoveIcon(Object removeObject)
 {
-	if (removeObject.IsA('Augmentation'))
-	{
-		testwinAugsContainer.RemoveObject(removeObject);
-	}
-	else
-	{
-		testwinItemsContainer.RemoveObject(removeObject);
-	}
+    if (removeObject.IsA('Augmentation'))
+    {
+        testwinAugsContainer.RemoveObject(removeObject);
+    }
+    else
+    {
+        testwinItemsContainer.RemoveObject(removeObject);
+    }
 
-	AskParentForReconfigure();
+    AskParentForReconfigure();
 }
 
 // ----------------------------------------------------------------------
@@ -72,7 +70,7 @@ function RemoveIcon(Object removeObject)
 
 function UpdateAugIconStatus(Augmentation aug)
 {
-	testwinAugsContainer.UpdateAugIconStatus(aug);
+    testwinAugsContainer.UpdateAugIconStatus(aug);
 }
 
 // ----------------------------------------------------------------------
@@ -81,7 +79,7 @@ function UpdateAugIconStatus(Augmentation aug)
 
 function ClearAugmentationDisplay()
 {
-	testwinAugsContainer.ClearAugmentationDisplay();
+    testwinAugsContainer.ClearAugmentationDisplay();
 }
 
 // ----------------------------------------------------------------------
@@ -92,8 +90,8 @@ function ClearAugmentationDisplay()
 
 function SetVisibility( bool bNewVisibility )
 {
-	Show(bNewVisibility);
-	AskParentForReconfigure();
+    Show(bNewVisibility);
+    AskParentForReconfigure();
 }
 
 // ----------------------------------------------------------------------
@@ -103,14 +101,14 @@ function SetVisibility( bool bNewVisibility )
 event ParentRequestedPreferredSize(bool bWidthSpecified, out float preferredWidth,
                                    bool bHeightSpecified, out float preferredHeight)
 {
-	local float augsWidth, augsHeight;
-	local float itemsWidth, itemsHeight;
+    local float augsWidth, augsHeight;
+    local float itemsWidth, itemsHeight;
 
-	testwinAugsContainer.QueryPreferredSize(augsWidth, augsHeight);
-	testwinItemsContainer.QueryPreferredSize(itemsWidth, itemsHeight);
+    testwinAugsContainer.QueryPreferredSize(augsWidth, augsHeight);
+    testwinItemsContainer.QueryPreferredSize(itemsWidth, itemsHeight);
 
-	preferredWidth  = augsWidth + itemsWidth;
-	preferredHeight = augsHeight + itemsHeight;
+    preferredWidth  = augsWidth + itemsWidth;
+    preferredHeight = augsHeight + itemsHeight;
 }
 
 // ----------------------------------------------------------------------
@@ -119,46 +117,46 @@ event ParentRequestedPreferredSize(bool bWidthSpecified, out float preferredWidt
 
 function ConfigurationChanged()
 {
-	local float augsWidth, augsHeight;
-	local float itemsWidth, itemsHeight;
-	local float itemPosX;
+    local float augsWidth, augsHeight;
+    local float itemsWidth, itemsHeight;
+    local float itemPosX;
 
-	if (testwinItemsContainer != none)
-	{
-		testwinItemsContainer.QueryPreferredSize(itemsWidth, itemsHeight);
-		itemPosX = 0;
-	}
+    if (testwinItemsContainer != none)
+    {
+        testwinItemsContainer.QueryPreferredSize(itemsWidth, itemsHeight);
+        itemPosX = 0;
+    }
 
-	// Position the two windows
-	if ((testwinAugsContainer != none) && (testwinAugsContainer.iconCount > 0))
-	{
-		testwinAugsContainer.QueryPreferredSize(augsWidth, augsHeight);
-		testwinAugsContainer.ConfigureChild(itemsWidth, 0, augsWidth, augsHeight);
+    // Position the two windows
+    if ((testwinAugsContainer != none) && (testwinAugsContainer.iconCount > 0))
+    {
+        testwinAugsContainer.QueryPreferredSize(augsWidth, augsHeight);
+        testwinAugsContainer.ConfigureChild(itemsWidth, 0, augsWidth, augsHeight);
 
-		itemPosX = itemsWidth + itemAugsOffsetX;
-	}
+        itemPosX = itemsWidth + itemAugsOffsetX;
+    }
 
-	// Now that we know where the Augmentation window is, position
-	// the Items window
+    // Now that we know where the Augmentation window is, position
+    // the Items window
 
-	if (testwinItemsContainer != none)
-	{
-		// First check to see if there's enough room underneat the augs display
-		// to show the active items.
+    if (testwinItemsContainer != none)
+    {
+        // First check to see if there's enough room underneat the augs display
+        // to show the active items.
 
-		if ((augsHeight + itemsHeight) > height)
-		{
-			testwinItemsContainer.ConfigureChild(itemAugsOffsetX, itemAugsOffsetY, itemsWidth, itemsHeight);
-		}
-		else
-		{
-			testwinItemsContainer.ConfigureChild(itemPosX, augsHeight - 2, itemsWidth, itemsHeight);
-		}
-	}
+        if ((augsHeight + itemsHeight) > height)
+        {
+            testwinItemsContainer.ConfigureChild(itemAugsOffsetX, itemAugsOffsetY, itemsWidth, itemsHeight);
+        }
+        else
+        {
+            testwinItemsContainer.ConfigureChild(itemPosX, augsHeight - 2, itemsWidth, itemsHeight);
+        }
+    }
 }
 
 defaultproperties
 {
-	itemAugsOffsetX=14
-	itemAugsOffsetY=6
+    itemAugsOffsetX=14
+    itemAugsOffsetY=6
 }

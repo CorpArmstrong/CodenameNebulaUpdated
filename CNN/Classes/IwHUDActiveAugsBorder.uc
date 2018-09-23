@@ -1,7 +1,6 @@
 //=============================================================================
 // IwHUDActiveAugsBorder
 //=============================================================================
-
 class IwHUDActiveAugsBorder extends IwHUDActiveItemsBorderBase;
 
 var int FirstKeyNum;
@@ -13,7 +12,7 @@ var int LastKeyNum;
 
 event InitWindow()
 {
-    Super.InitWindow();
+    super.InitWindow();
 
     SetSize(128,400);
     CreateIcons(); // Create *ALL* the icons, but hide them.

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 // MandatoryMovementTriger
 //-----------------------------------------------------------
-class MandatoryMovementTriger expands CNNTrigger;
+class MandatoryMovementTriger extends CNNTrigger;
 
 var() enum EMovingType
 {
@@ -15,7 +15,7 @@ var () name SpawnPointTag;
 function Trigger(Actor Other, Pawn Instigator)
 {
     MovePawn();
-    Super.Trigger(Other, Instigator);
+    super.Trigger(Other, Instigator);
 }
 
 function Touch(Actor Other)
@@ -23,7 +23,7 @@ function Touch(Actor Other)
     if (IsRelevant(Other))
     {
         MovePawn();
-        Super.Touch(Other);
+        super.Touch(Other);
     }
 }
 
@@ -36,11 +36,11 @@ function MovePawn()
 
     foreach AllActors(class 'SpawnPoint', NewPosPlace, SpawnPointTag)
     {
-    	if (NewPosPlace != none)
-		{
-			break;
-		}
-	}
+        if (NewPosPlace != none)
+        {
+        	break;
+        }
+    }
 
     if (NewPosPlace != none)
     {
@@ -72,8 +72,4 @@ function MovePawn()
             msgbox("MovedPawn not finded");
         }
     }
-}
-
-defaultproperties
-{
 }

@@ -1,7 +1,6 @@
 //=============================================================================
 // IwHUDActiveItem
 //=============================================================================
-
 class IwHUDActiveItem extends IwHUDActiveItemBase;
 
 var ProgressBarWindow winEnergy;
@@ -12,10 +11,9 @@ var ProgressBarWindow winEnergy;
 
 event InitWindow()
 {
-	Super.InitWindow();
-
-	CreateEnergyBar();
-	bTickEnabled = true;
+    super.InitWindow();
+    CreateEnergyBar();
+    bTickEnabled = true;
 }
 
 // ----------------------------------------------------------------------
@@ -26,22 +24,22 @@ event InitWindow()
 
 event Tick(float deltaSeconds)
 {
-	local ChargedPickup item;
-	item = ChargedPickup(GetClientObject());
+    local ChargedPickup item;
+    item = ChargedPickup(GetClientObject());
 
-	if ((item != none) && (Player.PlayerIsRemoteClient()))
-	{
-		if (!VerifyItemCarried())
-		{
-			Player.RemoveChargedDisplay(item);
-			item = none;
-		}
-	}
+    if ((item != none) && (Player.PlayerIsRemoteClient()))
+    {
+        if (!VerifyItemCarried())
+        {
+            Player.RemoveChargedDisplay(item);
+            item = none;
+        }
+    }
 
-	if ((item != none) && (winEnergy != none))
-	{
-		winEnergy.SetCurrentValue(item.GetCurrentCharge());
-	}
+    if ((item != none) && (winEnergy != none))
+    {
+        winEnergy.SetCurrentValue(item.GetCurrentCharge());
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -50,13 +48,13 @@ event Tick(float deltaSeconds)
 
 function CreateEnergyBar()
 {
-	winEnergy = ProgressBarWindow(NewChild(Class'ProgressBarWindow'));
-	winEnergy.SetSize(32, 2);
-	winEnergy.UseScaledColor(true);
-	winEnergy.SetPos(1, 30);
-	winEnergy.SetValues(0, 100);
-	winEnergy.SetCurrentValue(0);
-	winEnergy.SetVertical(false);
+    winEnergy = ProgressBarWindow(NewChild(Class'ProgressBarWindow'));
+    winEnergy.SetSize(32, 2);
+    winEnergy.UseScaledColor(true);
+    winEnergy.SetPos(1, 30);
+    winEnergy.SetValues(0, 100);
+    winEnergy.SetCurrentValue(0);
+    winEnergy.SetVertical(false);
 }
 
 // ----------------------------------------------------------------------
@@ -67,23 +65,23 @@ function CreateEnergyBar()
 
 function bool VerifyItemCarried()
 {
-	local inventory CurrentItem;
-	local bool bFound;
+    local inventory CurrentItem;
+    local bool bFound;
 
-	bFound = false;
+    bFound = false;
 
-	for (CurrentItem = player.Inventory; ((CurrentItem != none) && (!bFound)); CurrentItem = CurrentItem.inventory)
-	{
-		if (CurrentItem == GetClientObject())
-		{
-			bFound = true;
-		}
-	}
+    for (CurrentItem = player.Inventory; ((CurrentItem != none) && (!bFound)); CurrentItem = CurrentItem.inventory)
+    {
+        if (CurrentItem == GetClientObject())
+        {
+        	bFound = true;
+        }
+    }
 
-	return bFound;
+    return bFound;
 }
 
 defaultproperties
 {
-	iconDrawStyle=DSTY_Masked
+    iconDrawStyle=DSTY_Masked
 }

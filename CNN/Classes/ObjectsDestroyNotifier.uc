@@ -21,7 +21,7 @@ function PostBeginPlay()
 {
     FindObjects();
     bPolling = true;
-    Super.PostBeginPlay();
+    super.PostBeginPlay();
 }
 
 function FindObjects()
@@ -31,14 +31,14 @@ function FindObjects()
 
     for (i = 0; i < ArrayCount(objects); i++)
     {
-		if (objects[i].tag != '')
-		{
-			foreach AllActors(class'Actor', actr, objects[i].tag)
-			{
-				objects[i].actr = actr;
-				++aliveObjectsCounter;
-			}
-		}
+        if (objects[i].tag != '')
+        {
+            foreach AllActors(class'Actor', actr, objects[i].tag)
+            {
+                objects[i].actr = actr;
+                ++aliveObjectsCounter;
+            }
+        }
     }
 }
 
@@ -51,44 +51,44 @@ function PollObjects()
     {
         if (objects[i].actr != none)
         {
-			if (objects[i].actr.bDeleteMe ||
-				(objects[i].actr.IsA('DeusExMover') && DeusExMover(objects[i].actr).bDestroyed))
-			{
-				HandleDestroyedObject(i, destroyedObjectsCounter);
-			}
+            if (objects[i].actr.bDeleteMe ||
+                (objects[i].actr.IsA('DeusExMover') && DeusExMover(objects[i].actr).bDestroyed))
+            {
+                HandleDestroyedObject(i, destroyedObjectsCounter);
+            }
         }
-		else
-		{
-			destroyedObjectsCounter++;
-		}
+        else
+        {
+        	destroyedObjectsCounter++;
+        }
     }
 
-	if (destroyedObjectsCounter == ArrayCount(objects))
-	{
-		bPolling = false;
-		DeusExPlayer(GetPlayerPawn()).GoalCompleted(goalCompleteName);
-	}
+    if (destroyedObjectsCounter == ArrayCount(objects))
+    {
+        bPolling = false;
+        DeusExPlayer(GetPlayerPawn()).GoalCompleted(goalCompleteName);
+    }
 }
 
 function HandleDestroyedObject(int index, int destroyedObjectsCounter)
 {
-	DeusExPlayer(GetPlayerPawn()).ClientMessage("Destroyed: " $ objects[index].tag);
-	objects[index].tag = '';
-	objects[index].actr = none;
-	destroyedObjectsCounter++;
+    DeusExPlayer(GetPlayerPawn()).ClientMessage("Destroyed: " $ objects[index].tag);
+    objects[index].tag = '';
+    objects[index].actr = none;
+    destroyedObjectsCounter++;
 
-	if (aliveObjectsCounter > 0)
-	{
-		--aliveObjectsCounter;
-	}
+    if (aliveObjectsCounter > 0)
+    {
+        --aliveObjectsCounter;
+    }
 
-	DeusExPlayer(GetPlayerPawn()).ClientMessage("You have to destroy: " $
-					aliveObjectsCounter $ " more objects!");
+    DeusExPlayer(GetPlayerPawn()).ClientMessage("You have to destroy: " $
+        aliveObjectsCounter $ " more objects!");
 }
 
 simulated function Tick(float TimeDelta)
 {
-    Super.Tick(TimeDelta);
+    super.Tick(TimeDelta);
 
     if (bPolling)
     {
@@ -99,7 +99,7 @@ simulated function Tick(float TimeDelta)
 function Destroyed()
 {
     local int i;
-    Super.Destroyed();
+    super.Destroyed();
 
     bPolling = false;
 
@@ -115,25 +115,25 @@ function Destroyed()
 
 defaultproperties
 {
-	goalCompleteName=BurnEvidence
-	objects(0)=(tag=LibertyEvidence)
-	objects(1)=(tag=BigTank)
-	objects(2)=(tag=CarEvidence)
-	objects(3)=(tag=BuddhaEvidence)
-	objects(4)=(tag=PaulDentonCarcassEvidence)
-	objects(5)=(tag=JosephManderleyCarcassEvidence)
-	objects(6)=(tag=MeadCarcassEvidence)
-	objects(7)=(tag=DeusExMoverMonaLisa)
-	objects(8)=(tag=AlienCarcassEvidence)
-	objects(9)=(tag=DeusExMoverRocket1)
-	objects(10)=(tag=DeusExMoverRocket2)
-	objects(11)=(tag=DeusExMoverRocket3)
-	objects(12)=(tag=SkullEvidence1)
-	objects(13)=(tag=SkullEvidence2)
-	objects(14)=(tag=SkullEvidence3)
-	objects(15)=(tag=BoneEvidence1)
-	objects(16)=(tag=BoneEvidence2)
-	objects(17)=(tag=BoneEvidence3)
-	objects(18)=(tag=BoneEvidence4)
-	objects(19)=(tag=BoneEvidence5)
+    goalCompleteName=BurnEvidence
+    objects(0)=(tag=LibertyEvidence)
+    objects(1)=(tag=BigTank)
+    objects(2)=(tag=CarEvidence)
+    objects(3)=(tag=BuddhaEvidence)
+    objects(4)=(tag=PaulDentonCarcassEvidence)
+    objects(5)=(tag=JosephManderleyCarcassEvidence)
+    objects(6)=(tag=MeadCarcassEvidence)
+    objects(7)=(tag=DeusExMoverMonaLisa)
+    objects(8)=(tag=AlienCarcassEvidence)
+    objects(9)=(tag=DeusExMoverRocket1)
+    objects(10)=(tag=DeusExMoverRocket2)
+    objects(11)=(tag=DeusExMoverRocket3)
+    objects(12)=(tag=SkullEvidence1)
+    objects(13)=(tag=SkullEvidence2)
+    objects(14)=(tag=SkullEvidence3)
+    objects(15)=(tag=BoneEvidence1)
+    objects(16)=(tag=BoneEvidence2)
+    objects(17)=(tag=BoneEvidence3)
+    objects(18)=(tag=BoneEvidence4)
+    objects(19)=(tag=BoneEvidence5)
 }

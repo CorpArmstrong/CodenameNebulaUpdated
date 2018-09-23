@@ -131,7 +131,7 @@ function Trigger(Actor Other, Pawn Instigator)
         }
     }
 
-    Super.Trigger(Other, Instigator);
+    super.Trigger(Other, Instigator);
 }
 
 // ============================================================================
@@ -139,7 +139,7 @@ function Trigger(Actor Other, Pawn Instigator)
 // ============================================================================
 simulated function Tick(float TimeDelta)
 {
-    Super.Tick(TimeDelta);
+    super.Tick(TimeDelta);
 
     if (bCheckForConvoEnd && !player.IsInState('Conversation'))
     {
@@ -149,8 +149,4 @@ simulated function Tick(float TimeDelta)
             bCheckForConvoEnd = false;
         }
     }
-}
-
-defaultproperties
-{
 }

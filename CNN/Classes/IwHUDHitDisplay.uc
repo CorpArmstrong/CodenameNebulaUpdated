@@ -1,7 +1,7 @@
 //=============================================================================
 // IwHUDHitDisplay
 //=============================================================================
-class IwHUDHitDisplay expands HUDHitDisplay;
+class IwHUDHitDisplay extends HUDHitDisplay;
 
 #exec TEXTURE IMPORT FILE="Textures\NewHUDHitDisplay_Head.pcx"    NAME="NewHUDHitDisplay_Head" GROUP="UserInterface" MIPS=Off
 #exec TEXTURE IMPORT FILE="Textures\NewHUDHitDisplay_Torso.pcx"   NAME="NewHUDHitDisplay_Torso" GROUP="UserInterface" MIPS=Off

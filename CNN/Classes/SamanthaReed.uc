@@ -5,5 +5,5 @@ class SamanthaReed extends ScientistFemale;
 
 defaultproperties
 {
-	BindName=SamanthaReed
+    BindName=SamanthaReed
 }

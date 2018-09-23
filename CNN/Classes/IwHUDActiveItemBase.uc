@@ -1,7 +1,6 @@
 //=============================================================================
 // IwHUDActiveItemBase
 //=============================================================================
-
 class IwHUDActiveItemBase extends HUDBaseWindow;
 
 var Color colItemIcon;
@@ -24,8 +23,8 @@ var byte IconIndex;
 
 event InitWindow()
 {
-	Super.InitWindow();
-	SetSize(iconWidth, iconHeight);
+    super.InitWindow();
+    SetSize(iconWidth, iconHeight);
 }
 
 // ----------------------------------------------------------------------
@@ -34,17 +33,17 @@ event InitWindow()
 
 event DrawWindow(GC gc)
 {
-	Super.DrawWindow(gc);
+    super.DrawWindow(gc);
 
-	if (icon != none)
-	{
-		// Now draw the icon
-		gc.SetStyle(iconDrawStyle);
-		gc.SetTileColor(colItemIcon);
-		gc.DrawStretchedTexture(3, 3, 28, 28, 0, 0, 32, 32, Icon);
-	}
+    if (icon != none)
+    {
+        // Now draw the icon
+        gc.SetStyle(iconDrawStyle);
+        gc.SetTileColor(colItemIcon);
+        gc.DrawStretchedTexture(3, 3, 28, 28, 0, 0, 32, 32, Icon);
+    }
 
-	DrawHotKey(gc);
+    DrawHotKey(gc);
 }
 
 // ----------------------------------------------------------------------
@@ -61,8 +60,8 @@ function DrawHotKey(GC gc)
 
 function DrawBackground(GC gc)
 {
-	gc.SetStyle(backgroundDrawStyle);
-	gc.SetTileColor(colBackground);
+    gc.SetStyle(backgroundDrawStyle);
+    gc.SetTileColor(colBackground);
 }
 
 // ----------------------------------------------------------------------
@@ -71,7 +70,7 @@ function DrawBackground(GC gc)
 
 function SetIcon(Texture newIcon)
 {
-	icon = newIcon;
+    icon = newIcon;
 }
 
 // ----------------------------------------------------------------------
@@ -80,14 +79,14 @@ function SetIcon(Texture newIcon)
 
 function SetIconMasked(bool bNewMask)
 {
-	if (bNewMask)
-	{
-		iconDrawStyle = DSTY_Masked;
-	}
-	else
-	{
-		iconDrawStyle = DSTY_Translucent;
-	}
+    if (bNewMask)
+    {
+        iconDrawStyle = DSTY_Masked;
+    }
+    else
+    {
+        iconDrawStyle = DSTY_Translucent;
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -102,11 +101,11 @@ function SetObject(object newClientObject)
 
 defaultproperties
 {
-	colItemIcon=(R=255,G=255,B=255)
-	iconDrawStyle=DSTY_Translucent
-	IconWidth=48
-	IconHeight=48
-	IconPosX=2
-	IconPosY=2
-	texBackground=Texture'DeusExUI.UserInterface.HUDIconsBackground'
+    colItemIcon=(R=255,G=255,B=255)
+    iconDrawStyle=DSTY_Translucent
+    IconWidth=48
+    IconHeight=48
+    IconPosX=2
+    IconPosY=2
+    texBackground=Texture'DeusExUI.UserInterface.HUDIconsBackground'
 }

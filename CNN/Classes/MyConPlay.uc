@@ -42,7 +42,3 @@ Begin:
     currentEvent = currentEvent.nextEvent;
     GotoState('PlayEvent');
 }
-
-defaultproperties
-{
-}

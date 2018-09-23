@@ -30,7 +30,7 @@ event TravelPostAccept()
     local flagbase flags;
     local DeusExLevelInfo info;
     info = DeusExPlayer(GetPlayerPawn()).GetLevelInfo();
-    Super.TravelPostAccept();
+    super.TravelPostAccept();
 
     flags = flagbase;
 
@@ -99,12 +99,15 @@ event TravelPostAccept()
     }
 
     //== in white house mission you play as sec bot, so we nullify skins
-    if(caps(info.mapName) == "WHITEHOUSE") {
+    if (caps(info.mapName) == "WHITEHOUSE")
+    {
         Mesh=Mesh(DynamicLoadObject("HDTPCharacters.HDTPSecBot2", class'Mesh', True));
         MultiSkins[0] = Texture'DeusExCharacters.Skins.RobotWeaponTex1';
         MultiSkins[1] = Texture(DynamicLoadObject("HDTPCharacters.Skins.HDTPSecBot2tex1", class'Texture', True));
     }
-    if(caps(info.mapName) == "HONGKONG") {
+
+    if (caps(info.mapName) == "HONGKONG")
+    {
         Mesh=Mesh(DynamicLoadObject("DeusExCharacters.GFM_SuitSkirt", class'Mesh', True));
         MultiSkins[0] = Texture'DeusExCharacters.Skins.WIBTex0';
         MultiSkins[1] = Texture'DeusExItems.Skins.PinkMaskTex';
@@ -188,7 +191,7 @@ function ShowIntro(optional bool bStartNewGame)
 
     // Reset the player
     //Level.Game.SendPlayer(Self, "AiPrologue");
-    Level.Game.SendPlayer(Self, strStartMap);
+    Level.Game.SendPlayer(self, strStartMap);
 }
 
 // ----------------------------------------------------------------------
@@ -231,7 +234,7 @@ function UpdatePlayerSkin()
 
     if (uber != None)
     {
-        uber.SetSkin(Self);
+        uber.SetSkin(self);
     }
 }
 
@@ -240,14 +243,14 @@ function UpdatePlayerSkin()
 function Possess()
 {
     local DeusExRootWindow root;
-    Super.Possess();
+    super.Possess();
 
     root = DeusExRootWindow(rootWindow);
 
     root.hud.Destroy();
     root.hud = DeusexHUD(root.NewChild(Class'CNNHUD'));
 
-    root.hud.UpdateSettings(Self);
+    root.hud.UpdateSettings(self);
     root.hud.SetWindowAlignments(HALIGN_Full,VALIGN_Full, 0, 0);
 }
 
@@ -265,20 +268,22 @@ function Bool StartDataLinkTransmission(
     local bool bDataLinkPlaySpawned;
 
     // Don't allow DataLinks to start if we're in PlayersOnly mode
-    if ( Level.bPlayersOnly )
-        return False;
+    if (Level.bPlayersOnly)
+    {
+        return false;
+    }
 
     activeDataLink = GetActiveDataLink(datalinkName);
 
-    if ( activeDataLink != None )
+    if (activeDataLink != none)
     {
         // Search to see if there's an active DataLinkPlay object
         // before creating one
 
-        if ( dataLinkPlay == None )
+        if (dataLinkPlay == none)
         {
             datalinkPlay = Spawn(class'AiDataLinkPlay');
-            bDataLinkPlaySpawned = True;
+            bDataLinkPlaySpawned = true;
         }
 
         // Call SetConversation(), which returns
@@ -286,9 +291,9 @@ function Bool StartDataLinkTransmission(
         {
             datalinkPlay.SetTrigger(datalinkTrigger);
 
-            if (datalinkPlay.StartConversation(Self))
+            if (datalinkPlay.StartConversation(self))
             {
-                return True;
+                return true;
             }
             else
             {
@@ -296,10 +301,10 @@ function Bool StartDataLinkTransmission(
                 if (bDataLinkPlaySpawned)
                 {
                     datalinkPlay.Destroy();
-                    datalinkPlay = None;
+                    datalinkPlay = none;
                 }
 
-                return False;
+                return false;
             }
         }
         else
@@ -308,14 +313,15 @@ function Bool StartDataLinkTransmission(
             if (bDataLinkPlaySpawned)
             {
                 datalinkPlay.Destroy();
-                datalinkPlay = None;
+                datalinkPlay = none;
             }
-            return False;
+
+            return false;
         }
     }
     else
     {
-        return False;
+        return false;
     }
 }
 
@@ -330,9 +336,9 @@ function InitializeSubSystems()
     //SkillSystem.Destroy();
 
     // Spawn the BarkManager
-    if (BarkManager == None)
+    if (BarkManager == none)
     {
-        BarkManager = Spawn(class'BarkManager', Self);
+        BarkManager = Spawn(class'BarkManager', self);
     }
 
     // Spawn the Color Manager
@@ -340,35 +346,35 @@ function InitializeSubSystems()
     ThemeManager.SetOwner(self);
 
     // install the augmentation system if not found
-    if (AugmentationSystem == None)
+    if (AugmentationSystem == none)
     {
-        AugmentationSystem = Spawn(class'AiAugmentationManager', Self);
-        AugmentationSystem.CreateAugmentations(Self);
+        AugmentationSystem = Spawn(class'AiAugmentationManager', self);
+        AugmentationSystem.CreateAugmentations(self);
         AugmentationSystem.AddDefaultAugmentations();
-        AugmentationSystem.SetOwner(Self);
+        AugmentationSystem.SetOwner(self);
     }
     else
     {
-        AugmentationSystem.SetPlayer(Self);
-        AugmentationSystem.SetOwner(Self);
+        AugmentationSystem.SetPlayer(self);
+        AugmentationSystem.SetOwner(self);
     }
 
     // install the skill system if not found
-    if (SkillSystem == None)
+    if (SkillSystem == none)
     {
-        SkillSystem = Spawn(class'AiSkillManager', Self);
-        SkillSystem.CreateSkills(Self);
+        SkillSystem = Spawn(class'AiSkillManager', self);
+        SkillSystem.CreateSkills(self);
     }
     else
     {
-        SkillSystem.SetPlayer(Self);
+        SkillSystem.SetPlayer(self);
     }
 
     // Give the player a keyring
-	if ((Level.Netmode == NM_Standalone) || (!bBeltIsMPInventory))
-	{
-		CreateKeyRing();
-	}
+    if ((Level.Netmode == NM_Standalone) || (!bBeltIsMPInventory))
+    {
+        CreateKeyRing();
+    }
 }
 
 //   Let HDTP know that Tantalus is not JC denton.
@@ -380,9 +386,9 @@ function bool Facelift(bool bOn) {}
 
 function CreateColorThemeManager()
 {
-    if (ThemeManager == None)
+    if (ThemeManager == none)
     {
-        ThemeManager = Spawn(Class'ColorThemeManager', Self);
+        ThemeManager = Spawn(Class'ColorThemeManager', self);
 
         // Add all default themes.
 
@@ -472,19 +478,25 @@ function bool StartConversation(
     // other reason we're unable to start a conversation (typically if
     // we're alread in a conversation or there's a UI screen visible)
 
-    if ((!bForcePlay) && ((invokeActor.conListItems == None) || (!CanStartConversation())))
-        return False;
+    if ((!bForcePlay) && ((invokeActor.conListItems == none) || (!CanStartConversation())))
+    {
+        return false;
+    }
 
     // Make sure the other actor can converse
-    if ((!bForcePlay) && ((ScriptedPawn(invokeActor) != None) && (!ScriptedPawn(invokeActor).CanConverse())))
-        return False;
+    if ((!bForcePlay) && ((ScriptedPawn(invokeActor) != none) && (!ScriptedPawn(invokeActor).CanConverse())))
+    {
+        return false;
+    }
 
     // If we have a conversation passed in, use it.  Otherwise check to see
     // if the passed in actor actually has a valid conversation that can be
     // started.
 
-    if ( con == None )
+    if (con == none)
+    {
         con = GetActiveConversation(invokeActor, invokeMethod);
+    }
 
     // If we have a conversation, put the actor into "Conversation Mode".
     // Otherwise just return false.
@@ -492,27 +504,33 @@ function bool StartConversation(
     // TODO: Scan through the conversation and put *ALL* actors involved
     //       in the conversation into the "Conversation" state??
 
-    if ( con != None )
+    if (con != none)
     {
         // Check to see if this conversation is already playing.  If so,
         // then don't start it again.  This prevents a multi-bark conversation
         // from being abused.
-        if ((conPlay != None) && (conPlay.con == con))
-            return False;
+        if ((conPlay != none) && (conPlay.con == con))
+        {
+            return false;
+        }
 
         // Now check to see if there's a conversation playing that is owned
         // by the InvokeActor *and* the player has a speaking part *and*
         // it's a first-person convo, in which case we want to abort here.
-        if (((conPlay != None) && (conPlay.invokeActor == invokeActor)) &&
+        if (((conPlay != none) && (conPlay.invokeActor == invokeActor)) &&
             (conPlay.con.bFirstPerson) &&
-            (conPlay.con.IsSpeakingActor(Self)))
-            return False;
+            (conPlay.con.IsSpeakingActor(self)))
+        {
+            return false;
+        }
 
         // Check if the person we're trying to start the conversation
         // with is a Foe and this is a Third-Person conversation.
         // If so, ABORT!
-        if ((!bForcePlay) && ((!con.bFirstPerson) && (ScriptedPawn(invokeActor) != None) && (ScriptedPawn(invokeActor).GetPawnAllianceType(Self) == ALLIANCE_Hostile)))
-            return False;
+        if ((!bForcePlay) && ((!con.bFirstPerson) && (ScriptedPawn(invokeActor) != none) && (ScriptedPawn(invokeActor).GetPawnAllianceType(self) == ALLIANCE_Hostile)))
+        {
+            return false;
+        }
 
         // If the player is involved in this conversation, make sure the
         // scriptedpawn even WANTS to converse with the player.
@@ -521,14 +539,18 @@ function bool StartConversation(
         // (which is no longer used as intended) is set, then don't
         // call the ScriptedPawn::CanConverseWithPlayer() function
 
-        if ((!bForcePlay) && ((con.IsSpeakingActor(Self)) && (!con.bCanBeInterrupted) && (ScriptedPawn(invokeActor) != None) && (!ScriptedPawn(invokeActor).CanConverseWithPlayer(Self))))
-            return False;
+        if ((!bForcePlay) && ((con.IsSpeakingActor(self)) && (!con.bCanBeInterrupted) && (ScriptedPawn(invokeActor) != none) && (!ScriptedPawn(invokeActor).CanConverseWithPlayer(self))))
+        {
+            return false;
+        }
 
         // Hack alert!  If this is a Bark conversation (as denoted by the
         // conversation name, since we don't have a field in ConEdit),
         // then force this conversation to be first-person
         if (Left(con.conName, Len(con.conOwnerName) + 5) == (con.conOwnerName $ "_Bark"))
-            con.bFirstPerson = True;
+        {
+            con.bFirstPerson = true;
+        }
 
         // Make sure the player isn't ducking.  If the player can't rise
         // to start a third-person conversation (blocked by geometry) then
@@ -536,16 +558,20 @@ function bool StartConversation(
         // sorts of complications (such as the player standing through
         // geometry!!)
 
-        if ((!con.bFirstPerson) && (ResetBasedPawnSize() == False))
-            return False;
+        if ((!con.bFirstPerson) && (ResetBasedPawnSize() == false))
+        {
+            return false;
+        }
 
         // If ConPlay exists, end the current conversation playing
-        if (conPlay != None)
+        if (conPlay != none)
         {
             // If we're already playing a third-person conversation, don't interrupt with
             // another *radius* induced conversation (frobbing is okay, though).
-            if ((conPlay.con != None) && (conPlay.con.bFirstPerson) && (invokeMethod == IM_Radius))
-                return False;
+            if ((conPlay.con != none) && (conPlay.con.bFirstPerson) && (invokeMethod == IM_Radius))
+            {
+                return false;
+            }
 
             conPlay.InterruptConversation();
             conPlay.TerminateConversation();
@@ -554,12 +580,16 @@ function bool StartConversation(
         // If this is a first-person conversation _and_ a DataLink is already
         // playing, then abort.  We don't want to give the user any more
         // distractions while a DL is playing, since they're pretty important.
-        if ( dataLinkPlay != None )
+        if (dataLinkPlay != none)
         {
             if (con.bFirstPerson)
-                return False;
+            {
+                return false;
+            }
             else
+            {
                 dataLinkPlay.AbortAndSaveHistory();
+            }
         }
 
         // Found an active conversation, so start it
@@ -582,12 +612,16 @@ function bool StartConversation(
 
         // If the invoking actor is a ScriptedPawn, then force this person
         // into the conversation state
-        if ((!bForcePlay) && (ScriptedPawn(invokeActor) != None ))
+        if ((!bForcePlay) && (ScriptedPawn(invokeActor) != none))
+        {
             ScriptedPawn(invokeActor).EnterConversationState(con.bFirstPerson, bAvoidState);
+        }
 
         // Do the same if this is a DeusExDecoration
-        if ((!bForcePlay) && (DeusExDecoration(invokeActor) != None ))
+        if ((!bForcePlay) && (DeusExDecoration(invokeActor) != none))
+        {
             DeusExDecoration(invokeActor).EnterConversationState(con.bFirstPerson, bAvoidState);
+        }
 
         // If this is a third-person convo, we're pretty much going to
         // pause the game.  If this is a first-person convo, then just
@@ -603,17 +637,17 @@ function bool StartConversation(
         }
         else
         {
-            if (!conPlay.StartConversation(Self, invokeActor, bForcePlay))
+            if (!conPlay.StartConversation(self, invokeActor, bForcePlay))
             {
-                AbortConversation(True);
+                AbortConversation(true);
             }
         }
 
-        return True;
+        return true;
     }
     else
     {
-        return False;
+        return false;
     }
 }
 
@@ -629,9 +663,9 @@ function InvokeUIScreen(Class<DeusExBaseWindow> windowClass)
     local DeusExRootWindow root;
     root = DeusExRootWindow(rootWindow);
 
-    if (root != None)
+    if (root != none)
     {
-        if ( root.IsKeyDown( IK_Alt ) || root.IsKeyDown( IK_Shift ) || root.IsKeyDown( IK_Ctrl ))
+        if (root.IsKeyDown( IK_Alt ) || root.IsKeyDown( IK_Shift ) || root.IsKeyDown( IK_Ctrl))
         {
             return;
         }
@@ -661,25 +695,25 @@ function ToggleCameraStateNoDebugMessage(SecurityCamera cam)
 
 function SetInvisible(bool B)
 {
-	if (!bAdmin && (Level.Netmode != NM_Standalone))
+    if (!bAdmin && (Level.Netmode != NM_Standalone))
     {
-		return;
+        return;
     }
 
-	if (B)
-	{
-		bHidden = true;
-		Visibility = 0;
-		// DEUS_EX STM - added AI invisibility
-		bDetectable = false;
-	}
-	else
-	{
-		bHidden = false;
-		Visibility = Default.Visibility;
-		// DEUS_EX STM - added AI invisibility
-		bDetectable = true;
-	}
+    if (B)
+    {
+        bHidden = true;
+        Visibility = 0;
+        // DEUS_EX STM - added AI invisibility
+        bDetectable = false;
+    }
+    else
+    {
+        bHidden = false;
+        Visibility = default.Visibility;
+        // DEUS_EX STM - added AI invisibility
+        bDetectable = true;
+    }
 }
 
 defaultproperties

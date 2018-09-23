@@ -1,7 +1,7 @@
 //=============================================================================
 // MissionMoonIntro.
 //=============================================================================
-class MissionMoonIntro expands MissionScript;
+class MissionMoonIntro extends MissionScript;
 
 var byte savedSoundVolume;
 var bool isIntroCompleted;
@@ -19,7 +19,7 @@ var Name CutsceneEndFlagName;
 
 function InitStateMachine()
 {
-	Super.InitStateMachine();
+    super.InitStateMachine();
     CheckIntroFlags();
 }
 
@@ -31,7 +31,7 @@ function InitStateMachine()
 
 function FirstFrame()
 {
-	Super.FirstFrame();
+    super.FirstFrame();
 }
 
 // ----------------------------------------------------------------------
@@ -42,7 +42,7 @@ function FirstFrame()
 
 function PreTravel()
 {
-	Super.PreTravel();
+    super.PreTravel();
     RestoreSoundVolume();
 }
 
@@ -54,94 +54,94 @@ function PreTravel()
 
 function Timer()
 {
-	Super.Timer();
-	GivePlayerHisAugs();
+    super.Timer();
+    GivePlayerHisAugs();
 }
 
 // ----------------------------------------------------------------------
 
 function CheckIntroFlags()
 {
-	if (flags.GetBool(CutsceneEndFlagName))
-	{
-		// After we've teleported back and map has reloaded
-		// set the flag, to skip recursive intro call.
-		isIntroCompleted = true;
-	}
+    if (flags.GetBool(CutsceneEndFlagName))
+    {
+        // After we've teleported back and map has reloaded
+        // set the flag, to skip recursive intro call.
+        isIntroCompleted = true;
+    }
 
-	if (!isIntroCompleted)
-	{
-	    // Set the PlayerTraveling flag (always want it set for
-		// the intro and endgames)
-		flags.SetBool('PlayerTraveling', true, true, 0);
-	}
+    if (!isIntroCompleted)
+    {
+        // Set the PlayerTraveling flag (always want it set for
+        // the intro and endgames)
+        flags.SetBool('PlayerTraveling', true, true, 0);
+    }
 }
 
 function GivePlayerHisAugs()
 {
-	if (flags.GetBool('HasMuscleAug') && !flags.GetBool('PlayerGotMuscleAug'))
-	{
-		Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugMuscle');
-		flags.SetBool('PlayerGotMuscleAug', true, true, 0);
-	}
+    if (flags.GetBool('HasMuscleAug') && !flags.GetBool('PlayerGotMuscleAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugMuscle');
+        flags.SetBool('PlayerGotMuscleAug', true, true, 0);
+    }
 
-	if (flags.GetBool('HasCombatAug'))
-	{
-		Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugCombat');
-	}
+    if (flags.GetBool('HasCombatAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugCombat');
+    }
 }
 
 function StartConversationWithActor()
 {
-	if (!flags.GetBool(CutsceneEndFlagName))
-	{
-	   	if (player != none)
-		{
-			DeusExRootWindow(player.rootWindow).ResetFlags();
+    if (!flags.GetBool(CutsceneEndFlagName))
+    {
+        if (player != none)
+        {
+            DeusExRootWindow(player.rootWindow).ResetFlags();
 
-			foreach AllActors(class'Actor', actorToSpeak, actorTag)
-				break;
+            foreach AllActors(class'Actor', actorToSpeak, actorTag)
+                break;
 
-			if (actorToSpeak != none)
-			{
-				player.StartConversationByName(conversationName, actorToSpeak, false, true);
-			}
+            if (actorToSpeak != none)
+            {
+                player.StartConversationByName(conversationName, actorToSpeak, false, true);
+            }
 
-			// turn down the sound so we can hear the speech
-			savedSoundVolume = SoundVolume;
-			SoundVolume = 32;
-			player.SetInstantSoundVolume(SoundVolume);
-		}
-	}
+            // turn down the sound so we can hear the speech
+            savedSoundVolume = SoundVolume;
+            SoundVolume = 32;
+            player.SetInstantSoundVolume(SoundVolume);
+        }
+    }
 }
 
 function RestoreSoundVolume()
 {
-	if (flags.GetBool(CutsceneEndFlagName) && !isIntroCompleted)
-	{
-		SoundVolume = savedSoundVolume;
-		player.SetInstantSoundVolume(SoundVolume);
-	}
+    if (flags.GetBool(CutsceneEndFlagName) && !isIntroCompleted)
+    {
+        SoundVolume = savedSoundVolume;
+        player.SetInstantSoundVolume(SoundVolume);
+    }
 }
 
 function SendPlayerOnceToGame()
 {
-	if (flags.GetBool(CutsceneEndFlagName) && !isIntroCompleted)
-	{
-		if (DeusExRootWindow(player.rootWindow) != none)
-		{
-			DeusExRootWindow(player.rootWindow).ClearWindowStack();
-		}
+    if (flags.GetBool(CutsceneEndFlagName) && !isIntroCompleted)
+    {
+        if (DeusExRootWindow(player.rootWindow) != none)
+        {
+            DeusExRootWindow(player.rootWindow).ClearWindowStack();
+        }
 
-		Level.Game.SendPlayer(player, sendToLocation);
-	}
+        Level.Game.SendPlayer(player, sendToLocation);
+    }
 }
 
 defaultproperties
 {
     missionName="Moon"
-	sendToLocation="05_MoonIntro#TwoMonthsLater"
-	conversationName=InExile
-	actorTag=Magdalene
-	CutsceneEndFlagName=IsIntroPlayed
+    sendToLocation="05_MoonIntro#TwoMonthsLater"
+    conversationName=InExile
+    actorTag=Magdalene
+    CutsceneEndFlagName=IsIntroPlayed
 }

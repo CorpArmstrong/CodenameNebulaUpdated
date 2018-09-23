@@ -14,7 +14,7 @@ function Trigger(Actor Other, Pawn Instigator)
         A.EnterWorld();
     }
 
-    Super.Trigger(Other, Instigator);
+    super.Trigger(Other, Instigator);
 }
 
 function Touch(Actor Other)
@@ -28,10 +28,6 @@ function Touch(Actor Other)
             A.EnterWorld();
         }
 
-        Super.Touch(Other);
+        super.Touch(Other);
     }
-}
-
-defaultproperties
-{
 }

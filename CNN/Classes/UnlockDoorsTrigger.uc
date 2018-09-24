@@ -13,9 +13,9 @@ function Trigger(Actor Other, Pawn Instigator)
     for (i = 0; i < ArrayCount(doorMovers); i++)
     {
         foreach AllActors(class'DeusExMover', doorMovers[i], doorTags[i])
-	    {
-		    doorMovers[i].bLocked = false;
-	    }
+        {
+            doorMovers[i].bLocked = false;
+        }
     }
 }
 

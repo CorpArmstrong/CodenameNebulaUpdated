@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 //  LaserSecurityDispatcher
 //-----------------------------------------------------------
-class LaserSecurityDispatcher expands Actor;
+class LaserSecurityDispatcher extends Actor;
 
 var() float delay;
 var() name targetTag[4];
@@ -15,9 +15,9 @@ var bool bLazersMoveInsideNow;
 function Timer()
 {
     if (bIsOn)
-	{
-		SendMessages();
-	}
+    {
+        SendMessages();
+    }
 
     bLazersMoveInsideNow = !bLazersMoveInsideNow;
 }
@@ -27,13 +27,13 @@ function SendMessages()
     local Mover m;
     local int i;
 
-	for (i = 0; i < ArrayCount(targetTag); i++)
-	{
-		foreach AllActors(class 'Mover', m, targetTag[i])
-		{
-			m.Trigger(Self, none);
-		}
-	}
+    for (i = 0; i < ArrayCount(targetTag); i++)
+    {
+        foreach AllActors(class 'Mover', m, targetTag[i])
+        {
+            m.Trigger(self, none);
+        }
+    }
 }
 
 function ToggleOn()
@@ -48,13 +48,13 @@ function ToggleOff()
 {
     bIsOn = false;
 
-	if (bLazersMoveInsideNow)
-	{
-		// for return on default positions
-		SendMessages();
-	}
+    if (bLazersMoveInsideNow)
+    {
+        // for return on default positions
+        SendMessages();
+    }
 
-	SetTimer(0.1, false);
+    SetTimer(0.1, false);
 }
 
 defaultproperties

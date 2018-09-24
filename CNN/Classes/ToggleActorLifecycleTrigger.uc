@@ -15,21 +15,21 @@ var Actor currentActor;
 function PostBeginPlay()
 {
     SetSpawnPoint();
-    Super.PostBeginPlay();
+    super.PostBeginPlay();
 }
 
 function Trigger(Actor Other, Pawn Instigator)
 {
     ToggleActorLifecycle();
-    Super.Trigger(Other, Instigator);
+    super.Trigger(Other, Instigator);
 }
 
 function Touch(Actor Other)
 {
     if (IsRelevant(Other))
     {
-		ToggleActorLifecycle();
-        Super.Touch(Other);
+        ToggleActorLifecycle();
+        super.Touch(Other);
     }
 }
 

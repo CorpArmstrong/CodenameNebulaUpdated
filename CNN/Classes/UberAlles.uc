@@ -11,31 +11,31 @@ class UberAlles extends MIB;
 
 function Carcass SpawnCarcass()
 {
-	Explode();
-	return none;
+    Explode();
+    return none;
 }
 
 function SetSkin (DeusExPlayer Player)
 {
-	switch (Player.PlayerSkin)
-	{
-		case 0:
-			MultiSkins[3] = Texture'CNN.Skins.TantalusFace';
-			break;
-		case 1:
-			MultiSkins[3] = Texture'CNN.Skins.TantalusAsian';
-			break;
-		case 2:
-			MultiSkins[3] = Texture'CNN.Skins.TantalusBlack';
-			break;
-		case 3:
-			MultiSkins[3] = Texture'CNN.Skins.TantalusGinger';
-			break;
-		case 4:
-			MultiSkins[3] = Texture'CNN.Skins.TantalusGoatee';
-			break;
-		default:
-	}
+    switch (Player.PlayerSkin)
+    {
+        case 0:
+            MultiSkins[3] = Texture'CNN.Skins.TantalusFace';
+            break;
+        case 1:
+            MultiSkins[3] = Texture'CNN.Skins.TantalusAsian';
+            break;
+        case 2:
+            MultiSkins[3] = Texture'CNN.Skins.TantalusBlack';
+            break;
+        case 3:
+            MultiSkins[3] = Texture'CNN.Skins.TantalusGinger';
+            break;
+        case 4:
+            MultiSkins[3] = Texture'CNN.Skins.TantalusGoatee';
+            break;
+        default:
+    }
 }
 
 defaultproperties
@@ -67,10 +67,10 @@ defaultproperties
     MultiSkins(5)=Texture'DeusExItems.Skins.GrayMaskTex'
     MultiSkins(6)=Texture'DeusExItems.Skins.GrayMaskTex'
     MultiSkins(7)=Texture'DeusExItems.Skins.GrayMaskTex'
-	Texture=none
+    Texture=none
     CollisionRadius=20.00
     CollisionHeight=47.50
-	BindName="UberAlles"
+    BindName="UberAlles"
     FamiliarName="Uber Alles"
     UnfamiliarName="Uber Alles"
 }

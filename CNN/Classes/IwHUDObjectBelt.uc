@@ -1,7 +1,7 @@
 //=============================================================================
 // IwHUDObjectBelt
 //=============================================================================
-class IwHUDObjectBelt expands HUDObjectBelt;
+class IwHUDObjectBelt extends HUDObjectBelt;
 
 #exec TEXTURE IMPORT FILE="Textures\UBHUD_Belt_Background_left.pcx" NAME="UBHUD_Belt_BG_left" GROUP="UserInterface" MIPS=Off
 #exec TEXTURE IMPORT FILE="Textures\UBHUD_Belt_Background_right.pcx" NAME="UBHUD_Belt_BG_right" GROUP="UserInterface" MIPS=Off
@@ -12,7 +12,7 @@ class IwHUDObjectBelt expands HUDObjectBelt;
 
 event InitWindow()
 {
-    Super.InitWindow();
+    super.InitWindow();
     SetSize(288, 128); // Hardcoded size, baby! (...geek) ;p
 }
 

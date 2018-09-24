@@ -2,7 +2,7 @@
 // CNNBaseIngameCutscene
 // by CorpArmstrong
 //-----------------------------------------------------------------------
-class TestIngameCutscene expands MissionScript;
+class TestIngameCutscene extends MissionScript;
 
 var byte savedSoundVolume;
 var bool isIntroCompleted;
@@ -17,7 +17,7 @@ var Actor actorToSpeak;
 
 function InitStateMachine()
 {
-	Super.InitStateMachine();
+    super.InitStateMachine();
     CheckIntroFlags();
 }
 
@@ -29,8 +29,8 @@ function InitStateMachine()
 
 function FirstFrame()
 {
-	Super.FirstFrame();
-	StartConversationWithActor();
+    super.FirstFrame();
+    StartConversationWithActor();
 }
 
 // ----------------------------------------------------------------------
@@ -41,7 +41,7 @@ function FirstFrame()
 
 function PreTravel()
 {
-	Super.PreTravel();
+    super.PreTravel();
     RestoreSoundVolume();
 }
 
@@ -53,78 +53,78 @@ function PreTravel()
 
 function Timer()
 {
-	Super.Timer();
+    super.Timer();
     SendPlayerOnceToGame();
 }
 
 function CheckIntroFlags()
 {
-	if (flags.GetBool('isIntroPlayed'))
-	{
-		// After we've teleported back and map has reloaded
-		// set the flag, to skip recursive intro call.
-		isIntroCompleted = true;
-	}
+    if (flags.GetBool('isIntroPlayed'))
+    {
+        // After we've teleported back and map has reloaded
+        // set the flag, to skip recursive intro call.
+        isIntroCompleted = true;
+    }
 
-	if (!isIntroCompleted)
-	{
-	    // Set the PlayerTraveling flag (always want it set for
-		// the intro and endgames)
-		flags.SetBool('PlayerTraveling', true, true, 0);
-	}
+    if (!isIntroCompleted)
+    {
+        // Set the PlayerTraveling flag (always want it set for
+        // the intro and endgames)
+        flags.SetBool('PlayerTraveling', true, true, 0);
+    }
 }
 
 function StartConversationWithActor()
 {
-	local ScriptedPawn pawn;
+    local ScriptedPawn pawn;
 
-	if (!flags.GetBool('isIntroPlayed'))
-	{
-	   	if (player != none)
-		{
-			DeusExRootWindow(player.rootWindow).ResetFlags();
+    if (!flags.GetBool('isIntroPlayed'))
+    {
+        if (player != none)
+        {
+            DeusExRootWindow(player.rootWindow).ResetFlags();
 
-			foreach AllActors(class'Actor', actorToSpeak, actorTag)
-				break;
+            foreach AllActors(class'Actor', actorToSpeak, actorTag)
+                break;
 
-			if (actorToSpeak != none)
-			{
-				player.StartConversationByName(conversationName, actorToSpeak, false, true);
-			}
+            if (actorToSpeak != none)
+            {
+                player.StartConversationByName(conversationName, actorToSpeak, false, true);
+            }
 
-			// turn down the sound so we can hear the speech
-			savedSoundVolume = SoundVolume;
-			SoundVolume = 32;
-			player.SetInstantSoundVolume(SoundVolume);
-		}
-	}
+            // turn down the sound so we can hear the speech
+            savedSoundVolume = SoundVolume;
+            SoundVolume = 32;
+            player.SetInstantSoundVolume(SoundVolume);
+        }
+    }
 }
 
 function RestoreSoundVolume()
 {
-	if (flags.GetBool('isIntroPlayed') && !isIntroCompleted)
-	{
-		SoundVolume = savedSoundVolume;
-		player.SetInstantSoundVolume(SoundVolume);
-	}
+    if (flags.GetBool('isIntroPlayed') && !isIntroCompleted)
+    {
+        SoundVolume = savedSoundVolume;
+        player.SetInstantSoundVolume(SoundVolume);
+    }
 }
 
 function SendPlayerOnceToGame()
 {
-	if (flags.GetBool('isIntroPlayed') && !isIntroCompleted)
-	{
-		if (DeusExRootWindow(player.rootWindow) != none)
-		{
-			DeusExRootWindow(player.rootWindow).ClearWindowStack();
-		}
+    if (flags.GetBool('isIntroPlayed') && !isIntroCompleted)
+    {
+        if (DeusExRootWindow(player.rootWindow) != none)
+        {
+            DeusExRootWindow(player.rootWindow).ClearWindowStack();
+        }
 
-		Level.Game.SendPlayer(player, sendToLocation);
-	}
+        Level.Game.SendPlayer(player, sendToLocation);
+    }
 }
 
 defaultproperties
 {
-	sendToLocation="50_OpheliaL1_Burning_Cutscene#theline"
-	conversationName=OpheliaUICutscene
-	actorTag=Secretary
+    sendToLocation="50_OpheliaL1_Burning_Cutscene#theline"
+    conversationName=OpheliaUICutscene
+    actorTag=Secretary
 }

@@ -139,7 +139,6 @@ function SendPlayerOnceToGame()
 
 defaultproperties
 {
-    missionName="Moon"
     sendToLocation="05_MoonIntro#TwoMonthsLater"
     conversationName=InExile
     actorTag=Magdalene

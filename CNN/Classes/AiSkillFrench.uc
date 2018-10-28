@@ -1,7 +1,7 @@
 //================================================================================
 // AiSkillFrench.
 //================================================================================
-class AiSkillFrench extends Skill;
+class AiSkillFrench extends CNNSkill;
 
 defaultproperties
 {

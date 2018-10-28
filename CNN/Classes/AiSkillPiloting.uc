@@ -1,7 +1,7 @@
 //================================================================================
 // AiSkillPiloting.
 //================================================================================
-class AiSkillPiloting extends Skill;
+class AiSkillPiloting extends CNNSkill;
 
 defaultproperties
 {

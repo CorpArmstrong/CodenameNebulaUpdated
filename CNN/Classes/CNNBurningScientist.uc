@@ -103,6 +103,7 @@ defaultproperties
     bFearAlarm=false
     bFearProjectiles=true
     MaxProvocations=2
+    bInvincible=true
     InitialAlliances(0)=(AllianceName=Player)
     InitialAlliances(1)=(AllianceName=mj12)
     InitialAlliances(2)=(AllianceName=security)

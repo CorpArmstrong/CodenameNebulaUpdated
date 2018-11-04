@@ -13,6 +13,7 @@ function SetBurning()
     {
         if(actr.bCanBeBurned)
         {
+            actr.bInvincible = false;
             actr.TakeDamage(10, none, vect(0, 0, 0), vect(0, 0, 0), 'Burned');
         }
     }

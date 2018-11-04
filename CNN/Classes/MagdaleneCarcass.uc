@@ -1,7 +1,7 @@
 //=============================================================================
 // MagdaleneCarcass.
 //=============================================================================
-class MagdaleneCarcass extends Female1Carcass;
+class MagdaleneCarcass extends CNNCarcass;
 
 defaultproperties
 {
@@ -18,5 +18,4 @@ defaultproperties
     MultiSkins(5)=Texture'CNN.MagdaleneFace1'
     MultiSkins(6)=Texture'DeusExCharacters.Skins.JCDentonTex3'
     MultiSkins(7)=Texture'DeusExCharacters.Skins.TiffanySavageTex1'
-    //bInvincible=true
 }

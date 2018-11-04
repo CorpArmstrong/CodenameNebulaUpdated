@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 // CArmstrongDeadCarcass.
 //-----------------------------------------------------------
-class CArmstrongDeadCarcass expands DeusExCarcass;
+class CArmstrongDeadCarcass extends DeusExCarcass;
 
 defaultproperties
 {

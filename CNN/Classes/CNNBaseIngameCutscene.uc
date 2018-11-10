@@ -2,8 +2,7 @@
 // Class:    CNNBaseIngameCutscene
 // Author:   CorpArmstrong
 //-----------------------------------------------------------------------
-
-class CNNBaseIngameCutscene expands MissionScript abstract;
+class CNNBaseIngameCutscene extends MissionScript abstract;
 
 var byte savedSoundVolume;
 var bool IsArrivalCompleted;
@@ -167,8 +166,6 @@ function SendPlayer()
     {
         DeusExRootWindow(player.rootWindow).ClearWindowStack();
     }
-
-    //TantalusDenton(Player).SetInvisible(false);
 
     Player.bHidden = false;
     Player.Visibility = Player.Default.Visibility;

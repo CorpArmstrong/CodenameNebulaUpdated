@@ -20,7 +20,7 @@ function DoLevelStuff()
     {
         flags.SetBool('French_Elementary', true);
     }
-
+/*
     if (flags.GetBool('MagdaleneDisappearsInDocks') && !flags.GetBool('AllObjectsDestroyed'))
     {
         foreach AllActors(class'Dispatcher', returnDispatcher, 'ReturnToLevelDispatcher')
@@ -28,6 +28,7 @@ function DoLevelStuff()
             returnDispatcher.Trigger(self, player);
         }
     }
+    */
 }
 
 defaultproperties

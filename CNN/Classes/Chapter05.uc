@@ -1,7 +1,7 @@
 //=============================================================================
 // Chapter05.
 //=============================================================================
-class Chapter05 expands CNNBaseIngameCutscene;
+class Chapter05 extends CNNBaseIngameCutscene;
 
 var(ChangeLevelOnDeath) string levelName;
 
@@ -42,15 +42,12 @@ function DoLevelStuff()
 
     if (flags.GetBool('LeftMoon'))
     {
-        foreach allactors(class'UberAlles', Uber, 'UberAllesInRoom')
+        foreach AllActors(class'UberAlles', Uber, 'UberAllesInRoom')
         {
             Uber.EnterWorld();
         }
-    }
 
-    if (flags.GetBool('LeftMoon'))
-    {
-        foreach allactors(class'Magdalene', Magdalene, 'MagdaleneDenton')
+        foreach AllActors(class'Magdalene', Magdalene, 'MagdaleneDenton')
         {
             Magdalene.LeaveWorld();
         }
@@ -58,7 +55,7 @@ function DoLevelStuff()
 
     if (flags.GetBool('SpacecraftLanded'))
     {
-        foreach allactors(class'Ship1', ship, 'Spacecraft')
+        foreach AllActors(class'Ship1', ship, 'Spacecraft')
         {
             ship.EnterWorld();
         }

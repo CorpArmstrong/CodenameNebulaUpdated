@@ -76,7 +76,7 @@ function GivePlayerHisAugs()
     }
     if (flags.GetBool('HasAquaAug') && !flags.GetBool('PlayerGotAquaAug'))
     {
-        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugAqualung');
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugAquaLung');
         flags.SetBool('PlayerGotAquaAug', true, true, 0);
     }
     if (flags.GetBool('HasPowerAug') && !flags.GetBool('PlayerGotPowerAug'))
@@ -153,6 +153,11 @@ function GivePlayerHisAugs()
     {
         Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugTarget');
         flags.SetBool('PlayerGotTargetAug', true, true, 0);
+    }
+    if (flags.GetBool('HasVisionAug') && !flags.GetBool('PlayerGotVisionAug'))
+    {
+        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugVision');
+        flags.SetBool('PlayerGotVisionAug', true, true, 0);
     }
     if (flags.GetBool('HasLethalAug') && !flags.GetBool('PlayerGotLethalAug'))
     {

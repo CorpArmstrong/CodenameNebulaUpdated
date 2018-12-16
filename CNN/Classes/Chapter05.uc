@@ -37,6 +37,7 @@ function DoLevelStuff()
 
     if (player.IsInState('Dying'))
     {
+        flags.SetBool('PlayerDied', true);
         Level.Game.SendPlayer(player, levelName);
     }
 

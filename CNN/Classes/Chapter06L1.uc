@@ -1,7 +1,7 @@
 //-----------------------------------------------------------
 // Chapter06L1 - Ring 1
 //-----------------------------------------------------------
-class Chapter06L1 expands MissionScript;
+class Chapter06L1 extends MissionScript;
 
 var() string levelName;
 
@@ -11,29 +11,13 @@ function InitStateMachine()
     FirstFrame();
 }
 
-function FirstFrame()
-{
-    Super.FirstFrame();
-    PrepareFirstFrame();
-}
-
-function PrepareFirstFrame()
-{
-    local int tantalusSkillLevel;
-    tantalusSkillLevel = player.SkillSystem.GetSkillLevelValue(class'AiSkillFrench');
-
-    if (tantalusSkillLevel == 2.00)
-    {
-        flags.SetBool('French_Elementary', true);
-    }
-}
-
 function Timer()
 {
     Super.Timer();
 
     if (player.IsInState('Dying'))
     {
+        flags.SetBool('PlayerDied', true);
         Level.Game.SendPlayer(player, levelName);
     }
 }

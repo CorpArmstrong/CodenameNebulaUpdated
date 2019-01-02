@@ -3,9 +3,9 @@
 
 #define MyAppName "Codename Nebula"
 #define MyAppVersion "1.2.2"
-#define MyAppPublisher "Heraldic"
+#define MyAppPublisher "ApostleMod"
 #define MyAppURL "https://apocalypseinside.heraldic.cloud/"
-#define SetupDir "F:\Games fixed\Codename Nebula\DeusEx\"
+#define SetupDir "C:\Jenkins\workspace\CodenameNebula\CNNInstaller"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -24,8 +24,8 @@ DefaultDirName={sd}\Games\DeusEx\CodenameNebula
 DefaultGroupName={#MyAppName}
 LicenseFile={#SetupDir}\CNNInstaller\InfoLicense.txt
 InfoBeforeFile={#SetupDir}\CNNInstaller\InfoBeforeInstall.txt
-OutputDir=F:\CNNInstaller
-OutputBaseFilename=CodenameNebula_v1.2.2
+OutputDir=C:\CNNOutput
+OutputBaseFilename=CodenameNebula_v1.2.3
 SetupIconFile={#SetupDir}\CodenameNebula\cnnico.ico
 Compression=lzma
 SolidCompression=yes

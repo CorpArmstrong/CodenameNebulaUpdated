@@ -5,7 +5,7 @@
 #define MyAppVersion "1.2.2"
 #define MyAppPublisher "ApostleMod"
 #define MyAppURL "https://apocalypseinside.heraldic.cloud/"
-#define SetupDir "C:\Jenkins\workspace\CodenameNebula\"
+#define SetupDir "C:\Jenkins\workspace\CodenameNebula"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.

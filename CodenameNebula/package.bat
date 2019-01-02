@@ -1,9 +1,9 @@
 :: Perform Cleanup
-del /q Maps\*.*
-del /q Music\*.*
-del /q Music\Ogg\*.*
-del /q Textures\*.*
-del /q System\*.*
+del /q C:\Jenkins\workspace\CNN-Jenkins\CodenameNebula\Maps\*.*
+del /q C:\Jenkins\workspace\CNN-Jenkins\CodenameNebula\Music\*.*
+del /q C:\Jenkins\workspace\CNN-Jenkins\CodenameNebula\Music\Ogg\*.*
+del /q C:\Jenkins\workspace\CNN-Jenkins\CodenameNebula\Textures\*.*
+del /q C:\Jenkins\workspace\CNN-Jenkins\CodenameNebula\System\*.*
 del /q CNNInstallUtil.exe
 
 :: Package Maps

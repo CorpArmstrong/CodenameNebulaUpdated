@@ -26,7 +26,7 @@ LicenseFile={#SetupDir}\CNNInstaller\InfoLicense.txt
 InfoBeforeFile={#SetupDir}\CNNInstaller\InfoBeforeInstall.txt
 OutputDir=C:\Dropbox\CNN
 OutputBaseFilename=CodenameNebula_v1.2.4
-SetupIconFile={#SetupDir}\CodenameNebula\cnnico.ico
+;SetupIconFile={#SetupDir}\CodenameNebula\cnnico.ico
 Compression=lzma
 SolidCompression=yes
 

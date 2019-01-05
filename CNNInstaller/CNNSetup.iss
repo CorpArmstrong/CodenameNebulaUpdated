@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Codename Nebula"
-#define MyAppVersion "1.2.2"
+#define MyAppVersion "1.2.4"
 #define MyAppPublisher "ApostleMod"
 #define MyAppURL "https://apocalypseinside.heraldic.cloud/"
 #define SetupDir "C:\Jenkins\workspace\CNN-Jenkins"
@@ -25,7 +25,7 @@ DefaultGroupName={#MyAppName}
 LicenseFile={#SetupDir}\CNNInstaller\InfoLicense.txt
 InfoBeforeFile={#SetupDir}\CNNInstaller\InfoBeforeInstall.txt
 OutputDir=C:\Dropbox\CNN
-OutputBaseFilename=CodenameNebula_v1.2.3
+OutputBaseFilename=CodenameNebula_v1.2.4
 SetupIconFile={#SetupDir}\CodenameNebula\cnnico.ico
 Compression=lzma
 SolidCompression=yes

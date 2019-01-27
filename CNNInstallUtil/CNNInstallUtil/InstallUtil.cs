@@ -7,23 +7,22 @@ namespace CNNInstallUtil
 {
     class InstallUtil
     {
-        private string currentPath = Directory.GetCurrentDirectory();
+        private readonly string currentPath = Directory.GetCurrentDirectory();
 
         public void Install()
         {
             string pathToModSystem = Path.Combine(currentPath, "System");
             string pathToSystem = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).ToString(), "System");
 
-            DirectoryInfo modSystemInfo = new DirectoryInfo(pathToModSystem);
-            DirectoryInfo originalSystemInfo = new DirectoryInfo(pathToSystem);
+            var modSystemInfo = new DirectoryInfo(pathToModSystem);
+            var originalSystemInfo = new DirectoryInfo(pathToSystem);
 
-            FileInfo originalDeusExIni = new FileInfo(Path.Combine(pathToSystem, "DeusEx.ini"));
-            FileInfo originalDeusExUserIni = new FileInfo(Path.Combine(pathToSystem, "User.ini"));
+            var originalDeusExIni = new FileInfo(Path.Combine(pathToSystem, "DeusEx.ini"));
+            var originalDeusExUserIni = new FileInfo(Path.Combine(pathToSystem, "User.ini"));
 
             if (!modSystemInfo.Exists)
             {
-                Console.WriteLine("Error: directory {0} doesn't exists!", pathToModSystem);
-                Console.WriteLine("Creating directory!");
+                Console.WriteLine("Error: directory {0} doesn't exists!\nCreating directory!", pathToModSystem);
                 Directory.CreateDirectory(pathToModSystem); // unauthorized exception?
             }
 
@@ -37,8 +36,8 @@ namespace CNNInstallUtil
                 }
                 else
                 {
-                    Console.WriteLine("Error: file {0} doesn't exists!", originalDeusExIni.FullName);
-                    Console.WriteLine("Creating template CNN.ini file!");
+                    Console.WriteLine("Error: file {0} doesn't exists!\nCreating template CNN.ini file!",
+                        originalDeusExIni.FullName);
                     CreateTemplateCNNIniFile(pathToModSystem);
                 }
 
@@ -49,8 +48,8 @@ namespace CNNInstallUtil
                 }
                 else
                 {
-                    Console.WriteLine("Error: file {0} doesn't exists!", originalDeusExUserIni.FullName);
-                    Console.WriteLine("Skipping copy file.");
+                    Console.WriteLine("Error: file {0} doesn't exists!\nSkipping copy file.",
+                        originalDeusExUserIni.FullName);
                 }
 
                 CopyMusicFiles(pathToSystem, pathToModSystem);
@@ -63,39 +62,30 @@ namespace CNNInstallUtil
 
         private void CreateTemplateCNNIniFile(string pathToModSystem)
         {
-            StreamWriter streamWriter = new StreamWriter(Path.Combine(pathToModSystem, "CNN.ini"));
-            StringBuilder stringBuilder = new StringBuilder();
+            using (var writer = new StreamWriter(Path.Combine(pathToModSystem, "CNN.ini")))
+            {
+                string templateFile = new StringBuilder()
+                    .AppendLine("[URL]")
+                    .AppendLine("Class=CNN.TantalusDenton")
+                    .AppendLine()
+                    .AppendLine("[Engine.Engine]")
+                    .AppendLine("DefaultGame=CNN.CNNGameInfo")
+                    .AppendLine()
+                    .AppendLine("[Core.System]")
+                    .AppendLine("SavePath=" + Path.Combine(currentPath, "Save"))
+                    .AppendLine("Paths=" + Path.Combine(currentPath, "Maps\\*.dx"))
+                    .AppendLine("Paths=" + Path.Combine(currentPath, "System\\*.u"))
+                    .AppendLine("Paths=" + Path.Combine(currentPath, "Textures\\*.utx"))
+                    .AppendLine("Paths=" + Path.Combine(currentPath, "Music\\*.umx"))
+                    .ToString();
 
-            stringBuilder.Append("[URL]");
-            stringBuilder.AppendLine();
-            stringBuilder.Append("Class=CNN.TantalusDenton");
-            stringBuilder.AppendLine().AppendLine();
-            stringBuilder.Append("[Engine.Engine]");
-            stringBuilder.AppendLine();
-            stringBuilder.Append("DefaultGame=CNN.CNNGameInfo");
-            stringBuilder.AppendLine().AppendLine();
-            stringBuilder.Append("[Core.System]");
-            stringBuilder.AppendLine();
-            stringBuilder.Append("SavePath=" + Path.Combine(currentPath, "Save"));
-            stringBuilder.AppendLine();
-            stringBuilder.Append("Paths=" + Path.Combine(currentPath, "Maps\\*.dx"));
-            stringBuilder.AppendLine();
-            stringBuilder.Append("Paths=" + Path.Combine(currentPath, "System\\*.u"));
-            stringBuilder.AppendLine();
-            stringBuilder.Append("Paths=" + Path.Combine(currentPath, "Textures\\*.utx"));
-            stringBuilder.AppendLine();
-            stringBuilder.Append("Paths=" + Path.Combine(currentPath, "Music\\*.umx"));
-            stringBuilder.AppendLine();
-
-            streamWriter.Write(stringBuilder.ToString());
-            streamWriter.Flush();
-            streamWriter.Close();
+                writer.Write(templateFile);
+            }
         }
 
         private void InjectIniProperties(string pathToFile)
         {
-            List<string> iniKeyValues = new List<string>(File.ReadAllLines(pathToFile));
-
+            var iniKeyValues = new List<string>(File.ReadAllLines(pathToFile));
             int index = iniKeyValues.FindIndex(x => x.StartsWith("Class="));
 
             if (index >= 0)
@@ -132,24 +122,22 @@ namespace CNNInstallUtil
             string pathToOggMusic = Path.Combine(pathToMusic, "Ogg");
             string pathToModOggMusic = Path.Combine(currentPath, "Music\\Ogg");
 
-            DirectoryInfo musicDirInfo = new DirectoryInfo(pathToMusic);
-            DirectoryInfo oggMusicDirInfo = new DirectoryInfo(pathToOggMusic);
-            DirectoryInfo oggMusicModDirInfo = new DirectoryInfo(pathToModOggMusic);
+            var musicDirInfo = new DirectoryInfo(pathToMusic);
+            var oggMusicDirInfo = new DirectoryInfo(pathToOggMusic);
+            var oggMusicModDirInfo = new DirectoryInfo(pathToModOggMusic);
 
-            FileInfo dxOggDLLFile = new FileInfo(Path.Combine(pathToSystem, "DXOgg.dll"));
-            FileInfo dxOggFile = new FileInfo(Path.Combine(pathToSystem, "DXOgg.u"));
+            var dxOggDLLFile = new FileInfo(Path.Combine(pathToSystem, "DXOgg.dll"));
+            var dxOggFile = new FileInfo(Path.Combine(pathToSystem, "DXOgg.u"));
 
             if (!musicDirInfo.Exists)
             {
-                Console.WriteLine("Error: directory {0} doesn't exists!", pathToMusic);
-                Console.WriteLine("Creating directory!");
+                Console.WriteLine("Error: directory {0} doesn't exists!\nCreating directory!", pathToMusic);
                 Directory.CreateDirectory(pathToMusic); // unauthorized exception?
             }
 
             if (!oggMusicDirInfo.Exists)
             {
-                Console.WriteLine("Error: directory {0} doesn't exists!", pathToOggMusic);
-                Console.WriteLine("Creating directory!");
+                Console.WriteLine("Error: directory {0} doesn't exists!\nCreating directory!", pathToOggMusic);
                 Directory.CreateDirectory(pathToOggMusic); // unauthorized exception?
             }
 

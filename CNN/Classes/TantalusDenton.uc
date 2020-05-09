@@ -4,6 +4,7 @@
 class TantalusDenton extends JCDentonMale;
 
 var travel BioEnergyController bioc;
+var private QuestSystem questSystem;
 
 //var travel AiAugmentationManager AugmentationSystem;
 
@@ -714,6 +715,28 @@ function SetInvisible(bool B)
         // DEUS_EX STM - added AI invisibility
         bDetectable = true;
     }
+}
+
+function GoalCompleted( Name goalName )
+{
+    super.GoalCompleted(goalName);
+    GetQuestSystem().OnQuestUpdated();
+}
+
+function QuestSystem GetQuestSystem()
+{
+    local QuestSystem currentQuestSystem;
+
+    if (questSystem == none)
+    {
+        foreach AllActors(class 'QuestSystem', currentQuestSystem, '')
+        {
+            questSystem = currentQuestSystem;
+            break;
+        }
+    }
+
+    return questSystem;
 }
 
 defaultproperties

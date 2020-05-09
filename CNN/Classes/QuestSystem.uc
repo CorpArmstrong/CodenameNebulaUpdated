@@ -14,8 +14,10 @@ struct QuestPath
 {
     var() Quest questList[50];
     var() string endMapName;
+    var() int questUsedCount;
 };
 
+const QuestCount = 50;
 var(QuestPaths) QuestPath questPathList[5];
 
 var private DeusExPlayer player;
@@ -57,18 +59,26 @@ function bool IsQuestPathCompleted(QuestPath questPathToCheck)
     local bool flagValue;
     local int i;
 
-    for (i = 0; i < ArrayCount(questPathToCheck.questList); i++)
+    if (questPathToCheck.questUsedCount >= 0 && questPathToCheck.questUsedCount <= QuestCount)
     {
-        flagName = questPathToCheck.questList[i].flagName;
-        flagValue = questPathToCheck.questList[i].flagValue;
-
-        if (flagName == '' || !IsQuestCompleted(flagName, flagValue))
+        for (i = 0; i < questPathToCheck.questUsedCount; i++)
         {
-            return false;
-        }
-    }
+            flagName = questPathToCheck.questList[i].flagName;
+            flagValue = questPathToCheck.questList[i].flagValue;
 
-    return true;
+            if (flagName == '' || !IsQuestCompleted(flagName, flagValue))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    else
+    {
+        GetPlayer().ClientMessage("Quest count must be in range of 0-" $ QuestCount $ " ! , actual count: " $ questPathToCheck.questUsedCount);
+        return false;
+    }
 }
 
 function bool IsQuestCompleted(name flagName, bool flagValue)

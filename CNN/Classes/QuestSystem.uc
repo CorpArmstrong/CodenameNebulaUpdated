@@ -62,7 +62,7 @@ function bool IsQuestPathCompleted(QuestPath questPathToCheck)
         flagName = questPathToCheck.questList[i].flagName;
         flagValue = questPathToCheck.questList[i].flagValue;
 
-        if (IsQuestCompleted(flagName, flagValue))
+        if (!IsQuestCompleted(flagName, flagValue))
         {
             return false;
         }

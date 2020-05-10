@@ -720,10 +720,10 @@ function SetInvisible(bool B)
 function GoalCompleted( Name goalName )
 {
     super.GoalCompleted(goalName);
-    GetQuestSystem().OnQuestUpdated();
+    UpdateQuestSystem();
 }
 
-function QuestSystem GetQuestSystem()
+function UpdateQuestSystem()
 {
     local QuestSystem currentQuestSystem;
 
@@ -736,7 +736,10 @@ function QuestSystem GetQuestSystem()
         }
     }
 
-    return questSystem;
+    if (questSystem != none)
+    {
+        questSystem.OnQuestUpdated();
+    }
 }
 
 defaultproperties

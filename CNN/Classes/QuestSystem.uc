@@ -66,7 +66,13 @@ function bool IsQuestPathCompleted(QuestPath questPathToCheck)
             flagName = questPathToCheck.questList[i].flagName;
             flagValue = questPathToCheck.questList[i].flagValue;
 
-            if (flagName == '' || !IsQuestCompleted(flagName, flagValue))
+            if (flagName == '')
+            {
+                GetPlayer().ClientMessage("Quest can't have empty name! Index = " $ i);
+                return false;
+            }
+
+            if (!IsQuestCompleted(flagName, flagValue))
             {
                 return false;
             }

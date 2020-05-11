@@ -35,9 +35,10 @@ DeusExConversations/
 Core/
 UWindow/
 Save/
-Downloads/
+!Downloads/
 Docs/
 Headers/
+ConvEdit/
 
 Textures/HK_BuildingExt.utx
 Textures/CoreTexWallObj.utx

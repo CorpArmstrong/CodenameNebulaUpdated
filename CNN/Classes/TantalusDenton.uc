@@ -738,7 +738,7 @@ function UpdateQuestSystem()
 
     if (questSystem != none)
     {
-        questSystem.OnQuestUpdated();
+        questSystem.Update();
     }
 }
 

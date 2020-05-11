@@ -35,6 +35,9 @@ DeusExConversations/
 Core/
 UWindow/
 Save/
+Downloads/
+Docs/
+Headers/
 
 Textures/HK_BuildingExt.utx
 Textures/CoreTexWallObj.utx
@@ -277,12 +280,10 @@ Textures/DXN_RTMaggot2/
 Textures/FGRTex00/
 Maps/DeusEx.ini
 SWAT4_SDK/
-<<<<<<< HEAD
 DXApocalypseInside/
 BowenLite/
 ApocalypseInsideRelease/
 BowenCC/
-=======
 Maps/01_ApartmentBuilding.dx
 Maps/01_CorpBuilding.dx
 Maps/01_DowntownMiami.dx
@@ -304,7 +305,6 @@ Textures/MiningCamp.utx
 Textures/MiningFacility.utx
 Textures/Neon.utx
 Textures/RainMod.utx
->>>>>>> 19cf1e495032a7c355772c391bdcedb8ee00a61a
 Maps/Jh1_Intro.dx
 Maps/Jh1_RitterPark.dx
 Textures/Jh1Textures.utx

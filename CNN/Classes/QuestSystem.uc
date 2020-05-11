@@ -6,7 +6,7 @@ class QuestSystem extends Actor;
 
 struct Quest
 {
-    var() name flagName;
+    var() Name flagName;
     var() bool flagValue;
 };
 
@@ -18,35 +18,39 @@ struct QuestPath
 };
 
 const QuestCount = 50;
+const CompletedGameFlagName = "IsGameCompleted";
+
 var(QuestPaths) QuestPath questPathList[5];
 
 var private DeusExPlayer player;
-var private bool isQuestGameCompleted;
 
 function ResetQuestSystem()
 {
-    isQuestGameCompleted = false;
+    GetPlayer().flagBase.SetBool(GetCompletedGameFlagName(), false);
 }
 
-// Called when player completes another goal
-function OnQuestUpdated()
+function bool IsGameCompleted()
+{
+    return GetPlayer().flagBase.GetBool(GetCompletedGameFlagName());
+}
+
+function Update()
 {
     local int i;
     local string endMapName;
 
-    if (!isQuestGameCompleted)
+    if (!IsGameCompleted())
     {
         for (i = 0; i < ArrayCount(questPathList); i++)
         {
             if (IsQuestPathCompleted(questPathList[i]))
             {
-                isQuestGameCompleted = true;
                 endMapName = questPathList[i].endMapName;
                 break;
             }
         }
 
-        if (isQuestGameCompleted)
+        if (endMapName != "")
         {
             EndQuestPath(endMapName);
         }
@@ -55,7 +59,7 @@ function OnQuestUpdated()
 
 function bool IsQuestPathCompleted(QuestPath questPathToCheck)
 {
-    local name flagName;
+    local Name flagName;
     local bool flagValue;
     local int i;
 
@@ -87,14 +91,15 @@ function bool IsQuestPathCompleted(QuestPath questPathToCheck)
     }
 }
 
-function bool IsQuestCompleted(name flagName, bool flagValue)
+function bool IsQuestCompleted(Name flagName, bool flagValue)
 {
     return GetPlayer().flagBase.GetBool(flagName) == flagValue;
 }
 
 function EndQuestPath(string endMapName)
 {
-    Level.Game.SendPlayer(GetPlayer(), endMapName);
+    GetPlayer().flagBase.SetBool(GetCompletedGameFlagName(), true);
+    Level.Game.SendPlayer(getPlayer(), endMapName);
 }
 
 function DeusExPlayer GetPlayer()
@@ -105,6 +110,11 @@ function DeusExPlayer GetPlayer()
     }
 
     return player;
+}
+
+function Name GetCompletedGameFlagName()
+{
+    return DeusExRootWindow(GetPlayer().rootWindow).StringToName(CompletedGameFlagName);
 }
 
 defaultproperties

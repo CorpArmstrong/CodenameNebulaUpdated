@@ -63,8 +63,16 @@ copy ..\System\ApocalypseInside.ini										System\
 copy ..\System\Apocalypse_Inside.u										System\
 copy ..\System\AiScreen.u												System\
 
+:: Package Ogg dependencies
 copy ..\System\DXOgg.u                                                  System\
 copy ..\System\DXOgg.dll                                                System\
+
+:: Package Unreal Editor 1 fix files
+copy ..\System\deusexedfix.txt                                          System\
+copy ..\System\RenderExt.dll                                            System\
+copy ..\System\RenderExt.int                                            System\
+copy ..\System\UnrealEd.exe                                             System\
+copy ..\System\Window.dll                                               System\
 
 copy ..\System\CNN.u													System\
 copy ..\System\CNNText.u												System\

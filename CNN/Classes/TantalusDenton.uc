@@ -462,7 +462,7 @@ function CreateColorThemeManager()
 // conversation system and returns TRUE when finished.
 // ----------------------------------------------------------------------
 // TODO: Fix native class first, than uncomment this method!
-
+/*
 function bool StartConversation(
     Actor invokeActor,
     EInvokeMethod invokeMethod,
@@ -651,7 +651,7 @@ function bool StartConversation(
         return false;
     }
 }
-
+Commented out to test build*/
 // ----------------------------------------------------------------------
 // InvokeUIScreen()
 //

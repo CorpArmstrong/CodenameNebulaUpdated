@@ -162,7 +162,7 @@ exec function ShowMainMenu()
     info = GetLevelInfo();
 
     root = DeusExRootWindow(rootWindow);
-    
+
     if (root != None)
     {
         root.InvokeMenu(class'CNN.ApocalypseInsideMenuMain');
@@ -212,7 +212,7 @@ function ShowCredits(optional bool bLoadIntro)
 
 exec function ShowCreditsTest()
 {
-	ShowCredits(true); 
+	ShowCredits(true);
 }
 
 // ----------------------------------------------------------------------
@@ -611,48 +611,27 @@ function bool StartConversation(
     }
 }
 
-// ----------------------------------------------------------------------
-// InvokeUIScreen()
-//
-// Calls DeusExRootWindow::InvokeUIScreen(), but first make sure
-// a modifier (Alt, Shift, Ctrl) key isn't being held down.
-// ----------------------------------------------------------------------
-
-function InvokeUIScreen(Class<DeusExBaseWindow> windowClass)
-{
-    local DeusExRootWindow root;
-    root = DeusExRootWindow(rootWindow);
-    if (root != None)
-    {
-        if ( root.IsKeyDown( IK_Alt ) || root.IsKeyDown( IK_Shift ) || root.IsKeyDown( IK_Ctrl ))
-            return;
-
-        // Method second param is boolean bNoPause
-        root.InvokeUIScreen(windowClass, true);
-    }
-}
-
 function ToggleCameraStateNoDebugMessage(SecurityCamera cam)
 {
    if (cam.bActive)
    {
-      cam.UnTrigger(none, none);	
+      cam.UnTrigger(none, none);
       cam.team = -1;
    }
-   else            
+   else
    {
       MakeCameraAlly(cam);
       cam.Trigger(none, none);
    }
-         
+
    // Make sure the camera isn't in bStasis=True
    // so it responds to our every whim.
-   cam.bStasis = False;         
+   cam.bStasis = False;
 }
 
 function SetInvisible(bool B)
 {
-	
+
 	if ( !bAdmin && (Level.Netmode != NM_Standalone) )
 		return;
 
@@ -669,7 +648,7 @@ function SetInvisible(bool B)
 		Visibility = Default.Visibility;
 		// DEUS_EX STM - added AI invisibility
 		bDetectable = true;
-	}	
+	}
 }
 
 defaultproperties

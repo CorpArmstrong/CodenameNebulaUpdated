@@ -169,7 +169,6 @@ exec function ShowMainMenu()
 
     if (root != None)
     {
-        //root.InvokeMenu(class'CNN.ApocalypseInsideMenuMain');
         root.InvokeMenu(class'CNN.CNNMenuMainTest');
     }
 }
@@ -652,29 +651,6 @@ function bool StartConversation(
     }
 }
 Commented out to test build*/
-// ----------------------------------------------------------------------
-// InvokeUIScreen()
-//
-// Calls DeusExRootWindow::InvokeUIScreen(), but first make sure
-// a modifier (Alt, Shift, Ctrl) key isn't being held down.
-// ----------------------------------------------------------------------
-
-function InvokeUIScreen(Class<DeusExBaseWindow> windowClass)
-{
-    local DeusExRootWindow root;
-    root = DeusExRootWindow(rootWindow);
-
-    if (root != none)
-    {
-        if (root.IsKeyDown( IK_Alt ) || root.IsKeyDown( IK_Shift ) || root.IsKeyDown( IK_Ctrl))
-        {
-            return;
-        }
-
-        // Method second param is boolean bNoPause
-        root.InvokeUIScreen(windowClass, true);
-    }
-}
 
 function ToggleCameraStateNoDebugMessage(SecurityCamera cam)
 {

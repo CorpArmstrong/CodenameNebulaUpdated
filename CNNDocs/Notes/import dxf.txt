@@ -1,0 +1,4 @@
+Brush->Properties->Brush->Main Scale = 0.025 (All)
+Transform->Mirror About Z (Vertical)
+Polygons->To Brush
+Brush->Add

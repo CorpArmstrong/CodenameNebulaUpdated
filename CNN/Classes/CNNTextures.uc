@@ -31,8 +31,15 @@ class CNNTextures extends Object abstract;
 #exec TEXTURE IMPORT FILE=Textures\codenamenebula_credits.pcx NAME=codenamenebula_credits
 #exec TEXTURE IMPORT FILE=Textures\chester.bmp NAME=chester
 #exec TEXTURE IMPORT FILE=Textures\chester_credits.bmp NAME=chester_credits
+#exec TEXTURE IMPORT FILE=Textures\Aldrin_Apollo_1.pcx NAME=Aldrin_Apollo_1
+#exec TEXTURE IMPORT FILE=Textures\meacomputer2.pcx NAME=meacomputer2
+#exec TEXTURE IMPORT FILE=Textures\MoonStone.pcx NAME=MoonStone
+#exec TEXTURE IMPORT FILE=Textures\rammstein3.pcx NAME=rammstein3
+#exec TEXTURE IMPORT FILE=Textures\xmas_banner.pcx NAME=xmas_banner
+#exec TEXTURE IMPORT FILE=Textures\GrayDeathAwaren.pcx NAME=GrayDeathAwaren
+#exec TEXTURE IMPORT FILE=Textures\MarsEast.pcx NAME=MarsEast
+#exec TEXTURE IMPORT FILE=Textures\MarsWest.pcx NAME=MarsWest
 
-//from Nihilum
-#exec TEXTURE IMPORT NAME=RusCopTex2 FILE=Textures\RusCopTex2.pcx GROUP=Skins
-#exec TEXTURE IMPORT NAME=RusCopTex0 FILE=Textures\RusCopTex0.pcx GROUP=Skins FLAGS=2
-#exec TEXTURE IMPORT NAME=RusCopTex1 FILE=Textures\RusCopTex1.pcx GROUP=Skins
+defaultproperties
+{
+}

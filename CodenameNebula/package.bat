@@ -52,16 +52,7 @@ copy ..\Textures\AIStalk.utx											Textures\
 
 cd Textures\
 echo . > dummy.txt
-cd ..
-
-:: Package System
-copy ..\System\ApocalypseInside.u										System\
-copy ..\System\ApocalypseInside.int										System\
-copy ..\System\ApocalypseInsideUser.ini									System\
-copy ..\System\ApocalypseInside.bat										System\
-copy ..\System\ApocalypseInside.ini										System\
-copy ..\System\Apocalypse_Inside.u										System\
-copy ..\System\AiScreen.u												System\
+cd ..										System\
 
 :: Package Ogg dependencies
 copy ..\System\DXOgg.u                                                  System\
@@ -74,6 +65,7 @@ copy ..\System\RenderExt.int                                            System\
 copy ..\System\UnrealEd.exe                                             System\
 copy ..\System\Window.dll                                               System\
 
+:: Package System
 copy ..\System\CNN.u													System\
 copy ..\System\CNNText.u												System\
 copy ..\System\CNNAudio*.u												System\

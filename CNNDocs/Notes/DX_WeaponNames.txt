@@ -1,0 +1,41 @@
+Weapon Name:			Inventory Group:
+
+<Deus Ex>
+
+Weapon				1
+WeaponPistol			2
+WeaponStealthPistol		3
+WeaponAssaultGun		4
+WeaponRifle			5
+WeaponShawedOffShotgun		6
+WeaponAssaultShotgun		7
+WeaponPlasmaRifle		8
+WeaponMiniCrossbow		9
+WeaponCrowbar			10
+WeaponCombatKnife		11
+WeaponShuriken			12
+WeaponSword			13
+WeaponNanoSword			14
+WeaponFlameThrower		15
+WeaponLAW			16
+WeaponGEPGun			17
+WeaponPepperGun			18
+WeaponProd			19
+WeaponLAM			20
+WeaponGasGrenade		21
+WeaponEMPGrenade		22
+WeaponNanoVirusGrenade		23
+WeaponBaton			24
+
+WeaponNPCMelee			99
+WeaponNPCRanged			99
+
+WeaponHideAGun (PS-20)		X
+
+
+<Apocalypse Inside>
+
+AiWeaponPistol			50 (It was 2)
+WeaponSnowblind			51 (It was 3)
+WeaponMicrowaveGun		52 (It was 3)
+WeaponCoilGun			53 (It was 3)

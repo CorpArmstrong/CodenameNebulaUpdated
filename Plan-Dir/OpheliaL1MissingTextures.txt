@@ -1,2 +1,0 @@
-package: area51textures.utx
-Area51dmint_A00

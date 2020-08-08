@@ -54,7 +54,7 @@ function PreTravel()
 function Timer()
 {
     Super.Timer();
-    SendPlayerOnceToGame();
+    TrySendPlayerOnceToGame();
     DoLevelStuff();
 }
 
@@ -134,7 +134,7 @@ function RestoreSoundVolume()
     }
 }
 
-function SendPlayerOnceToGame()
+function TrySendPlayerOnceToGame()
 {
     if (flags.GetBool(convNamePlayed) && !isArrivalCompleted)
     {
@@ -150,13 +150,21 @@ function SendPlayerOnceToGame()
 function FinishCinematic()
 {
     local CameraPoint cPoint;
+    local InterpolationPoint iPoint;
 
     // Loop through all the CameraPoints and set the "nextPoint"
-    // to None will will effectively cause them to halt.
+    // to None will effectively cause them to halt.
     foreach player.AllActors(class 'CameraPoint', cPoint)
     {
         cPoint.nextPoint = none;
-        cPoint.Destroy();
+        //cPoint.Destroy();
+    }
+
+    // Loop through all the InterpolationPoints and set the "GameSpeedModifier"
+    // to 1 so game time scale will be normal.
+    foreach player.AllActors(class 'InterpolationPoint', iPoint)
+    {
+        iPoint.GameSpeedModifier = 1;
     }
 }
 

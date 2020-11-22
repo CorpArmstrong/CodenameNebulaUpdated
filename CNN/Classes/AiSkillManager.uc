@@ -7,15 +7,16 @@ defaultproperties
 {
     skillClasses(0)=Class'SkillWeaponPistol'
 	skillClasses(1)=Class'SkillWeaponLowTech'
-	skillClasses(2)=Class'AiSkillPiloting'//was Heavy
-    skillClasses(3)=Class'AiSkillChinese'//wasRifle
-    skillClasses(4)=Class'AiSkillFrench' //was Demolition
-    skillClasses(5)=Class'SkillEnviro'
-    skillClasses(6)=Class'SkillLockpicking'
-    skillClasses(7)=Class'SkillTech'
-    skillClasses(8)=Class'SkillMedicine'
-    skillClasses(9)=Class'SkillComputer'
-    skillClasses(10)=Class'SkillSwimming'
+	skillClasses(2)=Class'SkillHeavy'
+    skillClasses(3)=Class'SkillDemolition'
+    skillClasses(4)=Class'SkillWeaponRifle'
+    skillClasses(5)=Class'AiSkillChinese'
+    skillClasses(6)=class'SkillSwimming'
+    skillClasses(7)=Class'SkillEnviro'
+    skillClasses(8)=Class'SkillLockpicking'
+    skillClasses(9)=Class'SkillTech'
+    skillClasses(10)=Class'SkillMedicine'
+    skillClasses(11)=class'SkillComputer'
     NoToolMessage="You need the %s"
     NoSkillMessage="%s skill level insufficient to use the %s"
     SuccessMessage="Success!"

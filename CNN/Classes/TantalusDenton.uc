@@ -3,7 +3,7 @@
 //=============================================================================
 class TantalusDenton extends JCDentonMale;
 
-var travel BioEnergyController bioc;
+var travel ChineseSkillController chinese;
 var private QuestSystem questSystem;
 
 //var travel AiAugmentationManager AugmentationSystem;
@@ -20,11 +20,11 @@ var private QuestSystem questSystem;
 // set up the augmentation and skill systems
 // ----------------------------------------------------------------------
 
-/*function PostBeginPlay()
+function PostBeginPlay()
 {
-    bioc = Spawn(class'BioEnergyController', none);
+    chinese = Spawn(class'ChineseSkillController', none);
     Super.PostBeginPlay();
-}*/
+}
 
 event TravelPostAccept()
 {

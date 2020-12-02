@@ -22,8 +22,17 @@ function PostBeginPlay()
     }
 
     if (player != none &&
+        player.SkillSystem.GetSkillLevelValue(class'AiSkillChinese') == 3)
+    {
+        player.flagBase.SetBool('Chinese_Elementary', true);
+        player.flagBase.SetBool('Chinese_Intermediate', true);
+    }
+
+    if (player != none &&
         player.SkillSystem.GetSkillLevelValue(class'AiSkillChinese') == 4)
     {
+        player.flagBase.SetBool('Chinese_Elementary', true);
+        player.flagBase.SetBool('Chinese_Intermediate', true);
         player.flagBase.SetBool('Chinese_Advanced', true);
     }
 }

@@ -22,13 +22,16 @@ function Tick(float deltaTime)
             _player.flagBase.SetBool('Chinese_Elementary', true);
         }
         else
-        if (_player.SkillSystem.GetSkillLevelValue(class'AiSkillChinese') == 3)
+        if (_player.SkillSystem.GetSkillLevelValue(class'AiSkillChinese') > 2 && _player.SkillSystem.GetSkillLevelValue(class'AiSkillChinese') < 3)
         {
+            _player.flagBase.SetBool('Chinese_Elementary', true);
             _player.flagBase.SetBool('Chinese_Intermediate', true);
         }
         else
-        if (_player.SkillSystem.GetSkillLevelValue(class'AiSkillChinese') == 4)
+        if (_player.SkillSystem.GetSkillLevelValue(class'AiSkillChinese') == 3)
         {
+            _player.flagBase.SetBool('Chinese_Elementary', true);
+            _player.flagBase.SetBool('Chinese_Intermediate', true);
             _player.flagBase.SetBool('Chinese_Advanced', true);
         }
         else

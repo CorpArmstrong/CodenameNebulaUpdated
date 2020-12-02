@@ -32,7 +32,8 @@ function DoLevelStuff()
     local UberAlles Uber;
     local Magdalene Magdalene;
     local Ship1 ship;
-
+    local Female3 lee;
+    local ScientistFemale song;
     GivePlayerHisAugs();
 
     if (player.IsInState('Dying'))
@@ -51,6 +52,32 @@ function DoLevelStuff()
         foreach AllActors(class'Magdalene', Magdalene, 'MagdaleneDenton')
         {
             Magdalene.LeaveWorld();
+        }
+    }
+
+     if (flags.GetBool('PlayingInterview'))
+    {
+        foreach AllActors(class'Female3', lee, 'Lee')
+        {
+            lee.EnterWorld();
+        }
+
+        foreach AllActors(class'ScientistFemale', song, 'Song')
+        {
+            song.EnterWorld();
+        }
+    }
+
+    if (flags.GetBool('StoppedInterview'))
+    {
+        foreach AllActors(class'Female3', lee, 'Lee')
+        {
+            lee.LeaveWorld();
+        }
+
+        foreach AllActors(class'ScientistFemale', song, 'Song')
+        {
+            song.LeaveWorld();
         }
     }
 

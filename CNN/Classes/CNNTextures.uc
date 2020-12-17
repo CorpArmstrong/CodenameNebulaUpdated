@@ -39,6 +39,10 @@ class CNNTextures extends Object abstract;
 #exec TEXTURE IMPORT FILE=Textures\GrayDeathAwaren.pcx NAME=GrayDeathAwaren
 #exec TEXTURE IMPORT FILE=Textures\MarsEast.pcx NAME=MarsEast
 #exec TEXTURE IMPORT FILE=Textures\MarsWest.pcx NAME=MarsWest
+#exec TEXTURE IMPORT FILE=Textures\EarthEast.bmp NAME=EarthEast
+#exec TEXTURE IMPORT FILE=Textures\EarthWest.bmp NAME=EarthWest
+#exec TEXTURE IMPORT FILE=Textures\earthMapEast.bmp NAME=earthMapEast
+#exec TEXTURE IMPORT FILE=Textures\earthMapWest.bmp NAME=earthMapWest
 
 defaultproperties
 {

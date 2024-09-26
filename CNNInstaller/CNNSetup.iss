@@ -2,10 +2,10 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Codename Nebula"
-#define MyAppVersion "1.2.4"
+#define MyAppVersion "1.3.0"
 #define MyAppPublisher "ApostleMod"
 #define MyAppURL "https://apocalypseinside.heraldic.cloud/"
-#define SetupDir "C:\Jenkins\workspace\CNN-Jenkins"
+#define SetupDir "D:\GOG\Deus Ex GOTY"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -24,9 +24,9 @@ DefaultDirName={sd}\Games\DeusEx\CodenameNebula
 DefaultGroupName={#MyAppName}
 LicenseFile={#SetupDir}\CNNInstaller\InfoLicense.txt
 InfoBeforeFile={#SetupDir}\CNNInstaller\InfoBeforeInstall.txt
-OutputDir=C:\Dropbox\CNN
-OutputBaseFilename=CodenameNebula_v1.2.4
-;SetupIconFile={#SetupDir}\CodenameNebula\cnnico.ico
+OutputDir= D:\CNNBuilds
+OutputBaseFilename=CodenameNebula_v1.3.0
+SetupIconFile={#SetupDir}\CodenameNebula\cnnico.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -44,8 +44,8 @@ Source: "{#SetupDir}\CodenameNebula\*"; DestDir: "{app}"; Flags: ignoreversion r
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\cnnico.ico";
-Name: "{app}\Play Codename Nebula"; Filename: "{app}\..\System\DeusEx.EXE"; WorkingDir: "{app}\..\System\"; Parameters: "-ini={app}\System\CNN.ini -userini={app}\System\CNNUser.ini"; IconFilename: "{app}\cnnico.ico";
-Name: "{group}\Play Codename Nebula"; Filename: "{app}\..\System\DeusEx.EXE"; WorkingDir: "{app}\..\System\"; Parameters: "-ini={app}\System\CNN.ini -userini={app}\System\CNNUser.ini"; IconFilename: "{app}\cnnico.ico";
+Name: "{app}\Play Codename Nebula"; Filename: "{app}\..\System\DeusEx.EXE"; WorkingDir: "{app}\..\System\"; Parameters: "-ini=""{app}\System\CNN.ini"" -userini=""{app}\System\CNNUser.ini"""; IconFilename: "{app}\cnnico.ico";
+Name: "{group}\Play Codename Nebula"; Filename: "{app}\..\System\DeusEx.EXE"; WorkingDir: "{app}\..\System\"; Parameters: "-ini=""{app}\System\CNN.ini"" -userini=""{app}\System\CNNUser.ini"""; IconFilename: "{app}\cnnico.ico";
 
 [Run]
 Filename: "{app}\CNNInstallUtil.EXE"; Flags: nowait skipifsilent

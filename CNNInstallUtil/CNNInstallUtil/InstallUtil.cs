@@ -126,9 +126,6 @@ namespace CNNInstallUtil
             var oggMusicDirInfo = new DirectoryInfo(pathToOggMusic);
             var oggMusicModDirInfo = new DirectoryInfo(pathToModOggMusic);
 
-            var dxOggDLLFile = new FileInfo(Path.Combine(pathToSystem, "DXOgg.dll"));
-            var dxOggFile = new FileInfo(Path.Combine(pathToSystem, "DXOgg.u"));
-
             if (!musicDirInfo.Exists)
             {
                 Console.WriteLine("Error: directory {0} doesn't exists!\nCreating directory!", pathToMusic);
@@ -140,9 +137,19 @@ namespace CNNInstallUtil
                 Console.WriteLine("Error: directory {0} doesn't exists!\nCreating directory!", pathToOggMusic);
                 Directory.CreateDirectory(pathToOggMusic); // unauthorized exception?
             }
+            
+            string [] fileEntries = Directory.GetFiles(pathToSystem);
+            if (!fileEntries.Equals("DXOgg.dll"))
+            {
+                var dxOggDLLFile = new FileInfo(Path.Combine(pathToModSystem, "DXOgg.dll"));
+                File.Copy(dxOggDLLFile.FullName, Path.Combine(pathToSystem, dxOggDLLFile.Name), true); 
+            }
 
-            File.Copy(dxOggDLLFile.FullName, Path.Combine(pathToSystem, dxOggDLLFile.Name), true);
-            File.Copy(dxOggFile.FullName, Path.Combine(pathToSystem, dxOggFile.Name), true);
+            if (!File.Exists("DXOgg.u"))
+            {
+                var dxOggFile = new FileInfo(Path.Combine(pathToModSystem, "DXOgg.u"));
+                File.Copy(dxOggFile.FullName, Path.Combine(pathToSystem, dxOggFile.Name), true);
+            }
 
             foreach (FileInfo oggFile in oggMusicModDirInfo.GetFiles())
             {

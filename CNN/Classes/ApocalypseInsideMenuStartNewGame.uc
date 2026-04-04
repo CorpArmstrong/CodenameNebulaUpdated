@@ -33,7 +33,7 @@ function ProcessCustomMenuButton(string key)
 {
 	switch(key)
 	{
-		case "STARTBURDEN":
+		case "STARTCNN":
 			ApocalypseInsideGo();
 			break;
 	}
@@ -59,4 +59,6 @@ defaultproperties
     ButtonNames(1)="Previous Menu"
     buttonXPos=7
     buttonWidth=245
-    buttonDefaults(0)=
+    buttonDefaults(0)=(Y=13,Action=MA_Custom,Key="STARTCNN")
+    buttonDefaults(1)=(Y=49,Action=MA_Previous)
+}

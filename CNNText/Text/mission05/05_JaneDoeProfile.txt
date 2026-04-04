@@ -1,0 +1,20 @@
+<DC=255,255,255>
+<P>IC0-F/JaneDoe2027
+<P>Designation: 088/018-710
+<P>-----------------------------------------
+<P>Sex: F
+<P>Ethnicity: IC0
+<P>Age: 30+
+<P>-----------------------------------------
+<P>Pick-up: NA-USA
+<P>Destination: RBS - Silo B
+<P>Additional:
+<P>* no ID
+<P>* Undetermined ethnic background - mixed
+<P>* no visible augmentations<P>at the time of capture.
+<P>NOTE: Detroit PD search ongoing, low risk
+<P>-----------------------------------------
+<P>Procedures:
+<P>Full work-up req'd upon arrival
+<P>Note: procedure completed. Transfer to Panchaea canceled due to the Incident.
+<P>Status: Released

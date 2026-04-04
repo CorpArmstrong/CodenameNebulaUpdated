@@ -1,0 +1,23 @@
+<DC=0,0,0>
+<JC>RICK'S DATACUBE</JC>
+<P>
+<P>If you read this datacube then you must be me (who else has access to a container full of Clinton's emails and MJ12 selfies? lol.)
+<P>
+<P>
+<DC=0,255,0>
+<JC>Notes</JC>
+<P>I am
+<P>DocumentationAdmin
+<P>and I
+<P>ih8myjob
+<P>
+<P>
+<DC=255,255,0>
+<JC>Today's events</JC>
+<P>Time: 12pm-1pm</P>
+<P>Basketball with Don @ the graveyard.
+<P>
+<P>
+<DC=255,0,0>
+<JC>SYSTEM MESSAGE:</JC>
+<P>SMART SCAN SHOWED THIS DATACUBE IS GOING TO FAIL! PLEASE BACK UP YOUR DATA AND REPLACE THE DATACUBE!

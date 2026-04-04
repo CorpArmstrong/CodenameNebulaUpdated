@@ -5,6 +5,8 @@
 
 # Ignore files in root directory
 /*.*
+!CLAUDE.md
+!SetupCNN.md
 
 DeusEx/
 Prefabs/

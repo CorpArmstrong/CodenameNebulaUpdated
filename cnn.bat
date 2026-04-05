@@ -134,6 +134,7 @@ if /i "%~1"=="test" goto :test
 if /i "%~1"=="clean" goto :clean
 if /i "%~1"=="bump" goto :bump
 if /i "%~1"=="hd" goto :hd
+if /i "%~1"=="renderer" goto :renderer
 if /i "%~1"=="version" goto :version
 if /i "%~1"=="all" goto :all
 if /i "%~1"=="help" goto :help
@@ -782,6 +783,79 @@ echo   To also apply in the installed mod, run "cnn install" afterwards.
 goto :eof
 
 :: ============================================================================
+:: RENDERER - Detect and select renderer
+:: ============================================================================
+:renderer
+echo.
+echo ========================================
+echo  RENDERER SELECTION
+echo ========================================
+echo.
+
+set "CNN_INI_FILE=%REPO_ROOT%\System\CNN.ini"
+if not exist "!CNN_INI_FILE!" echo ERROR: CNN.ini not found && goto :eof
+
+:: Detect available renderers
+echo Available renderers:
+echo.
+set "R_NUM=0"
+if exist "%SYSTEM_DIR%\D3D9Drv.dll" (
+    set /a R_NUM+=1
+    set "R!R_NUM!=D3D9Drv.D3D9RenderDevice"
+    set "R!R_NUM!_NAME=Direct3D 9 (recommended)"
+    echo   !R_NUM!. Direct3D 9 (recommended^) - works on all modern GPUs
+)
+if exist "%SYSTEM_DIR%\d3d10drv.dll" (
+    set /a R_NUM+=1
+    set "R!R_NUM!=d3d10drv.d3d10RenderDevice"
+    set "R!R_NUM!_NAME=Direct3D 10 (Kentie)"
+    echo   !R_NUM!. Direct3D 10 (Kentie^) - advanced features, may crash in editor
+)
+if exist "%SYSTEM_DIR%\OpenGlDrv.dll" (
+    set /a R_NUM+=1
+    set "R!R_NUM!=OpenGlDrv.OpenGLRenderDevice"
+    set "R!R_NUM!_NAME=OpenGL"
+    echo   !R_NUM!. OpenGL - may have issues on modern NVIDIA/AMD drivers
+)
+if exist "%SYSTEM_DIR%\D3DDrv.dll" (
+    set /a R_NUM+=1
+    set "R!R_NUM!=D3DDrv.D3DRenderDevice"
+    set "R!R_NUM!_NAME=Direct3D (legacy)"
+    echo   !R_NUM!. Direct3D (legacy^) - old, limited resolution support
+)
+if exist "%SYSTEM_DIR%\SoftDrv.dll" (
+    set /a R_NUM+=1
+    set "R!R_NUM!=SoftDrv.SoftwareRenderDevice"
+    set "R!R_NUM!_NAME=Software"
+    echo   !R_NUM!. Software - slow but always works, CPU-only rendering
+)
+
+if "!R_NUM!"=="0" echo   No renderers found in %SYSTEM_DIR% && goto :eof
+
+:: Show current
+for /f "tokens=1,* delims==" %%a in ('findstr "^GameRenderDevice=" "!CNN_INI_FILE!"') do set "CURRENT_RENDERER=%%b"
+echo.
+echo   Current: !CURRENT_RENDERER!
+echo.
+set /p "R_CHOICE=Select renderer (1-!R_NUM!, or Enter to keep current): "
+
+if "!R_CHOICE!"=="" echo   Keeping current renderer. && goto :eof
+if !R_CHOICE! LSS 1 echo   Invalid choice. && goto :eof
+if !R_CHOICE! GTR !R_NUM! echo   Invalid choice. && goto :eof
+
+set "NEW_RENDERER=!R%R_CHOICE%!"
+set "NEW_RENDERER_NAME=!R%R_CHOICE%_NAME!"
+
+:: Update CNN.ini
+powershell -ExecutionPolicy Bypass -Command ^
+    "$f='!CNN_INI_FILE!'; $ini=[IO.File]::ReadAllText($f); $ini=$ini -replace 'GameRenderDevice=.*','GameRenderDevice=!NEW_RENDERER!'; $ini=$ini -replace 'RenderDevice=.*','RenderDevice=!NEW_RENDERER!'; $ini=$ini -replace 'WindowedRenderDevice=.*','WindowedRenderDevice=!NEW_RENDERER!'; [IO.File]::WriteAllText($f,$ini)" 2>nul
+
+echo.
+echo   Renderer changed to: !NEW_RENDERER_NAME!
+echo   Run "cnn install" to apply to the installed mod.
+goto :eof
+
+:: ============================================================================
 :: VERSION - Show current version
 :: ============================================================================
 :version
@@ -845,6 +919,7 @@ echo   clean           Remove compiled packages
 echo   bump [part]     Increment version (patch/minor/major, default: patch)
 echo   version         Show current version
 echo   hd              Detect and configure HD textures (NewVision/HDTP)
+echo   renderer        Select graphics renderer (D3D9/OpenGL/Software)
 echo   all             compile + package + installer
 echo   help            Show this help
 echo.

@@ -126,42 +126,57 @@ EditPackages=CNN
 EditPackages=CNNText
 ```
 
-### Step 8: Compile
+### Step 8: Build Tool (`cnn.bat`)
 
-From `<DeusExRoot>\System\`:
+The repo includes a Maven-like build tool. All commands auto-detect Deus Ex (Steam registry, GOG registry, CD registry) and Inno Setup paths — no hardcoding needed.
+
 ```cmd
-ucc.exe make
+cnn setup           First-time setup (junctions, DLLs, INI config)
+cnn compile         Compile UnrealScript packages (CNN.u, CNNText.u)
+cnn package         Copy compiled assets into distribution folder
+cnn installer       Build Inno Setup installer (.exe)
+cnn install         Deploy mod to local Deus Ex for testing
+cnn test            Launch the mod in Deus Ex
+cnn clean           Remove compiled packages
+cnn bump [part]     Increment version (patch/minor/major, default: patch)
+cnn version         Show current version
+cnn all             compile + package + installer
+cnn help            Show help and detected paths
 ```
 
-This produces:
-- `CNN.u` — main game logic package (from `CNN/Classes/*.uc`)
-- `CNNText.u` — conversations and text content (from `CNNText/Classes/*.uc` importing `.con` files)
-- `CNNAudioCNN.u`, `CNNAudioChapter05.u`, `CNNAudioChapter06.u` — conversation audio packages
+If Deus Ex is not found automatically, the tool prompts for the path and saves it to `cnn.local.bat` (gitignored).
 
-### Step 9: Deploy Compiled Packages
+### Step 9: Compile, Package, and Build Installer
 
-After compilation, copy packages to the Community Update editor folder:
 ```cmd
-copy "<DeusExRoot>\System\CNN.u" "<DeusExRoot>\Mods\Community Update\System\"
-copy "<DeusExRoot>\System\CNNText.u" "<DeusExRoot>\Mods\Community Update\System\"
-copy "<DeusExRoot>\System\CNNAudio*.u" "<DeusExRoot>\Mods\Community Update\System\"
-copy "<DeusExRoot>\System\GaussGun.u" "<DeusExRoot>\Mods\Community Update\System\"
-copy "<DeusExRoot>\System\DXOgg.dll" "<DeusExRoot>\Mods\Community Update\System\"
-copy "<DeusExRoot>\System\DXOgg.u" "<DeusExRoot>\Mods\Community Update\System\"
+cnn all
 ```
 
-Also copy compiled packages back to the repo:
+This runs the full pipeline:
+1. **Compile** — produces `CNN.u`, `CNNText.u`, `CNNAudio*.u` via `ucc make`
+2. **Package** — copies maps, textures, music, and compiled packages into `CodenameNebula/`
+3. **Installer** — builds `Build/CodenameNebula_v<version>.exe` via Inno Setup
+
+### Step 10: Launching the Mod
+
+The mod requires a **renamed copy of `DeusEx.exe`** called `CodenameNebula.exe` to bypass Steam's process hook. The `cnn test` command handles this automatically.
+
 ```cmd
-copy "<DeusExRoot>\System\CNN.u" "<repo>\System\"
-copy "<DeusExRoot>\System\CNNText.u" "<repo>\System\"
-copy "<DeusExRoot>\System\CNNAudio*.u" "<repo>\System\"
+cnn test
 ```
 
-### Step 10: Verify
+This creates `CodenameNebula.exe` (from the original 1112fm exe) if it doesn't exist, and launches:
+```
+CodenameNebula.exe INI="..\CodenameNebula\System\CNN.ini" USERINI="..\CodenameNebula\System\CNNUser.ini"
+```
 
-1. Launch the Community Update editor: `<DeusExRoot>\Mods\Community Update\System\UnrealEd.exe`
-2. Open a CNN map (e.g. `06_OpheliaL1.dx` from the `CNNMaps` folder)
-3. Press Play Level — map should load with conversations working
+> **Important:** The `CNN.ini` must use `OpenGlDrv.OpenGLRenderDevice` as the renderer, not D3D9 or Glide. The original 1112fm exe doesn't support the Community Update's D3D9 renderer.
+
+### Step 11: Verify
+
+1. Run `cnn compile` — should produce CNN.u and CNNText.u with 0 errors
+2. Run `cnn test` — mod should launch with the CNN main menu
+3. Launch the Community Update editor, open a CNN map, press Play Level — conversations should work
 
 ### Level Editing Workflow
 
@@ -174,12 +189,14 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 
 ### Known Issues & Pitfalls
 
+- **Steam intercepts `DeusEx.exe`** — always use `CodenameNebula.exe` (a renamed copy of the original 1112fm exe) to launch the mod. The `cnn test` command handles this automatically.
+- **Renderer:** `CNN.ini` must use `OpenGlDrv.OpenGLRenderDevice`. The D3D9 renderer from the Community Update is incompatible with the original 1112fm exe. Glide requires a 3Dfx card.
 - **Do NOT use the SDK's `Core.dll`** — it silently breaks `#exec CONVERSATION IMPORT`. Keep the Steam GOTY `Core.dll`.
 - **UnrealEd 2.2 (UED22)** is incompatible with CNN maps — its stripped `.u` packages from UT 469e are missing Deus Ex functions. Engine versions are binary-incompatible; swapping `.u` files doesn't work.
 - **Original SDK editor** freezes on large maps (OpheliaL1, MoonIntro) and crashes when clicking empty space with properties window open (`HitSize==0` assertion in `UnCamera.cpp`).
 - **Path length limit** — UnrealEd 1.x truncates long file paths. Use the `CNNMaps` junction (short path) instead of the full `CodenameNebulaUpdated\Maps\` path.
 - **`CNNText.u`** is a build artifact not in source control. It must be compiled via `ucc make` from `CNNText/Classes/` which imports `.con` conversation files.
-- **Kentie's D3D10 renderer** causes `HitSize==0` crashes in the original editor on startup. The D3D9 renderer works but doesn't prevent the freeze.
+- **Kentie's D3D10 renderer** causes `HitSize==0` crashes in the original editor on startup.
 
 ## Repository Structure
 

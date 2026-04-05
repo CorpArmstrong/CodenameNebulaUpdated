@@ -104,45 +104,50 @@ EditPackages=CNN
 EditPackages=CNNText
 ```
 
-## Step 8: Compile
+## Step 8: Build Tool
 
-From `<DeusExRoot>\System\`:
+The repo includes `cnn.bat` — a build tool that auto-detects all paths (Steam, GOG, CD installs via registry). No hardcoded paths.
+
 ```cmd
-ucc.exe make
+cnn setup       First-time setup (junctions, DLLs, INI config)
+cnn compile     Compile UnrealScript packages
+cnn package     Copy assets into distribution folder
+cnn installer   Build Inno Setup installer
+cnn install     Deploy mod to local Deus Ex for testing
+cnn test        Launch the mod
+cnn clean       Remove compiled packages
+cnn bump        Increment version (patch/minor/major)
+cnn all         compile + package + installer
 ```
 
-This produces:
-- **CNN.u** — main game logic (from `CNN\Classes\*.uc`)
-- **CNNText.u** — conversations and text content (from `CNNText\Classes\*.uc` importing `.con` files)
-- **CNNAudioCNN.u**, **CNNAudioChapter05.u**, **CNNAudioChapter06.u** — conversation audio
+If Deus Ex is not auto-detected, the tool prompts for the path and saves it to `cnn.local.bat`.
 
-## Step 9: Deploy Compiled Packages
+## Step 9: Compile and Build
 
-Copy to the Community Update editor folder:
 ```cmd
-copy "<DeusExRoot>\System\CNN.u" "<DeusExRoot>\Mods\Community Update\System\"
-copy "<DeusExRoot>\System\CNNText.u" "<DeusExRoot>\Mods\Community Update\System\"
-copy "<DeusExRoot>\System\CNNAudio*.u" "<DeusExRoot>\Mods\Community Update\System\"
-copy "<DeusExRoot>\System\GaussGun.u" "<DeusExRoot>\Mods\Community Update\System\"
-copy "<DeusExRoot>\System\DXOgg.dll" "<DeusExRoot>\Mods\Community Update\System\"
-copy "<DeusExRoot>\System\DXOgg.u" "<DeusExRoot>\Mods\Community Update\System\"
+cnn all
 ```
 
-Copy compiled packages back to the repo:
+This compiles (`CNN.u`, `CNNText.u`, audio packages), packages distribution files, and builds the Inno Setup installer at `Build/CodenameNebula_v<version>.exe`.
+
+## Step 10: Launch the Mod
+
 ```cmd
-copy "<DeusExRoot>\System\CNN.u" "<repo>\System\"
-copy "<DeusExRoot>\System\CNNText.u" "<repo>\System\"
-copy "<DeusExRoot>\System\CNNAudio*.u" "<repo>\System\"
+cnn test
 ```
 
-## Step 10: Verify
+This creates `CodenameNebula.exe` (a renamed copy of the original 1112fm `DeusEx.exe`) in `<DeusExRoot>\System\` and launches it with the CNN ini files. The rename is required because **Steam intercepts `DeusEx.exe`** by name and strips command-line arguments.
 
-1. Launch the Community Update editor: `<DeusExRoot>\Mods\Community Update\System\UnrealEd.exe`
-2. File > Open — navigate to `CNNMaps` folder, open `06_OpheliaL1.dx`
-3. Press Play Level — map should load with conversations working
+## Step 11: Verify
+
+1. `cnn compile` — should produce CNN.u and CNNText.u with 0 errors
+2. `cnn test` — mod should launch with the CNN main menu
+3. Community Update editor > open a CNN map > Play Level — conversations should work
 
 ## Known Pitfalls
 
+- **Steam intercepts `DeusEx.exe`** — always use `CodenameNebula.exe` (renamed copy). `cnn test` handles this.
+- **Renderer:** `CNN.ini` must use `OpenGlDrv.OpenGLRenderDevice`. D3D9 from Community Update is incompatible with the original 1112fm exe.
 - **Never replace Steam's `Core.dll`** with the SDK version — it silently kills conversation imports
 - **UnrealEd 2.2 (UED22)** is incompatible with CNN — its stripped `.u` packages are missing Deus Ex functions and engine versions are binary-incompatible
 - **Original SDK editor** (`System\UnrealEd.exe`) freezes on large maps and crashes on empty-space click — use the Community Update editor instead

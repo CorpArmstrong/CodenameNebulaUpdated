@@ -7,6 +7,15 @@
 /*.*
 !CLAUDE.md
 !SetupCNN.md
+!cnn.bat
+!cnn.local.example.bat
+!version.txt
+
+# Developer-local config (not committed)
+cnn.local.bat
+
+# Build output
+Build/
 
 DeusEx/
 Prefabs/

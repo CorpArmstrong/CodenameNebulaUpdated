@@ -133,6 +133,7 @@ if /i "%~1"=="install" goto :install
 if /i "%~1"=="test" goto :test
 if /i "%~1"=="clean" goto :clean
 if /i "%~1"=="bump" goto :bump
+if /i "%~1"=="hd" goto :hd
 if /i "%~1"=="version" goto :version
 if /i "%~1"=="all" goto :all
 if /i "%~1"=="help" goto :help
@@ -385,15 +386,15 @@ for %%f in (Ophelia.utx AiInfoPortraits.utx AITex.utx PFADTex.utx ArtPieces.utx 
 
 :: Package System files
 echo Packaging System...
-for %%f in (CNN.u CNNText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u PFAD.u GaussGun.u DXRVNewVehicles.u DXOgg.u DXOgg.dll CNN.ini CNNUser.ini) do (
+for %%f in (CNN.u CNNText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u PFAD.u GaussGun.u DXRVNewVehicles.u DXOgg.u DXOgg.dll D3D9Drv.dll CNN.ini CNNUser.ini) do (
     if exist "%REPO_ROOT%\System\%%f" (
         copy /y "%REPO_ROOT%\System\%%f" "%DIST_DIR%\System\" >nul
         echo   %%f
     )
 )
 
-:: Package editor fix files
-for %%f in (RenderExt.dll RenderExt.int) do (
+:: Package renderer and editor fix files
+for %%f in (D3D9Drv.int RenderExt.dll RenderExt.int) do (
     if exist "%REPO_ROOT%\System\%%f" (
         copy /y "%REPO_ROOT%\System\%%f" "%DIST_DIR%\System\" >nul
         echo   %%f
@@ -647,6 +648,140 @@ echo CLEAN SUCCEEDED
 goto :eof
 
 :: ============================================================================
+:: HD - Detect and configure high-res texture/model packs
+:: ============================================================================
+:hd
+echo.
+echo ========================================
+echo  HD TEXTURE DETECTION
+echo ========================================
+echo  Scanning for NewVision and HDTP...
+echo ========================================
+echo.
+
+set "NV_PATH="
+set "HDTP_TEX_PATH="
+set "HDTP_SYS_PATH="
+set "HD_SOURCE="
+
+:: --- Detect NewVision ---
+:: Revision (Steam DLC)
+if not defined NV_PATH if exist "%DEUSEX_ROOT%\Revision\NewVision\Textures\CoreTexMetal.utx" (
+    set "NV_PATH=%DEUSEX_ROOT%\Revision\NewVision\Textures"
+    set "HD_SOURCE=Revision"
+)
+:: GMDX v9
+if not defined NV_PATH if exist "%DEUSEX_ROOT%\GMDXv9\NewVision\Textures\CoreTexMetal.utx" (
+    set "NV_PATH=%DEUSEX_ROOT%\GMDXv9\NewVision\Textures"
+    set "HD_SOURCE=GMDX v9"
+)
+:: GMDX v10
+if not defined NV_PATH if exist "%DEUSEX_ROOT%\GMDX\NewVision\Textures\CoreTexMetal.utx" (
+    set "NV_PATH=%DEUSEX_ROOT%\GMDX\NewVision\Textures"
+    set "HD_SOURCE=GMDX v10"
+)
+:: Standalone (New Vision folder)
+if not defined NV_PATH if exist "%DEUSEX_ROOT%\New Vision\Textures\CoreTexMetal.utx" (
+    set "NV_PATH=%DEUSEX_ROOT%\New Vision\Textures"
+    set "HD_SOURCE=Standalone"
+)
+:: Standalone (NewVision folder, no space)
+if not defined NV_PATH if exist "%DEUSEX_ROOT%\NewVision\Textures\CoreTexMetal.utx" (
+    set "NV_PATH=%DEUSEX_ROOT%\NewVision\Textures"
+    set "HD_SOURCE=Standalone"
+)
+:: Standalone (directly in Textures with NV prefix)
+if not defined NV_PATH if exist "%DEUSEX_ROOT%\Textures\NVCoreTexMetal.utx" (
+    set "NV_PATH=%DEUSEX_ROOT%\Textures"
+    set "HD_SOURCE=Standalone (in Textures)"
+)
+
+:: --- Detect HDTP ---
+:: Revision
+if exist "%DEUSEX_ROOT%\Revision\HDTP\System\HDTPCharacters.u" (
+    set "HDTP_SYS_PATH=%DEUSEX_ROOT%\Revision\HDTP\System"
+    set "HDTP_TEX_PATH=%DEUSEX_ROOT%\Revision\HDTP\Textures"
+    if not defined HD_SOURCE set "HD_SOURCE=Revision"
+)
+:: GMDX v9
+if not defined HDTP_SYS_PATH if exist "%DEUSEX_ROOT%\GMDXv9\HDTP\System\HDTPCharacters.u" (
+    set "HDTP_SYS_PATH=%DEUSEX_ROOT%\GMDXv9\HDTP\System"
+    set "HDTP_TEX_PATH=%DEUSEX_ROOT%\GMDXv9\HDTP\Textures"
+)
+:: GMDX v10
+if not defined HDTP_SYS_PATH if exist "%DEUSEX_ROOT%\GMDX\HDTP\System\HDTPCharacters.u" (
+    set "HDTP_SYS_PATH=%DEUSEX_ROOT%\GMDX\HDTP\System"
+    set "HDTP_TEX_PATH=%DEUSEX_ROOT%\GMDX\HDTP\Textures"
+)
+:: Standalone
+if not defined HDTP_SYS_PATH if exist "%DEUSEX_ROOT%\HDTP\System\HDTPCharacters.u" (
+    set "HDTP_SYS_PATH=%DEUSEX_ROOT%\HDTP\System"
+    set "HDTP_TEX_PATH=%DEUSEX_ROOT%\HDTP\Textures"
+)
+:: Standalone (in base System/Textures folders)
+if not defined HDTP_SYS_PATH if exist "%DEUSEX_ROOT%\System\HDTPCharacters.u" (
+    set "HDTP_SYS_PATH=%DEUSEX_ROOT%\System"
+    set "HDTP_TEX_PATH=%DEUSEX_ROOT%\Textures"
+)
+if not defined HDTP_SYS_PATH if exist "%DEUSEX_ROOT%\HDTP\HDTPCharacters.u" (
+    set "HDTP_SYS_PATH=%DEUSEX_ROOT%\HDTP"
+    set "HDTP_TEX_PATH=%DEUSEX_ROOT%\HDTP"
+)
+
+:: --- Report findings ---
+if defined NV_PATH (
+    echo   NewVision: FOUND [!HD_SOURCE!]
+    echo     Path: !NV_PATH!
+) else (
+    echo   NewVision: not found
+)
+if defined HDTP_SYS_PATH (
+    echo   HDTP:      FOUND
+    echo     Models:  !HDTP_SYS_PATH!
+    echo     Textures: !HDTP_TEX_PATH!
+) else (
+    echo   HDTP:      not found
+)
+
+if not defined NV_PATH if not defined HDTP_SYS_PATH (
+    echo.
+    echo   No HD packs found. You can install them from:
+    echo     NewVision: https://www.moddb.com/mods/new-vision
+    echo     HDTP:      https://www.moddb.com/mods/hdtp
+    echo.
+    echo   Or install Deus Ex: Revision (free on Steam^) which includes both.
+    goto :eof
+)
+
+:: --- Inject paths into CNN.ini ---
+echo.
+set "CNN_INI_FILE=%REPO_ROOT%\System\CNN.ini"
+if not exist "!CNN_INI_FILE!" (
+    echo   ERROR: CNN.ini not found at !CNN_INI_FILE!
+    goto :eof
+)
+
+:: Note: the PS script cleans old HD lines before injecting, so re-running is safe
+
+echo   Updating CNN.ini with HD texture paths...
+
+:: Write paths to temp file to avoid escaping issues with parentheses in paths
+set "HD_ARGS=%TEMP%\cnn_hd_args.txt"
+echo !CNN_INI_FILE!> "!HD_ARGS!"
+if defined NV_PATH (echo !NV_PATH!>> "!HD_ARGS!") else (echo .>> "!HD_ARGS!")
+if defined HDTP_TEX_PATH (echo !HDTP_TEX_PATH!>> "!HD_ARGS!") else (echo .>> "!HD_ARGS!")
+if defined HDTP_SYS_PATH (echo !HDTP_SYS_PATH!>> "!HD_ARGS!") else (echo .>> "!HD_ARGS!")
+
+powershell -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\inject_hd_paths.ps1" -ArgsFile "!HD_ARGS!"
+del "!HD_ARGS!" 2>nul
+
+echo   Done!
+echo.
+echo   HD textures will be loaded next time you run "cnn test".
+echo   To also apply in the installed mod, run "cnn install" afterwards.
+goto :eof
+
+:: ============================================================================
 :: VERSION - Show current version
 :: ============================================================================
 :version
@@ -709,6 +844,7 @@ echo   test            Launch the mod in Deus Ex
 echo   clean           Remove compiled packages
 echo   bump [part]     Increment version (patch/minor/major, default: patch)
 echo   version         Show current version
+echo   hd              Detect and configure HD textures (NewVision/HDTP)
 echo   all             compile + package + installer
 echo   help            Show this help
 echo.

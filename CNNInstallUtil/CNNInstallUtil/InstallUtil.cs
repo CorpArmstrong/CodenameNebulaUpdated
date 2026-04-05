@@ -200,7 +200,7 @@ namespace CNNInstallUtil
                     .AppendLine("Class=CNN.TantalusDenton")
                     .AppendLine()
                     .AppendLine("[Engine.Engine]")
-                    .AppendLine("GameRenderDevice=OpenGlDrv.OpenGLRenderDevice")
+                    .AppendLine("GameRenderDevice=D3D9Drv.D3D9RenderDevice")
                     .AppendLine("DefaultGame=CNN.CNNGameInfo")
                     .AppendLine()
                     .AppendLine("[Core.System]")
@@ -236,11 +236,11 @@ namespace CNNInstallUtil
             // Set renderer to OpenGL (compatible with original 1112fm exe)
             index = iniKeyValues.FindIndex(x => x.StartsWith("GameRenderDevice="));
             if (index >= 0)
-                iniKeyValues[index] = "GameRenderDevice=OpenGlDrv.OpenGLRenderDevice";
+                iniKeyValues[index] = "GameRenderDevice=D3D9Drv.D3D9RenderDevice";
 
             index = iniKeyValues.FindIndex(x => x.StartsWith("RenderDevice="));
             if (index >= 0)
-                iniKeyValues[index] = "RenderDevice=OpenGlDrv.OpenGLRenderDevice";
+                iniKeyValues[index] = "RenderDevice=D3D9Drv.D3D9RenderDevice";
 
             int propertiesIdx = iniKeyValues.FindIndex(x => x.StartsWith("[Core.System]"));
             if (propertiesIdx >= 0)
@@ -266,6 +266,17 @@ namespace CNNInstallUtil
 
             if (!Directory.Exists(pathToOggMusic))
                 Directory.CreateDirectory(pathToOggMusic);
+
+            // Copy D3D9 renderer to game System (best compatible renderer for modern Windows)
+            foreach (string d3d9File in new[] { "D3D9Drv.dll", "D3D9Drv.int" })
+            {
+                string src = Path.Combine(pathToModSystem, d3d9File);
+                if (File.Exists(src))
+                {
+                    File.Copy(src, Path.Combine(pathToSystem, d3d9File), true);
+                    Console.WriteLine("Copied {0} to System.", d3d9File);
+                }
+            }
 
             // Copy DXOgg.dll to game System (needed for OGG playback)
             string dxOggDll = Path.Combine(pathToModSystem, "DXOgg.dll");

@@ -1,0 +1,433 @@
+================================================================================
+ CODENAME NEBULA - LEVEL 2 (OPHELIA L2) QUEST IMPLEMENTATION GUIDE
+================================================================================
+
+ This document describes the full branching story flow for OpheliaL2,
+ the quest flags needed, and the implementation tasks for completing
+ the level and connecting it to the 4 endings.
+
+================================================================================
+ TABLE OF CONTENTS
+================================================================================
+
+ 1. QUEST FLAGS REFERENCE
+ 2. L2 FLOW - STEP BY STEP
+ 3. SOCIAL BOSS FIGHT (WONG) - DETAILED BRANCHING
+ 4. ENDING CONDITIONS
+ 5. IMPLEMENTATION TASKS
+ 6. DIFFICULTY ESTIMATE
+
+================================================================================
+ 1. QUEST FLAGS REFERENCE
+================================================================================
+
+ These are the flags that QuestSystem checks to determine the ending.
+ Flags are set via flagBase.SetBool() during gameplay.
+
+ --- Flags from earlier levels (carried into L2) ---
+
+ PlayerKnowsChinese        Player has Chinese skill at Master level
+ DestroyedDocksEvidence     Player destroyed all evidence in the Docks (Ch6 L1)
+ bChoseHostileToArmstrong   Player was hostile to Armstrong in Docks conversation
+
+ --- Flags set during L2 ---
+
+ WongKilledSamantha         Wong killed Samantha during social boss fight
+ WongSparedSamantha         Wong spared Samantha during social boss fight
+ WongBetrayedMeph           Player convinced Wong to kill Mephistopheles
+ PlayerGaveUp               Player gave up during social boss fight
+ DaedalusKilledAvatar       Daedalus killed Tantalus' avatar
+ HostagesAlive              At least one hostage survived the social boss fight
+ SocialBossCompleted        Social boss fight sequence is done
+ UndockedL2                 Player undocked Level 2 from Ophelia (Hijack task 1)
+ StartedBlueFusion          Player started Blue Fusion reactor (Hijack task 2)
+ TookSteeringWheel          Player took the steering wheel (Hijack task 3)
+ TimerExpired               The MJ12 arrival timer ran out
+ PlayerEnteredInfusionChamber  Player entered the upload tube (triggers map exit)
+ MagdaleneUploaded          Magdalene's upload to network completed
+ TantalusUploaded           Tantalus' avatar uploaded
+ IsGameCompleted            Set by QuestSystem when ending is triggered
+
+================================================================================
+ 2. L2 FLOW - STEP BY STEP
+================================================================================
+
+ PHASE 1: ENTRY
+ ──────────────────────────────────────────────────────────────────────
+ 1. Player arrives at Airlock (from L1)
+ 2. Depressurize event
+ 3. Player reaches Hub
+ 4. Tantalus listens to JC's hologram
+ 5. Receives endgame instructions from Page's avatar
+    (Page says he is in Mt. Weather)
+
+ PHASE 2: COMMAND CENTER
+ ──────────────────────────────────────────────────────────────────────
+ 6. Player reaches Command Center
+ 7. Magdalene comes out and shoots Page's avatar with coil gun
+ 8. MJ12 (mini crossbows) vs Avatars battle starts
+ 9. Player opens doors to Avatar Lab and Gravity Lab
+
+ PHASE 3: GRAVITY LAB - WONG & SAMANTHA SUBPLOT
+ ──────────────────────────────────────────────────────────────────────
+ 10. Player enters Gravity Lab
+ 11. CHOICE: Player convinces Wong to leave Samantha alone
+     OR: Player convinces Samantha to follow Wong
+ 12. Samantha gives key to Dr. Reed's stateroom
+ 13. At Reed's stateroom: Player finds video recording of Wong
+     -> FLAG: PlayerSawWongVideo = true
+     (Proves Wong has his own motives)
+
+ PHASE 4: THE BRIDGE - SOCIAL BOSS FIGHT
+ ──────────────────────────────────────────────────────────────────────
+ (See Section 3 for detailed branching)
+
+ 14. Player reaches The Bridge
+ 15. Wong kills MJ12 troop hostage
+ 16. CHECK: DestroyedDocksEvidence?
+     YES -> Mephistopheles orders Wong to spare hostages -> skip to Phase 5
+     NO  -> Social Boss Choice 1 begins
+
+ 17-20. Social Boss Choices 1-4 (see Section 3)
+
+ PHASE 5: POST-BOSS
+ ──────────────────────────────────────────────────────────────────────
+ 21. Page congratulates Tantalus
+     Says MJ12 will be there in 3 minutes
+ 22. CHECK: Any hostages alive?
+     NO -> Timer begins (3 minutes)
+ 23. Player speaks with Magdalene
+
+ PHASE 6: AVATAR LAB
+ ──────────────────────────────────────────────────────────────────────
+ 24. On your way to Avatar Lab, Bob Page infolinks, warns troops
+ 25. Tantalus meets Ophelia and receives endgame instructions
+ 26. At Avatar Lab
+ 27. Daedalus says he opened the door to the Bridge
+ 28. Ophelia (avatar carrier bot) greets player
+     Gives instructions to close the door to Avatar Lab
+ 29. Magdalene sits on medical bed
+     Ophelia (medbot) gives her Reizene
+     Scans her embryo — it is dead
+ 30. Ophelia shows Megan Reed's carcass
+     Says she uploaded herself
+ 31. MagdaleneInsideTube sequence starts
+
+ PHASE 7: UPLOAD SEQUENCE
+ ──────────────────────────────────────────────────────────────────────
+ 32. Magdalene goes to Upload tube
+     Player closes the tube from console with a button
+ 33. Second tube opens
+ 34. Player walks into second tube
+     Teleports to the same map as Tantalus' human server
+ 35. Second tube closes
+     Tantalus' avatar carcass appears in tube
+ 36. Tantalus' human server opens
+     Human server has 0 health in both legs
+ 37. Player crawls (can't walk — broken legs)
+     Ophelia-medbot can heal his legs
+ 38. Player comes to his avatar
+     Small dialogue with himself
+ 39. Presses button to start upload of Magdalene and Tantalus' avatar
+     -> Dialogue "WalkingInTube" starts
+ 40. Avatars attack
+     Timer starts
+     Page's face appears on window screens
+     He speaks about how NSF failed at a rebellion,
+     that Tantalus gave up and committed suicide,
+     JC Denton and UNATCO are on their way to recover the station
+
+ PHASE 8: ENDGAME BRANCHING
+ ──────────────────────────────────────────────────────────────────────
+ 41. Player enters the infusion chamber -> triggers MapExit
+     -> QuestSystem.Update() evaluates flags
+     -> Player is sent to the appropriate ending map
+
+================================================================================
+ 3. SOCIAL BOSS FIGHT (WONG) - DETAILED BRANCHING
+================================================================================
+
+ This is a multi-round social encounter similar to the social boss
+ fights in Deus Ex: Human Revolution. Wong holds hostages and the
+ player must navigate conversation choices.
+
+ PRE-CHECK: Did player destroy all evidence in the docks?
+ ┌─────────────────────────────────────────────────────────────┐
+ │ DestroyedDocksEvidence == true?                             │
+ │   YES -> Mephistopheles orders Wong to spare hostages       │
+ │          -> Skip entire social boss, hostages live          │
+ │   NO  -> Social Boss begins                                │
+ └─────────────────────────────────────────────────────────────┘
+
+ ROUND 1 (Social Boss Choice 1):
+ ┌─────────────────────────────────────────────────────────────┐
+ │ Outcome A: Wong kills Samantha                             │
+ │   -> FLAG: WongKilledSamantha = true                       │
+ │   -> Continue to Round 2                                   │
+ │                                                            │
+ │ Outcome B: Wong spares Samantha                            │
+ │   -> FLAG: WongSparedSamantha = true                       │
+ │   -> Continue to Round 2                                   │
+ └─────────────────────────────────────────────────────────────┘
+
+ ROUND 2 (Social Boss Choice 2):
+ ┌─────────────────────────────────────────────────────────────┐
+ │ Player tries to manipulate Wong                            │
+ │   -> Wong kills one of two hostages at random              │
+ │   -> Continue to Round 3                                   │
+ │                                                            │
+ │ Player tries to convince Wong to betray Mephistopheles     │
+ │   -> Continue to Round 3                                   │
+ └─────────────────────────────────────────────────────────────┘
+
+ ROUND 3 (Social Boss Choice 3):
+ ┌─────────────────────────────────────────────────────────────┐
+ │ -> Wong kills one of two hostages at random                │
+ │ -> Continue to Round 4                                     │
+ └─────────────────────────────────────────────────────────────┘
+
+ ROUND 4 (Social Boss Choice 4):
+ ┌─────────────────────────────────────────────────────────────┐
+ │ Outcome A: Player gives up                                 │
+ │   -> FLAG: PlayerGaveUp = true                             │
+ │                                                            │
+ │ Outcome B: Player convinced Wong to kill Mephistopheles    │
+ │            and commit suicide                              │
+ │   -> FLAG: WongBetrayedMeph = true                         │
+ │                                                            │
+ │ Outcome C: Daedalus kills Tantalus' avatar                 │
+ │   -> FLAG: DaedalusKilledAvatar = true                     │
+ └─────────────────────────────────────────────────────────────┘
+
+ After Round 4: Count surviving hostages
+   -> FLAG: HostagesAlive = (count > 0)
+   -> FLAG: SocialBossCompleted = true
+
+================================================================================
+ 4. ENDING CONDITIONS
+================================================================================
+
+ The QuestSystem checks these conditions in order. First match wins.
+
+ ┌─────────────────────────────────────────────────────────────────────┐
+ │ ENDING 1: MUTINY (06_Mutiny)                                      │
+ │ ─────────────────────────────                                      │
+ │ Condition: Player dies at any time on Level 2                      │
+ │            OR specific mutiny path conditions                      │
+ │                                                                    │
+ │ Description: Gray Goo consumes LA.                                 │
+ │ Tone: Dark/chaotic                                                 │
+ │                                                                    │
+ │ Flags: PlayerDied == true (handled by Chapter06L2 death handler)   │
+ │                                                                    │
+ │ Map: 06_Mutiny                                                     │
+ ├─────────────────────────────────────────────────────────────────────┤
+ │ ENDING 2: CONSPIRACY (06_Conspiracy)                               │
+ │ ─────────────────────────────────────                               │
+ │ Condition: Timer expired during the Bridge sequence (Phase 5)      │
+ │            Player did NOT complete hijack tasks                     │
+ │                                                                    │
+ │ Description: Bob Page speaks with Tantalus.                        │
+ │              Mephistopheles is taken as a test subject to           │
+ │              Versalife and has gone crazy.                          │
+ │ Tone: Page wins, bittersweet                                       │
+ │                                                                    │
+ │ Flags: TimerExpired == true                                        │
+ │        UndockedL2 == false (did not attempt hijack)                │
+ │                                                                    │
+ │ Map: 06_Conspiracy                                                 │
+ ├─────────────────────────────────────────────────────────────────────┤
+ │ ENDING 3: HIJACK OPHELIA (06_Hijacking)                            │
+ │ ────────────────────────────────────────                            │
+ │ Condition: Player completes 3 timed tasks before timer expires:    │
+ │   1. Undock Level 2 from the rest of Ophelia                       │
+ │   2. Start the Blue Fusion reactor (hack the keypad)               │
+ │   3. Take the steering wheel                                       │
+ │   + Timer NOT expired                                              │
+ │                                                                    │
+ │ Description: Ophelia docks+L1 fall into ocean as a fireball.       │
+ │              Tantalus and Magdalene stand on the bridge             │
+ │              looking at Mars.                                       │
+ │ Tone: Triumphant escape                                            │
+ │                                                                    │
+ │ Flags: UndockedL2 == true                                          │
+ │        StartedBlueFusion == true                                   │
+ │        TookSteeringWheel == true                                   │
+ │        TimerExpired == false                                       │
+ │                                                                    │
+ │ Map: 06_Hijacking                                                  │
+ ├─────────────────────────────────────────────────────────────────────┤
+ │ ENDING 4: TRANSCENDENCE / BENEVOLENT DICTATOR (06_Transcend)       │
+ │ ─────────────────────────────────────────────────────────────       │
+ │ Condition: Timer expired during upload sequence (Phase 7)          │
+ │            OR player died during upload                            │
+ │                                                                    │
+ │ Description: Ophelia speaks to the world.                          │
+ │              MJ12's conspiracy is exposed.                         │
+ │              Tantalus and Magdalene are backed up and can use       │
+ │              any avatar they want.                                  │
+ │              Real Tantalus died.                                    │
+ │ Tone: Sad but hopeful — digital immortality                        │
+ │                                                                    │
+ │ Flags: TantalusUploaded == true                                    │
+ │        TimerExpired == true (from upload timer)                    │
+ │                                                                    │
+ │ Map: 06_Transcend                                                  │
+ └─────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+ 5. IMPLEMENTATION TASKS
+================================================================================
+
+ TASK 1: QuestSystem Configuration                          [CODE]
+ ──────────────────────────────────────────────────────────────
+ Fill QuestSystem.defaultproperties with 4 quest paths:
+   questPathList[0] = Mutiny flags -> "06_Mutiny"
+   questPathList[1] = Conspiracy flags -> "06_Conspiracy"
+   questPathList[2] = Hijacking flags -> "06_Hijacking"
+   questPathList[3] = Transcendence flags -> "06_Transcend"
+ Priority: HIGH
+ Difficulty: EASY (just data, code already works)
+
+ TASK 2: Chapter06L2 Mission Script                         [CODE]
+ ──────────────────────────────────────────────────────────────
+ Update Chapter06L2.uc:
+   - Spawn QuestSystem actor on level start
+   - Handle player death -> set flags -> send to Mutiny ending
+   - Add timer system (3-minute countdown)
+   - Call QuestSystem.Update() when player enters infusion chamber
+ Priority: HIGH
+ Difficulty: MEDIUM
+
+ TASK 3: Social Boss Conversation (Wong)                    [CONVEDIT + CODE]
+ ──────────────────────────────────────────────────────────────
+ Create/update conversation in ConEdit:
+   - 4 rounds of choices
+   - Each choice sets appropriate flags via conversation events
+   - Wong NPC reactions (kill/spare hostages)
+   - Hostage tracking (count alive NPCs)
+ Priority: HIGH
+ Difficulty: HARD (most complex single feature)
+
+ TASK 4: Timer System                                       [CODE]
+ ──────────────────────────────────────────────────────────────
+ Implement countdown timer:
+   - 3-minute timer starts after social boss / Page congratulation
+   - HUD display showing remaining time
+   - On expire: set TimerExpired flag
+   - Timer affects which ending is available
+ Priority: HIGH
+ Difficulty: MEDIUM
+
+ TASK 5: Hijack Sequence Triggers                           [MAP + CODE]
+ ──────────────────────────────────────────────────────────────
+ Place triggers in L2 map for 3 hijack tasks:
+   - Undock trigger (button/switch)
+   - Blue Fusion reactor keypad (hackable)
+   - Steering wheel interaction
+   Each sets its flag when activated
+ Priority: HIGH
+ Difficulty: MEDIUM (needs map editing)
+
+ TASK 6: Upload Sequence                                    [MAP + CODE]
+ ──────────────────────────────────────────────────────────────
+ Implement the upload tube mechanics:
+   - Magdalene enters tube 1 (scripted)
+   - Player closes tube from console
+   - Player enters tube 2 -> teleport to human server area
+   - Broken legs mechanic (0 health in legs)
+   - Ophelia-medbot healing
+   - Avatar dialogue (talk to yourself)
+   - Upload button -> WalkingInTube dialogue
+ Priority: HIGH
+ Difficulty: HARD (complex scripted sequence)
+
+ TASK 7: Level Geometry Fixes                               [MAP]
+ ──────────────────────────────────────────────────────────────
+ Fix L2 map geometry issues:
+   - Complete unfinished areas
+   - Ensure all locations from flowchart exist:
+     Airlock, Hub, Command Center, Gravity Lab,
+     Reed's Stateroom, The Bridge, Avatar Lab, Upload Chamber
+   - BSP rebuild
+   - Lighting pass
+ Priority: HIGH
+ Difficulty: HARD (level design work, editor only)
+
+ TASK 8: NPC Placement & Scripting                          [MAP + CODE]
+ ──────────────────────────────────────────────────────────────
+ Place and script NPCs:
+   - Wong (social boss)
+   - Samantha Reed
+   - Dr. Mephistopheles
+   - MJ12 troops
+   - Avatars (enemies)
+   - Magdalene (companion)
+   - Ophelia (medbot/avatar carrier)
+   - Bob Page (hologram/infolink)
+   - Daedalus (voice/AI)
+   - JC Denton (hologram)
+   - Hostages
+ Priority: MEDIUM
+ Difficulty: MEDIUM
+
+ TASK 9: Daedalus & Page Infolinks                          [CONVEDIT]
+ ──────────────────────────────────────────────────────────────
+ Create datalink conversations:
+   - Daedalus warns about bridge door
+   - Bob Page infolinks during Avatar Lab approach
+   - Page's speech during upload sequence (face on screens)
+ Priority: MEDIUM
+ Difficulty: MEDIUM
+
+ TASK 10: Polish & Testing                                  [ALL]
+ ──────────────────────────────────────────────────────────────
+   - Test all 4 ending paths
+   - Verify flag persistence across save/load
+   - Check timer accuracy
+   - Test social boss all branches
+   - Fix any crashes from null references
+ Priority: LOW (after everything else works)
+ Difficulty: MEDIUM
+
+================================================================================
+ 6. DIFFICULTY ESTIMATE
+================================================================================
+
+ OVERALL: MEDIUM-HARD
+
+ The QuestSystem code is already built and working.
+ The 4 ending maps are already complete.
+ The conversation files for L2 already exist (OpheliaL2.con,
+ OpheliaL2ArmMagdalene.con).
+
+ The main work is:
+   1. Map geometry completion (level design — editor work)
+   2. Social boss fight implementation (hardest single feature)
+   3. Timer system + hijack triggers (medium code work)
+   4. Upload sequence scripting (complex but linear)
+   5. Wiring QuestSystem to endings (easy — just data)
+
+ Estimated effort breakdown:
+   - Code/scripting:  40%  (Tasks 1,2,4,5,6,8)
+   - ConEdit work:    20%  (Tasks 3,9)
+   - Level design:    30%  (Tasks 5,7,8)
+   - Testing:         10%  (Task 10)
+
+ With the build toolchain now working (cnn compile/test),
+ iteration is fast. A focused developer could complete L2
+ in approximately 2-4 weeks of part-time work, assuming
+ the level geometry issues are not major rebuilds.
+
+ The social boss fight (Task 3) is the hardest piece —
+ it requires careful ConEdit work to create the 4-round
+ branching conversation with flag-setting events. This
+ alone could take a week.
+
+ The QuestSystem wiring (Task 1) and Chapter06L2 updates
+ (Task 2) could be done in a single coding session with
+ Claude Code assistance.
+
+================================================================================
+ END OF DOCUMENT
+================================================================================

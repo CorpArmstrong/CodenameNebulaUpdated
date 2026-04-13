@@ -10,6 +10,7 @@ setlocal enabledelayedexpansion
 ::   install        - Install the mod to local Deus Ex (for testing)
 ::   test           - Launch the mod in Deus Ex
 ::   steam          - Launch via Steam (overlay + play time tracking)
+::   reset          - Regenerate CNN.ini/CNNUser.ini from player's config
 ::   clean          - Remove compiled packages
 ::   bump [part]    - Increment version (patch/minor/major, default: patch)
 ::   version        - Show current version
@@ -133,6 +134,7 @@ if /i "%~1"=="installer" goto :installer
 if /i "%~1"=="install" goto :install
 if /i "%~1"=="test" goto :test
 if /i "%~1"=="steam" goto :steam
+if /i "%~1"=="reset" goto :reset
 if /i "%~1"=="clean" goto :clean
 if /i "%~1"=="bump" goto :bump
 if /i "%~1"=="hd" goto :hd
@@ -715,6 +717,59 @@ powershell -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\steam_launch.ps1" -C
 goto :eof
 
 :: ============================================================================
+:: RESET - Regenerate CNN.ini and CNNUser.ini from player's config
+:: ============================================================================
+:reset
+echo.
+echo ========================================
+echo  RESET - Regenerate config files
+echo ========================================
+echo.
+
+:: Backup old configs if they exist
+if exist "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini" (
+    copy /y "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini" "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini.bak" >nul
+    echo   Backed up CNN.ini to CNN.ini.bak
+)
+if exist "!DEUSEX_ROOT!\CodenameNebula\System\CNNUser.ini" (
+    copy /y "!DEUSEX_ROOT!\CodenameNebula\System\CNNUser.ini" "!DEUSEX_ROOT!\CodenameNebula\System\CNNUser.ini.bak" >nul
+    echo   Backed up CNNUser.ini to CNNUser.ini.bak
+)
+
+:: Ensure mod directory exists
+if not exist "!DEUSEX_ROOT!\CodenameNebula\System" mkdir "!DEUSEX_ROOT!\CodenameNebula\System"
+if not exist "!DEUSEX_ROOT!\CodenameNebula\Save" mkdir "!DEUSEX_ROOT!\CodenameNebula\Save"
+
+:: Generate fresh configs from player's DeusEx.ini
+echo.
+echo Regenerating from player's DeusEx.ini...
+set "GEN_ARGS=%TEMP%\cnn_gen_args.txt"
+echo !SYSTEM_DIR!\DeusEx.ini> "!GEN_ARGS!"
+echo !DEUSEX_ROOT!\CodenameNebula\System\CNN.ini>> "!GEN_ARGS!"
+echo !DEUSEX_ROOT!\CodenameNebula\System\CNNUser.ini>> "!GEN_ARGS!"
+echo !SYSTEM_DIR!\User.ini>> "!GEN_ARGS!"
+echo ..\CodenameNebula>> "!GEN_ARGS!"
+echo !DEUSEX_ROOT!>> "!GEN_ARGS!"
+
+powershell -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\generate_cnn_ini.ps1" -ArgsFile "!GEN_ARGS!"
+if errorlevel 1 (
+    echo   WARNING: Config regeneration failed.
+    if exist "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini.bak" (
+        echo   Restoring from backup...
+        copy /y "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini.bak" "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini" >nul
+    )
+)
+del "!GEN_ARGS!" 2>nul
+
+echo.
+echo RESET COMPLETE
+echo   Your renderer, resolution, and graphics settings have been refreshed
+echo   from DeusEx.ini. HD textures auto-detected if available.
+echo.
+echo   Old configs saved as .bak files in CodenameNebula\System\
+goto :eof
+
+:: ============================================================================
 :: CLEAN - Remove compiled packages
 :: ============================================================================
 :clean
@@ -1012,6 +1067,7 @@ echo   installer       Build Inno Setup installer (.exe)
 echo   install         Deploy mod to local Deus Ex for testing
 echo   test            Launch the mod in Deus Ex
 echo   steam           Launch via Steam (overlay + play time tracking)
+echo   reset           Regenerate CNN.ini/CNNUser.ini from player's config
 echo   clean           Remove compiled packages
 echo   bump [part]     Increment version (patch/minor/major, default: patch)
 echo   version         Show current version

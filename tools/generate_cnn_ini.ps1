@@ -1,6 +1,7 @@
 # generate_cnn_ini.ps1
 # Generates CNN.ini from the player's DeusEx.ini, preserving their graphics/audio/input settings
 # and patching only CNN-specific values (player class, game mode, asset paths, save path).
+# Auto-detects HD textures (NewVision/HDTP) from Revision, GMDX, or standalone installs.
 #
 # Also generates CNNUser.ini from User.ini with CNN player class.
 #
@@ -11,6 +12,7 @@
 #   Line 3: Path to output CNNUser.ini
 #   Line 4: Path to User.ini (source, or "." to skip CNNUser.ini generation)
 #   Line 5: Mod root relative path (e.g. "..\CodenameNebula" or absolute)
+#   Line 6: Deus Ex root path (for HD texture detection)
 
 param(
     [string]$ArgsFile
@@ -22,14 +24,84 @@ $OutputIni    = $argsLines[1].Trim()
 $OutputUser   = $argsLines[2].Trim()
 $SourceUser   = $argsLines[3].Trim()
 $ModRoot      = $argsLines[4].Trim()
+$DeusExRoot   = if ($argsLines.Length -gt 5) { $argsLines[5].Trim() } else { '' }
 
 if (-not (Test-Path $SourceIni)) {
     Write-Host "  ERROR: Source DeusEx.ini not found: $SourceIni"
     exit 1
 }
 
+# ---- Auto-detect HD textures (NewVision / HDTP) ----
+$hdPaths = @()
+$hdSource = ''
+$nvPath = ''
+$hdtpTexPath = ''
+$hdtpSysPath = ''
+
+if ($DeusExRoot -and (Test-Path $DeusExRoot)) {
+    # NewVision detection (priority order)
+    $nvSearchPaths = @(
+        @{ Path = "$DeusExRoot\Revision\NewVision\Textures"; Source = "Revision" },
+        @{ Path = "$DeusExRoot\GMDXv9\NewVision\Textures";   Source = "GMDX v9" },
+        @{ Path = "$DeusExRoot\GMDX\NewVision\Textures";     Source = "GMDX v10" },
+        @{ Path = "$DeusExRoot\New Vision\Textures";          Source = "Standalone" },
+        @{ Path = "$DeusExRoot\NewVision\Textures";           Source = "Standalone" }
+    )
+    foreach ($nv in $nvSearchPaths) {
+        if (Test-Path "$($nv.Path)\CoreTexMetal.utx") {
+            $nvPath = $nv.Path
+            $hdSource = $nv.Source
+            break
+        }
+    }
+
+    # HDTP detection (priority order)
+    $hdtpSearchPaths = @(
+        "$DeusExRoot\Revision\HDTP",
+        "$DeusExRoot\GMDXv9\HDTP",
+        "$DeusExRoot\GMDX\HDTP",
+        "$DeusExRoot\HDTP"
+    )
+    foreach ($hp in $hdtpSearchPaths) {
+        if (Test-Path "$hp\System\HDTPCharacters.u") {
+            $hdtpSysPath = "$hp\System"
+            $hdtpTexPath = "$hp\Textures"
+            break
+        }
+    }
+    # HDTP in base System/Textures folders
+    if (-not $hdtpSysPath -and (Test-Path "$DeusExRoot\System\HDTPCharacters.u")) {
+        $hdtpSysPath = "$DeusExRoot\System"
+        $hdtpTexPath = "$DeusExRoot\Textures"
+    }
+
+    # Build HD paths (inserted BEFORE CNN and base game paths for loading priority)
+    if ($nvPath -or $hdtpSysPath) {
+        $hdPaths += '; HD Textures (auto-detected)'
+    }
+    if ($nvPath) {
+        # Convert absolute to relative from System dir
+        $hdPaths += "Paths=$nvPath\*.utx"
+        Write-Host "    NewVision: FOUND [$hdSource] -> $nvPath"
+    }
+    if ($hdtpTexPath) {
+        $hdPaths += "Paths=$hdtpTexPath\*.utx"
+        Write-Host "    HDTP Textures: FOUND -> $hdtpTexPath"
+    }
+    if ($hdtpSysPath) {
+        $hdPaths += "Paths=$hdtpSysPath\*.u"
+        Write-Host "    HDTP Models: FOUND -> $hdtpSysPath"
+    }
+    if (-not $nvPath -and -not $hdtpSysPath) {
+        Write-Host "    HD textures: not found (optional)"
+    }
+}
+
 # ---- CNN-specific Paths= lines ----
-$cnnPaths = @(
+# Order: HD textures first (priority), then CNN mod paths, then base game paths
+$cnnPaths = @()
+$cnnPaths += $hdPaths
+$cnnPaths += @(
     "Paths=$ModRoot\Maps\*.dx",
     "Paths=$ModRoot\System\*.u",
     "Paths=$ModRoot\Textures\*.utx",

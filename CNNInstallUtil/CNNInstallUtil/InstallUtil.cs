@@ -231,15 +231,23 @@ namespace CNNInstallUtil
             // Generate CNN.ini from player's DeusEx.ini:
             // - Preserve player's renderer, resolution, audio, keybinds, detail settings
             // - Patch only CNN-specific values (player class, game mode, paths, save path)
+            // - Auto-detect HD textures (NewVision/HDTP) from Revision, GMDX, or standalone
             var lines = new System.Collections.Generic.List<string>(File.ReadAllLines(pathToFile));
             var result = new System.Collections.Generic.List<string>();
 
             string modRoot = @"..\CodenameNebula";
+            string deusExRoot = Directory.GetParent(currentPath)?.FullName ?? "";
             bool inCoreSystem = false;
             bool pathsInjected = false;
             bool seenSuppressBlock = false;
 
-            string[] cnnPaths = new[]
+            // Auto-detect HD textures
+            var hdPaths = DetectHDTextures(deusExRoot);
+
+            // Build paths: HD first (loading priority), then CNN, then base game
+            var allPaths = new System.Collections.Generic.List<string>();
+            allPaths.AddRange(hdPaths);
+            allPaths.AddRange(new[]
             {
                 "Paths=" + modRoot + @"\Maps\*.dx",
                 "Paths=" + modRoot + @"\System\*.u",
@@ -250,7 +258,8 @@ namespace CNNInstallUtil
                 @"Paths=..\Textures\*.utx",
                 @"Paths=..\Maps\*.dx",
                 @"Paths=..\System\*.u"
-            };
+            });
+            string[] cnnPaths = allPaths.ToArray();
 
             for (int i = 0; i < lines.Count; i++)
             {
@@ -330,6 +339,85 @@ namespace CNNInstallUtil
             string renderer = result.Find(x => x.StartsWith("GameRenderDevice="));
             if (renderer != null)
                 Console.WriteLine("  Renderer: {0} (inherited from player)", renderer.Substring("GameRenderDevice=".Length));
+        }
+
+        private string[] DetectHDTextures(string deusExRoot)
+        {
+            var paths = new System.Collections.Generic.List<string>();
+            if (string.IsNullOrEmpty(deusExRoot) || !Directory.Exists(deusExRoot))
+                return paths.ToArray();
+
+            string nvPath = null;
+            string hdSource = null;
+            string hdtpTexPath = null;
+            string hdtpSysPath = null;
+
+            // NewVision detection (priority order)
+            var nvSearchPaths = new[]
+            {
+                new { Path = Path.Combine(deusExRoot, @"Revision\NewVision\Textures"), Source = "Revision" },
+                new { Path = Path.Combine(deusExRoot, @"GMDXv9\NewVision\Textures"),   Source = "GMDX v9" },
+                new { Path = Path.Combine(deusExRoot, @"GMDX\NewVision\Textures"),     Source = "GMDX v10" },
+                new { Path = Path.Combine(deusExRoot, @"New Vision\Textures"),          Source = "Standalone" },
+                new { Path = Path.Combine(deusExRoot, @"NewVision\Textures"),           Source = "Standalone" }
+            };
+            foreach (var nv in nvSearchPaths)
+            {
+                if (File.Exists(Path.Combine(nv.Path, "CoreTexMetal.utx")))
+                {
+                    nvPath = nv.Path;
+                    hdSource = nv.Source;
+                    break;
+                }
+            }
+
+            // HDTP detection (priority order)
+            var hdtpSearchPaths = new[]
+            {
+                Path.Combine(deusExRoot, @"Revision\HDTP"),
+                Path.Combine(deusExRoot, @"GMDXv9\HDTP"),
+                Path.Combine(deusExRoot, @"GMDX\HDTP"),
+                Path.Combine(deusExRoot, "HDTP")
+            };
+            foreach (string hp in hdtpSearchPaths)
+            {
+                if (File.Exists(Path.Combine(hp, @"System\HDTPCharacters.u")))
+                {
+                    hdtpSysPath = Path.Combine(hp, "System");
+                    hdtpTexPath = Path.Combine(hp, "Textures");
+                    break;
+                }
+            }
+            // HDTP in base folders
+            if (hdtpSysPath == null && File.Exists(Path.Combine(deusExRoot, @"System\HDTPCharacters.u")))
+            {
+                hdtpSysPath = Path.Combine(deusExRoot, "System");
+                hdtpTexPath = Path.Combine(deusExRoot, "Textures");
+            }
+
+            // Build HD paths (before CNN paths for loading priority)
+            if (nvPath != null || hdtpSysPath != null)
+                paths.Add("; HD Textures (auto-detected)");
+
+            if (nvPath != null)
+            {
+                paths.Add("Paths=" + nvPath + @"\*.utx");
+                Console.WriteLine("  NewVision: FOUND [{0}] -> {1}", hdSource, nvPath);
+            }
+            if (hdtpTexPath != null)
+            {
+                paths.Add("Paths=" + hdtpTexPath + @"\*.utx");
+                Console.WriteLine("  HDTP Textures: FOUND -> {0}", hdtpTexPath);
+            }
+            if (hdtpSysPath != null)
+            {
+                paths.Add("Paths=" + hdtpSysPath + @"\*.u");
+                Console.WriteLine("  HDTP Models: FOUND -> {0}", hdtpSysPath);
+            }
+            if (nvPath == null && hdtpSysPath == null)
+                Console.WriteLine("  HD textures: not found (optional)");
+
+            return paths.ToArray();
         }
 
         private void CopyMusicFiles(string pathToSystem, string pathToModSystem)

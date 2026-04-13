@@ -603,6 +603,7 @@ echo %DEUSEX_ROOT%\CodenameNebula\System\CNN.ini>> "!GEN_ARGS!"
 echo %DEUSEX_ROOT%\CodenameNebula\System\CNNUser.ini>> "!GEN_ARGS!"
 echo %SYSTEM_DIR%\User.ini>> "!GEN_ARGS!"
 echo ..\CodenameNebula>> "!GEN_ARGS!"
+echo %DEUSEX_ROOT%>> "!GEN_ARGS!"
 
 powershell -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\generate_cnn_ini.ps1" -ArgsFile "!GEN_ARGS!"
 if errorlevel 1 (

@@ -7,8 +7,6 @@ echo  Launches CNN via Steam for:
 echo    - Play time tracking
 echo    - "Playing Deus Ex" status
 echo    - Steam overlay
-echo.
-echo  A browser window will open briefly.
 echo ========================================
 echo.
 

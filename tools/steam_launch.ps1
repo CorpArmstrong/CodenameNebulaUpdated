@@ -1,10 +1,9 @@
 # steam_launch.ps1
-# Generates and opens an HTML trampoline that launches Codename Nebula via Steam.
-# The browser triggers the steam:// protocol handler, which makes Steam launch
-# the game with CNN's INI arguments. This gives Steam overlay and play time tracking.
+# Launches Codename Nebula via Steam for play time tracking and overlay.
 #
-# Uses -ini= (lowercase, with dash) and absolute paths with &quot; HTML entities.
-# This is the same approach as DeusExNonSteamLink.
+# Uses the steam:// protocol with URL-encoded quotes (%22) to pass
+# INI arguments in a format that both Steam and Kentie's launcher accept.
+# No browser or HTML trampoline needed.
 
 param(
     [string]$CnnIniPath,
@@ -16,31 +15,10 @@ if (-not (Test-Path $CnnIniPath)) {
     exit 1
 }
 
-# Build steam:// URL with HTML-entity-quoted absolute paths
-$iniArg = "-ini=&quot;$CnnIniPath&quot;"
-$userIniArg = "-userini=&quot;$CnnUserIniPath&quot;"
+# Build steam:// URL with %22 (URL-encoded quotes) around paths
+$iniArg = "-ini=%22$CnnIniPath%22"
+$userIniArg = "-userini=%22$CnnUserIniPath%22"
 $steamUrl = "steam://rungameid/6910//$iniArg $userIniArg"
 
-# Generate HTML trampoline
-$htmlContent = @"
-<html>
-<body>
-<a id="link" target="_self" href="$steamUrl">Run Codename Nebula</a>
-</body>
-<script>
-function LoadGame() {
-  document.getElementById("link").click();
-};
-window.onload = LoadGame();
-</script>
-</html>
-"@
-
-$htmlFile = Join-Path ([System.IO.Path]::GetTempPath()) "PlayCNNSteam.html"
-[System.IO.File]::WriteAllText($htmlFile, $htmlContent)
-
 Write-Host "  Launching Codename Nebula via Steam..."
-Write-Host "  A browser window will open briefly to trigger the Steam protocol."
-Write-Host ""
-
-Start-Process $htmlFile
+Start-Process $steamUrl

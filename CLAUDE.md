@@ -137,6 +137,7 @@ cnn package         Copy compiled assets into distribution folder
 cnn installer       Build Inno Setup installer (.exe)
 cnn install         Deploy mod to local Deus Ex for testing
 cnn test            Launch the mod in Deus Ex
+cnn steam           Launch via Steam (overlay + play time tracking)
 cnn clean           Remove compiled packages
 cnn bump [part]     Increment version (patch/minor/major, default: patch)
 cnn version         Show current version
@@ -165,12 +166,14 @@ The mod requires a **renamed copy of `DeusEx.exe`** called `CodenameNebula.exe` 
 cnn test
 ```
 
-This creates `CodenameNebula.exe` (from the original 1112fm exe) if it doesn't exist, and launches:
-```
-CodenameNebula.exe INI="..\CodenameNebula\System\CNN.ini" USERINI="..\CodenameNebula\System\CNNUser.ini"
-```
+This auto-detects the best available game executable and creates `CodenameNebula.exe`:
+- **Kentie/Han launcher** (>300KB) — used as-is, player gets D3D10/D3D11 and advanced features
+- **Original 1112fm exe** (~254KB) — vanilla Steam or GOG, works with all renderers
+- **CU backup** (`DeusEx 1112fm (Original EXE).exe`) — when Community Update replaced the exe
 
-> **Important:** The `CNN.ini` must use `OpenGlDrv.OpenGLRenderDevice` as the renderer, not D3D9 or Glide. The original 1112fm exe doesn't support the Community Update's D3D9 renderer.
+The `cnn install` command generates `CNN.ini` from the player's `DeusEx.ini`, inheriting their renderer, resolution, and graphics settings. Only CNN-specific values are patched (player class, game mode, asset paths).
+
+> **Steam overlay:** Because the exe is renamed to `CodenameNebula.exe`, Steam does not recognize it as Deus Ex. Players lose Steam overlay, play time tracking, and screenshot integration. To restore these features, players can add `CodenameNebula.exe` as a **non-Steam game** in their Steam library (Library > Add a Game > Add a Non-Steam Game). This is the same approach used by Revision, GMDX, and other Deus Ex mods.
 
 ### Step 11: Verify
 
@@ -189,8 +192,8 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 
 ### Known Issues & Pitfalls
 
-- **Steam intercepts `DeusEx.exe`** — always use `CodenameNebula.exe` (a renamed copy of the original 1112fm exe) to launch the mod. The `cnn test` command handles this automatically.
-- **Renderer:** `CNN.ini` must use `OpenGlDrv.OpenGLRenderDevice`. The D3D9 renderer from the Community Update is incompatible with the original 1112fm exe. Glide requires a 3Dfx card.
+- **Steam intercepts `DeusEx.exe`** — always use `CodenameNebula.exe` (a renamed copy) to launch the mod. The `cnn test` and `cnn install` commands handle this automatically with smart exe detection. Players who want Steam overlay can add `CodenameNebula.exe` as a non-Steam game.
+- **Launcher-agnostic INI generation** — `CNN.ini` is generated from the player's `DeusEx.ini` at install time, inheriting their renderer, resolution, and settings. The static `CNN.ini` in the repo is only a fallback. Kentie's launcher, Han's launcher, Community Update, and vanilla Steam are all supported.
 - **Do NOT use the SDK's `Core.dll`** — it silently breaks `#exec CONVERSATION IMPORT`. Keep the Steam GOTY `Core.dll`.
 - **UnrealEd 2.2 (UED22)** is incompatible with CNN maps — its stripped `.u` packages from UT 469e are missing Deus Ex functions. Engine versions are binary-incompatible; swapping `.u` files doesn't work.
 - **Original SDK editor** freezes on large maps (OpheliaL1, MoonIntro) and crashes when clicking empty space with properties window open (`HitSize==0` assertion in `UnCamera.cpp`).

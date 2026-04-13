@@ -57,11 +57,19 @@ namespace CNNInstallUtil
         private void CreateCNNUserIni(string pathToSystem, string pathToModSystem)
         {
             var originalUserIni = new FileInfo(Path.Combine(pathToSystem, "User.ini"));
+            string outputPath = Path.Combine(pathToModSystem, "CNNUser.ini");
 
             if (originalUserIni.Exists)
             {
-                File.Copy(originalUserIni.FullName, Path.Combine(pathToModSystem, "CNNUser.ini"), true);
-                Console.WriteLine("CNNUser.ini file created!");
+                // Copy User.ini and patch player class to CNN's TantalusDenton
+                var lines = File.ReadAllLines(originalUserIni.FullName);
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    if (lines[i].StartsWith("Class="))
+                        lines[i] = "Class=CNN.TantalusDenton";
+                }
+                File.WriteAllLines(outputPath, lines);
+                Console.WriteLine("CNNUser.ini generated from player's User.ini (keybindings inherited).");
             }
             else
             {
@@ -71,23 +79,23 @@ namespace CNNInstallUtil
 
         private void CreateLauncher(string pathToSystem, string pathToModSystem)
         {
-            string cnnExePath = Path.Combine(pathToSystem, "CodenameNebula.exe");
+            // No exe renaming — use DeusEx.exe directly with INI= parameters
+            // Same approach as GMDX and The Nameless Mod
+            // Preserves Steam overlay and play time tracking
+            string deusExExe = Path.Combine(pathToSystem, "DeusEx.exe");
 
-            // Prefer original 1112fm exe (not the Community Update wrapper)
-            string originalExe = Path.Combine(pathToSystem, "DeusEx 1112fm (Original EXE).exe");
-            if (!File.Exists(originalExe))
+            if (File.Exists(deusExExe))
             {
-                originalExe = Path.Combine(pathToSystem, "DeusEx.exe");
-            }
-
-            if (File.Exists(originalExe))
-            {
-                File.Copy(originalExe, cnnExePath, true);
-                Console.WriteLine("Created CodenameNebula.exe (Steam bypass launcher).");
+                long size = new FileInfo(deusExExe).Length;
+                string exeType = size > 300000 ? "third-party launcher (Kentie/Han)"
+                               : size > 200000 ? "original 1112fm"
+                               : "Community Update wrapper";
+                Console.WriteLine("Detected DeusEx.exe: {0} ({1} bytes).", exeType, size);
             }
             else
             {
-                Console.WriteLine("Error: Could not find DeusEx.exe to create launcher!");
+                Console.WriteLine("Warning: DeusEx.exe not found in {0}!", pathToSystem);
+                Console.WriteLine("  CNN requires a Deus Ex installation (Steam, GOG, or retail).");
             }
         }
 
@@ -95,14 +103,17 @@ namespace CNNInstallUtil
         {
             string iconPath = Path.Combine(currentPath, "cnnico.ico");
 
-            // Create a .bat launcher in the mod folder — this reliably handles paths with spaces
+            // Create a .bat launcher — uses DeusEx.exe directly with INI= parameters
+            // Works on Steam (with overlay), GOG, and vanilla installs
             string batPath = Path.Combine(currentPath, "PlayCodenameNebula.bat");
             File.WriteAllText(batPath, string.Format(
                 "@echo off\r\n" +
                 "cd /d \"{0}\"\r\n" +
+                ":: Launch Codename Nebula via DeusEx.exe with custom INI files\r\n" +
+                ":: Steam overlay and play time tracking work because we use the original exe\r\n" +
                 "\"{1}\" INI=\"{2}\" USERINI=\"{3}\"\r\n",
                 pathToSystem,
-                Path.Combine(pathToSystem, "CodenameNebula.exe"),
+                Path.Combine(pathToSystem, "DeusEx.exe"),
                 Path.Combine(pathToModSystem, "CNN.ini"),
                 Path.Combine(pathToModSystem, "CNNUser.ini")));
             Console.WriteLine("Created PlayCodenameNebula.bat launcher.");
@@ -217,42 +228,108 @@ namespace CNNInstallUtil
 
         private void InjectIniProperties(string pathToFile)
         {
-            var iniKeyValues = new System.Collections.Generic.List<string>(File.ReadAllLines(pathToFile));
-            int index = iniKeyValues.FindIndex(x => x.StartsWith("Class="));
+            // Generate CNN.ini from player's DeusEx.ini:
+            // - Preserve player's renderer, resolution, audio, keybinds, detail settings
+            // - Patch only CNN-specific values (player class, game mode, paths, save path)
+            var lines = new System.Collections.Generic.List<string>(File.ReadAllLines(pathToFile));
+            var result = new System.Collections.Generic.List<string>();
 
-            if (index >= 0)
+            string modRoot = @"..\CodenameNebula";
+            bool inCoreSystem = false;
+            bool pathsInjected = false;
+            bool seenSuppressBlock = false;
+
+            string[] cnnPaths = new[]
             {
-                iniKeyValues[index] = "Class=CNN.TantalusDenton";
-                index = -1;
+                "Paths=" + modRoot + @"\Maps\*.dx",
+                "Paths=" + modRoot + @"\System\*.u",
+                "Paths=" + modRoot + @"\Textures\*.utx",
+                "Paths=" + modRoot + @"\Music\*.umx",
+                @"Paths=..\Music\*.umx",
+                @"Paths=..\Sounds\*.uax",
+                @"Paths=..\Textures\*.utx",
+                @"Paths=..\Maps\*.dx",
+                @"Paths=..\System\*.u"
+            };
+
+            for (int i = 0; i < lines.Count; i++)
+            {
+                string line = lines[i];
+
+                // Track section transitions
+                if (line.StartsWith("["))
+                {
+                    if (inCoreSystem && !pathsInjected)
+                    {
+                        result.AddRange(cnnPaths);
+                        pathsInjected = true;
+                    }
+                    inCoreSystem = line.StartsWith("[Core.System]");
+                    seenSuppressBlock = false;
+                }
+
+                // [URL] patches
+                if (line.StartsWith("Class="))           { result.Add("Class=CNN.TantalusDenton");    continue; }
+                if (line.StartsWith("Map="))             { result.Add("Map=Index.dx");                continue; }
+                if (line.StartsWith("LocalMap="))        { result.Add("LocalMap=DX.dx");              continue; }
+                if (line.StartsWith("MapExt="))          { result.Add("MapExt=dx");                   continue; }
+                if (line.StartsWith("SaveExt="))         { result.Add("SaveExt=dxs");                 continue; }
+
+                // [Engine.Engine] patches
+                if (line.StartsWith("DefaultGame="))     { result.Add("DefaultGame=CNN.CNNGameInfo");  continue; }
+                if (line.StartsWith("Render=") && !line.StartsWith("RenderDevice"))
+                {
+                    result.Add("Render=RenderExt.RenderExt");
+                    continue;
+                }
+
+                // [Core.System] section: replace Paths=, patch SavePath=
+                if (inCoreSystem)
+                {
+                    if (line.StartsWith("SavePath="))
+                    {
+                        result.Add("SavePath=" + modRoot + @"\Save");
+                        continue;
+                    }
+                    if (line.StartsWith("Paths="))       continue; // skip existing, we inject our own
+                    if (line.StartsWith("; HD Textures")) continue; // skip old HD comments
+
+                    if (line.StartsWith("Suppress="))
+                    {
+                        seenSuppressBlock = true;
+                        result.Add(line);
+                        continue;
+                    }
+                    // After Suppress block ends, inject CNN paths
+                    if (seenSuppressBlock && !pathsInjected && line.Trim() != "")
+                    {
+                        result.AddRange(cnnPaths);
+                        pathsInjected = true;
+                    }
+                }
+
+                // Patch CacheSizeMegs
+                if (line.StartsWith("CacheSizeMegs="))   { result.Add("CacheSizeMegs=256");           continue; }
+
+                // Skip EditPackages= lines (not needed for playing)
+                if (line.StartsWith("EditPackages="))    continue;
+
+                // Keep everything else (renderer, resolution, audio, keybinds, etc.)
+                result.Add(line);
             }
 
-            index = iniKeyValues.FindIndex(x => x.StartsWith("DefaultGame="));
-            if (index >= 0)
+            if (!pathsInjected)
             {
-                iniKeyValues[index] = "DefaultGame=CNN.CNNGameInfo";
-                index = -1;
+                result.Add("[Core.System]");
+                result.AddRange(cnnPaths);
             }
 
-            // Set renderer to OpenGL (compatible with original 1112fm exe)
-            index = iniKeyValues.FindIndex(x => x.StartsWith("GameRenderDevice="));
-            if (index >= 0)
-                iniKeyValues[index] = "GameRenderDevice=D3D9Drv.D3D9RenderDevice";
+            File.WriteAllLines(pathToFile, result.ToArray());
 
-            index = iniKeyValues.FindIndex(x => x.StartsWith("RenderDevice="));
-            if (index >= 0)
-                iniKeyValues[index] = "RenderDevice=D3D9Drv.D3D9RenderDevice";
-
-            int propertiesIdx = iniKeyValues.FindIndex(x => x.StartsWith("[Core.System]"));
-            if (propertiesIdx >= 0)
-            {
-                iniKeyValues.Insert(++propertiesIdx, "SavePath=" + Path.Combine(currentPath, "Save"));
-                iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "Maps\\*.dx"));
-                iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "System\\*.u"));
-                iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "Textures\\*.utx"));
-                iniKeyValues.Insert(++propertiesIdx, "Paths=" + Path.Combine(currentPath, "Music\\*.umx"));
-            }
-
-            File.WriteAllLines(pathToFile, iniKeyValues.ToArray());
+            // Log what was inherited
+            string renderer = result.Find(x => x.StartsWith("GameRenderDevice="));
+            if (renderer != null)
+                Console.WriteLine("  Renderer: {0} (inherited from player)", renderer.Substring("GameRenderDevice=".Length));
         }
 
         private void CopyMusicFiles(string pathToSystem, string pathToModSystem)
@@ -267,14 +344,15 @@ namespace CNNInstallUtil
             if (!Directory.Exists(pathToOggMusic))
                 Directory.CreateDirectory(pathToOggMusic);
 
-            // Copy D3D9 renderer to game System (best compatible renderer for modern Windows)
+            // Copy D3D9 renderer as fallback (in case player has no modern renderer)
             foreach (string d3d9File in new[] { "D3D9Drv.dll", "D3D9Drv.int" })
             {
                 string src = Path.Combine(pathToModSystem, d3d9File);
-                if (File.Exists(src))
+                string dest = Path.Combine(pathToSystem, d3d9File);
+                if (File.Exists(src) && !File.Exists(dest))
                 {
-                    File.Copy(src, Path.Combine(pathToSystem, d3d9File), true);
-                    Console.WriteLine("Copied {0} to System.", d3d9File);
+                    File.Copy(src, dest, false);
+                    Console.WriteLine("Installed {0} to System (D3D9 fallback renderer).", d3d9File);
                 }
             }
 

@@ -9,6 +9,7 @@ setlocal enabledelayedexpansion
 ::   installer      - Build Inno Setup installer (.exe)
 ::   install        - Install the mod to local Deus Ex (for testing)
 ::   test           - Launch the mod in Deus Ex
+::   steam          - Launch via Steam (overlay + play time tracking)
 ::   clean          - Remove compiled packages
 ::   bump [part]    - Increment version (patch/minor/major, default: patch)
 ::   version        - Show current version
@@ -131,6 +132,7 @@ if /i "%~1"=="package" goto :package
 if /i "%~1"=="installer" goto :installer
 if /i "%~1"=="install" goto :install
 if /i "%~1"=="test" goto :test
+if /i "%~1"=="steam" goto :steam
 if /i "%~1"=="clean" goto :clean
 if /i "%~1"=="bump" goto :bump
 if /i "%~1"=="hd" goto :hd
@@ -402,14 +404,34 @@ for %%f in (D3D9Drv.int RenderExt.dll RenderExt.int) do (
     )
 )
 
-:: Create PlayCodenameNebula.bat launcher (uses relative paths - no spaces issue)
+:: Create PlayCodenameNebula.bat launcher
+:: Uses DeusEx.exe directly with INI= params (same as GMDX/TNM)
+:: Preserves Steam overlay on Steam installs, works on GOG and vanilla too
 echo Creating launcher bat...
 > "%DIST_DIR%\PlayCodenameNebula.bat" (
     echo @echo off
     echo cd /d "%%~dp0..\System"
-    echo "%%~dp0..\System\CodenameNebula.exe" INI="%%~dp0System\CNN.ini" USERINI="%%~dp0System\CNNUser.ini"
+    echo :: Launch CNN using DeusEx.exe with custom INI files
+    echo :: Steam overlay and play time tracking work because we use the original exe
+    echo if exist "%%~dp0..\System\DeusEx.exe" ^(
+    echo     "%%~dp0..\System\DeusEx.exe" INI="%%~dp0System\CNN.ini" USERINI="%%~dp0System\CNNUser.ini"
+    echo ^) else ^(
+    echo     echo ERROR: DeusEx.exe not found. Please verify your Deus Ex installation.
+    echo     pause
+    echo ^)
 )
 echo   PlayCodenameNebula.bat
+
+:: Copy Steam launcher and helper script
+if exist "%REPO_ROOT%\CodenameNebula\PlayCNNSteam.bat" (
+    copy /y "%REPO_ROOT%\CodenameNebula\PlayCNNSteam.bat" "%DIST_DIR%\" >nul
+    echo   PlayCNNSteam.bat
+)
+if not exist "%DIST_DIR%\tools" mkdir "%DIST_DIR%\tools"
+if exist "%REPO_ROOT%\tools\steam_launch.ps1" (
+    copy /y "%REPO_ROOT%\tools\steam_launch.ps1" "%DIST_DIR%\tools\" >nul
+    echo   tools\steam_launch.ps1
+)
 
 :: Build CNNInstallUtil if MSBuild is available
 where msbuild >nul 2>&1
@@ -523,9 +545,7 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo     StartMenuDir := ExpandConstant^('{userprograms}\Codename Nebula'^);
     echo     if DirExists^(StartMenuDir^) then
     echo       DelTree^(StartMenuDir, True, True, True^);
-    echo     SystemDir := ExpandConstant^('{app}\..\System'^);
-    echo     if FileExists^(SystemDir + '\CodenameNebula.exe'^) then
-    echo       DeleteFile^(SystemDir + '\CodenameNebula.exe'^);
+    echo     // No exe cleanup needed - we use DeusEx.exe directly, nothing to remove
     echo   end;
     echo end;
 )
@@ -553,21 +573,61 @@ echo  INSTALL (local testing)
 echo ========================================
 echo.
 
+:: Ensure mod directory structure exists
+if not exist "%DEUSEX_ROOT%\CodenameNebula\System" mkdir "%DEUSEX_ROOT%\CodenameNebula\System"
+if not exist "%DEUSEX_ROOT%\CodenameNebula\Save" mkdir "%DEUSEX_ROOT%\CodenameNebula\Save"
+
 :: Copy compiled packages to Deus Ex System
-echo Deploying to %SYSTEM_DIR%...
-for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u GaussGun.u DXOgg.u DXOgg.dll PFAD.u DXRVNewVehicles.u RenderExt.dll) do (
+echo Deploying packages to %SYSTEM_DIR%...
+for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u GaussGun.u DXOgg.u DXOgg.dll PFAD.u DXRVNewVehicles.u RenderExt.dll D3D9Drv.dll) do (
     if exist "%REPO_ROOT%\System\%%f" (
         copy /y "%REPO_ROOT%\System\%%f" "%SYSTEM_DIR%\" >nul
         echo   %%f
     )
 )
 
-:: Copy CNN.ini and CNNUser.ini
-if exist "%REPO_ROOT%\System\CNN.ini" copy /y "%REPO_ROOT%\System\CNN.ini" "%SYSTEM_DIR%\" >nul
-if exist "%REPO_ROOT%\System\CNNUser.ini" copy /y "%REPO_ROOT%\System\CNNUser.ini" "%SYSTEM_DIR%\" >nul
+:: Copy packages to mod System folder too
+echo Deploying packages to CodenameNebula\System...
+for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u GaussGun.u DXOgg.u DXOgg.dll PFAD.u DXRVNewVehicles.u) do (
+    if exist "%REPO_ROOT%\System\%%f" (
+        copy /y "%REPO_ROOT%\System\%%f" "%DEUSEX_ROOT%\CodenameNebula\System\" >nul
+    )
+)
+
+:: ---- Generate CNN.ini from player's DeusEx.ini ----
+echo.
+echo Generating CNN.ini from player's DeusEx.ini...
+set "GEN_ARGS=%TEMP%\cnn_gen_args.txt"
+echo %SYSTEM_DIR%\DeusEx.ini> "!GEN_ARGS!"
+echo %DEUSEX_ROOT%\CodenameNebula\System\CNN.ini>> "!GEN_ARGS!"
+echo %DEUSEX_ROOT%\CodenameNebula\System\CNNUser.ini>> "!GEN_ARGS!"
+echo %SYSTEM_DIR%\User.ini>> "!GEN_ARGS!"
+echo ..\CodenameNebula>> "!GEN_ARGS!"
+
+powershell -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\generate_cnn_ini.ps1" -ArgsFile "!GEN_ARGS!"
+if errorlevel 1 (
+    echo   WARNING: INI generation failed. Falling back to static CNN.ini...
+    if exist "%REPO_ROOT%\System\CNN.ini" copy /y "%REPO_ROOT%\System\CNN.ini" "%DEUSEX_ROOT%\CodenameNebula\System\" >nul
+    if exist "%REPO_ROOT%\System\CNNUser.ini" copy /y "%REPO_ROOT%\System\CNNUser.ini" "%DEUSEX_ROOT%\CodenameNebula\System\" >nul
+)
+del "!GEN_ARGS!" 2>nul
+
+:: ---- Detect game executable (no renaming — use DeusEx.exe directly) ----
+:: Same approach as GMDX/TNM: preserves Steam overlay on Steam installs
+:: Works on Steam, GOG, and vanilla (CD) installs
+echo.
+echo Detecting game executable...
+set "EXE_TYPE=not found"
+set "EXE_SIZE=0"
+if exist "%SYSTEM_DIR%\DeusEx.exe" for %%A in ("%SYSTEM_DIR%\DeusEx.exe") do set "EXE_SIZE=%%~zA"
+if !EXE_SIZE! GTR 300000 set "EXE_TYPE=third-party launcher - Kentie or Han"
+if !EXE_SIZE! GTR 200000 if "!EXE_TYPE!"=="not found" set "EXE_TYPE=original 1112fm"
+if !EXE_SIZE! GTR 0 if "!EXE_TYPE!"=="not found" set "EXE_TYPE=Community Update wrapper"
+echo   DeusEx.exe: !EXE_TYPE! [!EXE_SIZE! bytes]
 
 :: Deploy to Community Update if present
 if exist "%CU_SYSTEM%" (
+    echo.
     echo Deploying to Community Update editor...
     for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u GaussGun.u DXOgg.u DXOgg.dll) do (
         if exist "%REPO_ROOT%\System\%%f" copy /y "%REPO_ROOT%\System\%%f" "%CU_SYSTEM%\" >nul
@@ -589,33 +649,68 @@ echo  TEST - Launching Codename Nebula
 echo ========================================
 echo.
 
-:: Check for installed mod first, then fall back to repo
+:: Check for generated CNN.ini (from cnn install), then auto-install if missing
+:: Note: use !DEUSEX_ROOT! (delayed expansion) to handle parentheses in paths like "Program Files (x86)"
 set "CNN_INI="
-if exist "%DEUSEX_ROOT%\CodenameNebula\System\CNN.ini" set "CNN_INI=%DEUSEX_ROOT%\CodenameNebula\System\CNN.ini"
-if not defined CNN_INI if exist "%REPO_ROOT%\System\CNN.ini" set "CNN_INI=%REPO_ROOT%\System\CNN.ini"
-if not defined CNN_INI echo ERROR: CNN.ini not found. Run "cnn install" first. && goto :eof
+if exist "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini" set "CNN_INI=!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini"
+if not defined CNN_INI (
+    echo CNN.ini not found. Running "cnn install" first...
+    echo.
+    call :install
+)
+if not defined CNN_INI if exist "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini" set "CNN_INI=!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini"
+if not defined CNN_INI echo ERROR: CNN.ini still not found after install. && goto :eof
 
 set "CNN_USER_INI="
-if exist "%DEUSEX_ROOT%\CodenameNebula\System\CNNUser.ini" set "CNN_USER_INI=%DEUSEX_ROOT%\CodenameNebula\System\CNNUser.ini"
-if not defined CNN_USER_INI if exist "%REPO_ROOT%\System\CNNUser.ini" set "CNN_USER_INI=%REPO_ROOT%\System\CNNUser.ini"
+if exist "!DEUSEX_ROOT!\CodenameNebula\System\CNNUser.ini" set "CNN_USER_INI=!DEUSEX_ROOT!\CodenameNebula\System\CNNUser.ini"
 
-:: Use CodenameNebula.exe (renamed DeusEx.exe) to bypass Steam's hook
-set "CNN_EXE=%SYSTEM_DIR%\CodenameNebula.exe"
-if not exist "!CNN_EXE!" (
-    echo CodenameNebula.exe not found, creating from original exe...
-    if exist "%SYSTEM_DIR%\DeusEx 1112fm (Original EXE).exe" (
-        copy /y "%SYSTEM_DIR%\DeusEx 1112fm (Original EXE).exe" "!CNN_EXE!" >nul
-    ) else (
-        copy /y "%SYSTEM_DIR%\DeusEx.exe" "!CNN_EXE!" >nul
-    )
-)
+:: Use DeusEx.exe directly with INI= parameters (same approach as GMDX/TNM)
+:: This preserves Steam overlay and play time tracking on Steam installs
+:: Works on Steam, GOG, and vanilla (CD) installs
+set "CNN_EXE="
+set "EXE_TYPE=not found"
+set "EXE_SIZE=0"
+
+:: Detect the best game executable
+:: Use delayed expansion !VAR! throughout to handle parentheses in paths like (x86)
+if exist "!SYSTEM_DIR!\DeusEx.exe" for %%A in ("!SYSTEM_DIR!\DeusEx.exe") do set "EXE_SIZE=%%~zA"
+if !EXE_SIZE! GTR 300000 set "CNN_EXE=!SYSTEM_DIR!\DeusEx.exe" & set "EXE_TYPE=third-party launcher - Kentie or Han"
+if !EXE_SIZE! GTR 200000 if not defined CNN_EXE set "CNN_EXE=!SYSTEM_DIR!\DeusEx.exe" & set "EXE_TYPE=original 1112fm"
+if !EXE_SIZE! GTR 0 if not defined CNN_EXE set "CNN_EXE=!SYSTEM_DIR!\DeusEx.exe" & set "EXE_TYPE=Community Update wrapper"
+
+:: If DeusEx.exe is the small CU wrapper, prefer the original 1112fm backup
+if !EXE_SIZE! LEQ 200000 if !EXE_SIZE! GTR 0 if exist "!SYSTEM_DIR!\DeusEx 1112fm ^(Original EXE^).exe" set "CNN_EXE=!SYSTEM_DIR!\DeusEx 1112fm (Original EXE).exe" & set "EXE_TYPE=original 1112fm via CU backup"
+
+if not defined CNN_EXE echo ERROR: No DeusEx.exe found in !SYSTEM_DIR! && goto :eof
+
 echo Starting Codename Nebula...
-echo   INI: !CNN_INI!
-if defined CNN_USER_INI (
-    start "" /d "%SYSTEM_DIR%" "!CNN_EXE!" INI="!CNN_INI!" USERINI="!CNN_USER_INI!"
-) else (
-    start "" /d "%SYSTEM_DIR%" "!CNN_EXE!" INI="!CNN_INI!"
+echo   EXE:  !CNN_EXE! [!EXE_TYPE!]
+echo   INI:  !CNN_INI!
+if defined CNN_USER_INI echo   USER: !CNN_USER_INI!
+echo.
+if defined CNN_USER_INI start "" /d "!SYSTEM_DIR!" "!CNN_EXE!" INI="!CNN_INI!" USERINI="!CNN_USER_INI!"
+if not defined CNN_USER_INI start "" /d "!SYSTEM_DIR!" "!CNN_EXE!" INI="!CNN_INI!"
+goto :eof
+
+:: ============================================================================
+:: STEAM - Launch via Steam (overlay + play time tracking)
+:: ============================================================================
+:steam
+echo.
+echo ========================================
+echo  STEAM - Launching via Steam
+echo ========================================
+echo.
+
+:: Ensure CNN.ini exists
+if not exist "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini" (
+    echo CNN.ini not found. Running "cnn install" first...
+    echo.
+    call :install
 )
+if not exist "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini" echo ERROR: CNN.ini not found. && goto :eof
+
+powershell -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\steam_launch.ps1" -CnnIniPath "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini" -CnnUserIniPath "!DEUSEX_ROOT!\CodenameNebula\System\CNNUser.ini"
 goto :eof
 
 :: ============================================================================
@@ -915,6 +1010,7 @@ echo   package         Copy compiled assets into distribution folder
 echo   installer       Build Inno Setup installer (.exe)
 echo   install         Deploy mod to local Deus Ex for testing
 echo   test            Launch the mod in Deus Ex
+echo   steam           Launch via Steam (overlay + play time tracking)
 echo   clean           Remove compiled packages
 echo   bump [part]     Increment version (patch/minor/major, default: patch)
 echo   version         Show current version

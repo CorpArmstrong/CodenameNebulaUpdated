@@ -16,9 +16,10 @@ if (-not (Test-Path $CnnIniPath)) {
 }
 
 # Build steam:// URL with %22 (URL-encoded quotes) around paths
-$iniArg = "-ini=%22$CnnIniPath%22"
-$userIniArg = "-userini=%22$CnnUserIniPath%22"
+# INI= and USERINI= (no dash prefix) is the Unreal Engine 1 command-line format
+$iniArg = "INI=%22$CnnIniPath%22"
+$userIniArg = "USERINI=%22$CnnUserIniPath%22"
 $steamUrl = "steam://rungameid/6910//$iniArg $userIniArg"
 
-Write-Host "  Launching Codename Nebula via Steam..."
+Write-Host "  Launching: $steamUrl"
 Start-Process $steamUrl

@@ -435,17 +435,32 @@ if exist "%REPO_ROOT%\tools\steam_launch.ps1" (
     echo   tools\steam_launch.ps1
 )
 
-:: Build CNNInstallUtil if MSBuild is available
+:: Build CNNInstallUtil (try MSBuild first, then dotnet CLI)
+set "INSTALLUTIL_BUILT=0"
 where msbuild >nul 2>&1
 if not errorlevel 1 (
-    echo Building CNNInstallUtil...
+    echo Building CNNInstallUtil via MSBuild...
     msbuild "%REPO_ROOT%\CNNInstallUtil\CNNInstallUtil.sln" /p:Configuration=Release /v:minimal
     if exist "%REPO_ROOT%\CNNInstallUtil\CNNInstallUtil\bin\Release\CNNInstallUtil.exe" (
         copy /y "%REPO_ROOT%\CNNInstallUtil\CNNInstallUtil\bin\Release\CNNInstallUtil.exe" "%DIST_DIR%\" >nul
         echo   CNNInstallUtil.exe
+        set "INSTALLUTIL_BUILT=1"
     )
-) else (
-    echo WARNING: MSBuild not found, skipping CNNInstallUtil build.
+)
+if "!INSTALLUTIL_BUILT!"=="0" (
+    where dotnet >nul 2>&1
+    if not errorlevel 1 (
+        echo Building CNNInstallUtil via dotnet publish...
+        dotnet publish "%REPO_ROOT%\CNNInstallUtil\CNNInstallUtil\CNNInstallUtil.csproj" -c Release -r win-x86 --self-contained true -o "%REPO_ROOT%\CNNInstallUtil\publish" >nul 2>&1
+        if exist "%REPO_ROOT%\CNNInstallUtil\publish\CNNInstallUtil.exe" (
+            copy /y "%REPO_ROOT%\CNNInstallUtil\publish\CNNInstallUtil.exe" "%DIST_DIR%\" >nul
+            echo   CNNInstallUtil.exe
+            set "INSTALLUTIL_BUILT=1"
+        )
+    )
+)
+if "!INSTALLUTIL_BUILT!"=="0" (
+    echo WARNING: Neither MSBuild nor dotnet found, skipping CNNInstallUtil build.
     if exist "%DIST_DIR%\CNNInstallUtil.exe" echo   Using existing CNNInstallUtil.exe
 )
 
@@ -506,6 +521,8 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo OutputDir=%BUILD_DIR%
     echo OutputBaseFilename=CodenameNebula_v%CNN_VERSION%
     echo SetupIconFile=%DIST_DIR%\cnnico.ico
+    echo WizardImageFile=%REPO_ROOT%\CNNInstaller\WizardImage.bmp
+    echo WizardSmallImageFile=%REPO_ROOT%\CNNInstaller\WizardSmallImage.bmp
     echo Compression=lzma
     echo SolidCompression=yes
     echo.
@@ -520,8 +537,10 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo.
     echo [Icons]
     echo Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\cnnico.ico";
-    echo Name: "{userdesktop}\Codename Nebula"; Filename: "{app}\PlayCodenameNebula.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
+    echo Name: "{userdesktop}\Play Codename Nebula"; Filename: "{app}\PlayCodenameNebula.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
+    echo Name: "{userdesktop}\Play Codename Nebula Steam"; Filename: "{app}\PlayCNNSteam.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
     echo Name: "{group}\Play Codename Nebula"; Filename: "{app}\PlayCodenameNebula.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
+    echo Name: "{group}\Play Codename Nebula Steam"; Filename: "{app}\PlayCNNSteam.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
     echo.
     echo [Run]
     echo Filename: "{app}\CNNInstallUtil.EXE"; Description: "Configure mod (create launcher, shortcuts, INI files)"; Flags: waituntilterminated
@@ -539,6 +558,12 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo   if CurUninstallStep = usPostUninstall then
     echo   begin
     echo     DesktopFile := ExpandConstant^('{userdesktop}\Codename Nebula.lnk'^);
+    echo     if FileExists^(DesktopFile^) then
+    echo       DeleteFile^(DesktopFile^);
+    echo     DesktopFile := ExpandConstant^('{userdesktop}\Play Codename Nebula.lnk'^);
+    echo     if FileExists^(DesktopFile^) then
+    echo       DeleteFile^(DesktopFile^);
+    echo     DesktopFile := ExpandConstant^('{userdesktop}\Play Codename Nebula Steam.lnk'^);
     echo     if FileExists^(DesktopFile^) then
     echo       DeleteFile^(DesktopFile^);
     echo     DesktopFile := ExpandConstant^('{userdesktop}\Play Codename Nebula.bat'^);

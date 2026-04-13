@@ -34,7 +34,9 @@ namespace CNNInstallUtil
             CreateLauncher(pathToSystem, pathToModSystem);
             CreateShortcuts(pathToSystem, pathToModSystem);
 
-            Console.WriteLine("\nInstallation complete! You can launch Codename Nebula from the desktop shortcut.");
+            Console.WriteLine("\nInstallation complete! You can launch Codename Nebula from the desktop shortcuts.");
+            Console.WriteLine("  - Play Codename Nebula       (direct launch)");
+            Console.WriteLine("  - Play Codename Nebula Steam (Steam overlay + play time tracking)");
         }
 
         private void CreateCNNIni(string pathToSystem, string pathToModSystem)
@@ -122,13 +124,30 @@ namespace CNNInstallUtil
             // (handles OneDrive/Cyrillic/Unicode paths that .NET trimmed builds can't)
             CreateShortcutViaPowerShell(
                 "[Environment]::GetFolderPath('Desktop')",
-                "Codename Nebula.lnk", batPath, currentPath, iconPath);
-            Console.WriteLine("Created desktop shortcut.");
+                "Play Codename Nebula.lnk", batPath, currentPath, iconPath);
+            Console.WriteLine("Created desktop shortcut: Play Codename Nebula");
+
+            // Steam launch shortcut (uses steam:// protocol for overlay + play time tracking)
+            string steamBatPath = Path.Combine(currentPath, "PlayCNNSteam.bat");
+            if (File.Exists(steamBatPath))
+            {
+                CreateShortcutViaPowerShell(
+                    "[Environment]::GetFolderPath('Desktop')",
+                    "Play Codename Nebula Steam.lnk", steamBatPath, currentPath, iconPath);
+                Console.WriteLine("Created desktop shortcut: Play Codename Nebula Steam");
+            }
 
             CreateShortcutViaPowerShell(
                 "Join-Path ([Environment]::GetFolderPath('Programs')) 'Codename Nebula'",
                 "Play Codename Nebula.lnk", batPath, currentPath, iconPath);
-            Console.WriteLine("Created Start Menu shortcut.");
+
+            if (File.Exists(steamBatPath))
+            {
+                CreateShortcutViaPowerShell(
+                    "Join-Path ([Environment]::GetFolderPath('Programs')) 'Codename Nebula'",
+                    "Play Codename Nebula Steam.lnk", steamBatPath, currentPath, iconPath);
+            }
+            Console.WriteLine("Created Start Menu shortcuts.");
         }
 
 

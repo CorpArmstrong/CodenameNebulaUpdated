@@ -17,6 +17,7 @@
             finally
             {
                 try { System.Console.ReadKey(); } catch { }
+            }
         }
     }
 }

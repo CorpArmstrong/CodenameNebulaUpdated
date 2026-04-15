@@ -380,13 +380,11 @@ for %%f in ("%REPO_ROOT%\Music\Ogg\*.ogg") do (
     echo   %%~nxf
 )
 
-:: Package Textures
+:: Package Textures (copy all .utx — avoids missing-texture bugs from a hardcoded list)
 echo Packaging Textures...
-for %%f in (Ophelia.utx AiInfoPortraits.utx AITex.utx PFADTex.utx ArtPieces.utx X3.utx X3tex.utx GenFX.utx CNNTextures.utx AIStalk.utx TITAN.utx) do (
-    if exist "%REPO_ROOT%\Textures\%%f" (
-        copy /y "%REPO_ROOT%\Textures\%%f" "%DIST_DIR%\Textures\" >nul
-        echo   %%f
-    )
+for %%f in ("%REPO_ROOT%\Textures\*.utx") do (
+    copy /y "%%f" "%DIST_DIR%\Textures\" >nul
+    echo   %%~nxf
 )
 
 :: Package System files

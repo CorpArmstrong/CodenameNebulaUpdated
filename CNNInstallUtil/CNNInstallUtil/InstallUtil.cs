@@ -6,7 +6,27 @@ namespace CNNInstallUtil
 {
     class InstallUtil
     {
+        // DeusEx.exe size thresholds used to identify which launcher/version
+        // the player has installed. See DetectAndPrepareLauncher().
+        //
+        //   > CdProtectionSize  : unpatched CD version (~700-800 KB, contains copy protection)
+        //   > LauncherSize      : third-party launcher (Kentie/Han, ~300-500 KB)
+        //   > PatchedSize       : original 1112fm patched (Steam/GOG, ~254 KB)
+        //   <= PatchedSize      : Community Update wrapper (~126 KB)
+        private const long CdProtectionSize = 600_000;
+        private const long LauncherSize     = 300_000;
+        private const long PatchedSize      = 200_000;
+
         private readonly string currentPath = Directory.GetCurrentDirectory();
+
+        // Name of the game exe to launch. Normally "DeusEx.exe" — but on
+        // unpatched CD installs we copy it to "CodenameNebula.exe" to sidestep
+        // the CD copy-protection check. Set by DetectAndPrepareLauncher().
+        private string launcherExeName = "DeusEx.exe";
+
+        // True when we renamed the exe (CD version only). Informs whether the
+        // Steam shortcut is useful (Steam launch only applies to Steam installs).
+        private bool isCdRenamed = false;
 
         public void Install()
         {
@@ -31,7 +51,7 @@ namespace CNNInstallUtil
             CreateCNNIni(pathToSystem, pathToModSystem);
             CreateCNNUserIni(pathToSystem, pathToModSystem);
             CopyMusicFiles(pathToSystem, pathToModSystem);
-            CreateLauncher(pathToSystem, pathToModSystem);
+            DetectAndPrepareLauncher(pathToSystem);
             CreateShortcuts(pathToSystem, pathToModSystem);
 
             Console.WriteLine("\nInstallation complete! You can launch Codename Nebula from the desktop shortcuts.");
@@ -79,46 +99,75 @@ namespace CNNInstallUtil
             }
         }
 
-        private void CreateLauncher(string pathToSystem, string pathToModSystem)
+        private void DetectAndPrepareLauncher(string pathToSystem)
         {
-            // No exe renaming — use DeusEx.exe directly with INI= parameters
-            // Same approach as GMDX and The Nameless Mod
-            // Preserves Steam overlay and play time tracking
             string deusExExe = Path.Combine(pathToSystem, "DeusEx.exe");
 
-            if (File.Exists(deusExExe))
-            {
-                long size = new FileInfo(deusExExe).Length;
-                string exeType = size > 300000 ? "third-party launcher (Kentie/Han)"
-                               : size > 200000 ? "original 1112fm"
-                               : "Community Update wrapper";
-                Console.WriteLine("Detected DeusEx.exe: {0} ({1} bytes).", exeType, size);
-            }
-            else
+            if (!File.Exists(deusExExe))
             {
                 Console.WriteLine("Warning: DeusEx.exe not found in {0}!", pathToSystem);
                 Console.WriteLine("  CNN requires a Deus Ex installation (Steam, GOG, or retail).");
+                return;
             }
+
+            long size = new FileInfo(deusExExe).Length;
+            string exeType;
+
+            if (size > CdProtectionSize)
+            {
+                exeType = "unpatched CD version (with copy protection)";
+
+                // Rename-copy the exe so the CD check's anchor lookup fails and
+                // the game launches without prompting for the CD.
+                string renamedExe = Path.Combine(pathToSystem, "CodenameNebula.exe");
+                try
+                {
+                    File.Copy(deusExExe, renamedExe, true);
+                    launcherExeName = "CodenameNebula.exe";
+                    isCdRenamed = true;
+                    Console.WriteLine("Created CodenameNebula.exe (bypasses CD check on unpatched CD version).");
+                    Console.WriteLine("  Tip: install patch 1112fm for full compatibility with mods.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Warning: could not create CodenameNebula.exe: {0}", ex.Message);
+                }
+            }
+            else if (size > LauncherSize)
+            {
+                exeType = "third-party launcher (Kentie/Han)";
+            }
+            else if (size > PatchedSize)
+            {
+                exeType = "original 1112fm";
+            }
+            else
+            {
+                exeType = "Community Update wrapper";
+            }
+
+            Console.WriteLine("Detected DeusEx.exe: {0} ({1} bytes).", exeType, size);
         }
 
         private void CreateShortcuts(string pathToSystem, string pathToModSystem)
         {
             string iconPath = Path.Combine(currentPath, "cnnico.ico");
 
-            // Create a .bat launcher — uses DeusEx.exe directly with INI= parameters
-            // Works on Steam (with overlay), GOG, and vanilla installs
+            // Create a .bat launcher — uses the detected exe (DeusEx.exe, or
+            // CodenameNebula.exe on unpatched CD installs) with INI= parameters.
+            // Works on Steam (with overlay), GOG, vanilla, and CD installs.
             string batPath = Path.Combine(currentPath, "PlayCodenameNebula.bat");
             File.WriteAllText(batPath, string.Format(
                 "@echo off\r\n" +
                 "cd /d \"{0}\"\r\n" +
-                ":: Launch Codename Nebula via DeusEx.exe with custom INI files\r\n" +
-                ":: Steam overlay and play time tracking work because we use the original exe\r\n" +
+                ":: Launch Codename Nebula via {4} with custom INI files\r\n" +
                 "\"{1}\" INI=\"{2}\" USERINI=\"{3}\"\r\n",
                 pathToSystem,
-                Path.Combine(pathToSystem, "DeusEx.exe"),
+                Path.Combine(pathToSystem, launcherExeName),
                 Path.Combine(pathToModSystem, "CNN.ini"),
-                Path.Combine(pathToModSystem, "CNNUser.ini")));
-            Console.WriteLine("Created PlayCodenameNebula.bat launcher.");
+                Path.Combine(pathToModSystem, "CNNUser.ini"),
+                launcherExeName));
+            Console.WriteLine("Created PlayCodenameNebula.bat launcher (uses {0}).", launcherExeName);
 
             // Create .lnk shortcuts on Desktop and Start Menu via PowerShell
             // (handles OneDrive/Cyrillic/Unicode paths that .NET trimmed builds can't)
@@ -127,22 +176,20 @@ namespace CNNInstallUtil
                 "Play Codename Nebula.lnk", batPath, currentPath, iconPath);
             Console.WriteLine("Created desktop shortcut: Play Codename Nebula");
 
-            // Steam launch shortcut (uses steam:// protocol for overlay + play time tracking)
+            CreateShortcutViaPowerShell(
+                "Join-Path ([Environment]::GetFolderPath('Programs')) 'Codename Nebula'",
+                "Play Codename Nebula.lnk", batPath, currentPath, iconPath);
+
+            // Steam launch shortcut — only useful on Steam-installed copies.
+            // Skip it on CD installs (no Steam integration available there).
             string steamBatPath = Path.Combine(currentPath, "PlayCNNSteam.bat");
-            if (File.Exists(steamBatPath))
+            if (File.Exists(steamBatPath) && !isCdRenamed)
             {
                 CreateShortcutViaPowerShell(
                     "[Environment]::GetFolderPath('Desktop')",
                     "Play Codename Nebula Steam.lnk", steamBatPath, currentPath, iconPath);
                 Console.WriteLine("Created desktop shortcut: Play Codename Nebula Steam");
-            }
 
-            CreateShortcutViaPowerShell(
-                "Join-Path ([Environment]::GetFolderPath('Programs')) 'Codename Nebula'",
-                "Play Codename Nebula.lnk", batPath, currentPath, iconPath);
-
-            if (File.Exists(steamBatPath))
-            {
                 CreateShortcutViaPowerShell(
                     "Join-Path ([Environment]::GetFolderPath('Programs')) 'Codename Nebula'",
                     "Play Codename Nebula Steam.lnk", steamBatPath, currentPath, iconPath);

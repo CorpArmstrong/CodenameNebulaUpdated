@@ -570,7 +570,10 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo     StartMenuDir := ExpandConstant^('{userprograms}\Codename Nebula'^);
     echo     if DirExists^(StartMenuDir^) then
     echo       DelTree^(StartMenuDir, True, True, True^);
-    echo     // No exe cleanup needed - we use DeusEx.exe directly, nothing to remove
+    echo     // Remove CodenameNebula.exe from parent System folder if it exists ^(CD version only^)
+    echo     SystemDir := ExpandConstant^('{app}\..\System\CodenameNebula.exe'^);
+    echo     if FileExists^(SystemDir^) then
+    echo       DeleteFile^(SystemDir^);
     echo   end;
     echo end;
 )

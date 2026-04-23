@@ -396,10 +396,16 @@ for %%f in (CNN.u CNNText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.
     )
 )
 
-:: Package renderer and editor fix files
-for %%f in (D3D9Drv.int RenderExt.dll RenderExt.int) do (
-    if exist "%REPO_ROOT%\System\%%f" (
-        copy /y "%REPO_ROOT%\System\%%f" "%DIST_DIR%\System\" >nul
+:: Package renderer interface file from System/
+if exist "%REPO_ROOT%\System\D3D9Drv.int" (
+    copy /y "%REPO_ROOT%\System\D3D9Drv.int" "%DIST_DIR%\System\" >nul
+    echo   D3D9Drv.int
+)
+:: Package RenderExt from CNN/System/ — CNNInstallUtil copies these into the
+:: game's System folder at install time so UE1 can LoadLibrary them.
+for %%f in (RenderExt.dll RenderExt.int) do (
+    if exist "%REPO_ROOT%\CNN\System\%%f" (
+        copy /y "%REPO_ROOT%\CNN\System\%%f" "%DIST_DIR%\System\" >nul
         echo   %%f
     )
 )
@@ -448,8 +454,10 @@ if not errorlevel 1 (
 if "!INSTALLUTIL_BUILT!"=="0" (
     where dotnet >nul 2>&1
     if not errorlevel 1 (
-        echo Building CNNInstallUtil via dotnet publish...
-        dotnet publish "%REPO_ROOT%\CNNInstallUtil\CNNInstallUtil\CNNInstallUtil.csproj" -c Release -r win-x86 --self-contained true -o "%REPO_ROOT%\CNNInstallUtil\publish" >nul 2>&1
+        echo Building CNNInstallUtil via dotnet publish ^(single-file^)...
+        :: Clean publish dir first so stale loose DLLs don't ship alongside the single-file exe
+        if exist "%REPO_ROOT%\CNNInstallUtil\publish" rd /s /q "%REPO_ROOT%\CNNInstallUtil\publish"
+        dotnet publish "%REPO_ROOT%\CNNInstallUtil\CNNInstallUtil\CNNInstallUtil.csproj" -c Release -r win-x86 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o "%REPO_ROOT%\CNNInstallUtil\publish" >nul 2>&1
         if exist "%REPO_ROOT%\CNNInstallUtil\publish\CNNInstallUtil.exe" (
             copy /y "%REPO_ROOT%\CNNInstallUtil\publish\CNNInstallUtil.exe" "%DIST_DIR%\" >nul
             echo   CNNInstallUtil.exe
@@ -523,6 +531,8 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo WizardSmallImageFile=%REPO_ROOT%\CNNInstaller\WizardSmallImage.bmp
     echo Compression=lzma
     echo SolidCompression=yes
+    echo ;; Always let the user pick the install path, even on upgrade.
+    echo UsePreviousAppDir=no
     echo.
     echo [Languages]
     echo Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -541,7 +551,7 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo Name: "{group}\Play Codename Nebula Steam"; Filename: "{app}\PlayCNNSteam.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
     echo.
     echo [Run]
-    echo Filename: "{app}\CNNInstallUtil.EXE"; Description: "Configure mod (create launcher, shortcuts, INI files)"; Flags: waituntilterminated
+    echo Filename: "{app}\CNNInstallUtil.EXE"; WorkingDir: "{app}"; Description: "Configure mod"; Flags: waituntilterminated
     echo.
     echo [UninstallDelete]
     echo Type: filesandordirs; Name: "{app}"

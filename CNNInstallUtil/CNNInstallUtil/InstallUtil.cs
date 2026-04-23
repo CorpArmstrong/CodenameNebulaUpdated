@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -6,16 +7,22 @@ namespace CNNInstallUtil
 {
     class InstallUtil
     {
-        // DeusEx.exe size thresholds used to identify which launcher/version
-        // the player has installed. See DetectAndPrepareLauncher().
+        // DeusEx.exe size thresholds used to decide whether to rename-copy
+        // the exe (CD-protection bypass). See DetectAndPrepareLauncher().
         //
-        //   > CdProtectionSize  : unpatched CD version (~700-800 KB, contains copy protection)
-        //   > LauncherSize      : third-party launcher (Kentie/Han, ~300-500 KB)
-        //   > PatchedSize       : original 1112fm patched (Steam/GOG, ~254 KB)
-        //   <= PatchedSize      : Community Update wrapper (~126 KB)
-        private const long CdProtectionSize = 600_000;
-        private const long LauncherSize     = 300_000;
-        private const long PatchedSize      = 200_000;
+        //   > LauncherSize  : third-party launcher (Kentie/Han, ~300-500 KB).
+        //                     Never rename — users expect Kentie's settings
+        //                     to be inherited, which only works with the
+        //                     original exe name.
+        //   <= LauncherSize : either raw 1112fm or unpatched CD — both are
+        //                     ~254 KB, and we can't distinguish them by
+        //                     size or version metadata (CD has neither).
+        //                     Rename-copy regardless: it bypasses CD
+        //                     protection on CD and is a no-op on 1112fm.
+        //   <= WrapperSize  : Community Update wrapper (~126 KB). Don't
+        //                     rename — CU has its own launch mechanism.
+        private const long LauncherSize = 300_000;
+        private const long WrapperSize  = 200_000;
 
         private readonly string currentPath = Directory.GetCurrentDirectory();
 
@@ -51,6 +58,7 @@ namespace CNNInstallUtil
             CreateCNNIni(pathToSystem, pathToModSystem);
             CreateCNNUserIni(pathToSystem, pathToModSystem);
             CopyMusicFiles(pathToSystem, pathToModSystem);
+            CopyRenderExt(pathToSystem, pathToModSystem);
             DetectAndPrepareLauncher(pathToSystem);
             CreateShortcuts(pathToSystem, pathToModSystem);
 
@@ -111,42 +119,39 @@ namespace CNNInstallUtil
             }
 
             long size = new FileInfo(deusExExe).Length;
-            string exeType;
+            Console.WriteLine("DeusEx.exe: {0} bytes", size);
 
-            if (size > CdProtectionSize)
+            // Decision rule — can't distinguish CD from raw 1112fm by size or
+            // version metadata (both are ~254 KB; CD has no version info).
+            // Since renaming is a no-op on 1112fm but required to bypass CD
+            // copy protection, rename whenever the exe isn't a third-party
+            // launcher or CU wrapper.
+            if (size > LauncherSize)
             {
-                exeType = "unpatched CD version (with copy protection)";
-
-                // Rename-copy the exe so the CD check's anchor lookup fails and
-                // the game launches without prompting for the CD.
+                Console.WriteLine("Detected DeusEx.exe: third-party launcher (Kentie/Han).");
+                Console.WriteLine("  Using DeusEx.exe directly to preserve launcher settings.");
+            }
+            else if (size <= WrapperSize)
+            {
+                Console.WriteLine("Detected DeusEx.exe: Community Update wrapper.");
+                Console.WriteLine("  Using DeusEx.exe directly.");
+            }
+            else
+            {
+                Console.WriteLine("Detected DeusEx.exe: original 1112fm or unpatched CD.");
                 string renamedExe = Path.Combine(pathToSystem, "CodenameNebula.exe");
                 try
                 {
                     File.Copy(deusExExe, renamedExe, true);
                     launcherExeName = "CodenameNebula.exe";
                     isCdRenamed = true;
-                    Console.WriteLine("Created CodenameNebula.exe (bypasses CD check on unpatched CD version).");
-                    Console.WriteLine("  Tip: install patch 1112fm for full compatibility with mods.");
+                    Console.WriteLine("  Created CodenameNebula.exe (bypasses CD check if present).");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Warning: could not create CodenameNebula.exe: {0}", ex.Message);
+                    Console.WriteLine("  Warning: could not create CodenameNebula.exe: {0}", ex.Message);
                 }
             }
-            else if (size > LauncherSize)
-            {
-                exeType = "third-party launcher (Kentie/Han)";
-            }
-            else if (size > PatchedSize)
-            {
-                exeType = "original 1112fm";
-            }
-            else
-            {
-                exeType = "Community Update wrapper";
-            }
-
-            Console.WriteLine("Detected DeusEx.exe: {0} ({1} bytes).", exeType, size);
         }
 
         private void CreateShortcuts(string pathToSystem, string pathToModSystem)
@@ -484,6 +489,28 @@ namespace CNNInstallUtil
                 Console.WriteLine("  HD textures: not found (optional)");
 
             return paths.ToArray();
+        }
+
+        // Copy RenderExt.dll and RenderExt.int to the game's System folder.
+        // CNN.ini sets Render=RenderExt.RenderExt, so UE1 LoadLibrary's these
+        // at startup — they must live alongside DeusEx.exe, not in the mod's
+        // System folder, because LoadLibrary uses the exe directory, not UE1
+        // Paths=.
+        private void CopyRenderExt(string pathToSystem, string pathToModSystem)
+        {
+            foreach (string f in new[] { "RenderExt.dll", "RenderExt.int" })
+            {
+                string src = Path.Combine(pathToModSystem, f);
+                if (File.Exists(src))
+                {
+                    File.Copy(src, Path.Combine(pathToSystem, f), true);
+                    Console.WriteLine("Copied {0} to System.", f);
+                }
+                else
+                {
+                    Console.WriteLine("Warning: {0} not found in mod System folder.", f);
+                }
+            }
         }
 
         private void CopyMusicFiles(string pathToSystem, string pathToModSystem)

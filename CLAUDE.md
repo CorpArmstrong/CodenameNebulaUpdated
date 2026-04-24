@@ -18,7 +18,7 @@ UnrealScript is compiled by the Unreal Engine 1 `ucc.exe` compiler into `.u` pac
 
 - **CNNInstallUtil** — Build via Visual Studio: `CNNInstallUtil/CNNInstallUtil.sln`
 - **Converter (obj2de)** — Legacy Visual C++ project: `Converter/obj2de/Source/obj2de.vcproj`
-- **Packaging** — `CodenameNebula/package.bat` copies compiled assets into a distribution directory (references Jenkins CI paths at `C:\Jenkins\workspace\CNN-Jenkins\`)
+- **Packaging** — `cnn.bat package` copies compiled assets into the `CodenameNebula/` distribution directory (the older `CodenameNebula/package.bat` is retired; it's archived under `_Backups/Phase3_Legacy/` for reference)
 - **Game launch** — `System/CNNStart.bat`
 
 ## Development Environment Setup

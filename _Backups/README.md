@@ -19,3 +19,6 @@ This folder holds files and directories that were removed from the active parts 
 | 2 | `Phase2_Backups/BackupConv/` | Backup copies of `.con` conversation files. Git is the authoritative history now. |
 | 2 | `Phase2_OldMaps/OldMaps/` | Historical map iterations (WIP versions of Ophelia maps, test variants, `.t3d` prefabs). Not referenced by any active map list. |
 | 2 | `Phase2_OldMaps/DeusEx.ini` | Vestigial Deus Ex config (Glide renderer, vanilla `JCDentonMale` player class) — unrelated to the mod's active `CNN.ini`. |
+| 3 | `Phase3_Legacy/build.bat` | Dead 6-byte script containing only `dir /w`. Superseded by root `cnn.bat`. |
+| 3 | `Phase3_Legacy/package.bat` | Legacy in-folder packaging script. Superseded by `cnn.bat package`; no other script references it. |
+| 3 | `Phase3_Legacy/Terrified.umx` | Byte-identical duplicate of `Music/Terrified.umx` at repo root. Distribution copy that the build script regenerates anyway. |

@@ -207,7 +207,7 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 |-----------|----------|
 | `CNN/Classes/` | All UnrealScript source files (game logic, NPCs, weapons, UI, quests) |
 | `CNN/Conversations/` | Binary conversation data files (.con) created by ConEdit |
-| `CNN/Text/` | In-game text content (datacubes, books, bulletins) by chapter |
+| `CNNText/Text/` | In-game text content (datacubes, books, bulletins) by chapter — imported into `CNNText.u` via `#exec DEUSEXTEXT IMPORT` in [CNNText/Classes/CNNTextImport.uc](CNNText/Classes/CNNTextImport.uc) |
 | `CNNText/Classes/` | UnrealScript source for conversation/text package (imports .con and .txt files) |
 | `CNN/Audio/` | Dialogue audio organized by chapter/character |
 | `CNN/Models/` | 3D model files |

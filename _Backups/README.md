@@ -23,3 +23,4 @@ This folder holds files and directories that were removed from the active parts 
 | 3 | `Phase3_Legacy/package.bat` | Legacy in-folder packaging script. Superseded by `cnn.bat package`; no other script references it. |
 | 3 | `Phase3_Legacy/Terrified.umx` | Byte-identical duplicate of `Music/Terrified.umx` at repo root. Distribution copy that the build script regenerates anyway. |
 | 3 | `Phase3_Legacy/CNN.ini.stale-2026-04-04` | Stale fallback config — zero build pipeline references. Canonical is `System/CNN.ini`. This copy had the Glide renderer, 640×480 resolution, and paths pointing at unrelated mods (`New Vision`, `fgrhk`). Date suffix records when it was last modified. |
+| 4 | `Phase4_TextDup/Text/` | Pure dead duplicate of `CNNText/Text/` (25 files, all byte-identical). `CNN/Text/` had zero references; `CNNText/Text/` is the canonical location imported by `CNNText/Classes/CNNTextImport.uc` into `CNNText.u`. |

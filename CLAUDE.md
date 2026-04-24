@@ -231,7 +231,7 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 - `CNN/Classes/AiAugmentationManager.uc` — Cybernetic augmentation system
 - `CNN/Classes/AiConPlay.uc` / `CASConPlay.uc` — Conversation playback
 - `CNN/Classes/QuestSystem.uc` — Mission/quest tracking
-- `CodenameNebula/CNN.ini` — Main game configuration
+- `System/CNN.ini` — Main game configuration (copied into the distribution by `cnn.bat package`)
 
 ## File Formats
 

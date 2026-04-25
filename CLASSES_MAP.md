@@ -2,6 +2,8 @@
 
 This document catalogs all 268 UnrealScript classes from Codename Nebula: 267 in [CNN/Classes/](CNN/Classes/) and 1 in [CNNText/Classes/](CNNText/Classes/). Sister document to [REPO_MAP.md](REPO_MAP.md) and [Phase5_6_Audit.md](Phase5_6_Audit.md). Reachability verified across four dimensions (the four blind spots that broke Phase 5 are listed in the Methodology section at the bottom).
 
+**Phase 8A status (added 2026-04-25):** 12 classes had their `Mesh=` references re-pointed from `'ApocalypseInside.X'` to `'CNN.X'`. Affected: BassGuitar, Bassein, CoffeeCup, CoffeeMachine, ObserX, Pallet, Pipe619/994/996/998, ShopCart, wallfuse8. Reachability tags unchanged — the assets are now sourced from the local `CNN.u` package instead of the external `ApocalypseInside.u`. 21 `ApocalypseInside.X` refs remain (Burger01 + fries01 meshes + 15 textures + 3 map embeddings) — see [Phase8_ApocalypseInside_Survey.md](Phase8_ApocalypseInside_Survey.md) for the path to full standalone.
+
 ## Quick reference
 
 - **Total classes:** 267 (CNN/Classes) + 1 (CNNText/Classes) = **268**
@@ -351,6 +353,22 @@ All REACHABLE-CODE — referenced via `#exec` directives at compile time.
 | FLAGGED | 1 | [scart4598](CNN/Classes/scart4598.uc) — cryptic name; appears to be a one-off helper. Compile passes but worth a manual look. |
 | **Total** | **268** | All accounted for; 0 truly unreachable post-Phase 5+7 |
 
+## Authorship signals
+
+The codebase shows multi-developer history. Class-name prefixes and explicit `// Author:` tags reveal at least 5 distinct contributors:
+
+| Signal | Count | Likely owner | Domain |
+|---|---|---|---|
+| `// Author: CorpArmstrong` (explicit tag) | 6 classes | **CorpArmstrong** | Orchestration backbone — [QuestSystem](CNN/Classes/QuestSystem.uc), [CNNBaseIngameCutscene](CNN/Classes/CNNBaseIngameCutscene.uc), [HolocommUnit](CNN/Classes/HolocommUnit.uc), [ObjectsDestroyNotifier](CNN/Classes/ObjectsDestroyNotifier.uc), [CNNDetonationTrigger](CNN/Classes/CNNDetonationTrigger.uc), [TestIngameCutscene](CNN/Classes/TestIngameCutscene.uc). Note: there's also an *NPC class* literally named `CorpArmstrong` (Corporal Armstrong) — same handle used both as code author tag and as character name. |
+| `JJ*` prefix | 1 class | **JJ** | Effects — [JJElecEmitter](CNN/Classes/JJElecEmitter.uc) (electric arc emitter, uses `jjV` local var) |
+| `Ai*` prefix | 16 classes | **Ai*** author | Runtime systems — augmentation/skill managers, conversation playback ([AiSkillManager](CNN/Classes/AiSkillManager.uc), [AiAugmentationManager](CNN/Classes/AiAugmentationManager.uc), [AiConPlay](CNN/Classes/AiConPlay.uc), [AiSkillBionics](CNN/Classes/AiSkillBionics.uc), [AiSkillChinese](CNN/Classes/AiSkillChinese.uc), etc.) |
+| `Iw*` prefix | 10 classes | **Iw*** author | HUD widgets — [IwHUDObjectBelt](CNN/Classes/IwHUDObjectBelt.uc), [IwHUDActiveItem](CNN/Classes/IwHUDActiveItem.uc), [IwHUDHitDisplay](CNN/Classes/IwHUDHitDisplay.uc) and 7 siblings |
+| `My*` prefix | 3 classes | **My*** author | Conversation handlers + a fire extinguisher: [MyConPlay](CNN/Classes/MyConPlay.uc), [MyConEventAnimation](CNN/Classes/MyConEventAnimation.uc), [MyFireExtinguisher](CNN/Classes/MyFireExtinguisher.uc) |
+| `CNN*` prefix | 52 classes | Project-wide | Shared namespace; many contributors using project conventions |
+| `Apocalypse*` prefix | 6 classes | Legacy | Pre-fork (kept after splitting from Apocalypse Inside) |
+
+A focused code review per author is likely worthwhile — coding style, error handling, and testing rigor often vary significantly between contributors and the prefixes give a quick way to scope review batches.
+
 ## Notable patterns
 
 1. **Apocalypse Menu chain** — [CNNMenuMainTest:12](CNN/Classes/CNNMenuMainTest.uc#L12) → `ApocalypseInsideMenuSelectDifficulty` → ... is the production New Game flow. The Phase 5 audit initially flagged this as orphan because the `Class'CNN.X'` reference inside a `defaultproperties` tuple was missed by simple `extends`/`spawn` regex.
@@ -395,4 +413,4 @@ The current branch (`chore/repo-cleanup`) compiles cleanly and produces a workin
 
 ---
 
-*Generated 2026-04-25 on branch `chore/repo-cleanup`. Update when classes are added/removed or when reachability paths change.*
+*Generated 2026-04-25 on branch `chore/repo-cleanup`. Updated after Phase 8A (mesh ref consolidation) and authorship survey. Update when classes are added/removed or when reachability paths change.*

@@ -60,7 +60,7 @@ defaultproperties
      msgEmpty="It's empty"
      bCanBeBase=True
      ItemName="Coffee Machine"
-     Mesh=LodMesh'ApocalypseInside.CoffeeMachine'
+     Mesh=LodMesh'CNN.CoffeeMachine'
      SoundRadius=8
      SoundVolume=96
      AmbientSound=Sound'Ambient.Ambient.HumLow3'

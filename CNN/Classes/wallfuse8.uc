@@ -23,7 +23,7 @@ defaultproperties
 {
      DrawType=DT_Mesh
      bStatic=True
-     Mesh=Mesh'ApocalypseInside.wallfuse8'
+     Mesh=Mesh'CNN.wallfuse8'
      DrawScale=15.85555
      CollisionRadius=13.639999
      CollisionHeight=13.639999

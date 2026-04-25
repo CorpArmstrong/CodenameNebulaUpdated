@@ -66,18 +66,18 @@ defaultproperties
      bActivatable=True
      ItemName="Coffee"
      PlayerViewOffset=(X=30.000000,Z=-12.000000)
-     PlayerViewMesh=LodMesh'ApocalypseInside.CoffeeCup'
-     PickupViewMesh=LodMesh'ApocalypseInside.CoffeeCup'
-     ThirdPersonMesh=LodMesh'ApocalypseInside.CoffeeCup'
+     PlayerViewMesh=LodMesh'CNN.CoffeeCup'
+     PickupViewMesh=LodMesh'CNN.CoffeeCup'
+     ThirdPersonMesh=LodMesh'CNN.CoffeeCup'
      LandSound=Sound'DeusExSounds.Generic.PlasticHit2'
      Icon=Texture'ApocalypseInside.Icons.BeltIconCoffeeCup'
      largeIcon=Texture'ApocalypseInside.Icons.LargeIconCoffeeCup'
      largeIconWidth=24
      largeIconHeight=38
-     Description="A tumbler filled with black coffee without sugar.|n|n<UNATCO OPS FILE NOTE JR289-VIOLET> The cafeïn seems to possess certain stimulating power on the nano-entities. Several tests are in progress on this subject. -- Jaime Reyes <END NOTE>"
+     Description="A tumbler filled with black coffee without sugar.|n|n<UNATCO OPS FILE NOTE JR289-VIOLET> The cafeï¿½n seems to possess certain stimulating power on the nano-entities. Several tests are in progress on this subject. -- Jaime Reyes <END NOTE>"
      beltDescription="COFFEE"
      Physics=PHYS_None
-     Mesh=LodMesh'ApocalypseInside.CoffeeCup'
+     Mesh=LodMesh'CNN.CoffeeCup'
      CollisionRadius=3.000000
      CollisionHeight=4.500000
      Mass=5.000000

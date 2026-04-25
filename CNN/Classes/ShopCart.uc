@@ -70,7 +70,7 @@ defaultproperties
 {
      bCanBeBase=True
      ItemName="Shopping Cart"
-     Mesh=LodMesh'ApocalypseInside.scart4598'
+     Mesh=LodMesh'CNN.scart4598'
      SoundRadius=16
      CollisionRadius=31.000000
      CollisionHeight=24.780001

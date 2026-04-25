@@ -23,7 +23,7 @@ defaultproperties
 {
      DrawType=DT_Mesh
      bStatic=True
-     Mesh=Mesh'ApocalypseInside.Pipe998'
+     Mesh=Mesh'CNN.Pipe998'
      DrawScale=5.000000
      CollisionRadius=50.639999
      CollisionHeight=50.639999

@@ -23,7 +23,7 @@ defaultproperties
 {
      DrawType=DT_Mesh
      bStatic=True
-     Mesh=Mesh'ApocalypseInside.ObserX'
+     Mesh=Mesh'CNN.ObserX'
      DrawScale=12.550000
      CollisionRadius=50.639999
      CollisionHeight=50.639999

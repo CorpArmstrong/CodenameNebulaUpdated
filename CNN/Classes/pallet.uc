@@ -8,7 +8,7 @@ defaultproperties
      bCanBeBase=True
      bFlammable=True
      ItemName="Pallet"
-     Mesh=LodMesh'ApocalypseInside.Pallet'
+     Mesh=LodMesh'CNN.Pallet'
      FragType=Class'DeusEx.WoodFragment'
      SoundRadius=16
      CollisionRadius=24.000000

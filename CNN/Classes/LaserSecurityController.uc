@@ -88,7 +88,8 @@ function TurnOffLasers()
 
 function SetSecurityCamera_bNoAlarm(bool bNoAlarm)
 {
-    sCam.bNoAlarm = bNoAlarm;
+    if (sCam != none)
+        sCam.bNoAlarm = bNoAlarm;
 }
 
 defaultproperties

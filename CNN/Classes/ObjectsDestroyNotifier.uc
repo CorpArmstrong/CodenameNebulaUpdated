@@ -70,7 +70,7 @@ function PollObjects()
     }
 }
 
-function HandleDestroyedObject(int index, int destroyedObjectsCounter)
+function HandleDestroyedObject(int index, out int destroyedObjectsCounter)
 {
     DeusExPlayer(GetPlayerPawn()).ClientMessage("Destroyed: " $ objects[index].tag);
     objects[index].tag = '';

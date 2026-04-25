@@ -84,9 +84,9 @@ This is a **sampling-based review** — not every file was read line-by-line. Sa
 
 | # | Issue | Location | Severity rationale |
 |---|---|---|---|
-| D1 | **Self-assignment, member never set** — `spawnPoint = spawnPoint;` (local-to-local). Member `var spawnPoint` (line 9) stays `None`; spawned actors fall back to default coordinates. | [ToggleActorLifecycleTrigger.uc:44](CNN/Classes/ToggleActorLifecycleTrigger.uc#L44) (CorpArmstrong, 2017-06-01) | Object spawning silently broken |
-| D2 | **Pass-by-value counter** — `destroyedObjectsCounter++` in `HandleDestroyedObject(int counter)`. Caller in `PollObjects()` never sees the increment. The "all objects destroyed" branch (line 66) is unreachable. | [ObjectsDestroyNotifier.uc:78](CNN/Classes/ObjectsDestroyNotifier.uc#L78) (Dmitriy, 2018-09-23) | Quest goal silently never completes |
-| D3 | **Missing null check on sCam** — `sCam.bNoAlarm = bNoAlarm;` runs even when no SecurityCamera with the tag exists; `sCam` stays `None` from PostBeginPlay. | [LaserSecurityController.uc:91](CNN/Classes/LaserSecurityController.uc#L91) (Dmitriy, 2018-07-15) | Runtime crash on `None` access |
+| ~~D1~~ | **FALSE POSITIVE** — Closer reading shows the local-shadow `spawnPoint` is correctly bound by the foreach loop, and `spawnLocation`/`spawnRotation` are set from it. The actual spawn at line 65 uses these correctly. The class member `var spawnPoint` (line 9) is unused dead code; line 44 is a no-op. **Function behaves correctly despite the misleading appearance.** | [ToggleActorLifecycleTrigger.uc:44](CNN/Classes/ToggleActorLifecycleTrigger.uc#L44) | Cleanup, not bug |
+| ~~D2~~ | **FIXED 2026-04-25** — Added `out` keyword: `function HandleDestroyedObject(int index, out int destroyedObjectsCounter)`. Quest goals now complete correctly when all required objects are destroyed in the same poll cycle. | [ObjectsDestroyNotifier.uc:73](CNN/Classes/ObjectsDestroyNotifier.uc#L73) | RESOLVED |
+| ~~D3~~ | **FIXED 2026-04-25** — Wrapped in `if (sCam != none)` guard. | [LaserSecurityController.uc:91](CNN/Classes/LaserSecurityController.uc#L91) | RESOLVED |
 
 #### HIGH
 
@@ -256,14 +256,14 @@ The existing review section in [CLAUDE.md:254-321](CLAUDE.md#L254) lists 20 issu
 | # | Issue (CLAUDE.md) | Status | Notes |
 |---|---|---|---|
 | 1 | Incomplete file `ApocalypseInsideMenuStartNewGame.uc:62` | **✅ FIXED** (Dmitriy, 2026-04-05) | `defaultproperties` now closes properly at line 64 |
-| 2 | Self-assignment `ToggleActorLifecycleTrigger.uc:44` | **❌ STILL OPEN** | See D1 |
-| 3 | Pass-by-value `ObjectsDestroyNotifier.uc:78` | **❌ STILL OPEN** | See D2 |
+| 2 | Self-assignment `ToggleActorLifecycleTrigger.uc:44` | **🔵 FALSE POSITIVE** (verified 2026-04-25) | The local-shadow `spawnPoint` is correctly bound by the foreach loop; `spawnLocation`/`spawnRotation` use it correctly. Class member `spawnPoint` is dead code. Function behaves correctly despite the no-op line 44. |
+| 3 | Pass-by-value `ObjectsDestroyNotifier.uc:78` | **✅ FIXED** (2026-04-25) | Added `out` keyword |
 | 4 | Empty bool `TantalusDenton.uc:155` | **❌ STILL OPEN** | See D4 |
 | 5 | Buffer overflow `Converter/obj2de/main.cpp:285` | OUT OF SCOPE (C++) | This review is UC only |
 | 6 | Unsigned underflow `main.cpp:281` | OUT OF SCOPE (C++) | |
-| 7 | AllActors in Tick `CNNUPS.uc:287-334` | **❌ STILL OPEN** | See D7 |
+| 7 | AllActors in Tick `CNNUPS.uc:287-334` | **🔵 WITHDRAWN** (idiomatic UE1) | See D7. Also: CNNUPS is JJ Eugene's, not Dmitriy's. |
 | 8 | Missing null `CnnConversTrigger.uc:52` | **❌ STILL OPEN** | See D6 |
-| 9 | Missing null `LaserSecurityController.uc:91` | **❌ STILL OPEN** | See D3 |
+| 9 | Missing null `LaserSecurityController.uc:91` | **✅ FIXED** (2026-04-25) | Added `if (sCam != none)` guard |
 | 10 | Duplicate aug grant `Chapter05.uc:115,160` | **❌ STILL OPEN** | See D5 |
 | 11-13 | Various C++ issues | OUT OF SCOPE | |
 | 14 | Debug msgbox `MandatoryMovementTriger.uc:72` | **❌ STILL OPEN** | See D8. Also `DestroyTrigger.uc:38,42,49` not yet examined |

@@ -251,18 +251,17 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 - Multiple weapon systems extend the base game: coil gun, avatar bite, UPS weapons, Gauss gun
 - Chapter structure: Moon base intro (Ch 5), Ophelia station (Ch 6), with NYC/UNATCO connecting segments
 
-## Code Review (2026-04-04)
+## Code Review (2026-04-04, status updated 2026-04-25)
+
+For a thorough per-contributor review with verified citations, see [CODE_REVIEW.md](CODE_REVIEW.md). For class-level reachability, see [CLASSES_MAP.md](CLASSES_MAP.md).
 
 ### Critical Issues
 
-1. **Incomplete file won't compile** — `CNN/Classes/ApocalypseInsideMenuStartNewGame.uc:62`
-   `defaultproperties` block cuts off mid-assignment (`buttonDefaults(0)=` with no value). File cannot compile.
+1. ~~**Incomplete file won't compile** — `CNN/Classes/ApocalypseInsideMenuStartNewGame.uc:62`~~ **FIXED** (2026-04-05). `defaultproperties` block now closes properly.
 
-2. **Self-assignment no-op** — `CNN/Classes/ToggleActorLifecycleTrigger.uc:44`
-   `spawnPoint = spawnPoint;` assigns variable to itself. The member variable is never set, so actor spawning uses default coordinates.
+2. ~~**Self-assignment no-op** — `CNN/Classes/ToggleActorLifecycleTrigger.uc:44`~~ **FALSE POSITIVE** (verified 2026-04-25). The function uses a local-shadow `spawnPoint`; the foreach loop binds the local correctly, and `spawnLocation`/`spawnRotation` are set from it. The class member `spawnPoint` is dead code (never read), and line 44 is a no-op. Function behaves correctly.
 
-3. **Pass-by-value counter never increments** — `CNN/Classes/ObjectsDestroyNotifier.uc:78`
-   `destroyedObjectsCounter++` modifies a local copy of the integer parameter. The caller in `PollObjects()` never sees the increment, so the "all objects destroyed" condition at line 66 is never true. Parameter needs the `out` keyword.
+3. ~~**Pass-by-value counter never increments** — `CNN/Classes/ObjectsDestroyNotifier.uc:78`~~ **FIXED** (2026-04-25). Added `out` keyword to function parameter so the increment propagates to the caller. Quest goals using ObjectsDestroyNotifier now complete correctly when all objects are destroyed in the same poll cycle.
 
 4. **Empty bool function with no return** — `CNN/Classes/TantalusDenton.uc:155`
    `CheckActorDistances()` declares `bool` return but has an empty body. Returns undefined value.
@@ -281,8 +280,7 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 8. **Missing null check on conOwner** — `CNN/Classes/CnnConversTrigger.uc:52`
    If `AllActors` loop finds no matching actor, `conOwner` stays `None` and is passed directly to `StartConversationByName()`.
 
-9. **Missing null check on sCam** — `CNN/Classes/LaserSecurityController.uc:91`
-   `sCam.bNoAlarm = bNoAlarm` executes even if no SecurityCamera with the given tag exists, crashing on `None` access.
+9. ~~**Missing null check on sCam** — `CNN/Classes/LaserSecurityController.uc:91`~~ **FIXED** (2026-04-25). Wrapped in `if (sCam != none)` guard.
 
 10. **Duplicate augmentation grant** — `CNN/Classes/Chapter05.uc:115,160`
     Identical `HasHeartAug` check + `GivePlayerAugmentation(AugHeartLung)` block appears twice. Player can receive the augmentation twice.

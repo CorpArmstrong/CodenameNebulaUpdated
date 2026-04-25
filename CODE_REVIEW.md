@@ -10,6 +10,21 @@ This review covers the UnrealScript codebase, organized by **actual authorship**
 
 Sister docs: [CLAUDE.md](CLAUDE.md) (project guide with prior code review), [CLASSES_MAP.md](CLASSES_MAP.md) (class atlas), [REPO_MAP.md](REPO_MAP.md) (repo navigation).
 
+## Attribution caveats (read first)
+
+Both the prefix grouping AND git blame are unreliable individually for this repo. **Defer to Dmitriy on disputed authorship.**
+
+1. **`Ai*` prefix means "Apocalypse Inside"** (the parent mod CNN was forked from), **not** Artificial Intelligence. All 16 `Ai*`-prefixed classes are Dmitriy's, despite git attribution often showing Tantalus due to repo recreation.
+2. **`Apocalypse*` prefix is also Dmitriy's** — the entire UI menu chain (ApocalypseInsideMenuMain, MenuSelectDifficulty, MenuScreenNewGame, MenuStartNewGame) plus ApocalypseInsideFragment and ApocalypseInsideText.
+3. **The repo was recreated at some point.** When git shows Tantalus as the creator of a file, the original creator may actually have been Dmitriy — Tantalus's recreation commit got attributed to him.
+4. **JJ Eugene's commit history was lost** in the same recreation. His work is identifiable by `// JJ change here` markers and the `JJ*` prefix; per blame it shows as Dmitriy's.
+
+Net effect: **Dmitriy's actual share is larger than the ~45% this review estimates** (probably 60-70%). Tantalus's actual share is smaller. Most of the "Tantalus profile" issues below either misattribute prefix-based work to Tantalus or correctly flag bugs that need fixing regardless of who wrote them — the bugs are real, the contributor labels for some of them are not.
+
+The per-file issue citations are still accurate (the bugs exist at those lines); only the authorship of some of those bugs is reassigned from Tantalus to Dmitriy after this clarification. Specifically:
+- T1 (ApocalypseInsideMenuMain.uc null guard) → reassign to **Dmitriy**
+- T2, T3 (AiLaserEmitter comments / SkinTex) → AiLaserEmitter is Dmitriy's; the `// JJ change here` annotations specifically are JJ Eugene's contribution
+
 ## Methodology
 
 Authorship determined via `git blame --line-porcelain <file>`, summed per real person (collapsing aliases). Files bucketed:
@@ -25,12 +40,12 @@ This is a **sampling-based review** — not every file was read line-by-line. Sa
 
 ## Authorship Summary
 
-| Contributor | Aliases | Total commits | Files primarily owned | % of codebase (line-weighted) |
+| Contributor | Aliases | Total commits | Files primarily owned (per blame) | % of codebase (real, after corrections) |
 |---|---|---|---|---|
-| **Dmitriy** | CorpArmstrong + Dmitriy Fediukovich | 136 | ~99 | ~45% |
-| **Tantalus** | Tantalus + tantalus | 63 | ~53 | ~32% |
-| **JJ Eugene** | (none — committed by Dmitriy on his behalf) | 0 (invisible in git) | 1 sole + 2 modified | < 1% (small but identifiable) |
-| **Shared / contested** | (mixed) | — | ~115 | ~22% |
+| **Dmitriy** | CorpArmstrong + Dmitriy Fediukovich (+ work re-attributed by repo recreation) | 136 | ~99 | **~60-70%** (per-blame undercount: Ai*/Apocalypse* prefix work is his too) |
+| **Tantalus** | Tantalus + tantalus | 63 | ~53 | **~15-20%** (smaller than git suggests; some "creates" were repo-recreation re-imports of Dmitriy's older code) |
+| **JJ Eugene** | (none — git history lost in repo recreation) | 0 (invisible in git) | 1 sole + 2 modified | < 1% (laser/electric effects only) |
+| **Shared / contested** | (mixed) | — | ~115 | ~15% |
 
 ---
 
@@ -108,14 +123,19 @@ This is a **sampling-based review** — not every file was read line-by-line. Sa
 
 ## Contributor profile: Tantalus
 
-### Subsystems primarily owned
+### Subsystems primarily owned (REVISED — see Attribution caveats above)
 
-- **Effects and projectiles** — [AiLaserEmitter.uc](CNN/Classes/AiLaserEmitter.uc), [AiGlassFragment.uc](CNN/Classes/AiGlassFragment.uc), [AiMetalFragment.uc](CNN/Classes/AiMetalFragment.uc), [AmmoPlasma2.uc](CNN/Classes/AmmoPlasma2.uc), [PlasmaBolt2.uc](CNN/Classes/PlasmaBolt2.uc)
-- **Augmentations** — [AugSkullGunLethal.uc](CNN/Classes/AugSkullGunLethal.uc), [AugSkullGunNonLethal.uc](CNN/Classes/AugSkullGunNonLethal.uc)
-- **Menu UI chain** — [ApocalypseInsideMenuMain.uc](CNN/Classes/ApocalypseInsideMenuMain.uc), [ApocalypseInsideMenuSelectDifficulty.uc](CNN/Classes/ApocalypseInsideMenuSelectDifficulty.uc), [ApocalypseInsideMenuScreenNewGame.uc](CNN/Classes/ApocalypseInsideMenuScreenNewGame.uc), [ApocalypseInsideMenuStartNewGame.uc](CNN/Classes/ApocalypseInsideMenuStartNewGame.uc) — note: Dmitriy made later edits to the last one
-- **NPC variants** — Holo NPCs ([UberAllesHolo.uc](CNN/Classes/UberAllesHolo.uc), [JCDoubleHolo.uc](CNN/Classes/JCDoubleHolo.uc), etc.), Avatar variants
-- **Mission orchestration** — Most of [Chapter05.uc](CNN/Classes/Chapter05.uc) (Tantalus owns 131/209 lines)
-- **Evidence boxes** — All `*Evidence.uc` classes ([AlienCarcassEvidence.uc](CNN/Classes/AlienCarcassEvidence.uc) etc.)
+Per Dmitriy's clarification, several entries originally placed in Tantalus's profile are actually Dmitriy's (from the Apocalypse Inside era). What Tantalus likely actually owns:
+
+- **Some of the named NPC classes** — Holo NPCs ([UberAllesHolo.uc](CNN/Classes/UberAllesHolo.uc), [JCDoubleHolo.uc](CNN/Classes/JCDoubleHolo.uc), etc.), Avatar variants — needs confirmation
+- **Evidence boxes** — `*Evidence.uc` classes ([AlienCarcassEvidence.uc](CNN/Classes/AlienCarcassEvidence.uc) etc.) — likely Tantalus
+- **Possibly part of the augmentations** — [AugSkullGunLethal.uc](CNN/Classes/AugSkullGunLethal.uc), [AugSkullGunNonLethal.uc](CNN/Classes/AugSkullGunNonLethal.uc) — uncertain
+- **Some level orchestration in [Chapter05.uc](CNN/Classes/Chapter05.uc)** — co-authored with Dmitriy
+
+Reassigned to Dmitriy (these were placed under Tantalus in the initial draft):
+
+- ~~**Effects and projectiles**~~ — `Ai*`-prefixed classes (`AiLaserEmitter`, `AiGlassFragment`, `AiMetalFragment`) are **Dmitriy** (Apocalypse Inside era). `AmmoPlasma2`, `PlasmaBolt2` ownership uncertain.
+- ~~**Menu UI chain**~~ — All `ApocalypseInside*Menu*` classes are **Dmitriy**.
 
 ### Style fingerprint
 
@@ -141,14 +161,14 @@ This is a **sampling-based review** — not every file was read line-by-line. Sa
 
 | # | Issue | Location | Severity |
 |---|---|---|---|
-| T1 | **Missing player null guard in menu** — `UpdateButtonStatus()` accesses `player.IsInState('Dying')` without null-check on `player`. If called before level load (e.g., main menu transition), can crash. | [ApocalypseInsideMenuMain.uc:39-46](CNN/Classes/ApocalypseInsideMenuMain.uc#L39) | HIGH — edge-case crash |
+| ~~T1~~ → D9 | **Missing player null guard in menu** — `UpdateButtonStatus()` accesses `player.IsInState('Dying')` without null-check on `player`. **Reassigned to Dmitriy** — ApocalypseInsideMenuMain.uc is Dmitriy's per Apocalypse Inside era. | [ApocalypseInsideMenuMain.uc:39-46](CNN/Classes/ApocalypseInsideMenuMain.uc#L39) | HIGH — edge-case crash |
 
 #### MEDIUM
 
 | # | Issue | Location | Severity |
 |---|---|---|---|
-| T2 | **Cryptic history comments** — Two alternative implementations preserved as inline comments with `// JJ change here` markers, no explanation. Future maintainers can't tell which branch is authoritative. | [AiLaserEmitter.uc:25-31](CNN/Classes/AiLaserEmitter.uc#L25) | MEDIUM — maintainability |
-| T3 | **Skin assignment without validation** — `proxy.Skin = SkinTex;` without checking SkinTex was populated. Visual artifact if defaultproperties omits it. | [AiLaserEmitter.uc](CNN/Classes/AiLaserEmitter.uc) (around BeginPlay) | MEDIUM — silent visual bug |
+| ~~T2~~ → J1 | **Cryptic history comments** — Two alternative implementations preserved as inline `// JJ change here` markers. **The annotations are JJ Eugene's; the surrounding class is Dmitriy's**. See JJ profile (issue J1). | [AiLaserEmitter.uc:25-31](CNN/Classes/AiLaserEmitter.uc#L25) | LOW — maintainability |
+| ~~T3~~ → D10 | **Skin assignment without validation** — `proxy.Skin = SkinTex;` without checking SkinTex was populated. **Reassigned to Dmitriy** (AiLaserEmitter is his). | [AiLaserEmitter.uc](CNN/Classes/AiLaserEmitter.uc) (around BeginPlay) | MEDIUM — silent visual bug |
 
 ### Worst-offender deep notes (Tantalus)
 

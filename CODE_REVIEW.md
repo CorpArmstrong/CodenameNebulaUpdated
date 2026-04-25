@@ -104,16 +104,14 @@ This is a **sampling-based review** — not every file was read line-by-line. Sa
 
 ### Worst-offender deep notes (Dmitriy)
 
-**[CNNUPS.uc](CNN/Classes/CNNUPS.uc)** — ~400 lines, UPS creature behavior
+**[CNNUPS.uc](CNN/Classes/CNNUPS.uc)** — ~400 lines, UPS creature behavior. **Partially authored by JJ Eugene** per Dmitriy's clarification (likely the electric-effect integration; line-by-line attribution lost in repo recreation).
 - D7 (AllActors in Tick) was withdrawn — see correction above; idiomatic UE1.
 - Math for sphere positioning (lines 74-96) is hardcoded — no easy way to retune from defaultproperties. Minor maintainability issue, not a bug.
 - Player pawn cached as `pPawn` (lines 296-306) — fine; just a local optimization for the specific case of the player.
-- Inline whimsical comments don't hurt but signal this file was written under deadline pressure.
-- Spawns 18 [JJElecEmitter](CNN/Classes/JJElecEmitter.uc) instances at lines 29/42 — JJ Eugene's electric arc effect.
+- Inline whimsical comments may be JJ's signature (CNNUPS isn't purely Dmitriy's) — don't treat as Dmitriy's deadline-pressure mark.
+- Spawns 18 [JJElecEmitter](CNN/Classes/JJElecEmitter.uc) instances at lines 29/42 — JJ Eugene's electric arc effect, integrated into the UPS creature.
 
-**[Chapter05.uc](CNN/Classes/Chapter05.uc)** — Moonbase orchestration (mixed authorship; this section covers Dmitriy's contributions)
-- The duplicate augmentation block (D5) is pure copy-paste. Almost certainly added during a separate fix session without re-reading the file.
-- Dmitriy's lines (52/209) are concentrated in augmentation handoff. Tantalus owns most of the level orchestration.
+**[Chapter05.uc](CNN/Classes/Chapter05.uc)** — Moonbase orchestration. **Tantalus's file** per Dmitriy's clarification — Tantalus authored the level orchestration. The duplicate augmentation grant bug (D5, lines 115-119 + 160-164) was added by a later Dmitriy edit, not by Tantalus's original code, and is still Dmitriy's bug — but the surrounding file is Tantalus's work.
 
 **[ObjectsDestroyNotifier.uc](CNN/Classes/ObjectsDestroyNotifier.uc)** — Mission goal tracking, ~90 lines
 - Single CRITICAL bug (D2). Easy fix (`out int destroyedObjectsCounter`).
@@ -221,7 +219,7 @@ Files where neither contributor has clear majority:
 | File | Total lines | Dmitriy/CorpArmstrong | Tantalus | Notes |
 |---|---|---|---|---|
 | **TantalusDenton.uc** | ~700 | ~85% (CorpArmstrong-original + Dmitriy refactor) | ~5-10% | Mostly Dmitriy. Notable: the empty `CheckActorDistances()` is signed `// -T.` but blame attributes the line to CorpArmstrong — collaborative authorship. |
-| **Chapter05.uc** | 209 | ~37% (Dmitriy aug logic) | ~63% (orchestration) | Real co-authorship. Each owns distinct sections. The duplicate aug bug (D5) is purely Dmitriy's; the AllActors patterns are Tantalus's. |
+| **Chapter05.uc** | 209 | ~37% (Dmitriy aug logic) | ~63% (orchestration) | **Tantalus-owned file** per Dmitriy's clarification. Tantalus wrote the level orchestration. The duplicate aug bug (D5) is purely Dmitriy's edit added on top. AllActors patterns are Tantalus's. |
 | **AiSkillManager.uc** | ~30 | ~13 lines (Dmitriy + CorpArmstrong combined) | ~10 lines (tantalus alias) | Even split. Small file; both touched skill registration. |
 | **IwHUDObjectBelt.uc** | ~217 | ~159 (CorpArmstrong) + 58 (Dmitriy) | 0 | Dmitriy refactored an older CorpArmstrong file. Single-author file from a real-person perspective. |
 | **JJElecEmitter.uc** | ~103 | 63 + 40 = 103 (per blame, all Dmitriy aliases) | 0 | Per blame attribution all lines show as Dmitriy/CorpArmstrong, but **the actual author is JJ Eugene** — his commits went through Dmitriy's account. See JJ Eugene profile above. |

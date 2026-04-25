@@ -17,7 +17,8 @@ Both the prefix grouping AND git blame are unreliable individually for this repo
 1. **`Ai*` prefix means "Apocalypse Inside"** (the parent mod CNN was forked from), **not** Artificial Intelligence. All 16 `Ai*`-prefixed classes are Dmitriy's, despite git attribution often showing Tantalus due to repo recreation.
 2. **`Apocalypse*` prefix is also Dmitriy's** — the entire UI menu chain (ApocalypseInsideMenuMain, MenuSelectDifficulty, MenuScreenNewGame, MenuStartNewGame) plus ApocalypseInsideFragment and ApocalypseInsideText.
 3. **The repo was recreated at some point.** When git shows Tantalus as the creator of a file, the original creator may actually have been Dmitriy — Tantalus's recreation commit got attributed to him.
-4. **JJ Eugene's commit history was lost** in the same recreation. His work is identifiable by `// JJ change here` markers and the `JJ*` prefix; per blame it shows as Dmitriy's.
+4. **JJ Eugene's commit history was lost** in the same recreation. His work is identifiable by `// JJ change here` markers, the `JJ*` prefix, and **all of [CNNUPS.uc](CNN/Classes/CNNUPS.uc)** which is his complete file despite blame showing Dmitriy.
+5. **Visual map work (.dx files) is roughly half Dmitriy's** — outside this UC code review's scope but worth noting in any total-contribution accounting.
 
 Net effect: **Dmitriy's actual share is larger than the ~45% this review estimates** (probably 60-70%). Tantalus's actual share is smaller. Most of the "Tantalus profile" issues below either misattribute prefix-based work to Tantalus or correctly flag bugs that need fixing regardless of who wrote them — the bugs are real, the contributor labels for some of them are not.
 
@@ -92,7 +93,7 @@ This is a **sampling-based review** — not every file was read line-by-line. Sa
 | # | Issue | Location | Severity |
 |---|---|---|---|
 | D4 | **Empty bool function** — `function bool CheckActorDistances() { }` returns undefined; comment `// mwahaaha! terrible hack, i know -T.` (note: signed by Tantalus but blame attributes line author to CorpArmstrong — collaborative). | [TantalusDenton.uc:152-155](CNN/Classes/TantalusDenton.uc#L152) (CorpArmstrong, 2017-04-04) | HIGH — undefined return value |
-| D5 | **Duplicate augmentation grant** — Identical `if (HasHeartAug && !PlayerGotHeartAug)` block at lines 115-119 AND 160-164. If first block silently fails to set the flag, player gets aug twice. | [Chapter05.uc:115,160](CNN/Classes/Chapter05.uc#L115) (Dmitriy, 2018-09-09) | HIGH — gameplay duplication |
+| ~~D5~~ → T1 | **Duplicate augmentation grant** — Identical `if (HasHeartAug && !PlayerGotHeartAug)` block at lines 115-119 AND 160-164. **Reassigned to Tantalus** — Chapter05.uc is his and the duplicate pattern is his original code. Git blame shows Dmitriy on line 160 due to a later mechanical edit, not the duplication itself. | [Chapter05.uc:115,160](CNN/Classes/Chapter05.uc#L115) | HIGH — gameplay duplication |
 | D6 | **Missing null check on conOwner** — `AllActors` loop may not find a matching actor; `conOwner` stays `None` and is passed directly to `StartConversationByName()`. | [CnnConversTrigger.uc:52](CNN/Classes/CnnConversTrigger.uc#L52) (CorpArmstrong, 2017) | HIGH — potential crash |
 | ~~D7~~ | ~~AllActors loops in Tick path~~ — **WITHDRAWN.** Initially flagged as performance hazard, but `foreach AllActors()` in Tick paths is the **idiomatic UE1 pattern** for the Deus Ex 1 era. Original Deus Ex missions use it extensively. UE1 actor lists are designed for this access pattern; refactoring to caching adds complexity (Spawn/Destroy invalidation) without measurable gain at typical UE1 actor counts. Only flag if you observe actual frame stutter on a specific map. | [CNNUPS.uc:287-334](CNN/Classes/CNNUPS.uc#L287) | NEUTRAL (idiomatic) |
 
@@ -104,14 +105,9 @@ This is a **sampling-based review** — not every file was read line-by-line. Sa
 
 ### Worst-offender deep notes (Dmitriy)
 
-**[CNNUPS.uc](CNN/Classes/CNNUPS.uc)** — ~400 lines, UPS creature behavior. **Partially authored by JJ Eugene** per Dmitriy's clarification (likely the electric-effect integration; line-by-line attribution lost in repo recreation).
-- D7 (AllActors in Tick) was withdrawn — see correction above; idiomatic UE1.
-- Math for sphere positioning (lines 74-96) is hardcoded — no easy way to retune from defaultproperties. Minor maintainability issue, not a bug.
-- Player pawn cached as `pPawn` (lines 296-306) — fine; just a local optimization for the specific case of the player.
-- Inline whimsical comments may be JJ's signature (CNNUPS isn't purely Dmitriy's) — don't treat as Dmitriy's deadline-pressure mark.
-- Spawns 18 [JJElecEmitter](CNN/Classes/JJElecEmitter.uc) instances at lines 29/42 — JJ Eugene's electric arc effect, integrated into the UPS creature.
+**[CNNUPS.uc](CNN/Classes/CNNUPS.uc)** — ~400 lines, UPS creature behavior. **Entirely JJ Eugene's** per Dmitriy's clarification. Reassigned out of Dmitriy's profile and into JJ's. The original D7 finding (AllActors in Tick) was withdrawn as idiomatic UE1; the half-cached `pPawn` pattern is JJ's choice, not Dmitriy's dropped cleanup; the whimsical inline comments are JJ's signature, not Dmitriy's deadline-pressure mark. JJ uses 18 of his own [JJElecEmitter](CNN/Classes/JJElecEmitter.uc) instances at lines 29/42 for the electric effect.
 
-**[Chapter05.uc](CNN/Classes/Chapter05.uc)** — Moonbase orchestration. **Tantalus's file** per Dmitriy's clarification — Tantalus authored the level orchestration. The duplicate augmentation grant bug (D5, lines 115-119 + 160-164) was added by a later Dmitriy edit, not by Tantalus's original code, and is still Dmitriy's bug — but the surrounding file is Tantalus's work.
+**[Chapter05.uc](CNN/Classes/Chapter05.uc)** — Moonbase orchestration. **Tantalus's file** per Dmitriy's clarification, including the duplicate augmentation pattern (T1, lines 115-119 + 160-164). Dmitriy made some later corrections elsewhere in the file but is not responsible for the duplication.
 
 **[ObjectsDestroyNotifier.uc](CNN/Classes/ObjectsDestroyNotifier.uc)** — Mission goal tracking, ~90 lines
 - Single CRITICAL bug (D2). Easy fix (`out int destroyedObjectsCounter`).

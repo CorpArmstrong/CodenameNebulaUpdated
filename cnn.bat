@@ -976,9 +976,9 @@ goto :eof
 :: Prefers the Community Update editor (per CLAUDE.md - handles large maps
 :: without freezing). Falls back to the original SDK editor.
 ::
-:: Uses the canonical -exec MAP LOAD FILE="..." syntax (same as the premade
-:: System/OpenMapInUE1.bat). Resolves the map path via the CNNMaps junction
-:: when present (shorter path, avoids UE1 path-length truncation).
+:: Passes the map path as UnrealEd's first positional arg (canonical UE1
+:: cmdline syntax for opening a map). Resolves the map path via the CNNMaps
+:: junction when present (shorter path, avoids UE1 path-length truncation).
 :: ============================================================================
 :edit
 echo.
@@ -1074,7 +1074,7 @@ echo Map:    !MAP_PATH!
 echo.
 echo Launching ^(editor opens in a new window^)...
 
-start "" "!EDITOR_EXE!" -exec MAP LOAD FILE="!MAP_PATH!"
+start "" "!EDITOR_EXE!" "!MAP_PATH!"
 
 goto :eof
 

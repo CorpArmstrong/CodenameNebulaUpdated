@@ -90,7 +90,7 @@ The grep also matches CNN-internal class names that happen to contain "Apocalyps
 - `ApocalypseInsideFragment` — CNN class, parent of `AiGlassFragment`/`AiMetalFragment`
 - `ApocalypseInsideMenuMain`, `MenuSelectDifficulty`, `MenuScreenNewGame`, `MenuStartNewGame`, `ApocalypseInsideText` — CNN classes (the production main-menu chain entered from `CNNMenuMainTest.StartNewGame()`)
 - The function `ApocalypseInsideGo()` in `ApocalypseInsideMenuStartNewGame.uc` — internal function name
-- The comment `// overrides the original so we can use our custom ApocalypseInsideMenu.` in [TantalusDenton.uc:160](CNN/Classes/TantalusDenton.uc#L160)
+- An inline comment in [TantalusDenton.uc:160](CNN/Classes/TantalusDenton.uc#L160) noting that the override exists so the custom `ApocalypseInsideMenu` chain can be used
 
 These can stay or be renamed for cosmetic clarity (e.g., drop the "ApocalypseInside" prefix on the menu chain), but they don't block the standalone goal.
 

@@ -253,7 +253,7 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 
 ## Code Review (2026-04-04, status updated 2026-04-25)
 
-For a thorough per-contributor review with verified citations, see [CODE_REVIEW.md](CODE_REVIEW.md). For class-level reachability, see [CLASSES_MAP.md](CLASSES_MAP.md).
+For a verified open-issues list, see [CODE_REVIEW.md](CODE_REVIEW.md). For class-level reachability, see [CLASSES_MAP.md](CLASSES_MAP.md).
 
 ### Critical Issues
 

@@ -353,21 +353,20 @@ All REACHABLE-CODE — referenced via `#exec` directives at compile time.
 | FLAGGED | 1 | [scart4598](CNN/Classes/scart4598.uc) — cryptic name; appears to be a one-off helper. Compile passes but worth a manual look. |
 | **Total** | **268** | All accounted for; 0 truly unreachable post-Phase 5+7 |
 
-## Authorship signals
+## Class-name prefix groupings
 
-The codebase shows multi-developer history. Class-name prefixes and explicit `// Author:` tags reveal at least 5 distinct contributors:
+The codebase uses several prefix conventions that group related classes:
 
-| Signal | Count | Likely owner | Domain |
-|---|---|---|---|
-| `// Author: CorpArmstrong` (explicit tag) | 6 classes | **CorpArmstrong** | Orchestration backbone — [QuestSystem](CNN/Classes/QuestSystem.uc), [CNNBaseIngameCutscene](CNN/Classes/CNNBaseIngameCutscene.uc), [HolocommUnit](CNN/Classes/HolocommUnit.uc), [ObjectsDestroyNotifier](CNN/Classes/ObjectsDestroyNotifier.uc), [CNNDetonationTrigger](CNN/Classes/CNNDetonationTrigger.uc), [TestIngameCutscene](CNN/Classes/TestIngameCutscene.uc). Note: there's also an *NPC class* literally named `CorpArmstrong` (Corporal Armstrong) — same handle used both as code author tag and as character name. |
-| `JJ*` prefix and `// JJ change here` markers | 1 class + 2 modified | **JJ Eugene** (third contributor — invisible in git, commits went through Dmitriy's account) | Effects — [JJElecEmitter](CNN/Classes/JJElecEmitter.uc) entirely, plus modifications in [AiLaserEmitter.uc:25-31](CNN/Classes/AiLaserEmitter.uc#L25) and [CNNLaserEmitter.uc:25-29](CNN/Classes/CNNLaserEmitter.uc#L25) |
-| `Ai*` prefix | 16 classes | **Dmitriy** — `Ai*` = Apocalypse Inside (the parent mod CNN forked from), NOT Artificial Intelligence | Runtime systems from the Apocalypse Inside era — augmentation/skill managers, conversation playback ([AiSkillManager](CNN/Classes/AiSkillManager.uc), [AiAugmentationManager](CNN/Classes/AiAugmentationManager.uc), [AiConPlay](CNN/Classes/AiConPlay.uc), [AiSkillBionics](CNN/Classes/AiSkillBionics.uc), [AiSkillChinese](CNN/Classes/AiSkillChinese.uc), etc.). [AiLaserEmitter](CNN/Classes/AiLaserEmitter.uc) was modified by JJ Eugene. |
-| `Iw*` prefix | 10 classes | **Iw*** author | HUD widgets — [IwHUDObjectBelt](CNN/Classes/IwHUDObjectBelt.uc), [IwHUDActiveItem](CNN/Classes/IwHUDActiveItem.uc), [IwHUDHitDisplay](CNN/Classes/IwHUDHitDisplay.uc) and 7 siblings |
-| `My*` prefix | 3 classes | **My*** author | Conversation handlers + a fire extinguisher: [MyConPlay](CNN/Classes/MyConPlay.uc), [MyConEventAnimation](CNN/Classes/MyConEventAnimation.uc), [MyFireExtinguisher](CNN/Classes/MyFireExtinguisher.uc) |
-| `CNN*` prefix | 52 classes | Project-wide | Shared namespace; many contributors using project conventions |
-| `Apocalypse*` prefix | 6 classes | **Dmitriy** | UI menu chain (production New Game flow) + fragment/text base classes — ApocalypseInsideMenuMain, ApocalypseInsideMenuSelectDifficulty, ApocalypseInsideMenuScreenNewGame, ApocalypseInsideMenuStartNewGame, ApocalypseInsideText, ApocalypseInsideFragment. From the Apocalypse Inside era. |
+| Prefix | Count | Domain |
+|---|---|---|
+| `Ai*` | 16 classes | "Apocalypse Inside" era runtime systems — augmentation/skill managers, conversation playback ([AiSkillManager](CNN/Classes/AiSkillManager.uc), [AiAugmentationManager](CNN/Classes/AiAugmentationManager.uc), [AiConPlay](CNN/Classes/AiConPlay.uc), [AiSkillBionics](CNN/Classes/AiSkillBionics.uc), [AiSkillChinese](CNN/Classes/AiSkillChinese.uc), etc.). NOTE: `Ai*` is short for *Apocalypse Inside* (the parent mod CNN was forked from), not Artificial Intelligence. |
+| `Apocalypse*` | 6 classes | UI menu chain (production New Game flow) + fragment/text base classes — `ApocalypseInsideMenuMain`, `ApocalypseInsideMenuSelectDifficulty`, `ApocalypseInsideMenuScreenNewGame`, `ApocalypseInsideMenuStartNewGame`, `ApocalypseInsideText`, `ApocalypseInsideFragment`. |
+| `JJ*` | 1 class + 2 modified | Electric/laser effects — [JJElecEmitter](CNN/Classes/JJElecEmitter.uc) entirely; inline edits in [AiLaserEmitter.uc:25-31](CNN/Classes/AiLaserEmitter.uc#L25) and [CNNLaserEmitter.uc:25-29](CNN/Classes/CNNLaserEmitter.uc#L25). |
+| `Iw*` | 10 classes | HUD widgets — [IwHUDObjectBelt](CNN/Classes/IwHUDObjectBelt.uc), [IwHUDActiveItem](CNN/Classes/IwHUDActiveItem.uc), [IwHUDHitDisplay](CNN/Classes/IwHUDHitDisplay.uc) and 7 siblings. |
+| `My*` | 3 classes | Conversation handlers + a fire extinguisher: [MyConPlay](CNN/Classes/MyConPlay.uc), [MyConEventAnimation](CNN/Classes/MyConEventAnimation.uc), [MyFireExtinguisher](CNN/Classes/MyFireExtinguisher.uc). |
+| `CNN*` | 52 classes | Project-wide shared namespace. |
 
-A focused code review per author is likely worthwhile — coding style, error handling, and testing rigor often vary significantly between contributors and the prefixes give a quick way to scope review batches.
+These groupings give a quick way to scope review batches and reason about subsystem boundaries.
 
 ## Notable patterns
 

@@ -636,6 +636,21 @@ for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNA
     )
 )
 
+:: Deploy Maps / Textures / Music (CNN.ini Paths= entries reference these).
+:: Sourced from %REPO_ROOT%\CodenameNebula\ which is populated by "cnn package".
+if exist "%REPO_ROOT%\CodenameNebula\Maps" (
+    echo Deploying Maps\...
+    xcopy /e /y /q /i "%REPO_ROOT%\CodenameNebula\Maps" "%DEUSEX_ROOT%\CodenameNebula\Maps\" >nul
+)
+if exist "%REPO_ROOT%\CodenameNebula\Textures" (
+    echo Deploying Textures\...
+    xcopy /e /y /q /i "%REPO_ROOT%\CodenameNebula\Textures" "%DEUSEX_ROOT%\CodenameNebula\Textures\" >nul
+)
+if exist "%REPO_ROOT%\CodenameNebula\Music" (
+    echo Deploying Music\...
+    xcopy /e /y /q /i "%REPO_ROOT%\CodenameNebula\Music" "%DEUSEX_ROOT%\CodenameNebula\Music\" >nul
+)
+
 :: ---- Generate CNN.ini from player's DeusEx.ini ----
 echo.
 echo Generating CNN.ini from player's DeusEx.ini...

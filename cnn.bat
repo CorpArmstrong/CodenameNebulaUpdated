@@ -9,6 +9,7 @@ setlocal enabledelayedexpansion
 ::   installer      - Build Inno Setup installer (.exe)
 ::   install        - Install the mod to local Deus Ex (for testing)
 ::   test           - Launch the mod in Deus Ex
+::   test-meshes    - Mesh-resolution diagnostic via map load + log grep
 ::   steam          - Launch via Steam (overlay + play time tracking)
 ::   reset          - Regenerate CNN.ini/CNNUser.ini from player's config
 ::   clean          - Remove compiled packages
@@ -133,6 +134,7 @@ if /i "%~1"=="package" goto :package
 if /i "%~1"=="installer" goto :installer
 if /i "%~1"=="install" goto :install
 if /i "%~1"=="test" goto :test
+if /i "%~1"=="test-meshes" goto :test_meshes
 if /i "%~1"=="steam" goto :steam
 if /i "%~1"=="reset" goto :reset
 if /i "%~1"=="clean" goto :clean
@@ -732,6 +734,142 @@ if not defined CNN_USER_INI start "" /d "!SYSTEM_DIR!" "!CNN_EXE!" INI="!CNN_INI
 goto :eof
 
 :: ============================================================================
+:: TEST-MESHES - Mesh-resolution diagnostic via map load + log analysis
+:: Usage: cnn test-meshes [mapname]
+::   No arg     - runs default suite (05_MoonIntro + 06_OpheliaL1)
+::   mapname    - tests just that map (no .dx suffix needed, e.g. 06_Conspiracy)
+::
+:: For each map: launches the game directly into the map (skipping menus),
+:: blocks until you exit, then saves the log as CodenameNebula.log.<mapname>.
+:: After all maps tested, greps each saved log for ApocalypseInside refs and
+:: package/mesh/texture load failures.
+::
+:: Phase 8A success criterion: zero hits on the 11 re-pointed mesh names.
+:: Phase 8B/8C remaining work: any "ApocalypseInside" hit identifies a target.
+:: ============================================================================
+:test_meshes
+echo.
+echo ========================================
+echo  TEST-MESHES - Mesh resolution diagnostic
+echo ========================================
+echo.
+
+:: Reuse :test's INI/EXE detection logic
+set "CNN_INI="
+if exist "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini" set "CNN_INI=!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini"
+if not defined CNN_INI (
+    echo CNN.ini not found. Running "cnn install" first...
+    echo.
+    call :install
+)
+if not defined CNN_INI if exist "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini" set "CNN_INI=!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini"
+if not defined CNN_INI echo ERROR: CNN.ini still not found after install. && goto :eof
+
+set "CNN_USER_INI="
+if exist "!DEUSEX_ROOT!\CodenameNebula\System\CNNUser.ini" set "CNN_USER_INI=!DEUSEX_ROOT!\CodenameNebula\System\CNNUser.ini"
+
+set "CNN_EXE="
+set "EXE_TYPE=not found"
+set "EXE_SIZE=0"
+if exist "!SYSTEM_DIR!\DeusEx.exe" for %%A in ("!SYSTEM_DIR!\DeusEx.exe") do set "EXE_SIZE=%%~zA"
+if !EXE_SIZE! GTR 300000 set "CNN_EXE=!SYSTEM_DIR!\DeusEx.exe" & set "EXE_TYPE=Kentie/Han launcher"
+if !EXE_SIZE! GTR 200000 if not defined CNN_EXE set "CNN_EXE=!SYSTEM_DIR!\DeusEx.exe" & set "EXE_TYPE=original 1112fm"
+if !EXE_SIZE! GTR 0 if not defined CNN_EXE set "CNN_EXE=!SYSTEM_DIR!\DeusEx.exe" & set "EXE_TYPE=CU wrapper"
+if !EXE_SIZE! LEQ 200000 if !EXE_SIZE! GTR 0 if exist "!SYSTEM_DIR!\DeusEx 1112fm ^(Original EXE^).exe" set "CNN_EXE=!SYSTEM_DIR!\DeusEx 1112fm (Original EXE).exe" & set "EXE_TYPE=1112fm via CU backup"
+if not defined CNN_EXE echo ERROR: No DeusEx.exe found in !SYSTEM_DIR! && goto :eof
+
+set "LOG_DIR=!SYSTEM_DIR!"
+
+:: Determine map list. The exe basename determines the log filename
+:: (UE1 writes <ExeBaseName>.log). DeusEx.exe -> DeusEx.log; renamed exes use their own name.
+for %%E in ("!CNN_EXE!") do set "EXE_BASENAME=%%~nE"
+set "ACTIVE_LOG=!LOG_DIR!\!EXE_BASENAME!.log"
+
+set "MAPS=05_MoonIntro 06_OpheliaL1"
+if not "%~2"=="" set "MAPS=%~2"
+
+echo Configuration:
+echo   EXE:      !CNN_EXE! [!EXE_TYPE!]
+echo   INI:      !CNN_INI!
+echo   Log file: !ACTIVE_LOG!
+echo   Maps:     !MAPS!
+echo.
+
+:: Backup any existing active log so the test starts clean
+if exist "!ACTIVE_LOG!" (
+    echo Backing up existing log to !EXE_BASENAME!.log.preTest
+    move /y "!ACTIVE_LOG!" "!LOG_DIR!\!EXE_BASENAME!.log.preTest" >nul
+)
+
+:: Per-map test loop
+for %%M in (!MAPS!) do (
+    echo.
+    echo ----------------------------------------
+    echo Testing map: %%M
+    echo ----------------------------------------
+    echo.
+    echo Instructions:
+    echo   1. After the game window opens, wait ^~10s for the map to load
+    echo      ^(actors spawn, PostBeginPlay fires, all meshes get resolved^).
+    echo   2. Walk a few steps so anything Tick-driven runs at least once.
+    echo   3. Press Esc -^> Quit, OR press ` ^(tilde^) and type: exit
+    echo.
+    echo The script will continue automatically after the game exits.
+    echo.
+    pause
+
+    echo.
+    echo Launching: !CNN_EXE! INI=... %%M.dx?Game=CNN.CNNGameInfo
+    echo.
+    if defined CNN_USER_INI (
+        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!CNN_INI!" USERINI="!CNN_USER_INI!" %%M.dx?Game=CNN.CNNGameInfo
+    ) else (
+        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!CNN_INI!" %%M.dx?Game=CNN.CNNGameInfo
+    )
+
+    :: Save log
+    if exist "!ACTIVE_LOG!" (
+        move /y "!ACTIVE_LOG!" "!LOG_DIR!\!EXE_BASENAME!.log.%%M" >nul
+        echo Log saved as !EXE_BASENAME!.log.%%M
+    ) else (
+        echo WARNING: No log file created during this test ^(expected !ACTIVE_LOG!^)
+    )
+)
+
+echo.
+echo ========================================
+echo  Analysis
+echo ========================================
+echo.
+
+:: Per-map log analysis using PowerShell Select-String for proper regex
+for %%M in (!MAPS!) do (
+    set "TESTLOG=!LOG_DIR!\!EXE_BASENAME!.log.%%M"
+    if exist "!TESTLOG!" (
+        echo === %%M ===
+        echo File: !TESTLOG!
+        echo.
+        echo -- ApocalypseInside refs ^(Phase 8B/8C remaining work^) --
+        powershell -NoProfile -Command "$m = Select-String -Path '!TESTLOG!' -Pattern 'ApocalypseInside' -CaseSensitive:$false; if ($m) { $m | ForEach-Object { Write-Host ('  L{0}: {1}' -f $_.LineNumber, $_.Line.Trim()) } } else { Write-Host '  (none - good)' }"
+        echo.
+        echo -- Package / Mesh / Texture load failures --
+        powershell -NoProfile -Command "$m = Select-String -Path '!TESTLOG!' -Pattern 'Failed.*load|Can.t find|Warning.*(Mesh^|Texture^|Package)' -CaseSensitive:$false; if ($m) { $m | ForEach-Object { Write-Host ('  L{0}: {1}' -f $_.LineNumber, $_.Line.Trim()) } } else { Write-Host '  (none - good)' }"
+        echo.
+        echo -- ScriptWarning / Critical / Fatal --
+        powershell -NoProfile -Command "$m = Select-String -Path '!TESTLOG!' -Pattern 'ScriptWarning^|Critical^|Fatal' -CaseSensitive:$false; if ($m) { $m | ForEach-Object { Write-Host ('  L{0}: {1}' -f $_.LineNumber, $_.Line.Trim()) } } else { Write-Host '  (none - good)' }"
+        echo.
+    )
+)
+
+echo.
+echo Logs preserved at:
+for %%M in (!MAPS!) do echo   !LOG_DIR!\!EXE_BASENAME!.log.%%M
+echo.
+echo Tip: re-run with "cnn test-meshes ^<mapname^>" to test a single map
+echo      (e.g. "cnn test-meshes 06_Conspiracy" to cover the embedded-ref maps).
+goto :eof
+
+:: ============================================================================
 :: STEAM - Launch via Steam (overlay + play time tracking)
 :: ============================================================================
 :steam
@@ -1102,6 +1240,7 @@ echo   package         Copy compiled assets into distribution folder
 echo   installer       Build Inno Setup installer (.exe)
 echo   install         Deploy mod to local Deus Ex for testing
 echo   test            Launch the mod in Deus Ex
+echo   test-meshes     Mesh-resolution diagnostic: load maps, grep logs for warnings
 echo   steam           Launch via Steam (overlay + play time tracking)
 echo   reset           Regenerate CNN.ini/CNNUser.ini from player's config
 echo   clean           Remove compiled packages

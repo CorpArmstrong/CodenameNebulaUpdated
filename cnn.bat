@@ -10,6 +10,7 @@ setlocal enabledelayedexpansion
 ::   install        - Install the mod to local Deus Ex (for testing)
 ::   test           - Launch the mod in Deus Ex
 ::   test-meshes    - Mesh-resolution diagnostic via map load + log grep
+::   edit <map>     - Open a map in UnrealEd (CU editor preferred)
 ::   steam          - Launch via Steam (overlay + play time tracking)
 ::   reset          - Regenerate CNN.ini/CNNUser.ini from player's config
 ::   clean          - Remove compiled packages
@@ -135,6 +136,7 @@ if /i "%~1"=="installer" goto :installer
 if /i "%~1"=="install" goto :install
 if /i "%~1"=="test" goto :test
 if /i "%~1"=="test-meshes" goto :test_meshes
+if /i "%~1"=="edit" goto :edit
 if /i "%~1"=="steam" goto :steam
 if /i "%~1"=="reset" goto :reset
 if /i "%~1"=="clean" goto :clean
@@ -760,7 +762,7 @@ echo ========================================
 echo.
 
 :: Handle "list" subcommand first (no exe/ini detection needed)
-if /i "%~2"=="list" goto :test_meshes_list
+if /i "%~2"=="list" goto :show_map_aliases
 
 :: --------- Resolve map alias / number / "all" / default ---------
 :: Done first so invalid args fail before triggering install
@@ -937,8 +939,8 @@ echo      (e.g. "cnn test-meshes 6" or "cnn test-meshes conspiracy").
 echo      Use "cnn test-meshes list" to see all map aliases.
 goto :eof
 
-:test_meshes_list
-echo Map aliases for "cnn test-meshes":
+:show_map_aliases
+echo Map aliases (shared by "cnn test-meshes" and "cnn edit"):
 echo.
 echo   Number  Short alias        Canonical map name
 echo   ------  -----------------  ----------------------------
@@ -954,17 +956,126 @@ echo     9     transcend          06_Transcend
 echo    10     entry              CNNentry
 echo    11     entryv2            Entryv2
 echo.
-echo Special:
+echo Special (test-meshes only):
 echo   ^(empty^)   Default suite: 1 + 3 (Phase 8A coverage)
 echo   all       All 11 maps (~5 min of attention total)
-echo   list      Print this table and exit
 echo.
 echo Examples:
-echo   cnn test-meshes              ^<- default 2-map suite
-echo   cnn test-meshes 1            ^<- just MoonIntro
-echo   cnn test-meshes l1           ^<- just OpheliaL1
-echo   cnn test-meshes 06_Conspiracy ^<- exact map name
-echo   cnn test-meshes all          ^<- all 11 maps
+echo   cnn test-meshes              ^<- test default 2-map suite
+echo   cnn test-meshes 1            ^<- test just MoonIntro
+echo   cnn edit 1                   ^<- open MoonIntro in UnrealEd
+echo   cnn edit l1                  ^<- open OpheliaL1 in UnrealEd
+echo   cnn edit 06_Conspiracy       ^<- exact map name
+goto :eof
+
+:: ============================================================================
+:: EDIT - Open a map in UnrealEd
+:: Usage: cnn edit ^<n^|alias^|mapname^|list^>
+::   See "cnn edit list" for the alias table (same one as test-meshes).
+::
+:: Prefers the Community Update editor (per CLAUDE.md - handles large maps
+:: without freezing). Falls back to the original SDK editor.
+::
+:: Uses the canonical -exec MAP LOAD FILE="..." syntax (same as the premade
+:: System/OpenMapInUE1.bat). Resolves the map path via the CNNMaps junction
+:: when present (shorter path, avoids UE1 path-length truncation).
+:: ============================================================================
+:edit
+echo.
+echo ========================================
+echo  EDIT - Open map in UnrealEd
+echo ========================================
+echo.
+
+:: Show usage if no arg
+if "%~2"=="" (
+    echo Usage: cnn edit ^<n^|alias^|mapname^|list^>
+    echo.
+    echo See "cnn edit list" for the alias table.
+    echo Examples:
+    echo   cnn edit 1            ^<- opens MoonIntro
+    echo   cnn edit l1           ^<- opens OpheliaL1
+    echo   cnn edit 06_Conspiracy
+    goto :eof
+)
+
+:: Handle "list"
+if /i "%~2"=="list" goto :show_map_aliases
+
+:: --------- Resolve map alias / number / canonical ---------
+set "RAW=%~2"
+set "MAP="
+
+if "!RAW!"=="1"  set "MAP=05_MoonIntro"
+if "!RAW!"=="2"  set "MAP=06_OpheliaDocks"
+if "!RAW!"=="3"  set "MAP=06_OpheliaL1"
+if "!RAW!"=="4"  set "MAP=06_OpheliaL2"
+if "!RAW!"=="5"  set "MAP=06_OpheliaL2_QuestSystem"
+if "!RAW!"=="6"  set "MAP=06_Conspiracy"
+if "!RAW!"=="7"  set "MAP=06_Hijacking"
+if "!RAW!"=="8"  set "MAP=06_Mutiny"
+if "!RAW!"=="9"  set "MAP=06_Transcend"
+if "!RAW!"=="10" set "MAP=CNNentry"
+if "!RAW!"=="11" set "MAP=Entryv2"
+
+if not defined MAP (
+    if /i "!RAW!"=="moon"          set "MAP=05_MoonIntro"
+    if /i "!RAW!"=="moonintro"     set "MAP=05_MoonIntro"
+    if /i "!RAW!"=="docks"         set "MAP=06_OpheliaDocks"
+    if /i "!RAW!"=="opheliadocks"  set "MAP=06_OpheliaDocks"
+    if /i "!RAW!"=="l1"            set "MAP=06_OpheliaL1"
+    if /i "!RAW!"=="opheliaL1"     set "MAP=06_OpheliaL1"
+    if /i "!RAW!"=="l2"            set "MAP=06_OpheliaL2"
+    if /i "!RAW!"=="opheliaL2"     set "MAP=06_OpheliaL2"
+    if /i "!RAW!"=="l2quest"       set "MAP=06_OpheliaL2_QuestSystem"
+    if /i "!RAW!"=="opheliaL2_questsystem" set "MAP=06_OpheliaL2_QuestSystem"
+    if /i "!RAW!"=="conspiracy"    set "MAP=06_Conspiracy"
+    if /i "!RAW!"=="hijacking"     set "MAP=06_Hijacking"
+    if /i "!RAW!"=="mutiny"        set "MAP=06_Mutiny"
+    if /i "!RAW!"=="transcend"     set "MAP=06_Transcend"
+    if /i "!RAW!"=="entry"         set "MAP=CNNentry"
+    if /i "!RAW!"=="cnnentry"      set "MAP=CNNentry"
+    if /i "!RAW!"=="entryv2"       set "MAP=Entryv2"
+)
+
+if not defined MAP set "MAP=!RAW!"
+
+:: Verify map exists in source tree
+if not exist "%REPO_ROOT%\Maps\!MAP!.dx" (
+    echo ERROR: Map "!MAP!.dx" not found in Maps\
+    echo Run "cnn edit list" to see valid options.
+    goto :eof
+)
+
+:: --------- Detect editor (prefer Community Update for large-map support) ---------
+set "EDITOR_EXE="
+set "EDITOR_TYPE="
+if exist "!CU_SYSTEM!\UnrealEd.exe" (
+    set "EDITOR_EXE=!CU_SYSTEM!\UnrealEd.exe"
+    set "EDITOR_TYPE=Community Update"
+) else if exist "!SYSTEM_DIR!\UnrealEd.exe" (
+    set "EDITOR_EXE=!SYSTEM_DIR!\UnrealEd.exe"
+    set "EDITOR_TYPE=Original SDK ^(may freeze on large maps^)"
+) else (
+    echo ERROR: UnrealEd.exe not found. Tried:
+    echo   !CU_SYSTEM!\UnrealEd.exe
+    echo   !SYSTEM_DIR!\UnrealEd.exe
+    echo Install Community Update or run "cnn setup".
+    goto :eof
+)
+
+:: --------- Map path: prefer CNNMaps junction (short path, avoids UE1 truncation) ---------
+set "MAP_PATH=!REPO_ROOT!\Maps\!MAP!.dx"
+if exist "!DEUSEX_ROOT!\CNNMaps\!MAP!.dx" set "MAP_PATH=!DEUSEX_ROOT!\CNNMaps\!MAP!.dx"
+
+echo Editor: !EDITOR_EXE!
+echo         [!EDITOR_TYPE!]
+echo Map:    !MAP_PATH!
+echo.
+echo Launching ^(editor opens in a new window^)...
+
+start "" "!EDITOR_EXE!" -exec MAP LOAD FILE="!MAP_PATH!"
+
 goto :eof
 
 :: ============================================================================
@@ -1340,6 +1451,8 @@ echo   install         Deploy mod to local Deus Ex for testing
 echo   test            Launch the mod in Deus Ex
 echo   test-meshes     Mesh-resolution diagnostic: load maps, grep logs for warnings
 echo                   Args: [n^|alias^|name^|all^|list]; "cnn test-meshes list" for aliases
+echo   edit ^<map^>      Open a map in UnrealEd (CU editor preferred)
+echo                   Args: ^<n^|alias^|name^|list^>; same alias table as test-meshes
 echo   steam           Launch via Steam (overlay + play time tracking)
 echo   reset           Regenerate CNN.ini/CNNUser.ini from player's config
 echo   clean           Remove compiled packages

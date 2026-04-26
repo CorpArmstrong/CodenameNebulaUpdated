@@ -927,8 +927,10 @@ for %%M in (!MAPS!) do (
     echo.
     pause
 
-    set "TEST_INI=!LOG_DIR!\CNN_test_%%M.ini"
-    set "TEST_EXEC=!LOG_DIR!\CNN_test_%%M.exec"
+    rem Use TEMP for temp files - the engine's -EXEC= arg parser truncates
+    rem paths at the first space, so we MUST use a space-free path.
+    set "TEST_INI=!TEMP!\CNN_test_%%M.ini"
+    set "TEST_EXEC=!TEMP!\CNN_test_%%M.exec"
     powershell -NoProfile -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\test_meshes_make_ini.ps1" -InputIni "!CNN_INI!" -OutputIni "!TEST_INI!" -MapName "%%M"
     > "!TEST_EXEC!" echo open %%M
 
@@ -936,9 +938,9 @@ for %%M in (!MAPS!) do (
     echo Launching: !CNN_EXE! INI=^<temp INI^> -EXEC=^<open %%M^>
     echo.
     if defined CNN_USER_INI (
-        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!TEST_INI!" USERINI="!CNN_USER_INI!" -EXEC="!TEST_EXEC!"
+        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!TEST_INI!" USERINI="!CNN_USER_INI!" -EXEC=!TEST_EXEC!
     ) else (
-        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!TEST_INI!" -EXEC="!TEST_EXEC!"
+        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!TEST_INI!" -EXEC=!TEST_EXEC!
     )
 
     del "!TEST_INI!" "!TEST_EXEC!" 2>nul

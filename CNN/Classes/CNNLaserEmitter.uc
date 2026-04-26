@@ -113,9 +113,11 @@ function CalcTrace(float deltaTime)
     }
 }
 
-function BeginPlay()
+function PostBeginPlay()
 {
-    proxy.Skin = SkinTex;
+    Super.PostBeginPlay();
+    if (proxy != none)
+        proxy.Skin = SkinTex;
 }
 
 defaultproperties

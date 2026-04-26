@@ -14,9 +14,7 @@ function PostBeginPlay()
 {
     local LaserSecurityDispatcher LSD;  // Lucy in the Sky with Diamonds :)
     local SecurityCamera cam;
-
-    flags = DeusExPlayer(GetPlayerPawn()).flagBase;
-    isSecurityActive = flags.GetBool('laserSecurityWorks');
+    local DeusExPlayer player;
 
     foreach AllActors(class'LaserSecurityDispatcher', LSD)
     {
@@ -27,6 +25,13 @@ function PostBeginPlay()
     {
         sCam = cam;
     }
+
+    player = DeusExPlayer(GetPlayerPawn());
+    if (player == none) return;
+    flags = player.flagBase;
+    if (flags == none) return;
+
+    isSecurityActive = flags.GetBool('laserSecurityWorks');
 
     if (!flags.GetBool('Meet1InspRoom_Played'))
     {

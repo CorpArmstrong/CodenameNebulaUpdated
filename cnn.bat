@@ -365,7 +365,9 @@ if not exist "%DIST_DIR%\System" mkdir "%DIST_DIR%\System"
 
 :: Package Maps
 echo Packaging Maps...
-for %%f in (CNNentry.dx 05_MoonIntro.dx 06_OpheliaDocks.dx 06_OpheliaL1.dx 06_OpheliaL2.dx 06_OpheliaL2_QuestSystem.dx 06_Conspiracy.dx 06_Hijacking.dx 06_Mutiny.dx 06_Transcend.dx) do (
+:: NOTE: 06_OpheliaL2_QuestSystem is an experimental dev map, intentionally
+:: excluded from the player package. The shipping L2 map is 06_OpheliaL2.
+for %%f in (CNNentry.dx 05_MoonIntro.dx 06_OpheliaDocks.dx 06_OpheliaL1.dx 06_OpheliaL2.dx 06_Conspiracy.dx 06_Hijacking.dx 06_Mutiny.dx 06_Transcend.dx) do (
     if exist "%REPO_ROOT%\Maps\%%f" (
         copy /y "%REPO_ROOT%\Maps\%%f" "%DIST_DIR%\Maps\" >nul
         echo   %%f
@@ -788,8 +790,10 @@ if "!RAW!"=="" (
     rem Default suite covers Phase 8A meshes
     set "MAPS=05_MoonIntro 06_OpheliaL1"
 ) else if /i "!RAW!"=="all" (
-    set "MAPS=05_MoonIntro 06_OpheliaDocks 06_OpheliaL1 06_OpheliaL2 06_OpheliaL2_QuestSystem 06_Conspiracy 06_Hijacking 06_Mutiny 06_Transcend CNNentry Entryv2"
-    echo NOTE: Running all 11 maps. Expect ~5 minutes of attention total.
+    rem L2_QuestSystem and Entryv2 are dev-only, not in the package, so we
+    rem skip them here. Use "cnn test-meshes 5" / "11" if you really need to.
+    set "MAPS=05_MoonIntro 06_OpheliaDocks 06_OpheliaL1 06_OpheliaL2 06_Conspiracy 06_Hijacking 06_Mutiny 06_Transcend CNNentry"
+    echo NOTE: Running 9 production maps. Expect ~4-5 minutes of attention.
     echo.
 )
 
@@ -909,10 +913,12 @@ if exist "!ACTIVE_LOG!" (
     move /y "!ACTIVE_LOG!" "!LOG_DIR!\!EXE_BASENAME!.log.preTest" >nul
 )
 
-:: Per-map test loop. Generates a per-map temp INI that overrides LocalMap
-:: so the engine boots straight into the test map (skipping menus/New Game).
-:: Also forces D3D9 + 1280x720 to skip GlideDrv warnings and tiny windows.
+:: Per-map test loop. Generates a per-map temp INI + an EXEC file with
+:: 'open <map>'. Engine truncates long EXEC paths, so we use a short
+:: counter-based filename in TEMP (CNN_tm<N>.ini / .exec).
+set "TM_INDEX=0"
 for %%M in (!MAPS!) do (
+    set /a "TM_INDEX+=1"
     echo.
     echo ----------------------------------------
     echo Testing map: %%M
@@ -927,10 +933,11 @@ for %%M in (!MAPS!) do (
     echo.
     pause
 
-    rem Use TEMP for temp files - the engine's -EXEC= arg parser truncates
-    rem paths at the first space, so we MUST use a space-free path.
-    set "TEST_INI=!TEMP!\CNN_test_%%M.ini"
-    set "TEST_EXEC=!TEMP!\CNN_test_%%M.exec"
+    rem Use TEMP for temp files (no spaces in path - engine truncates at
+    rem spaces) and a short counter-based name (engine truncates long
+    rem filenames - 06_OpheliaL2_QuestSystem broke at ~28 chars).
+    set "TEST_INI=!TEMP!\CNN_tm!TM_INDEX!.ini"
+    set "TEST_EXEC=!TEMP!\CNN_tm!TM_INDEX!.exec"
     powershell -NoProfile -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\test_meshes_make_ini.ps1" -InputIni "!CNN_INI!" -OutputIni "!TEST_INI!" -MapName "%%M"
     > "!TEST_EXEC!" echo open %%M
 
@@ -997,17 +1004,19 @@ echo     1     moon, moonintro    05_MoonIntro
 echo     2     docks              06_OpheliaDocks
 echo     3     l1                 06_OpheliaL1
 echo     4     l2                 06_OpheliaL2
-echo     5     l2quest            06_OpheliaL2_QuestSystem
+echo     5     l2quest            06_OpheliaL2_QuestSystem  (dev only)
 echo     6     conspiracy         06_Conspiracy
 echo     7     hijacking          06_Hijacking
 echo     8     mutiny             06_Mutiny
 echo     9     transcend          06_Transcend
 echo    10     entry              CNNentry
-echo    11     entryv2            Entryv2
+echo    11     entryv2            Entryv2                    (dev only)
+echo.
+echo  ^(dev only^) maps are not in the player package and won't be deployed.
 echo.
 echo Special (test-meshes only):
 echo   ^(empty^)   Default suite: 1 + 3 (Phase 8A coverage)
-echo   all       All 11 maps (~5 min of attention total)
+echo   all       All 9 production maps (~4-5 min of attention)
 echo.
 echo Examples:
 echo   cnn test-meshes              ^<- test default 2-map suite

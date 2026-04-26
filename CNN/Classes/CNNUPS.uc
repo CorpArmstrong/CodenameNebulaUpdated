@@ -415,7 +415,7 @@ defaultproperties
     bHateInjury=false
     DrawType=DT_Sprite
     CollisionHeight=50.000000
-    Orders=Guarding
+    Orders=Patrolling
     OrderTag=OpenAirlock
     bAlwaysPatrol=true
 }

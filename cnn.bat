@@ -909,7 +909,9 @@ if exist "!ACTIVE_LOG!" (
     move /y "!ACTIVE_LOG!" "!LOG_DIR!\!EXE_BASENAME!.log.preTest" >nul
 )
 
-:: Per-map test loop
+:: Per-map test loop. Generates a per-map temp INI that overrides LocalMap
+:: so the engine boots straight into the test map (skipping menus/New Game).
+:: Also forces D3D9 + 1280x720 to skip GlideDrv warnings and tiny windows.
 for %%M in (!MAPS!) do (
     echo.
     echo ----------------------------------------
@@ -917,7 +919,7 @@ for %%M in (!MAPS!) do (
     echo ----------------------------------------
     echo.
     echo Instructions ^(minimal player input^):
-    echo   1. Wait until the loading bar finishes and you can move ^(~5-10s^)
+    echo   1. Wait until the loading bar finishes ^(~5-10s^).
     echo      All actors have PostBeginPlay'd by then; meshes are resolved.
     echo   2. Press Esc -^> Quit, OR press ` ^(tilde^) and type: exit
     echo.
@@ -925,14 +927,19 @@ for %%M in (!MAPS!) do (
     echo.
     pause
 
+    set "TEST_INI=!LOG_DIR!\CNN_test_%%M.ini"
+    powershell -NoProfile -Command "(Get-Content -LiteralPath '!CNN_INI!') -replace '^^LocalMap=.*', 'LocalMap=%%M.dx' -replace '^^Map=.*', 'Map=%%M.dx' -replace '^^WindowedViewportX=.*', 'WindowedViewportX=1280' -replace '^^WindowedViewportY=.*', 'WindowedViewportY=720' -replace '^^FullscreenViewportX=.*', 'FullscreenViewportX=1280' -replace '^^FullscreenViewportY=.*', 'FullscreenViewportY=720' -replace 'GlideDrv\.GlideRenderDevice', 'D3D9Drv.D3D9RenderDevice' | Set-Content -LiteralPath '!TEST_INI!'"
+
     echo.
-    echo Launching: !CNN_EXE! INI=... %%M.dx?Game=CNN.CNNGameInfo
+    echo Launching: !CNN_EXE! INI=^<temp INI w/ LocalMap=%%M.dx^>
     echo.
     if defined CNN_USER_INI (
-        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!CNN_INI!" USERINI="!CNN_USER_INI!" %%M.dx?Game=CNN.CNNGameInfo
+        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!TEST_INI!" USERINI="!CNN_USER_INI!"
     ) else (
-        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!CNN_INI!" %%M.dx?Game=CNN.CNNGameInfo
+        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!TEST_INI!"
     )
+
+    del "!TEST_INI!" 2>nul
 
     :: Save log
     if exist "!ACTIVE_LOG!" (

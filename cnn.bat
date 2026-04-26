@@ -928,7 +928,7 @@ for %%M in (!MAPS!) do (
     pause
 
     set "TEST_INI=!LOG_DIR!\CNN_test_%%M.ini"
-    powershell -NoProfile -Command "(Get-Content -LiteralPath '!CNN_INI!') -replace '^^LocalMap=.*', 'LocalMap=%%M.dx' -replace '^^Map=.*', 'Map=%%M.dx' -replace '^^WindowedViewportX=.*', 'WindowedViewportX=1280' -replace '^^WindowedViewportY=.*', 'WindowedViewportY=720' -replace '^^FullscreenViewportX=.*', 'FullscreenViewportX=1280' -replace '^^FullscreenViewportY=.*', 'FullscreenViewportY=720' -replace 'GlideDrv\.GlideRenderDevice', 'D3D9Drv.D3D9RenderDevice' | Set-Content -LiteralPath '!TEST_INI!'"
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\test_meshes_make_ini.ps1" -InputIni "!CNN_INI!" -OutputIni "!TEST_INI!" -MapName "%%M"
 
     echo.
     echo Launching: !CNN_EXE! INI=^<temp INI w/ LocalMap=%%M.dx^>

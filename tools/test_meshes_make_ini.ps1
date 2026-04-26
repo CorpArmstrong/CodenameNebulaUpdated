@@ -11,10 +11,24 @@ param(
 #   Renderer        = D3D9             skips GlideDrv-not-found warnings if
 #                                      the player INI inherited Glide
 
-Add-Type -AssemblyName System.Windows.Forms -ErrorAction SilentlyContinue
-$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
-$ResX = $bounds.Width
-$ResY = $bounds.Height
+# Prefer WMI (actual hardware resolution, ignores DPI scaling).
+# Fall back to Windows.Forms (DPI-scaled logical resolution).
+$ResX = 0; $ResY = 0
+try {
+    $vc = Get-CimInstance -ClassName Win32_VideoController -ErrorAction Stop |
+          Where-Object { $_.CurrentHorizontalResolution -gt 0 } |
+          Select-Object -First 1
+    if ($vc) {
+        $ResX = [int]$vc.CurrentHorizontalResolution
+        $ResY = [int]$vc.CurrentVerticalResolution
+    }
+} catch { }
+if ($ResX -le 0 -or $ResY -le 0) {
+    Add-Type -AssemblyName System.Windows.Forms -ErrorAction SilentlyContinue
+    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+    $ResX = $bounds.Width
+    $ResY = $bounds.Height
+}
 
 (Get-Content -LiteralPath $InputIni) `
     -replace '^LocalMap=.*',          "LocalMap=$MapName.dx" `

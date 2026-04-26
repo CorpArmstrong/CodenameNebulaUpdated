@@ -928,18 +928,20 @@ for %%M in (!MAPS!) do (
     pause
 
     set "TEST_INI=!LOG_DIR!\CNN_test_%%M.ini"
+    set "TEST_EXEC=!LOG_DIR!\CNN_test_%%M.exec"
     powershell -NoProfile -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\test_meshes_make_ini.ps1" -InputIni "!CNN_INI!" -OutputIni "!TEST_INI!" -MapName "%%M"
+    > "!TEST_EXEC!" echo open %%M
 
     echo.
-    echo Launching: !CNN_EXE! INI=^<temp INI w/ LocalMap=%%M.dx^>
+    echo Launching: !CNN_EXE! INI=^<temp INI^> -EXEC=^<open %%M^>
     echo.
     if defined CNN_USER_INI (
-        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!TEST_INI!" USERINI="!CNN_USER_INI!"
+        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!TEST_INI!" USERINI="!CNN_USER_INI!" -EXEC="!TEST_EXEC!"
     ) else (
-        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!TEST_INI!"
+        start "" /d "!SYSTEM_DIR!" /wait "!CNN_EXE!" INI="!TEST_INI!" -EXEC="!TEST_EXEC!"
     )
 
-    del "!TEST_INI!" 2>nul
+    del "!TEST_INI!" "!TEST_EXEC!" 2>nul
 
     :: Save log
     if exist "!ACTIVE_LOG!" (

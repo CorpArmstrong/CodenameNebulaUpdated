@@ -15,6 +15,7 @@ function PostBeginPlay()
     local LaserSecurityDispatcher LSD;  // Lucy in the Sky with Diamonds :)
     local SecurityCamera cam;
     local DeusExPlayer player;
+    local bool bMeet1InspRoomPlayed;
 
     foreach AllActors(class'LaserSecurityDispatcher', LSD)
     {
@@ -27,13 +28,17 @@ function PostBeginPlay()
     }
 
     player = DeusExPlayer(GetPlayerPawn());
-    if (player == none) return;
-    flags = player.flagBase;
-    if (flags == none) return;
+    if (player != none && player.flagBase != none)
+    {
+        flags = player.flagBase;
+        isSecurityActive = flags.GetBool('laserSecurityWorks');
+        bMeet1InspRoomPlayed = flags.GetBool('Meet1InspRoom_Played');
+    }
+    // else flags stays None and bMeet1InspRoomPlayed stays false (default).
+    // We still call TurnOffLasers below: lasers must be off until the
+    // scripted sequence has fired, even if we couldn't read the flag.
 
-    isSecurityActive = flags.GetBool('laserSecurityWorks');
-
-    if (!flags.GetBool('Meet1InspRoom_Played'))
+    if (!bMeet1InspRoomPlayed)
     {
         TurnOffLasers();
     }
@@ -65,7 +70,8 @@ function TurnOnLasers()
         laserDispatcher.ToggleOn();
     }
 
-    flags.SetBool('laserSecurityWorks', true);
+    if (flags != none)
+        flags.SetBool('laserSecurityWorks', true);
     isSecurityActive = true;
 
     SetSecurityCamera_bNoAlarm(false);
@@ -85,7 +91,8 @@ function TurnOffLasers()
         laserDispatcher.ToggleOff();
     }
 
-    flags.SetBool('laserSecurityWorks', false);
+    if (flags != none)
+        flags.SetBool('laserSecurityWorks', false);
     isSecurityActive = false;
 
     SetSecurityCamera_bNoAlarm(true);

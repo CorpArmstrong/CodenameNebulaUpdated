@@ -735,12 +735,17 @@ goto :eof
 
 :: ============================================================================
 :: TEST-MESHES - Mesh-resolution diagnostic via map load + log analysis
-:: Usage: cnn test-meshes [mapname]
-::   No arg     - runs default suite (05_MoonIntro + 06_OpheliaL1)
-::   mapname    - tests just that map (no .dx suffix needed, e.g. 06_Conspiracy)
+:: Usage: cnn test-meshes [mapname|number|alias|all|list]
+::   No arg     - runs default suite (1 + 3: MoonIntro + OpheliaL1)
+::   number     - 1..11 (see "cnn test-meshes list" for the table)
+::   alias      - moon, docks, l1, l2, l2quest, conspiracy, hijacking,
+::                mutiny, transcend, entry, entryv2 (case-insensitive)
+::   mapname    - exact name without .dx (e.g. 06_OpheliaL1)
+::   all        - all 11 maps (~5 min total)
+::   list       - print the alias table and exit
 ::
 :: For each map: launches the game directly into the map (skipping menus),
-:: blocks until you exit, then saves the log as CodenameNebula.log.<mapname>.
+:: blocks until you exit, then saves the log as <ExeBaseName>.log.<mapname>.
 :: After all maps tested, greps each saved log for ApocalypseInside refs and
 :: package/mesh/texture load failures.
 ::
@@ -754,7 +759,74 @@ echo  TEST-MESHES - Mesh resolution diagnostic
 echo ========================================
 echo.
 
-:: Reuse :test's INI/EXE detection logic
+:: Handle "list" subcommand first (no exe/ini detection needed)
+if /i "%~2"=="list" goto :test_meshes_list
+
+:: --------- Resolve map alias / number / "all" / default ---------
+:: Done first so invalid args fail before triggering install
+set "RAW=%~2"
+set "MAPS="
+
+if "!RAW!"=="" (
+    rem Default suite covers Phase 8A meshes
+    set "MAPS=05_MoonIntro 06_OpheliaL1"
+) else if /i "!RAW!"=="all" (
+    set "MAPS=05_MoonIntro 06_OpheliaDocks 06_OpheliaL1 06_OpheliaL2 06_OpheliaL2_QuestSystem 06_Conspiracy 06_Hijacking 06_Mutiny 06_Transcend CNNentry Entryv2"
+    echo NOTE: Running all 11 maps. Expect ~5 minutes of attention total.
+    echo.
+)
+
+if not defined MAPS (
+    rem Numeric aliases
+    if "!RAW!"=="1"  set "MAPS=05_MoonIntro"
+    if "!RAW!"=="2"  set "MAPS=06_OpheliaDocks"
+    if "!RAW!"=="3"  set "MAPS=06_OpheliaL1"
+    if "!RAW!"=="4"  set "MAPS=06_OpheliaL2"
+    if "!RAW!"=="5"  set "MAPS=06_OpheliaL2_QuestSystem"
+    if "!RAW!"=="6"  set "MAPS=06_Conspiracy"
+    if "!RAW!"=="7"  set "MAPS=06_Hijacking"
+    if "!RAW!"=="8"  set "MAPS=06_Mutiny"
+    if "!RAW!"=="9"  set "MAPS=06_Transcend"
+    if "!RAW!"=="10" set "MAPS=CNNentry"
+    if "!RAW!"=="11" set "MAPS=Entryv2"
+)
+
+if not defined MAPS (
+    rem Short-name aliases (case-insensitive)
+    if /i "!RAW!"=="moon"          set "MAPS=05_MoonIntro"
+    if /i "!RAW!"=="moonintro"     set "MAPS=05_MoonIntro"
+    if /i "!RAW!"=="docks"         set "MAPS=06_OpheliaDocks"
+    if /i "!RAW!"=="opheliadocks"  set "MAPS=06_OpheliaDocks"
+    if /i "!RAW!"=="l1"            set "MAPS=06_OpheliaL1"
+    if /i "!RAW!"=="opheliaL1"     set "MAPS=06_OpheliaL1"
+    if /i "!RAW!"=="l2"            set "MAPS=06_OpheliaL2"
+    if /i "!RAW!"=="opheliaL2"     set "MAPS=06_OpheliaL2"
+    if /i "!RAW!"=="l2quest"       set "MAPS=06_OpheliaL2_QuestSystem"
+    if /i "!RAW!"=="opheliaL2_questsystem" set "MAPS=06_OpheliaL2_QuestSystem"
+    if /i "!RAW!"=="conspiracy"    set "MAPS=06_Conspiracy"
+    if /i "!RAW!"=="hijacking"     set "MAPS=06_Hijacking"
+    if /i "!RAW!"=="mutiny"        set "MAPS=06_Mutiny"
+    if /i "!RAW!"=="transcend"     set "MAPS=06_Transcend"
+    if /i "!RAW!"=="entry"         set "MAPS=CNNentry"
+    if /i "!RAW!"=="cnnentry"      set "MAPS=CNNentry"
+    if /i "!RAW!"=="entryv2"       set "MAPS=Entryv2"
+)
+
+if not defined MAPS (
+    rem Fall back: treat input as raw map name
+    set "MAPS=!RAW!"
+)
+
+:: Verify each resolved map exists
+for %%M in (!MAPS!) do (
+    if not exist "%REPO_ROOT%\Maps\%%M.dx" (
+        echo ERROR: Map "%%M.dx" not found in Maps\
+        echo Run "cnn test-meshes list" to see valid options.
+        goto :eof
+    )
+)
+
+:: --------- Now do install/exe/ini detection (after args validated) ---------
 set "CNN_INI="
 if exist "!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini" set "CNN_INI=!DEUSEX_ROOT!\CodenameNebula\System\CNN.ini"
 if not defined CNN_INI (
@@ -780,13 +852,9 @@ if not defined CNN_EXE echo ERROR: No DeusEx.exe found in !SYSTEM_DIR! && goto :
 
 set "LOG_DIR=!SYSTEM_DIR!"
 
-:: Determine map list. The exe basename determines the log filename
-:: (UE1 writes <ExeBaseName>.log). DeusEx.exe -> DeusEx.log; renamed exes use their own name.
+:: Log filename = <ExeBaseName>.log (UE1 convention)
 for %%E in ("!CNN_EXE!") do set "EXE_BASENAME=%%~nE"
 set "ACTIVE_LOG=!LOG_DIR!\!EXE_BASENAME!.log"
-
-set "MAPS=05_MoonIntro 06_OpheliaL1"
-if not "%~2"=="" set "MAPS=%~2"
 
 echo Configuration:
 echo   EXE:      !CNN_EXE! [!EXE_TYPE!]
@@ -808,11 +876,10 @@ for %%M in (!MAPS!) do (
     echo Testing map: %%M
     echo ----------------------------------------
     echo.
-    echo Instructions:
-    echo   1. After the game window opens, wait ^~10s for the map to load
-    echo      ^(actors spawn, PostBeginPlay fires, all meshes get resolved^).
-    echo   2. Walk a few steps so anything Tick-driven runs at least once.
-    echo   3. Press Esc -^> Quit, OR press ` ^(tilde^) and type: exit
+    echo Instructions ^(minimal player input^):
+    echo   1. Wait until the loading bar finishes and you can move ^(~5-10s^)
+    echo      All actors have PostBeginPlay'd by then; meshes are resolved.
+    echo   2. Press Esc -^> Quit, OR press ` ^(tilde^) and type: exit
     echo.
     echo The script will continue automatically after the game exits.
     echo.
@@ -865,8 +932,39 @@ echo.
 echo Logs preserved at:
 for %%M in (!MAPS!) do echo   !LOG_DIR!\!EXE_BASENAME!.log.%%M
 echo.
-echo Tip: re-run with "cnn test-meshes ^<mapname^>" to test a single map
-echo      (e.g. "cnn test-meshes 06_Conspiracy" to cover the embedded-ref maps).
+echo Tip: re-run with "cnn test-meshes ^<n^|name^>" to test a single map
+echo      (e.g. "cnn test-meshes 6" or "cnn test-meshes conspiracy").
+echo      Use "cnn test-meshes list" to see all map aliases.
+goto :eof
+
+:test_meshes_list
+echo Map aliases for "cnn test-meshes":
+echo.
+echo   Number  Short alias        Canonical map name
+echo   ------  -----------------  ----------------------------
+echo     1     moon, moonintro    05_MoonIntro
+echo     2     docks              06_OpheliaDocks
+echo     3     l1                 06_OpheliaL1
+echo     4     l2                 06_OpheliaL2
+echo     5     l2quest            06_OpheliaL2_QuestSystem
+echo     6     conspiracy         06_Conspiracy
+echo     7     hijacking          06_Hijacking
+echo     8     mutiny             06_Mutiny
+echo     9     transcend          06_Transcend
+echo    10     entry              CNNentry
+echo    11     entryv2            Entryv2
+echo.
+echo Special:
+echo   ^(empty^)   Default suite: 1 + 3 (Phase 8A coverage)
+echo   all       All 11 maps (~5 min of attention total)
+echo   list      Print this table and exit
+echo.
+echo Examples:
+echo   cnn test-meshes              ^<- default 2-map suite
+echo   cnn test-meshes 1            ^<- just MoonIntro
+echo   cnn test-meshes l1           ^<- just OpheliaL1
+echo   cnn test-meshes 06_Conspiracy ^<- exact map name
+echo   cnn test-meshes all          ^<- all 11 maps
 goto :eof
 
 :: ============================================================================
@@ -1241,6 +1339,7 @@ echo   installer       Build Inno Setup installer (.exe)
 echo   install         Deploy mod to local Deus Ex for testing
 echo   test            Launch the mod in Deus Ex
 echo   test-meshes     Mesh-resolution diagnostic: load maps, grep logs for warnings
+echo                   Args: [n^|alias^|name^|all^|list]; "cnn test-meshes list" for aliases
 echo   steam           Launch via Steam (overlay + play time tracking)
 echo   reset           Regenerate CNN.ini/CNNUser.ini from player's config
 echo   clean           Remove compiled packages

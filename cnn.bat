@@ -842,15 +842,38 @@ if not defined CNN_INI echo ERROR: CNN.ini still not found after install. && got
 set "CNN_USER_INI="
 if exist "!DEUSEX_ROOT!\CodenameNebula\System\CNNUser.ini" set "CNN_USER_INI=!DEUSEX_ROOT!\CodenameNebula\System\CNNUser.ini"
 
+:: For test-meshes we MUST bypass GUI launchers (Kentie/Han) so URL args
+:: load the map directly. Prefer the original 1112fm exe; only fall back
+:: to the Kentie launcher with a warning.
 set "CNN_EXE="
-set "EXE_TYPE=not found"
+set "EXE_TYPE="
+if exist "!SYSTEM_DIR!\DeusEx 1112fm ^(Original EXE^).exe" (
+    set "CNN_EXE=!SYSTEM_DIR!\DeusEx 1112fm (Original EXE).exe"
+    set "EXE_TYPE=original 1112fm backup"
+    goto :tm_exe_done
+)
 set "EXE_SIZE=0"
 if exist "!SYSTEM_DIR!\DeusEx.exe" for %%A in ("!SYSTEM_DIR!\DeusEx.exe") do set "EXE_SIZE=%%~zA"
-if !EXE_SIZE! GTR 300000 set "CNN_EXE=!SYSTEM_DIR!\DeusEx.exe" & set "EXE_TYPE=Kentie/Han launcher"
-if !EXE_SIZE! GTR 200000 if not defined CNN_EXE set "CNN_EXE=!SYSTEM_DIR!\DeusEx.exe" & set "EXE_TYPE=original 1112fm"
-if !EXE_SIZE! GTR 0 if not defined CNN_EXE set "CNN_EXE=!SYSTEM_DIR!\DeusEx.exe" & set "EXE_TYPE=CU wrapper"
-if !EXE_SIZE! LEQ 200000 if !EXE_SIZE! GTR 0 if exist "!SYSTEM_DIR!\DeusEx 1112fm ^(Original EXE^).exe" set "CNN_EXE=!SYSTEM_DIR!\DeusEx 1112fm (Original EXE).exe" & set "EXE_TYPE=1112fm via CU backup"
-if not defined CNN_EXE echo ERROR: No DeusEx.exe found in !SYSTEM_DIR! && goto :eof
+if !EXE_SIZE! GTR 0 if !EXE_SIZE! LEQ 300000 (
+    set "CNN_EXE=!SYSTEM_DIR!\DeusEx.exe"
+    set "EXE_TYPE=DeusEx.exe (non-launcher)"
+    goto :tm_exe_done
+)
+if !EXE_SIZE! GTR 300000 (
+    set "CNN_EXE=!SYSTEM_DIR!\DeusEx.exe"
+    set "EXE_TYPE=Kentie/Han launcher (GUI - URL args will NOT work!)"
+    echo.
+    echo WARNING: Only Kentie/Han launcher found. The launcher GUI swallows
+    echo URL args and lands at the main menu instead of loading the map.
+    echo Install Community Update to get the 1112fm backup exe, or use
+    echo "cnn test" with manual console "open ^<map^>" instead.
+    echo Continuing anyway, but logs will likely be useless...
+    echo.
+    goto :tm_exe_done
+)
+echo ERROR: No DeusEx.exe found in !SYSTEM_DIR!
+goto :eof
+:tm_exe_done
 
 set "LOG_DIR=!SYSTEM_DIR!"
 

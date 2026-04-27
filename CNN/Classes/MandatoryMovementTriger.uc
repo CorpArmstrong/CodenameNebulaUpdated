@@ -69,7 +69,7 @@ function MovePawn()
         }
         else
         {
-            msgbox("MovedPawn not finded");
+            Log("MandatoryMovementTriger: pawn not found for tag '" $ MovedPawnTag $ "'");
         }
     }
 }

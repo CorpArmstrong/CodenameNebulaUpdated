@@ -35,19 +35,14 @@ function Trigger(Actor Other, Pawn Instigator)
 
     if (AnyActorTag != '')
     {
-        self.MsgBox("AnyActorTag != ''");
-
         foreach AllActors(class 'Actor', A, AnyActorTag)
         {
-            self.MsgBox("one finded");
             A.Destroy();
         }
 	}
 
     if (DestroyByClassName != '')
     {
-        self.MsgBox("DestroyByClassName != ''");
-
         foreach AllActors(class 'Actor', A)
         {
             if (A.IsA(DestroyByClassName))

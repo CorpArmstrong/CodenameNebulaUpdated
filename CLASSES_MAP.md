@@ -1,12 +1,12 @@
 # CNN/Classes — Class Atlas
 
-This document catalogs all 268 UnrealScript classes from Codename Nebula: 267 in [CNN/Classes/](CNN/Classes/) and 1 in [CNNText/Classes/](CNNText/Classes/). Sister document to [REPO_MAP.md](REPO_MAP.md) and [Phase5_6_Audit.md](Phase5_6_Audit.md). Reachability verified across four dimensions (the four blind spots that broke Phase 5 are listed in the Methodology section at the bottom).
+This document catalogs all 267 UnrealScript classes from Codename Nebula: 266 in [CNN/Classes/](CNN/Classes/) and 1 in [CNNText/Classes/](CNNText/Classes/). Sister document to [REPO_MAP.md](REPO_MAP.md) and [Phase5_6_Audit.md](Phase5_6_Audit.md). Reachability verified across four dimensions (the four blind spots that broke Phase 5 are listed in the Methodology section at the bottom).
 
 **Phase 8A status (added 2026-04-25):** 12 classes had their `Mesh=` references re-pointed from `'ApocalypseInside.X'` to `'CNN.X'`. Affected: BassGuitar, Bassein, CoffeeCup, CoffeeMachine, ObserX, Pallet, Pipe619/994/996/998, ShopCart, wallfuse8. Reachability tags unchanged — the assets are now sourced from the local `CNN.u` package instead of the external `ApocalypseInside.u`. 21 `ApocalypseInside.X` refs remain (Burger01 + fries01 meshes + 15 textures + 3 map embeddings) — see [Phase8_ApocalypseInside_Survey.md](Phase8_ApocalypseInside_Survey.md) for the path to full standalone.
 
 ## Quick reference
 
-- **Total classes:** 267 (CNN/Classes) + 1 (CNNText/Classes) = **268**
+- **Total classes:** 266 (CNN/Classes) + 1 (CNNText/Classes) = **267**
 - **Entry points (ROOT):** [CNNGameInfo](CNN/Classes/CNNGameInfo.uc) (DefaultGame), [TantalusDenton](CNN/Classes/TantalusDenton.uc) (player class), [CNNRootWindow](CNN/Classes/CNNRootWindow.uc) / [CNNHUD](CNN/Classes/CNNHUD.uc) (UI), [CNNMenuMainTest](CNN/Classes/CNNMenuMainTest.uc) (root menu → ApocalypseInsideMenu* chain)
 - **Canonical importers:** [ImportConversations](CNN/Classes/ImportConversations.uc), [ImportSounds](CNN/Classes/ImportSounds.uc), [AllCnnResources](CNN/Classes/AllCnnResources.uc), [CNNTextures](CNN/Classes/CNNTextures.uc), [CNNTextImport](CNNText/Classes/CNNTextImport.uc)
 - **UNREACHABLE classes after Phase 5+7 cleanup:** **0** (every class is reachable through at least one path; see Methodology)
@@ -55,7 +55,6 @@ Actor (DeusEx/Engine root)
 | [CNNHUD](CNN/Classes/CNNHUD.uc) | DeusExHUD | Custom HUD with damage/info-link/active-items | ROOT |
 | [CNNMenuMainTest](CNN/Classes/CNNMenuMainTest.uc) | MenuMain | Main menu → invokes ApocalypseInsideMenuSelectDifficulty | ROOT |
 | [CNNCreditsWindow](CNN/Classes/CNNCreditsWindow.uc) | CreditsWindow | Custom credits screen (invoked by main menu) | REACHABLE-CODE |
-| [CNNCreditsWindowTest](CNN/Classes/CNNCreditsWindowTest.uc) | CreditsScrollWindow | Alternate credits variant | REACHABLE-CODE |
 
 ## 2. Mission / Quest system
 
@@ -349,9 +348,9 @@ All REACHABLE-CODE — referenced via `#exec` directives at compile time.
 | ROOT | 7 | CNNGameInfo, TantalusDenton, CNNRootWindow, CNNHUD, CNNMenuMainTest, ImportConversations, ImportSounds (+ CNNTextImport in CNNText) |
 | REACHABLE-MAP | 4 | AiGlassFragment, CnnDispatcher32, GlobeBall, ZeroClient — found in `.dx` map name tables |
 | REACHABLE-CON | 2 | BodyBox (148 hits), CNNSecurityCameraAlarmTrigger (4 hits) |
-| REACHABLE-CODE | 254 | Reached via UC source: extends chain, `Class'X'` in defaultproperties, `Spawn(class'X')`, `#exec` directives |
+| REACHABLE-CODE | 253 | Reached via UC source: extends chain, `Class'X'` in defaultproperties, `Spawn(class'X')`, `#exec` directives |
 | FLAGGED | 1 | [scart4598](CNN/Classes/scart4598.uc) — cryptic name; appears to be a one-off helper. Compile passes but worth a manual look. |
-| **Total** | **268** | All accounted for; 0 truly unreachable post-Phase 5+7 |
+| **Total** | **267** | All accounted for. CNNCreditsWindowTest quarantined to `_Backups/Phase10_DeadClasses/` 2026-04-27 (zero refs anywhere). |
 
 ## Class-name prefix groupings
 

@@ -149,9 +149,14 @@ function CheckActiveConversationRadius()
     }
 }
 
+// Intentional override: disables the parent's per-frame auto-terminate
+// of conversations when actors drift too far apart. CNN's scripted
+// scenes (cutscenes, scripted movements, holocomm) need that to be a
+// no-op so conversations don't get killed mid-cutscene. Callers ignore
+// the return value (vanilla DeusExPlayer has the same pattern).
 function bool CheckActorDistances()
 {
-    //mwahaaha! terrible hack, i know -T.
+    return false;
 }
 
 // ----------------------------------------------------------------------

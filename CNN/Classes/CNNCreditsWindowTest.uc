@@ -203,15 +203,9 @@ event DestroyWindow()
 
 event bool KeyPressed(string key)
 {
-	local bool bKeyHandled;
-
 	if (IsKeyDown(IK_Alt))
 		return False;
-
-	if (bKeyHandled)
-		return True;
-	else
-		return Super.KeyPressed(key);
+	return Super.KeyPressed(key);
 }
 
 // ----------------------------------------------------------------------

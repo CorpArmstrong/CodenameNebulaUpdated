@@ -4,14 +4,14 @@
 class CNNMisson01 extends CNNBaseIngameCutscene;
 
 var bool bLasersOn, bLasersOff;
-var LaserSecurityDispatcher laserDipatcher;
+var LaserSecurityDispatcher laserDispatcher;
 var bool bFirstFrame;
 
 var() name CamTag;
 
 function InitLaserSystem()
 {
-    laserDipatcher = Spawn(class'LaserSecurityDispatcher');
+    laserDispatcher = Spawn(class'LaserSecurityDispatcher');
 }
 
 // ----------------------------------------------------------------------
@@ -41,9 +41,9 @@ function Timer()
 				foreach AllActors(class'DamageLaserTrigger', A)
 					A.Trigger(None, None);
 
-				if (laserDipatcher != None)
+				if (laserDispatcher != None)
 				{
-					laserDipatcher.ToggleOn();
+					laserDispatcher.ToggleOn();
 
 					foreach AllActors(class'SecurityCamera', Cam)
 					{
@@ -69,9 +69,9 @@ function Timer()
 				foreach AllActors(class'DamageLaserTrigger', A)
 					A.UnTrigger(None, None);
 
-				if (laserDipatcher != None)
+				if (laserDispatcher != None)
 				{
-					laserDipatcher.ToggleOff();
+					laserDispatcher.ToggleOff();
 
 					foreach AllActors(class'SecurityCamera', Cam)
 					{

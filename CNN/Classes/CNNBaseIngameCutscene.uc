@@ -6,6 +6,7 @@ class CNNBaseIngameCutscene extends MissionScript abstract;
 
 var byte savedSoundVolume;
 var bool IsArrivalCompleted;
+var bool bSendPlayerFired;
 var string sendToLocation;
 var name conversationName;
 var name convNamePlayed;
@@ -138,9 +139,33 @@ function TrySendPlayerOnceToGame()
 {
     if (flags.GetBool(convNamePlayed) && !isArrivalCompleted)
     {
-        FinishCinematic();
-        SendPlayer();
+        SendPlayerOnce();
     }
+}
+
+// Single, idempotent entry point for cutscene cleanup. Callers: the Timer
+// (via TrySendPlayerOnceToGame), TantalusDenton.EndConversation (fires when
+// ESC during a bForcePlay convo aborts the dialog), and TantalusDenton.
+// ShowMainMenu (fires when ESC reaches the root window directly). The
+// bSendPlayerFired guard prevents re-entry while the level travel is pending.
+function SendPlayerOnce()
+{
+    if (bSendPlayerFired || IsArrivalCompleted)
+        return;
+    // player can be None briefly post-reload before InitStateMachine
+    // populates it; FinishCinematic dereferences player.AllActors, so
+    // bail until the next Timer tick rather than Accessed-None'ing.
+    if (player == none || flags == none)
+        return;
+    bSendPlayerFired = true;
+
+    // Permanent flag (no expiration). The earlier (true, 0) form set
+    // bExpiringFlag=true with expiration=0, which DeleteExpiredFlags wipes
+    // on the post-reload mission instance — making the cutscene restart
+    // instead of staying ended.
+    flags.SetBool(convNamePlayed, true);
+    FinishCinematic();
+    SendPlayer();
 }
 
 // ----------------------------------------------------------------------
@@ -180,5 +205,23 @@ function SendPlayer()
     // DEUS_EX STM - added AI invisibility
     Player.bDetectable = true;
 
+    // Reset camera state the cutscene hijacked. Without this, ViewTarget
+    // stays pointing at a stale CameraPoint across the same-map #tag travel,
+    // leaving the player with no visible model and the cinematic eye height.
+    // Different-map travel resets this implicitly; #tag travel does not.
+    Player.ViewTarget = none;
+    Player.bBehindView = false;
+
     Level.Game.SendPlayer(player, sendToLocation);
+}
+
+defaultproperties
+{
+    // Faster than parent MissionScript's 1-second Timer. ESC during a
+    // bForcePlay cutscene is eaten by ConWindowActive.AbortCinematicConvo,
+    // which terminates the dialog (setting convNamePlayed) but doesn't
+    // know about CNNBaseIngameCutscene. Polling at 50ms lets our Timer
+    // pick up that flag and fire SendPlayerOnce within ~50ms — no
+    // perceptible double-press required.
+    checkTime=0.050000
 }

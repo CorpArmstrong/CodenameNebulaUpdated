@@ -162,13 +162,32 @@ function bool CheckActorDistances()
 // ----------------------------------------------------------------------
 // ShowMainMenu()
 //
-// overrides the original so we can use our custom ApocalypseInsideMenu.
+// Overrides the original so we can use our custom ApocalypseInsideMenu.
+//
+// ESC during an in-progress in-map cutscene must end the cutscene (skip
+// to the post-cutscene location), not open the main menu. CNN's cutscenes
+// run on the gameplay map via CNNBaseIngameCutscene (extends MissionScript),
+// so vanilla's MissionNumber==98/99 + MissionEndgame guards don't catch
+// them. Without this branch, the menu opens while CameraPoint/Interpolation
+// chains keep running and `player.bHidden` stays true — when the menu
+// closes the player is invisible with broken collision/eye height.
 // ----------------------------------------------------------------------
 exec function ShowMainMenu()
 {
     local DeusExRootWindow root;
-    local DeusExLevelInfo info;
-    info = GetLevelInfo();
+    local CNNBaseIngameCutscene cs;
+
+    foreach AllActors(class'CNNBaseIngameCutscene', cs)
+    {
+        if (!cs.IsArrivalCompleted)
+        {
+            if (conPlay != None)
+                conPlay.TerminateConversation();
+            cs.SendPlayerOnce();
+            return;
+        }
+        break;
+    }
 
     root = DeusExRootWindow(rootWindow);
 

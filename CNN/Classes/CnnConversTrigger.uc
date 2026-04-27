@@ -47,6 +47,8 @@ singular function ActivatedON()
             }
         }
 
+        if (conOwner == none) return;
+
         if (bSuccess)
         {
             if (player.StartConversationByName(ConversationTag, conOwner, false, bForcePlay))

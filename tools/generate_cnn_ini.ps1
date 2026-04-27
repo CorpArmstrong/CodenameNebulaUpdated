@@ -31,6 +31,28 @@ if (-not (Test-Path $SourceIni)) {
     exit 1
 }
 
+# ---- Detect native screen resolution (overrides player's old DeusEx.ini values) ----
+# Player's DeusEx.ini often has 640x480 from initial install (Kentie/Han launchers
+# use a separate INI for actual gameplay), so inheriting it leaves the in-game
+# Settings menu defaulting to 640x480 and downgrading on first interaction.
+# Prefer WMI (real hardware res, ignores DPI scaling); fall back to Windows.Forms.
+$nativeResX = 0; $nativeResY = 0
+try {
+    $vc = Get-CimInstance -ClassName Win32_VideoController -ErrorAction Stop |
+          Where-Object { $_.CurrentHorizontalResolution -gt 0 } |
+          Select-Object -First 1
+    if ($vc) {
+        $nativeResX = [int]$vc.CurrentHorizontalResolution
+        $nativeResY = [int]$vc.CurrentVerticalResolution
+    }
+} catch { }
+if ($nativeResX -le 0 -or $nativeResY -le 0) {
+    Add-Type -AssemblyName System.Windows.Forms -ErrorAction SilentlyContinue
+    $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+    $nativeResX = $bounds.Width
+    $nativeResY = $bounds.Height
+}
+
 # ---- Auto-detect HD textures (NewVision / HDTP) ----
 $hdPaths = @()
 $hdSource = ''
@@ -149,6 +171,20 @@ for ($i = 0; $i -lt $lines.Length; $i++) {
         continue
     }
 
+    # ---- [WinDrv.WindowsClient] section patches: viewport size = native res ----
+    if ($line -match '^WindowedViewportX=')   { $result += "WindowedViewportX=$nativeResX";   continue }
+    if ($line -match '^WindowedViewportY=')   { $result += "WindowedViewportY=$nativeResY";   continue }
+    if ($line -match '^FullscreenViewportX=') { $result += "FullscreenViewportX=$nativeResX"; continue }
+    if ($line -match '^FullscreenViewportY=') { $result += "FullscreenViewportY=$nativeResY"; continue }
+
+    # ---- Force D3D9 if GlideDrv was inherited (player INI defaults often say
+    #      Glide; the package isn't shipped with modern installs and the engine
+    #      logs 4 warnings then falls back). Replace inline. ----
+    if ($line -match 'GlideDrv\.GlideRenderDevice') {
+        $result += ($line -replace 'GlideDrv\.GlideRenderDevice', 'D3D9Drv.D3D9RenderDevice')
+        continue
+    }
+
     # ---- [Core.System] section: replace Paths=, patch SavePath= ----
     if ($inCoreSystem) {
         # Patch save path
@@ -205,18 +241,13 @@ Write-Host "  Generated CNN.ini from player's DeusEx.ini"
 Write-Host "    Source:  $SourceIni"
 Write-Host "    Output:  $OutputIni"
 
-# Detect what renderer was inherited
+# Detect what renderer ended up in the output (inherited from player or replaced)
 $renderer = ($result | Where-Object { $_ -match '^GameRenderDevice=' }) -replace '^GameRenderDevice=', '' | Select-Object -First 1
 if ($renderer) {
-    Write-Host "    Renderer: $renderer (inherited from player)"
+    Write-Host "    Renderer: $renderer"
 }
 
-# Detect resolution
-$resX = ($result | Where-Object { $_ -match '^FullscreenViewportX=' }) -replace '^FullscreenViewportX=', '' | Select-Object -First 1
-$resY = ($result | Where-Object { $_ -match '^FullscreenViewportY=' }) -replace '^FullscreenViewportY=', '' | Select-Object -First 1
-if ($resX -and $resY) {
-    Write-Host "    Resolution: ${resX}x${resY} (inherited from player)"
-}
+Write-Host "    Resolution: ${nativeResX}x${nativeResY} (forced to native)"
 
 # ---- Generate CNNUser.ini from User.ini ----
 if ($SourceUser -ne '.' -and (Test-Path $SourceUser)) {

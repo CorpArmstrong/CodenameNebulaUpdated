@@ -67,5 +67,11 @@ defaultproperties
     creditsEndSoundLength=4.000000
     ScrollMusicString="" // Don't use vanilla music in credits
     textName=CNNCredits
+    // Credits text is imported into CNN.u (NOT CNNText.u) via the
+    // #exec ALLDEUSEXTEXT IMPORT directive in CNN/Classes/
+    // ApocalypseInsideText.uc — that macro auto-discovers .txt files
+    // across packages and imports them into the calling package.
+    // Verified: grepping CNN.u for "Project director" finds the credits
+    // content present after compile.
     textPackage="CNN"
 }

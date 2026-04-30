@@ -191,8 +191,7 @@ Cleanup archive. Files here are **not** referenced by any build step or runtime 
 | 1 | (none) | Gitignore preparation only — no physical moves |
 | 2 | `Phase2_Backups/`, `Phase2_OldMaps/` | `.con` backups, WIP map iterations, stray notes — git history is authoritative |
 | 3 | `Phase3_Legacy/` | Retired `build.bat`/`package.bat`, stale `CNN.ini` (Glide-era), duplicate `Terrified.umx` |
-| 4 | `Phase4_TextDup/` | Byte-identical duplicate of `CNNText/Text/` (was at `CNN/Text/`) |
-| 5 | `Phase5_Orphans/` | 1 UC orphan (`BarrelBoomImportScript`), 2 UTX (`AIStalk`, `PFADTex`), 17 prefab sources, 2 utility `.exe` |
+| 5 | `Phase5_Orphans/` | 1 UC orphan (`BarrelBoomImportScript`), 1 UTX (`AIStalk`), 17 prefab sources, 2 utility `.exe`. PFADTex.utx was quarantined then restored — see `_Backups/README.md`. |
 | 7 | `Phase7_ConvDup/` | 5 byte-identical conversation duplicates from `CNNText/Conversations/` + `CNNTextConversations.uc` importer |
 
 ---

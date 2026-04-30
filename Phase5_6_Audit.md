@@ -4,6 +4,8 @@
 **Commit:** 9f4922b (Phase 4: quarantine duplicate CNN/Text tree)
 **Branch:** chore/repo-cleanup
 
+> **Post-audit correction (2026-04-26, commit `641648b`):** PFADTex.utx is **NOT** an orphan. 3 maps reference it via the `'PFAD'` asset prefix (textures embedded in maps use the asset prefix, which differs from the package filename). The Phase 5 grep searched for the literal package name only and missed these references. PFADTex.utx was restored to `Textures/` and continues to ship. Below references to PFADTex.utx as an orphan are historical and superseded.
+
 ---
 
 ## ⚠️ Corrected Findings (after bisect via `cnn compile`)

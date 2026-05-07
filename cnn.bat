@@ -750,8 +750,11 @@ echo   EXE:  !CNN_EXE! [!EXE_TYPE!]
 echo   INI:  !CNN_INI!
 if defined CNN_USER_INI echo   USER: !CNN_USER_INI!
 echo.
-if defined CNN_USER_INI start "" /d "!SYSTEM_DIR!" "!CNN_EXE!" INI="!CNN_INI!" USERINI="!CNN_USER_INI!"
-if not defined CNN_USER_INI start "" /d "!SYSTEM_DIR!" "!CNN_EXE!" INI="!CNN_INI!"
+:: -log forces the engine to write CodenameNebula.log (or DeusEx.log) to
+:: System/. Without it Kentie/Han launchers suppress logging entirely, leaving
+:: us blind during runtime debugging (cutscene ESC investigation, etc).
+if defined CNN_USER_INI start "" /d "!SYSTEM_DIR!" "!CNN_EXE!" INI="!CNN_INI!" USERINI="!CNN_USER_INI!" -log
+if not defined CNN_USER_INI start "" /d "!SYSTEM_DIR!" "!CNN_EXE!" INI="!CNN_INI!" -log
 goto :eof
 
 :: ============================================================================

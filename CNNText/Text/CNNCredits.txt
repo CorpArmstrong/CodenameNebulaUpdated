@@ -1,23 +1,23 @@
 <P>Dev Team:
 <P>
 <P>Artem "Tantalus" D
-<P>Project director, Lead Writer, Lead Level Designer, Texture Designer, Programmer, Soundtrack
+<P>Project director, Lead Writer, Level Designer, Texture Designer, Programmer, Soundtrack
 <P>
 <P>
 <P>Dmitriy "CorpArmstrong" Fedykovych
-<P>Assistant director, Lead Programmer, Assistant Writer, Assistant Level Designer, Soundtrack
+<P>Assistant director, Lead Programmer, Assistant Writer, Level Designer, Soundtrack
 <P>
 <P>
 <P>Evgeniy "JJoe" Bortnik
-<P>Programmer, 3D Modeller, Assistant Level Designer
+<P>Programmer, 3D Modeller, Level Designer
 <P>
 <P>
 <P>Andrievskaya Veronika
-<P>Additional level design, consultant.
+<P>Level design, consultant.
 <P>
 <P>
 <P>Pavel Marianenko
-<P>Writer, game design
+<P>Writer, game design, game test
 <P>
 <P>
 <P>Pavel Mosunov
@@ -26,6 +26,10 @@
 <P>
 <P>Max Yakimenko
 <P>Sound design
+<P>
+<P>
+<P>Vladyslav "Pr0r0k" Martens
+<P>Installer fixes and game test
 <P>
 <P>
 <P>Artem Dubson

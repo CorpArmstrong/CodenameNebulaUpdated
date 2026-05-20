@@ -206,4 +206,5 @@ defaultproperties
     convNamePlayed=InExile_Played
     actorTag=MagdaleneDenton
     levelName="06_OpheliaL2#HumanServer"
+    bDeferOnEarlyEsc=True
 }

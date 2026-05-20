@@ -121,6 +121,21 @@ event TravelPostAccept()
     }
 }
 
+// Invincibility gate for the deferred-ESC cutscene cleanup. When the
+// CNNCutsceneCleanup flag is set, CNNBaseIngameCutscene has decided
+// that the player is still inside the cutscene's PlayerStart radius —
+// UE1 same-map URL travel would ignore the #tag and respawn at the
+// default PlayerStart (which on MoonIntro is inside the meteor
+// explosion). We keep the player alive while the IP chain carries
+// them out of that radius. The flag is cleared in CheckIntroFlags on
+// the post-reload mission instance.
+function TakeDamage(int Damage, Pawn instigatedBy, Vector hitlocation, Vector momentum, name damageType)
+{
+    if (FlagBase != none && FlagBase.GetBool('CNNCutsceneCleanup'))
+        return;
+    Super.TakeDamage(Damage, instigatedBy, hitlocation, momentum, damageType);
+}
+
 //this is to make sure convos work if actors are far away from e o
 function CheckActiveConversationRadius()
 {
@@ -208,14 +223,27 @@ function ShowIntro(optional bool bStartNewGame)
         DeusExRootWindow(rootWindow).ClearWindowStack();
     }
 
-    bStartNewGameAfterIntro = bStartNewGame;
-
-    // Make sure all augmentations are OFF before going into the intro
     AugmentationSystem.DeactivateAll();
 
-    // Reset the player
-    //Level.Game.SendPlayer(Self, "AiPrologue");
-    Level.Game.SendPlayer(self, strStartMap);
+    if (bStartNewGame)
+    {
+        // CNN has no separate intro map — we go straight to the
+        // gameplay map. Vanilla DX1's "New Game" path runs an intro
+        // map first, then PostIntro calls StartNewGame which does
+        // the heavy cleanup (ResetPlayer destroys + recreates
+        // AugmentationSystem/SkillSystem/inventory; DeleteSaveGameFiles
+        // wipes .dxs). Skipping that bridge leaves stale subsystem
+        // references and player rail-mode state in .dxs, which breaks
+        // the cutscene on replay. Run StartNewGame directly so the
+        // gameplay map gets the same fresh slate vanilla would have
+        // produced.
+        StartNewGame(strStartMap);
+    }
+    else
+    {
+        bStartNewGameAfterIntro = bStartNewGame;
+        Level.Game.SendPlayer(self, strStartMap);
+    }
 }
 
 // ----------------------------------------------------------------------

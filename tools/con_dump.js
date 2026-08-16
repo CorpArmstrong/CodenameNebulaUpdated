@@ -175,11 +175,30 @@ if (args.includes('--strings') || args.includes('--flagmap')) {
         let pending = null;
         const map = {};
 
+        // Event direction. ConPlayBase.EEventType gives ET_SetFlag=2,
+        // ET_CheckFlag=3, and a flag event is laid out as:
+        //   [eventType][0][1][flagIndex][int32 len][name]
+        // so the type sits 16 bytes before the length prefix. Occurrences that
+        // don't match that shape (the flag table itself, or flag refs nested
+        // inside another event) report "?" rather than guessing.
+        function directionAt(off) {
+            if (off - 16 < 0) return '?';
+            const type     = r.buf.readInt32LE(off - 16);
+            const flagIdx  = r.buf.readInt32LE(off - 4);
+            const oneField = r.buf.readInt32LE(off - 8);
+            if (oneField !== 1 || flagIdx < 0 || flagIdx > 4096) return '?';
+            if (type === 2) return 'SET';
+            if (type === 3) return 'CHECK';
+            return '?';
+        }
+
         for (const s of strs) {
             if (s.text === AUTHOR) { if (pending) current = pending; continue; }
             if (flagSet.has(s.text)) {
+                const dir = directionAt(s.off);
+                const entry = current + (dir === '?' ? '' : ' [' + dir + ']');
                 if (!map[s.text]) map[s.text] = [];
-                if (map[s.text].indexOf(current) === -1) map[s.text].push(current);
+                if (map[s.text].indexOf(entry) === -1) map[s.text].push(entry);
                 continue;
             }
             if (!speakerSet.has(s.text) && !SKIP[s.text] && /^[A-Za-z][A-Za-z0-9_]{2,40}$/.test(s.text))

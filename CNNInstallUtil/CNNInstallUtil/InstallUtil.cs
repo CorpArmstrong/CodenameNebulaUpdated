@@ -35,6 +35,68 @@ namespace CNNInstallUtil
         // Steam shortcut is useful (Steam launch only applies to Steam installs).
         private bool isCdRenamed = false;
 
+        // Minimum viewport CNN is designed for. The vanilla Default.ini ships
+        // 640x480 @ 16-bit, which modern GPUs no longer expose as a fullscreen
+        // display mode.
+        private const int MinViewportX = 800;
+        private const int MinViewportY = 600;
+
+        // Real current display mode in physical pixels. GetSystemMetrics is not
+        // usable here: this process is not DPI-aware, so it reports virtualized
+        // values (e.g. 1707x1067 on a 2560x1600 panel at 150% scaling) — and
+        // writing a resolution that isn't an actual display mode is precisely
+        // what makes the engine fail its mode set.
+        private const int ENUM_CURRENT_SETTINGS = -1;
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct DEVMODE
+        {
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string dmDeviceName;
+            public short dmSpecVersion, dmDriverVersion, dmSize, dmDriverExtra;
+            public int dmFields;
+            public int dmPositionX, dmPositionY;
+            public int dmDisplayOrientation, dmDisplayFixedOutput;
+            public short dmColor, dmDuplex, dmYResolution, dmTTOption, dmCollate;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string dmFormName;
+            public short dmLogPixels;
+            public int dmBitsPerPel, dmPelsWidth, dmPelsHeight;
+            public int dmDisplayFlags, dmDisplayFrequency;
+            public int dmICMMethod, dmICMIntent, dmMediaType, dmDitherType;
+            public int dmReserved1, dmReserved2, dmPanningWidth, dmPanningHeight;
+        }
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern bool EnumDisplaySettings(string deviceName, int modeNum, ref DEVMODE devMode);
+
+        private static int desktopW;
+        private static int desktopH;
+
+        private static int DesktopWidth
+        {
+            get { if (desktopW == 0) GetDesktopResolution(out desktopW, out desktopH); return desktopW; }
+        }
+
+        private static int DesktopHeight
+        {
+            get { if (desktopH == 0) GetDesktopResolution(out desktopW, out desktopH); return desktopH; }
+        }
+
+        private static void GetDesktopResolution(out int width, out int height)
+        {
+            // Conservative fallback: 1280x720 is a mode every GPU exposes.
+            width = 1280;
+            height = 720;
+
+            var dm = new DEVMODE();
+            dm.dmSize = (short)Marshal.SizeOf(typeof(DEVMODE));
+            if (EnumDisplaySettings(null, ENUM_CURRENT_SETTINGS, ref dm) &&
+                dm.dmPelsWidth >= MinViewportX && dm.dmPelsHeight >= MinViewportY)
+            {
+                width = dm.dmPelsWidth;
+                height = dm.dmPelsHeight;
+            }
+        }
+
         public void Install()
         {
             string pathToModSystem = Path.Combine(currentPath, "System");
@@ -283,7 +345,20 @@ namespace CNNInstallUtil
                     .AppendLine()
                     .AppendLine("[Engine.Engine]")
                     .AppendLine("GameRenderDevice=D3D9Drv.D3D9RenderDevice")
+                    .AppendLine("RenderDevice=D3D9Drv.D3D9RenderDevice")
+                    .AppendLine("WindowedRenderDevice=D3D9Drv.D3D9RenderDevice")
                     .AppendLine("DefaultGame=CNN.CNNGameInfo")
+                    .AppendLine()
+                    // Explicit 32-bit + desktop resolution: the engine's own
+                    // fallback is 640x480 @ 16-bit, which no longer resolves to
+                    // a valid fullscreen display mode on Windows 10/11.
+                    .AppendLine("[WinDrv.WindowsClient]")
+                    .AppendLine("WindowedViewportX=" + DesktopWidth)
+                    .AppendLine("WindowedViewportY=" + DesktopHeight)
+                    .AppendLine("WindowedColorBits=32")
+                    .AppendLine("FullscreenViewportX=" + DesktopWidth)
+                    .AppendLine("FullscreenViewportY=" + DesktopHeight)
+                    .AppendLine("FullscreenColorBits=32")
                     .AppendLine()
                     .AppendLine("[Core.System]")
                     .AppendLine("SavePath=" + Path.Combine(currentPath, "Save"))
@@ -311,6 +386,19 @@ namespace CNNInstallUtil
             bool inCoreSystem = false;
             bool pathsInjected = false;
             bool seenSuppressBlock = false;
+
+            // The player's INI can name a render device that cannot work on
+            // modern Windows. A never-configured retail/CD install inherits the
+            // game's Default.ini verbatim: GlideDrv (3dfx, DLL not shipped) or
+            // D3DDrv — the 1999 D3D7 device, which dies with
+            //   "Failed resetting mode"  History: HandleBigChange <- UD3DRenderDevice::Lock
+            // on Windows 10/11. Copying that into CNN.ini clones the breakage,
+            // so map any such device onto a renderer that actually works.
+            string modSystem = Path.GetDirectoryName(pathToFile) ?? "";
+            string safeRenderer = File.Exists(Path.Combine(modSystem, "D3D9Drv.dll"))
+                ? "D3D9Drv.D3D9RenderDevice"
+                : "OpenGlDrv.OpenGLRenderDevice";
+            string replacedFrom = null;
 
             // Auto-detect HD textures
             var hdPaths = DetectHDTextures(deusExRoot);
@@ -363,6 +451,32 @@ namespace CNNInstallUtil
                     continue;
                 }
 
+                // Replace unusable render devices (see safeRenderer above)
+                if (line.StartsWith("GameRenderDevice=") || line.StartsWith("RenderDevice=") ||
+                    line.StartsWith("WindowedRenderDevice="))
+                {
+                    string key = line.Substring(0, line.IndexOf('=') + 1);
+                    string device = line.Substring(key.Length).Trim();
+                    if (IsUnusableRenderer(device))
+                    {
+                        if (line.StartsWith("GameRenderDevice="))
+                            replacedFrom = device.Length > 0 ? device : "(empty)";
+                        result.Add(key + safeRenderer);
+                        continue;
+                    }
+                }
+
+                // [WinDrv.WindowsClient] patches. Windows 10/11 expose no
+                // 16-bit fullscreen modes — a 16-bit request is the other half
+                // of "Failed resetting mode", independent of the renderer.
+                if (line.StartsWith("WindowedColorBits="))   { result.Add("WindowedColorBits=32");   continue; }
+                if (line.StartsWith("FullscreenColorBits=")) { result.Add("FullscreenColorBits=32"); continue; }
+
+                if (line.StartsWith("WindowedViewportX=") || line.StartsWith("FullscreenViewportX="))
+                { result.Add(PatchViewport(line, DesktopWidth, MinViewportX));  continue; }
+                if (line.StartsWith("WindowedViewportY=") || line.StartsWith("FullscreenViewportY="))
+                { result.Add(PatchViewport(line, DesktopHeight, MinViewportY)); continue; }
+
                 // [Core.System] section: replace Paths=, patch SavePath=
                 if (inCoreSystem)
                 {
@@ -409,7 +523,41 @@ namespace CNNInstallUtil
             // Log what was inherited
             string renderer = result.Find(x => x.StartsWith("GameRenderDevice="));
             if (renderer != null)
-                Console.WriteLine("  Renderer: {0} (inherited from player)", renderer.Substring("GameRenderDevice=".Length));
+            {
+                string device = renderer.Substring("GameRenderDevice=".Length);
+                if (replacedFrom != null)
+                    Console.WriteLine("  Renderer: {0} (replaced {1} — unusable on modern Windows)", device, replacedFrom);
+                else
+                    Console.WriteLine("  Renderer: {0} (inherited from player)", device);
+            }
+        }
+
+        // Render devices that are either absent from a modern install or cannot
+        // set a display mode on Windows 10/11. Note "D3DDrv." does not match
+        // "D3D9Drv." — only the legacy 1999 device is rejected.
+        private static bool IsUnusableRenderer(string device)
+        {
+            if (string.IsNullOrWhiteSpace(device) || device.Equals("None", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            foreach (string legacy in new[] { "GlideDrv.", "D3DDrv.", "SoftDrv.", "MeTaLDrv.", "MetalDrv.", "SGLDrv." })
+            {
+                if (device.StartsWith(legacy, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
+        }
+
+        // Keep the player's resolution unless it is below CNN's minimum (the
+        // vanilla 640x480 default), in which case use the desktop resolution.
+        private static string PatchViewport(string line, int desktop, int minimum)
+        {
+            int eq = line.IndexOf('=');
+            string key = line.Substring(0, eq + 1);
+            int value;
+            if (int.TryParse(line.Substring(eq + 1).Trim(), out value) && value >= minimum)
+                return line;
+            return key + desktop;
         }
 
         private string[] DetectHDTextures(string deusExRoot)

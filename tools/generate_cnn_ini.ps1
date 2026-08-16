@@ -177,11 +177,23 @@ for ($i = 0; $i -lt $lines.Length; $i++) {
     if ($line -match '^FullscreenViewportX=') { $result += "FullscreenViewportX=$nativeResX"; continue }
     if ($line -match '^FullscreenViewportY=') { $result += "FullscreenViewportY=$nativeResY"; continue }
 
-    # ---- Force D3D9 if GlideDrv was inherited (player INI defaults often say
-    #      Glide; the package isn't shipped with modern installs and the engine
-    #      logs 4 warnings then falls back). Replace inline. ----
-    if ($line -match 'GlideDrv\.GlideRenderDevice') {
-        $result += ($line -replace 'GlideDrv\.GlideRenderDevice', 'D3D9Drv.D3D9RenderDevice')
+    # Windows 10/11 expose no 16-bit fullscreen display modes; the vanilla
+    # Default.ini asks for 16-bit, which makes the engine fail its mode reset
+    # ("Failed resetting mode") regardless of which renderer is selected.
+    if ($line -match '^WindowedColorBits=')   { $result += 'WindowedColorBits=32';   continue }
+    if ($line -match '^FullscreenColorBits=') { $result += 'FullscreenColorBits=32'; continue }
+
+    # ---- Force D3D9 over any render device that can't work on a modern PC ----
+    #      GlideDrv  - 3dfx, DLL not shipped with modern installs
+    #      D3DDrv    - the 1999 D3D7 device; dies with "Failed resetting mode"
+    #                  (HandleBigChange <- UD3DRenderDevice::Lock) on Win10/11
+    #      SoftDrv / MeTaLDrv / SGLDrv - software or dead vendor APIs
+    #      A never-configured retail/CD install inherits exactly these from the
+    #      game's Default.ini, so replace them inline. "D3DDrv\." deliberately
+    #      does not match "D3D9Drv.".
+    if ($line -match '(GlideDrv|D3DDrv|SoftDrv|MeTaLDrv|MetalDrv|SGLDrv)\.\w*RenderDevice' -and
+        $line -match '^(GameRenderDevice|RenderDevice|WindowedRenderDevice)=') {
+        $result += (($line -split '=', 2)[0] + '=D3D9Drv.D3D9RenderDevice')
         continue
     }
 

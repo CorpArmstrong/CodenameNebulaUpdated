@@ -121,8 +121,17 @@ function CheckPlayerDeath()
 // ----------------------------------------------------------------------
 // CheckEndingReached()
 //
-// First match wins, so order encodes priority. Death outranks everything:
-// if the player is dead, no other ending can still be earned.
+// Endings are chosen from accumulated state -- flags the authored
+// conversations already set -- so no new conversation content is needed.
+// Verified with tools/con_dump.js --flagmap that every flag below is
+// SET inside L2 (ET_SetFlag), not merely checked. That matters: a flag
+// only CHECKED here would have been set in the Docks or L1 and could
+// already be true on level entry, firing an ending immediately.
+// AllObjectsDestroyed is the counter-example -- it is CHECK-only in L2
+// and deliberately not used as an ending condition.
+//
+// Order encodes priority. Death outranks everything; nothing else can
+// still be earned once the player is dead.
 // ----------------------------------------------------------------------
 
 function CheckEndingReached()
@@ -130,42 +139,39 @@ function CheckEndingReached()
     if (bEndingTriggered)
         return;
 
-    // Transcendence -- upload completed. Checked before death-during-upload
-    // because reaching the upload at all is the achievement.
-    if (flags.GetBool('TantalusUploaded'))
-    {
-        TravelToEnding(MAP_TRANSCEND);
-        return;
-    }
-
-    if (flags.GetBool('PlayerDiedDuringUpload'))
-    {
-        TravelToEnding(MAP_TRANSCEND);
-        return;
-    }
-
-    if (flags.GetBool('PlayerDiedOnL2'))
+    // MUTINY (worst) -- Gray Goo consumes LA. Death is its own failure state
+    // and is judged immediately, without waiting for the level's final beat.
+    if (flags.GetBool('PlayerDiedOnL2') || flags.GetBool('PlayerDiedDuringUpload'))
     {
         TravelToEnding(MAP_MUTINY);
         return;
     }
 
-    // Hijack -- all three station tasks done before the countdown ran out.
-    if (flags.GetBool('UndockedL2') &&
-        flags.GetBool('StartedBlueFusion') &&
-        flags.GetBool('TookSteeringWheel') &&
-        !flags.GetBool('TimerExpired'))
+    // Everything below is judged only once L2 reaches its final beat.
+    // FinalGoodbyePlayed is SET by the MagdaleneInsideTube conversation.
+    if (!flags.GetBool('FinalGoodbyePlayed'))
+        return;
+
+    // HIJACKING (best) -- docks and L1 fall away, Tantalus and Magdalene make
+    // it out. Earned by arming Magdalene, i.e. the MagdaleneHijackTheStation
+    // path, which is what sets CanArmMagdalene.
+    if (flags.GetBool('CanArmMagdalene'))
     {
         TravelToEnding(MAP_HIJACKING);
         return;
     }
 
-    // Conspiracy -- countdown expired without a hijack attempt. Page wins.
-    if (flags.GetBool('TimerExpired') && !flags.GetBool('UndockedL2'))
+    // TRANSCEND -- MJ12 exposed, but the real Tantalus dies. Earned by
+    // winning the social confrontation with Wong, either by exposing him
+    // (MeetSamanthaReed) or by planting doubt during the boss (SocialBoss).
+    if (flags.GetBool('MikeWongExposed') || flags.GetBool('SeedsOfDoubtPlanted'))
     {
-        TravelToEnding(MAP_CONSPIRACY);
+        TravelToEnding(MAP_TRANSCEND);
         return;
     }
+
+    // CONSPIRACY -- the passive outcome. Page wins.
+    TravelToEnding(MAP_CONSPIRACY);
 }
 
 function TravelToEnding(string endMapName)

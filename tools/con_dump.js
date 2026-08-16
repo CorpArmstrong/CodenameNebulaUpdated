@@ -16,7 +16,7 @@
  *   name table: repeating [int32 index][int32 len][bytes]
  *
  * Usage:
- *   node tools/con_dump.js <file.con> [--names] [--raw]
+ *   node tools/con_dump.js <file.con> [--names] [--flagmap] [--strings] [--raw]
  */
 
 const fs = require('fs');
@@ -119,6 +119,83 @@ if (args.includes('--names')) {
         console.log(`\n--- ${LABELS[i] || 'table' + (i + 1)} (${t.rows.length}) ---`);
         t.rows.forEach(n => console.log(String(n.index).padStart(4) + "  " + n.name));
     });
+}
+
+// Ordered scan of every length-prefixed ASCII string in the file.
+//
+// Full event decoding would mean reverse-engineering the whole ConEdit event
+// format. We don't need that to answer "which conversation touches which
+// flag": conversation records appear in order, each starting with its name
+// and owner, and flag names appear inline where the flag events sit. So a
+// positional scan attributes flags to the conversation they fall inside.
+function scanStrings(buf) {
+    const out = [];
+    for (let p = 0; p + 4 < buf.length; ) {
+        const len = buf.readInt32LE(p);
+        if (len >= 2 && len <= 512 && p + 4 + len <= buf.length) {
+            const s = buf.toString('latin1', p + 4, p + 4 + len);
+            if (/^[\x20-\x7e]+$/.test(s)) {
+                out.push({ off: p, text: s });
+                p += 4 + len;
+                continue;
+            }
+        }
+        p++;
+    }
+    return out;
+}
+
+if (args.includes('--strings') || args.includes('--flagmap')) {
+    const strs = scanStrings(r.buf).filter(s => s.off >= r.tableEnd);
+    const flagSet = new Set((r.tables[1] ? r.tables[1].rows : []).map(x => x.name));
+    const speakerSet = new Set(r.names.map(x => x.name));
+
+    if (args.includes('--strings')) {
+        console.log('\n--- strings after tables (file order) ---');
+        for (const s of strs) {
+            let kind = '';
+            if (flagSet.has(s.text)) kind = ' [FLAG]';
+            else if (speakerSet.has(s.text)) kind = ' [speaker]';
+            console.log('0x' + s.off.toString(16).padStart(6, '0') + '  ' +
+                        JSON.stringify(s.text).slice(0, 90) + kind);
+        }
+    }
+
+    if (args.includes('--flagmap')) {
+        // Record layout, confirmed by inspection:
+        //   [name] [per-record author] [summary] [owner speaker] ...events...
+        // e.g. MagdaleneHijackTheStation / CorpArmstrong / ArtemD / Magdalene
+        // So the summary string delimits records, and BOTH author fields must
+        // be excluded as name candidates or every record is misread as being
+        // named after its author.
+        const AUTHOR = r.summary;
+        const SKIP = { };
+        SKIP[r.author] = true;
+        let current = '(before first conversation)';
+        let pending = null;
+        const map = {};
+
+        for (const s of strs) {
+            if (s.text === AUTHOR) { if (pending) current = pending; continue; }
+            if (flagSet.has(s.text)) {
+                if (!map[s.text]) map[s.text] = [];
+                if (map[s.text].indexOf(current) === -1) map[s.text].push(current);
+                continue;
+            }
+            if (!speakerSet.has(s.text) && !SKIP[s.text] && /^[A-Za-z][A-Za-z0-9_]{2,40}$/.test(s.text))
+                pending = s.text;
+        }
+
+        console.log('\n--- flag -> conversations referencing it ---');
+        const names = Object.keys(map).sort();
+        if (names.length === 0) console.log('  (none)');
+        for (const f of names)
+            console.log('  ' + f.padEnd(34) + map[f].join(', '));
+
+        const unused = [...flagSet].filter(f => !map[f]).sort();
+        if (unused.length)
+            console.log('\n  declared but never referenced: ' + unused.join(', '));
+    }
 }
 
 if (args.includes('--raw')) {

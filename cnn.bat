@@ -367,8 +367,6 @@ if not exist "%DIST_DIR%\System" mkdir "%DIST_DIR%\System"
 
 :: Package Maps
 echo Packaging Maps...
-:: NOTE: 06_OpheliaL2_QuestSystem is an experimental dev map, intentionally
-:: excluded from the player package. The shipping L2 map is 06_OpheliaL2.
 for %%f in (CNNentry.dx 05_MoonIntro.dx 06_OpheliaDocks.dx 06_OpheliaL1.dx 06_OpheliaL2.dx 06_Conspiracy.dx 06_Hijacking.dx 06_Mutiny.dx 06_Transcend.dx) do (
     if exist "%REPO_ROOT%\Maps\%%f" (
         copy /y "%REPO_ROOT%\Maps\%%f" "%DIST_DIR%\Maps\" >nul
@@ -762,7 +760,7 @@ goto :eof
 :: Usage: cnn test-meshes [mapname|number|alias|all|list]
 ::   No arg     - runs default suite (1 + 3: MoonIntro + OpheliaL1)
 ::   number     - 1..11 (see "cnn test-meshes list" for the table)
-::   alias      - moon, docks, l1, l2, l2quest, conspiracy, hijacking,
+::   alias      - moon, docks, l1, l2, conspiracy, hijacking,
 ::                mutiny, transcend, entry, entryv2 (case-insensitive)
 ::   mapname    - exact name without .dx (e.g. 06_OpheliaL1)
 ::   all        - all 11 maps (~5 min total)
@@ -808,7 +806,6 @@ if not defined MAPS (
     if "!RAW!"=="2"  set "MAPS=06_OpheliaDocks"
     if "!RAW!"=="3"  set "MAPS=06_OpheliaL1"
     if "!RAW!"=="4"  set "MAPS=06_OpheliaL2"
-    if "!RAW!"=="5"  set "MAPS=06_OpheliaL2_QuestSystem"
     if "!RAW!"=="6"  set "MAPS=06_Conspiracy"
     if "!RAW!"=="7"  set "MAPS=06_Hijacking"
     if "!RAW!"=="8"  set "MAPS=06_Mutiny"
@@ -827,8 +824,6 @@ if not defined MAPS (
     if /i "!RAW!"=="opheliaL1"     set "MAPS=06_OpheliaL1"
     if /i "!RAW!"=="l2"            set "MAPS=06_OpheliaL2"
     if /i "!RAW!"=="opheliaL2"     set "MAPS=06_OpheliaL2"
-    if /i "!RAW!"=="l2quest"       set "MAPS=06_OpheliaL2_QuestSystem"
-    if /i "!RAW!"=="opheliaL2_questsystem" set "MAPS=06_OpheliaL2_QuestSystem"
     if /i "!RAW!"=="conspiracy"    set "MAPS=06_Conspiracy"
     if /i "!RAW!"=="hijacking"     set "MAPS=06_Hijacking"
     if /i "!RAW!"=="mutiny"        set "MAPS=06_Mutiny"
@@ -1009,7 +1004,6 @@ echo     1     moon, moonintro    05_MoonIntro
 echo     2     docks              06_OpheliaDocks
 echo     3     l1                 06_OpheliaL1
 echo     4     l2                 06_OpheliaL2
-echo     5     l2quest            06_OpheliaL2_QuestSystem  (dev only)
 echo     6     conspiracy         06_Conspiracy
 echo     7     hijacking          06_Hijacking
 echo     8     mutiny             06_Mutiny
@@ -1073,7 +1067,6 @@ if "!RAW!"=="1"  set "MAP=05_MoonIntro"
 if "!RAW!"=="2"  set "MAP=06_OpheliaDocks"
 if "!RAW!"=="3"  set "MAP=06_OpheliaL1"
 if "!RAW!"=="4"  set "MAP=06_OpheliaL2"
-if "!RAW!"=="5"  set "MAP=06_OpheliaL2_QuestSystem"
 if "!RAW!"=="6"  set "MAP=06_Conspiracy"
 if "!RAW!"=="7"  set "MAP=06_Hijacking"
 if "!RAW!"=="8"  set "MAP=06_Mutiny"
@@ -1090,8 +1083,6 @@ if not defined MAP (
     if /i "!RAW!"=="opheliaL1"     set "MAP=06_OpheliaL1"
     if /i "!RAW!"=="l2"            set "MAP=06_OpheliaL2"
     if /i "!RAW!"=="opheliaL2"     set "MAP=06_OpheliaL2"
-    if /i "!RAW!"=="l2quest"       set "MAP=06_OpheliaL2_QuestSystem"
-    if /i "!RAW!"=="opheliaL2_questsystem" set "MAP=06_OpheliaL2_QuestSystem"
     if /i "!RAW!"=="conspiracy"    set "MAP=06_Conspiracy"
     if /i "!RAW!"=="hijacking"     set "MAP=06_Hijacking"
     if /i "!RAW!"=="mutiny"        set "MAP=06_Mutiny"

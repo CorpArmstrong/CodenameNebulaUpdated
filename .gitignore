@@ -33,6 +33,14 @@ Fire/
 Extension/
 ConSys/
 Help/
+
+# The Deus Ex "Tools/" entry above matches this repo's own tools/ directory on
+# Windows, where ignore matching is case-insensitive. That silently blocked
+# `git add tools/<new file>` while leaving already-tracked files working, so the
+# breakage only showed up when adding something new. Re-include it explicitly.
+# Root-anchored: an unanchored !tools/ would also un-ignore CodenameNebula/tools/,
+# which is packaging output.
+!/tools/
 Editor/
 DeusExText/
 IpDrv/

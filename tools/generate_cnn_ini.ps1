@@ -262,15 +262,62 @@ if ($renderer) {
 Write-Host "    Resolution: ${nativeResX}x${nativeResY} (forced to native)"
 
 # ---- Generate CNNUser.ini from User.ini ----
+#
+# Keybindings are inherited verbatim, with one exception: the console.
+# Deus Ex ships Tilde= and T= deliberately blank (see DefUser.ini), so a
+# player who never bound a console key gets a CNNUser.ini with no way to
+# open one. That blocks every console-driven workflow -- CNNTestEnding,
+# EditFlags, "open <map>" -- in a mod that has no other cheat UI. Only
+# genuinely unbound keys are filled, so a player's own binding always wins.
 if ($SourceUser -ne '.' -and (Test-Path $SourceUser)) {
     $userLines = [System.IO.File]::ReadAllLines($SourceUser)
     $userResult = @()
 
+    $consoleKeys = [ordered]@{ 'Tilde' = 'Type'; 'T' = 'Talk' }
+    $filled = @()
+    $inInput = $false
+
     foreach ($line in $userLines) {
+        if ($line -match '^\[(.+)\]\s*$') {
+            # Leaving [Engine.Input]: add any console key the section never mentioned.
+            if ($inInput) {
+                foreach ($key in $consoleKeys.Keys) {
+                    if ($filled -notcontains $key) {
+                        $userResult += "$key=$($consoleKeys[$key])"
+                        $filled += $key
+                    }
+                }
+            }
+            $inInput = ($matches[1] -eq 'Engine.Input')
+            $userResult += $line
+            continue
+        }
+
         if ($line -match '^Class=') {
             $userResult += 'Class=CNN.TantalusDenton'
-        } else {
-            $userResult += $line
+            continue
+        }
+
+        if ($inInput -and ($line -match '^(\w+)=(.*)$') -and $consoleKeys.Contains($matches[1])) {
+            $key = $matches[1]
+            $filled += $key
+            if ($matches[2].Trim() -eq '') {
+                $userResult += "$key=$($consoleKeys[$key])"
+            } else {
+                $userResult += $line
+            }
+            continue
+        }
+
+        $userResult += $line
+    }
+
+    # [Engine.Input] ran to end of file.
+    if ($inInput) {
+        foreach ($key in $consoleKeys.Keys) {
+            if ($filled -notcontains $key) {
+                $userResult += "$key=$($consoleKeys[$key])"
+            }
         }
     }
 
@@ -278,7 +325,7 @@ if ($SourceUser -ne '.' -and (Test-Path $SourceUser)) {
     Write-Host "  Generated CNNUser.ini from player's User.ini"
     Write-Host "    Source:  $SourceUser"
     Write-Host "    Output:  $OutputUser"
-    Write-Host "    Player keybindings: inherited"
+    Write-Host "    Player keybindings: inherited (console keys added only if unbound)"
 } else {
     Write-Host "  Skipped CNNUser.ini generation (no User.ini found)"
 }

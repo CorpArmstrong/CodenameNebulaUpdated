@@ -770,6 +770,62 @@ function UpdateQuestSystem()
     }
 }
 
+// ----------------------------------------------------------------------
+// CNNTestEnding()
+//
+// Sets the accumulated-state flags for one L2 ending so it can be tested
+// without replaying the level. Chapter06L2.CheckEndingReached() picks the
+// ending up on its next Timer tick and travels.
+//
+// From the console, on 06_OpheliaL2:
+//     CNNTestEnding hijack | transcend | conspiracy | mutiny
+//
+// Unlike EditFlags/Legend this needs no bCheatsEnabled, because those route
+// through InvokeUIScreen and are gated; an exec function is callable
+// directly. Setting a flag by hand in the EditFlags UI works too -- this
+// just spares you knowing which flags matter for which ending.
+// ----------------------------------------------------------------------
+
+exec function CNNTestEnding(string which)
+{
+    which = Caps(which);
+
+    // Cleared first so repeat calls in one session don't accumulate and let
+    // an earlier, higher-priority ending win.
+    FlagBase.SetBool('PlayerDiedOnL2', false);
+    FlagBase.SetBool('PlayerDiedDuringUpload', false);
+    FlagBase.SetBool('CanArmMagdalene', false);
+    FlagBase.SetBool('MikeWongExposed', false);
+    FlagBase.SetBool('SeedsOfDoubtPlanted', false);
+    FlagBase.SetBool('FinalGoodbyePlayed', false);
+
+    if (which == "MUTINY")
+    {
+        FlagBase.SetBool('PlayerDiedOnL2', true);
+    }
+    else if (which == "HIJACK")
+    {
+        FlagBase.SetBool('CanArmMagdalene', true);
+        FlagBase.SetBool('FinalGoodbyePlayed', true);
+    }
+    else if (which == "TRANSCEND")
+    {
+        FlagBase.SetBool('MikeWongExposed', true);
+        FlagBase.SetBool('FinalGoodbyePlayed', true);
+    }
+    else if (which == "CONSPIRACY")
+    {
+        FlagBase.SetBool('FinalGoodbyePlayed', true);
+    }
+    else
+    {
+        ClientMessage("CNNTestEnding: use hijack, transcend, conspiracy or mutiny");
+        return;
+    }
+
+    ClientMessage("CNNTestEnding: " $ which $ " -- traveling on next mission tick");
+}
+
 defaultproperties
 {
     TruePlayerName="Blake Denton"

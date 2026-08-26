@@ -73,6 +73,7 @@ function PrepareFirstFrame()
     }
 
     RepairSamanthaReedTrigger();
+    RepairCommCenterBattle();
 }
 
 // ----------------------------------------------------------------------
@@ -115,6 +116,77 @@ function RepairSamanthaReedTrigger()
         {
             conTrigger.BindName = "SamanthaReed";
             Log("CNN L2: repaired MeetSamanthaReed trigger (BindName was empty)");
+        }
+    }
+}
+
+// ----------------------------------------------------------------------
+// RepairCommCenterBattle()
+//
+// The CommCenterDispatcher fires the comm centre fight:
+//
+//     OutEvents(0)=OpenCommCenterDoors
+//     OutEvents(1)=MJ12AllianceTrigger      MJ12Troops -> Avatars  = -1.0
+//     OutEvents(2)=AvatarsAllianceTrigger   Avatars -> MJ12Troops  = -1.0
+//     OutEvents(3)=MJ12OrdersTrigger        MJ12 run to the battle
+//     OutEvents(4)=MJ12OrdersTrigger        <-- copy-paste slip
+//
+// Slot 4 repeats slot 3 instead of firing AvatarsOrdersTrigger, which sits
+// in the map at (1240,-1848,-1338) fully configured -- Orders=RunningTo,
+// ordersTag=CommCenterBattleSpawnPoint, Event=AvatarsFightGroup -- and is
+// referenced by nothing at all. Its only appearance anywhere in
+// L2_export.t3d is its own Tag= line.
+//
+// So MJ12 gets ordered into the fight and the Avatars never do. Reported
+// from play as "the avatars attacked me but the two sides ignored each
+// other".
+//
+// Rewriting the slot here rather than in UnrealEd keeps the change
+// reviewable, same reasoning as RepairSamanthaReedTrigger(). Only a slot
+// that still holds the duplicate is touched, so fixing the map properly
+// later makes this a no-op.
+// ----------------------------------------------------------------------
+
+function RepairCommCenterBattle()
+{
+    local Dispatcher disp;
+    local int i;
+    local int dupIndex;
+    local bool bAlreadyPresent;
+
+    foreach AllActors(class'Dispatcher', disp, 'CommCenterDispatcher')
+    {
+        dupIndex = -1;
+        bAlreadyPresent = false;
+
+        // Walk once to see what is actually there. Never assume index 4 --
+        // if the map is edited the slot may move, and blindly writing an
+        // index could clobber a legitimate event.
+        for (i = 0; i < 8; i++)
+        {
+            if (disp.OutEvents[i] == 'AvatarsOrdersTrigger')
+                bAlreadyPresent = true;
+            else if (disp.OutEvents[i] == 'MJ12OrdersTrigger')
+            {
+                if (dupIndex >= 0)          // second one: the duplicate
+                    continue;
+                dupIndex = i;
+            }
+        }
+
+        if (bAlreadyPresent || (dupIndex < 0))
+            continue;
+
+        // Reclaim the LAST duplicate, keeping the first MJ12 order intact.
+        for (i = 7; i > dupIndex; i--)
+        {
+            if (disp.OutEvents[i] == 'MJ12OrdersTrigger')
+            {
+                disp.OutEvents[i] = 'AvatarsOrdersTrigger';
+                Log("CNN L2: repaired CommCenterDispatcher OutEvents(" $ i $
+                    ") MJ12OrdersTrigger -> AvatarsOrdersTrigger");
+                break;
+            }
         }
     }
 }

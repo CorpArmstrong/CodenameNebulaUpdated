@@ -21,6 +21,10 @@ decision. Nothing here is recalled or inferred from play.
 > corridor connects one coordinate to the next was never measured and is *not* recorded
 > here. Coordinates are exact; the path between them is UNK. If you need the route, fly it
 > once with `ghost` and write it down — do not guess from the numbers.
+>
+> **You usually don't need the route.** `CNNGoto <landmark>` (section 1) teleports straight
+> to any node in this document, which is what makes the coordinates useful without the
+> paths. The route only matters when you are testing the level *as a player would walk it*.
 
 ---
 
@@ -45,15 +49,34 @@ Without that, `EditFlags` and `Legend` return early and do nothing. `CNNTestEndi
 exec function and needs no cheats. Useful once cheats are on: `ghost`, `allammo`,
 `EditFlags` (read/write any flag live).
 
-**Reading flags during a run.** `Chapter06L2` polls 22 flags every second and logs each
-change (`bLogFlagChanges`, on by default):
+**Getting around — `CNNGoto`.** An exec on `TantalusDenton`, no cheats needed. Teleports to
+any landmark in this document, which is how the coordinates here become usable without
+knowing the routes:
 
 ```
-cnn log "CNN L2 flag"
+CNNGoto magdalene
+```
+
+`start` `sam` `samantha` `magdalene` `maglab` `iot` `wong` `meph` `jc` `tube` `final` —
+run it with no argument to print the list. The landmarks are actor origins, so it lifts
+you clear of the floor before placing you; if every offset is refused it means you are not
+on 06_OpheliaL2. Each jump is logged.
+
+**Reading flags during a run.** `Chapter06L2` polls 22 flags every second and logs each
+change (`bLogFlagChanges`, on by default). `CNNGoto` logs each teleport, so the two
+interleave into a session transcript:
+
+```
+cnn log "CNN L2"
 ```
 
 Kentie's exe writes the log into the OneDrive-localised Documents folder, not `System\`;
-`cnn log` finds it either way.
+`cnn log` finds it either way. `ClientMessage` output never reaches the log — only `Log()`
+does, which is why the teleports are logged separately from what you see on the HUD.
+
+**Toggling cheats.** `exec cheaton` / `exec cheatoff` (files in the game `System\` dir,
+not tracked in the repo). The extension is arbitrary — `cheaton` and `cheaton.txt` both
+work. Needed for `Legend`, `EditFlags` and `ghost`; not for `CNNGoto` or `CNNTestEnding`.
 
 ---
 
@@ -244,6 +267,48 @@ touched. Samantha Reed is at `(971,-3991,-1284)`, roughly 2000 units south of an
 below the trigger at `(841,-2031,8)`, and Deus Ex needs its speakers present to run a
 scene. UNK until someone walks it. If it fails, `Invoke Con` (section 8) will start the
 conversation directly and tell you whether the scene itself works.
+
+---
+
+## 6b. The comm centre battle — Avatars never join it
+
+Found from play 2026-08-26: the MJ12 troops and the Avatars ignore each other, while the
+Avatars attack the player normally.
+
+`Dispatcher21`, tag `CommCenterDispatcher`, at `(1240, -1990, -1338)`:
+
+```
+OutEvents(0)=OpenCommCenterDoors
+OutEvents(1)=MJ12AllianceTrigger      MJ12Troops -> Avatars  = -1.0
+OutEvents(2)=AvatarsAllianceTrigger   Avatars -> MJ12Troops  = -1.0
+OutEvents(3)=MJ12OrdersTrigger        MJ12 run to the battle
+OutEvents(4)=MJ12OrdersTrigger        <-- copy-paste slip
+```
+
+Slot 4 repeats slot 3. `AvatarsOrdersTrigger` sits at `(1240, -1848, -1338)` fully
+configured — `Orders=RunningTo`, `ordersTag=CommCenterBattleSpawnPoint`,
+`Event=AvatarsFightGroup` — and **nothing in the map references it**; its only appearance
+in `L2_export.t3d` is its own `Tag=` line. OK
+
+Both alliance triggers are correctly configured as a mutual pair, and `AllianceTrigger`
+uses `Event` as a *selector* (`foreach AllActors(class'ScriptedPawn', P, Event)`), which
+matches the pawn tags. So the hostility wiring reads correct; only the marching order was
+missing.
+
+**Fixed in script:** `Chapter06L2.RepairCommCenterBattle()` rewrites the duplicated slot to
+`AvatarsOrdersTrigger`. It scans all 8 slots rather than assuming index 4, skips the
+dispatcher entirely if `AvatarsOrdersTrigger` is already present, and keeps the first MJ12
+order intact. Confirmed firing in-game: OK
+
+```
+ScriptLog: CNN L2: repaired CommCenterDispatcher OutEvents(4) MJ12OrdersTrigger -> AvatarsOrdersTrigger
+```
+
+**Still unconfirmed:** whether the two sides now actually fight. UNK. If they still ignore
+each other, the next suspect is `bPermanent` — neither alliance trigger sets it, unlike
+`MagdaleneHostileToJC` which does, and a non-permanent `ChangeAlly` can be overwritten.
+The groups are already close (MJ12 at Y≈-1600, Avatars at Y≈-1790 to -2450, battle spawn at
+`(874,-1850,-3)`), so hostility alone should be enough once they are ordered together.
 
 ---
 

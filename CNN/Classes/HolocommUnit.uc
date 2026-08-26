@@ -31,11 +31,37 @@ var FlagBase flags;
 var int contactIndex;
 var bool bCheckForConvoEnd;
 
+// ----------------------------------------------------------------------
+// ResolvePlayer()
+//
+// PostBeginPlay() can run before the player pawn exists, so caching the
+// player once there leaves `player` permanently None -- and Tick() then
+// dereferenced it every single frame. A 5-minute L2 session logged 16,489
+// "Accessed None" warnings from Tick alone, 97% of the whole log, on top of
+// the per-frame script error. Re-resolve lazily instead of trusting a
+// single early attempt.
+// ----------------------------------------------------------------------
+
+function bool ResolvePlayer()
+{
+    if (player == None)
+    {
+        player = TantalusDenton(GetPlayerPawn());
+        if (player == None)
+            return false;
+    }
+
+    if (flags == None)
+        flags = player.flagBase;
+
+    return (flags != None);
+}
+
 function PostBeginPlay()
 {
-    // Get player and his flags.
-    player = TantalusDenton(GetPlayerPawn());
-    flags = player.flagBase;
+    // May legitimately fail this early; Tick() and the frobbing path both
+    // retry through ResolvePlayer().
+    ResolvePlayer();
 
     // Setup the spawn point!
     if (!CanSetSpawnPoint())
@@ -103,7 +129,9 @@ function SetAndSpawnActor(out ContactInfo info)
                               _spawnInfo.spawnLocation,
                               _spawnInfo.spawnRotation);
 
-    if (info.hideFlagName != '')
+    // Called from PostBeginPlay(), where the player may not exist yet, so
+    // resolve rather than assume `flags` was cached successfully.
+    if ((info.hideFlagName != '') && ResolvePlayer())
     {
         flags.SetBool(info.hideFlagName, false);
         bCheckForConvoEnd = true;
@@ -141,12 +169,29 @@ simulated function Tick(float TimeDelta)
 {
     super.Tick(TimeDelta);
 
-    if (bCheckForConvoEnd && !player.IsInState('Conversation'))
+    // Cheapest test first: this is per-frame code and the flag is false for
+    // almost the whole level.
+    if (!bCheckForConvoEnd)
+        return;
+
+    if (!ResolvePlayer())
+        return;
+
+    if (player.IsInState('Conversation'))
+        return;
+
+    // contactActor is spawned by SetAndSpawnActor, but a Spawn() can fail
+    // (no room at the spawn point), which would make this the next per-frame
+    // Accessed None. Stop watching rather than retry forever.
+    if (contacts[contactIndex].contactActor == None)
     {
-        if (DeusExPlayer(GetPlayerPawn()).flagBase.GetBool(contacts[contactIndex].hideFlagName))
-        {
-            contacts[contactIndex].contactActor.bHidden = true;
-            bCheckForConvoEnd = false;
-        }
+        bCheckForConvoEnd = false;
+        return;
+    }
+
+    if (flags.GetBool(contacts[contactIndex].hideFlagName))
+    {
+        contacts[contactIndex].contactActor.bHidden = true;
+        bCheckForConvoEnd = false;
     }
 }

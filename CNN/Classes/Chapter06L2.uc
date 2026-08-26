@@ -49,6 +49,17 @@ var bool  bTrackingPrimed;
 var bool  bEndingTriggered;
 var float levelSeconds;
 
+// Magdalene combat diagnostics. She was observed going straight into
+// run-and-shoot the instant the player arrived in the lower labs, which
+// blocks MagdaleneHijackTheStation -- a ScriptedPawn in combat will not
+// start a conversation, so the Hijacking ending is unreachable while this
+// happens. Nothing in the log said WHO she was fighting, so log it.
+var(Debug) bool bLogMagdalene;
+var Magdalene watchedMagdalene;
+var name      lastMagOrders;
+var string    lastMagEnemy;
+var bool      bMagWatchPrimed;
+
 function InitStateMachine()
 {
     super.InitStateMachine();
@@ -214,6 +225,9 @@ function DoLevelStuff()
     if (bLogFlagChanges)
         LogChangedFlags();
 
+    if (bLogMagdalene)
+        LogMagdaleneState();
+
     CheckPlayerDeath();
     CheckEndingReached();
 }
@@ -345,10 +359,66 @@ function LogChangedFlags()
     }
 }
 
+// ----------------------------------------------------------------------
+// LogMagdaleneState()
+//
+// Logs Magdalene's orders / current enemy / alliance whenever any of them
+// change. Logged only on change, so a quiet level costs one line.
+//
+// The question this exists to answer: she starts shooting the moment the
+// player reaches the lower labs, and combat blocks the conversation that
+// sets CanArmMagdalene. Knowing WHO she targets separates the candidates --
+// the JC Avatar standing ~250 units away at (894,-2315,-1303), an Avatar
+// that wandered in, or the player.
+// ----------------------------------------------------------------------
+
+function LogMagdaleneState()
+{
+    local Magdalene mag;
+    local string enemyName;
+
+    if (!bMagWatchPrimed)
+    {
+        bMagWatchPrimed = true;
+        foreach AllActors(class'Magdalene', mag)
+        {
+            watchedMagdalene = mag;
+            break;
+        }
+
+        if (watchedMagdalene == None)
+        {
+            Log("CNN L2 magdalene: no Magdalene actor in this level");
+            return;
+        }
+    }
+
+    if (watchedMagdalene == None)
+        return;
+
+    if (watchedMagdalene.Enemy != None)
+        enemyName = string(watchedMagdalene.Enemy.Name) $ " [" $
+                    string(watchedMagdalene.Enemy.Class.Name) $ "]";
+    else
+        enemyName = "none";
+
+    if ((watchedMagdalene.Orders != lastMagOrders) || (enemyName != lastMagEnemy))
+    {
+        lastMagOrders = watchedMagdalene.Orders;
+        lastMagEnemy  = enemyName;
+
+        Log("CNN L2 magdalene @" $ int(levelSeconds) $ "s: orders=" $
+            string(watchedMagdalene.Orders) $ " enemy=" $ enemyName $
+            " alliance=" $ string(watchedMagdalene.Alliance) $
+            " health=" $ watchedMagdalene.Health);
+    }
+}
+
 defaultproperties
 {
     levelName="06_OpheliaL2#HumanServer"
     bLogFlagChanges=True
+    bLogMagdalene=True
 
     // Every flag OpheliaL2.con declares (via tools/con_dump.js), plus the
     // ending flags this script owns. None of the ending flags are set by any

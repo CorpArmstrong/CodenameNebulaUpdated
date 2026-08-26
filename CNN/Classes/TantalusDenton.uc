@@ -827,6 +827,45 @@ exec function CNNTestEnding(string which)
 }
 
 // ----------------------------------------------------------------------
+// CNNWhere()
+//
+// Prints and LOGS the player's exact position, facing and zone.
+//
+// Needed because bug reports like "there is an invisible wall here" or "the
+// geometry renders wrong here" are not actionable without coordinates --
+// L2's actors and brushes can all be looked up in L2_export.t3d, but only
+// if we know where "here" is. Logged as well as shown, so it survives into
+// the session transcript that `cnn log "CNN L2"` reads back.
+// ----------------------------------------------------------------------
+
+exec function CNNWhere()
+{
+    local string zoneName;
+    local DeusExLevelInfo info;
+    local string mapName;
+
+    if (Region.Zone != None)
+        zoneName = string(Region.Zone.Name);
+    else
+        zoneName = "none";
+
+    info = GetLevelInfo();
+    if (info != None)
+        mapName = info.mapName;
+    else
+        mapName = "unknown";
+
+    ClientMessage("CNNWhere: " $ int(Location.X) $ " " $ int(Location.Y) $ " " $
+                  int(Location.Z) $ "  yaw=" $ Rotation.Yaw $ "  zone=" $ zoneName);
+
+    Log("CNN L2 where: map=" $ mapName $
+        " loc=(" $ int(Location.X) $ ", " $ int(Location.Y) $ ", " $ int(Location.Z) $ ")" $
+        " yaw=" $ Rotation.Yaw $ " pitch=" $ Rotation.Pitch $
+        " zone=" $ zoneName $
+        " headRegionZone=" $ string(HeadRegion.Zone.Name));
+}
+
+// ----------------------------------------------------------------------
 // CNNGoto()
 //
 // Teleports to a named L2 landmark. Testing L2 means reaching specific
@@ -857,6 +896,8 @@ exec function CNNGoto(string where)
     else if (where == "SAMANTHA")  dest = vect(  971, -3991, -1284);  // Samantha Reed herself
     else if (where == "MAGDALENE") dest = vect( 1083, -2133, -1335);  // Magdalene, level start
     else if (where == "MAGLAB")    dest = vect(  878, -1682,     0);  // where OpenLabs moves her
+    else if (where == "SOLDIERS")  dest = vect(  908, -1587,    24);  // MJ12Sergeant -- starts MeetSoldiers
+    else if (where == "BATTLE")    dest = vect(  874, -1850,    -3);  // CommCenterBattleSpawnPoint
     else if (where == "IOT")       dest = vect(  701, -2861, -1348);  // clearance terminal
     else if (where == "WONG")      dest = vect(  782, -4058, -1301);
     else if (where == "MEPH")      dest = vect(  866, -4480, -1233);
@@ -867,7 +908,7 @@ exec function CNNGoto(string where)
 
     if (!bKnown)
     {
-        ClientMessage("CNNGoto: start sam samantha magdalene maglab iot wong meph jc tube final");
+        ClientMessage("CNNGoto: start sam samantha magdalene maglab soldiers battle iot wong meph jc tube final");
         return;
     }
 

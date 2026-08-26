@@ -85,6 +85,77 @@ function PrepareFirstFrame()
 
     RepairSamanthaReedTrigger();
     RepairCommCenterBattle();
+    RemoveStrayL1Conversations();
+}
+
+// ----------------------------------------------------------------------
+// RemoveStrayL1Conversations()
+//
+// Two conversations authored for the Docks/L1 map are gated on the
+// OnLevel2 flag (verified with con_dump --records on
+// OpheliaDocksAndL1.con):
+//
+//     Meet1InspRoom      owner OpheliaUI   PRECOND OnLevel2
+//     ApproachingOphelia owner Magdalene   PRECOND OnLevel2
+//
+// L2 contains actors with both of those BindNames AND sets OnLevel2 from a
+// FlagTrigger a few steps from the spawn. So the moment the player walks in,
+// both L1 conversations become available on L2 and compete with the real
+// ones -- StartConversationByName walks conListItems and takes the first
+// match, so which one wins is list order, not intent.
+//
+// Observed in play: talking to Ophelia on L2 started the L1 inspection-room
+// scene, which then blocked the game because L1's scripted sequence does not
+// exist here. The Magdalene one is the more damaging of the two, since it
+// competes with MagdaleneHijackTheStation -- the only thing that sets
+// CanArmMagdalene, and therefore the only route to the Hijacking ending.
+//
+// Fixing this properly means editing preconditions in ConEdit. Unlinking the
+// entries from the owning actors' conversation lists achieves the same thing
+// for this level only, in code, and leaves the .con untouched so L1 keeps
+// working.
+// ----------------------------------------------------------------------
+
+function RemoveStrayL1Conversations()
+{
+    StripConversation('Meet1InspRoom');
+    StripConversation('ApproachingOphelia');
+}
+
+function StripConversation(name conName)
+{
+    local Actor a;
+    local ConListItem item, prev;
+
+    foreach AllActors(class'Actor', a)
+    {
+        if (a.conListItems == None)
+            continue;
+
+        prev = None;
+        item = ConListItem(a.conListItems);
+
+        while (item != None)
+        {
+            if ((item.con != None) && (item.con.conName == conName))
+            {
+                // Unlink, keeping the rest of the actor's list intact.
+                if (prev == None)
+                    a.conListItems = item.next;
+                else
+                    prev.next = item.next;
+
+                Log("CNN L2: removed stray L1 conversation '" $ conName $
+                    "' from " $ a.BindName);
+            }
+            else
+            {
+                prev = item;
+            }
+
+            item = item.next;
+        }
+    }
 }
 
 // ----------------------------------------------------------------------

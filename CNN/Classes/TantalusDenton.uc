@@ -826,6 +826,96 @@ exec function CNNTestEnding(string which)
     ClientMessage("CNNTestEnding: " $ which $ " -- traveling on next mission tick");
 }
 
+// ----------------------------------------------------------------------
+// CNNGoto()
+//
+// Teleports to a named L2 landmark. Testing L2 means reaching specific
+// coordinates -- the Samantha Reed trigger, Magdalene, the tube -- and the
+// route between them was never mapped, so walking there means hunting for
+// doors. The coordinates themselves are exact (measured from
+// L2_export.t3d; see CNNDocs/L2_WalkthroughMap.md), so jumping straight to
+// them is the reliable way in.
+//
+// Landmarks are L2's. Running this on another map will drop you outside
+// the world -- that is what the ghost hint below is for.
+//
+// Like CNNTestEnding this is an exec function, so it needs no cheats.
+// ----------------------------------------------------------------------
+
+exec function CNNGoto(string where)
+{
+    local vector dest, tryLoc;
+    local int attempt;
+    local DeusExLevelInfo info;
+    local bool bKnown;
+
+    where = Caps(where);
+    bKnown = true;
+
+    if      (where == "START")     dest = vect(-1044, -1900,   891);  // arrival
+    else if (where == "SAM")       dest = vect(  841, -2031,     8);  // MeetSamanthaReed trigger
+    else if (where == "SAMANTHA")  dest = vect(  971, -3991, -1284);  // Samantha Reed herself
+    else if (where == "MAGDALENE") dest = vect( 1083, -2133, -1335);  // Magdalene, level start
+    else if (where == "MAGLAB")    dest = vect(  878, -1682,     0);  // where OpenLabs moves her
+    else if (where == "IOT")       dest = vect(  701, -2861, -1348);  // clearance terminal
+    else if (where == "WONG")      dest = vect(  782, -4058, -1301);
+    else if (where == "MEPH")      dest = vect(  866, -4480, -1233);
+    else if (where == "JC")        dest = vect(  894, -2315, -1303);  // JC Avatar
+    else if (where == "TUBE")      dest = vect(  843, -6084,     8);  // LoadingInTube trigger
+    else if (where == "FINAL")     dest = vect( 1801, -6412,     8);  // MagdaleneInsideTube -- ending gate
+    else bKnown = false;
+
+    if (!bKnown)
+    {
+        ClientMessage("CNNGoto: start sam samantha magdalene maglab iot wong meph jc tube final");
+        return;
+    }
+
+    Velocity = vect(0, 0, 0);
+    Acceleration = vect(0, 0, 0);
+
+    // The landmarks are actor ORIGINS taken from the map export. Triggers and
+    // NPCs sit near floor level, so teleporting the player's centre there
+    // buries the bottom of their collision cylinder in the floor and
+    // SetLocation refuses outright -- the first version of this function
+    // reported BLOCKED for every ground-level landmark. Lift the destination
+    // clear of the floor and climb if the first try is still occupied.
+    for (attempt = 0; attempt < 4; attempt++)
+    {
+        tryLoc = dest;
+        tryLoc.Z += 50 + (attempt * 50);
+
+        if (SetLocation(tryLoc))
+        {
+            // Logged as well as shown on the HUD: ClientMessage never reaches
+            // the log, so a run driven from the console leaves no trace of
+            // where the player went. "cnn log CNN L2" then reads back as a
+            // session transcript -- teleports interleaved with the flag
+            // changes they caused.
+            ClientMessage("CNNGoto: " $ where $ " " $ tryLoc);
+            Log("CNN L2 goto: " $ where $ " -> " $ tryLoc);
+            return;
+        }
+    }
+
+    // Every offset refused. By far the most likely cause is being on the
+    // wrong map -- these are L2 coordinates, and anywhere else they land in
+    // solid geometry. Worth naming, because "blocked" on its own sends you
+    // hunting for a collision problem that isn't there. (Found the hard way:
+    // running this from a startup -EXEC file executes it before `open`
+    // finishes, so it fires in the previous level and always reports blocked.)
+    info = GetLevelInfo();
+    if ((info != None) && (Caps(info.mapName) != "06_OPHELIAL2"))
+    {
+        ClientMessage("CNNGoto: these are 06_OpheliaL2 landmarks -- you are on " $ info.mapName);
+        Log("CNN L2 goto: " $ where $ " refused, wrong map (" $ info.mapName $ ")");
+        return;
+    }
+
+    ClientMessage("CNNGoto: " $ where $ " is blocked -- type ghost first, then retry");
+    Log("CNN L2 goto: " $ where $ " BLOCKED at " $ dest);
+}
+
 defaultproperties
 {
     TruePlayerName="Blake Denton"

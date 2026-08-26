@@ -827,6 +827,92 @@ exec function CNNTestEnding(string which)
 }
 
 // ----------------------------------------------------------------------
+// CNNFire()
+//
+// Triggers every actor carrying the given Tag, as a Dispatcher or trigger
+// would.
+//
+// Needed because several L2 beats are fired by dispatchers, not by walking
+// into something. MagdaleneInsideTube -- the conversation that sets
+// FinalGoodbyePlayed, the gate every ending waits on -- is fired by
+// MiniGameDispatcher, whose OutEvents are CNNMoverTube and
+// ConversationTriggerTube. Teleporting onto that trigger does nothing and
+// its coordinates are outside walkable space, so there was no way to reach
+// the ending from the console at all.
+//
+// Useful tags on L2:
+//   MiniGameDispatcher          fires the tube sequence -> FinalGoodbyePlayed
+//   CommCenterDispatcher        doors + alliances + orders for the battle
+//   OpenLabs                    lab clearance; also moves Magdalene up
+//   LabEndingSuccessDispatcher  ShakeTriggerS + CNNMoverTube
+// ----------------------------------------------------------------------
+
+exec function CNNFire(name eventTag)
+{
+    local Actor a;
+    local int count;
+
+    if (eventTag == '')
+    {
+        ClientMessage("CNNFire <tag> -- e.g. MiniGameDispatcher, CommCenterDispatcher, OpenLabs");
+        return;
+    }
+
+    foreach AllActors(class'Actor', a, eventTag)
+    {
+        a.Trigger(self, self);
+        count++;
+        Log("CNN L2 fire: triggered " $ string(a.Class.Name) $ " tag=" $ string(eventTag));
+    }
+
+    ClientMessage("CNNFire: " $ string(eventTag) $ " -> " $ count $ " actor(s)");
+    Log("CNN L2 fire: " $ string(eventTag) $ " matched " $ count $ " actor(s)");
+}
+
+// ----------------------------------------------------------------------
+// BringFollowers()
+//
+// Moves Magdalene to the player after a teleport, when she is following.
+//
+// vanilla StartConversationByName refuses outright when the player is more
+// than 800 units from the conversation's owner:
+//
+//     dist = VSize(Location - conOwner.Location);
+//     if ((dist <= 800) || (bForcePlay))
+//
+// CNNGoto moves only the player, so after a jump she is left behind and
+// every conversation owned by her silently fails. Measured case: player at
+// the tube, Magdalene still in the lower labs, 4550 units apart --
+// MagdaleneInsideTube fired and was refused, so FinalGoodbyePlayed never
+// set and no ending triggered.
+//
+// Walking there normally is unaffected; she follows on her own. This only
+// keeps the teleport shortcut faithful to that.
+// ----------------------------------------------------------------------
+
+function BringFollowers(vector playerLoc)
+{
+    local Magdalene mag;
+    local vector dest;
+
+    foreach AllActors(class'Magdalene', mag)
+    {
+        if (mag.Orders != 'Following')
+            continue;
+
+        dest = playerLoc;
+        dest.X += 90;
+
+        if (mag.SetLocation(dest))
+            Log("CNN L2 goto: brought Magdalene to " $ dest);
+        else
+            Log("CNN L2 goto: could not place Magdalene near " $ dest);
+
+        break;
+    }
+}
+
+// ----------------------------------------------------------------------
 // CNNWhere()
 //
 // Prints and LOGS the player's exact position, facing and zone.
@@ -884,7 +970,7 @@ exec function CNNWhere()
 exec function CNNGoto(string where)
 {
     local vector dest, tryLoc;
-    local int attempt;
+    local int attempt, ring;
     local DeusExLevelInfo info;
     local bool bKnown;
 
@@ -902,13 +988,14 @@ exec function CNNGoto(string where)
     else if (where == "WONG")      dest = vect(  782, -4058, -1301);
     else if (where == "MEPH")      dest = vect(  866, -4480, -1233);
     else if (where == "JC")        dest = vect(  894, -2315, -1303);  // JC Avatar
+    else if (where == "WALL")      dest = vect(  918, -5686,    15);  // reported invisible wall / render artifact spot
     else if (where == "TUBE")      dest = vect(  843, -6084,     8);  // LoadingInTube trigger
-    else if (where == "FINAL")     dest = vect( 1801, -6412,     8);  // MagdaleneInsideTube -- ending gate
+    else if (where == "FINAL")     dest = vect( 1487, -6294,     4);  // tube area (medbot) -- the trigger itself is outside walkable space; use CNNFire MiniGameDispatcher
     else bKnown = false;
 
     if (!bKnown)
     {
-        ClientMessage("CNNGoto: start sam samantha magdalene maglab soldiers battle iot wong meph jc tube final");
+        ClientMessage("CNNGoto: start sam samantha magdalene maglab soldiers battle iot wong meph jc tube final wall");
         return;
     }
 
@@ -921,10 +1008,22 @@ exec function CNNGoto(string where)
     // SetLocation refuses outright -- the first version of this function
     // reported BLOCKED for every ground-level landmark. Lift the destination
     // clear of the floor and climb if the first try is still occupied.
-    for (attempt = 0; attempt < 4; attempt++)
+    // Try straight up first, then step outward on a ring at each height.
+    // A pure vertical climb is not enough on its own: CNNGoto final sits on
+    // the MagdaleneInsideTube trigger, whose collision radius is only 40, and
+    // every vertical offset there was refused -- the spot is walled in
+    // closely enough that the player cylinder never fits directly above it.
+    for (attempt = 0; attempt < 20; attempt++)
     {
         tryLoc = dest;
-        tryLoc.Z += 50 + (attempt * 50);
+        tryLoc.Z += 50 + ((attempt / 5) * 60);
+
+        // attempt%5 == 0 is the exact spot; 1-4 fan out N/E/S/W by 80 units.
+        ring = attempt % 5;
+        if (ring == 1)      tryLoc.X += 80;
+        else if (ring == 2) tryLoc.X -= 80;
+        else if (ring == 3) tryLoc.Y += 80;
+        else if (ring == 4) tryLoc.Y -= 80;
 
         if (SetLocation(tryLoc))
         {
@@ -935,18 +1034,23 @@ exec function CNNGoto(string where)
             // changes they caused.
             ClientMessage("CNNGoto: " $ where $ " " $ tryLoc);
             Log("CNN L2 goto: " $ where $ " -> " $ tryLoc);
+            BringFollowers(tryLoc);
             return;
         }
     }
 
-    // Every offset refused. By far the most likely cause is being on the
-    // wrong map -- these are L2 coordinates, and anywhere else they land in
-    // solid geometry. Worth naming, because "blocked" on its own sends you
-    // hunting for a collision problem that isn't there. (Found the hard way:
-    // running this from a startup -EXEC file executes it before `open`
-    // finishes, so it fires in the previous level and always reports blocked.)
+    // Every offset refused. Being on the wrong map is one cause -- these are
+    // L2 coordinates and land in solid geometry anywhere else -- but only say
+    // so when the map name actually disagrees.
+    //
+    // L2's DeusExLevelInfo has NO mapName property set, so it reads back
+    // empty. The first version of this check compared that empty string
+    // against "06_OPHELIAL2", decided every failure was a wrong-map error,
+    // and refused CNNGoto final on the correct level. Treat an empty name as
+    // "unknown, carry on" rather than as a mismatch.
     info = GetLevelInfo();
-    if ((info != None) && (Caps(info.mapName) != "06_OPHELIAL2"))
+    if ((info != None) && (info.mapName != "") &&
+        (Caps(info.mapName) != "06_OPHELIAL2"))
     {
         ClientMessage("CNNGoto: these are 06_OpheliaL2 landmarks -- you are on " $ info.mapName);
         Log("CNN L2 goto: " $ where $ " refused, wrong map (" $ info.mapName $ ")");

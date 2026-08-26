@@ -57,14 +57,40 @@ knowing the routes:
 CNNGoto magdalene
 ```
 
-`start` `sam` `samantha` `magdalene` `maglab` `iot` `wong` `meph` `jc` `tube` `final` —
+`start` `sam` `samantha` `magdalene` `maglab` `soldiers` `battle` `iot` `wong` `meph` `jc`
+`tube` `final` `wall` —
 run it with no argument to print the list. The landmarks are actor origins, so it lifts
 you clear of the floor before placing you; if every offset is refused it means you are not
 on 06_OpheliaL2. Each jump is logged.
 
+`CNNGoto` also brings Magdalene with you when she is `Following` — vanilla
+`StartConversationByName` refuses outright beyond **800 units** from the conversation's
+owner (`if ((dist <= 800) || (bForcePlay))`), so leaving her behind silently kills every
+scene she owns.
+
+**Firing scripted beats — `CNNFire <tag>`.** Triggers any tagged actor the way a Dispatcher
+would. Several L2 beats are dispatcher-fired rather than walked into:
+
+```
+CNNFire MiniGameDispatcher
+```
+
+| Tag | Effect |
+|---|---|
+| `MiniGameDispatcher` | the tube sequence → `FinalGoodbyePlayed` → an ending |
+| `CommCenterDispatcher` | doors + alliances + orders for the comm centre battle |
+| `OpenLabs` | lab clearance; also teleports Magdalene up |
+| `LabEndingSuccessDispatcher` | `ShakeTriggerS` + `CNNMoverTube` |
+
+**Diagnosing a spot — `CNNWhere` / `CNNProbe`.** `CNNWhere` logs exact position, yaw and
+zone. `CNNProbe` traces forward and reports whether what is in front of you is an **Actor**
+(fixable from script) or **world BSP** (needs UnrealEd), with hit location and surface
+normal. It fires both a zero-extent ray and a player-sized box, because they disagree
+usefully — see §7b.
+
 **Reading flags during a run.** `Chapter06L2` polls 22 flags every second and logs each
-change (`bLogFlagChanges`, on by default). `CNNGoto` logs each teleport, so the two
-interleave into a session transcript:
+change (`bLogFlagChanges`, on by default). `CNNGoto`, `CNNFire`, `CNNWhere` and `CNNProbe`
+all log too, so the run reads back as a session transcript:
 
 ```
 cnn log "CNN L2"
@@ -106,8 +132,8 @@ flowchart TD
     MOVE["MandatoryMovementTriger (260,-1547,8)<br/>moves PLAYER to MovePlayer (-547,-1874,52)"]
     SOLD["MeetSoldiers / GestureRight<br/>MJ12 group (853..923, -1587..-1653, ~22)<br/>SETS ReadyForBossFight"]
 
-    SAM["ConversationTrigger0 (841,-2031,8)<br/>conversationTag=MeetSamanthaReed<br/>BindName EMPTY"]
-    DEAD["INERT - never fires"]
+    SAM["ConversationTrigger0 (841,-2031,8)<br/>conversationTag=MeetSamanthaReed<br/>BindName was EMPTY - repaired in script"]
+    DEAD["was INERT; now fires (untested)"]
 
     IOT["IoTterminal (701,-2861,-1348)<br/>'Give clearance to Level 2 Labs'"]
     OPENLABS["Dispatcher 'OpenLabs'<br/>to MagdaleneMandatoryMovementTriger<br/>and AvatarLabHatch"]
@@ -144,9 +170,10 @@ flowchart TD
     DECIDE -->|"MikeWongExposed or SeedsOfDoubtPlanted"| TRA
     DECIDE -->|"otherwise"| CON
 
-    style DEAD fill:#7f1d1d,color:#fff
-    style SAM fill:#7f1d1d,color:#fff
-    style TRA fill:#7f1d1d,color:#fff
+    style DEAD fill:#78350f,color:#fff
+    style SAM fill:#78350f,color:#fff
+    style TRA fill:#78350f,color:#fff
+    style HIJ fill:#14532d,color:#fff
 ```
 
 ---
@@ -164,7 +191,7 @@ flowchart TD
 | 4 | `MandatoryMovementTriger` | `(260, -1547, 8)` | Moves **the player** to `MovePlayer (-547,-1874,52)` | OK |
 | 5 | MJ12 group | `(853..923, -1587..-1653, ~22)` | `MeetSoldiers`; `GestureRight` **SETS `ReadyForBossFight`** so avatars turn hostile | OK |
 | 6 | `LoadingInTube` | `(843, -6084, 8)` | Starts upload scene; fires `WalkIntoATube` | OK |
-| 7 | `MagdaleneInsideTube` | `(1801, -6412, 8)` r=40 | **SETS `FinalGoodbyePlayed`** — the ending gate | OK |
+| 7 | `MagdaleneInsideTube` | `(1801, -6412, 8)` r=40 | **SETS `FinalGoodbyePlayed`** — the ending gate. **Dispatcher-fired**, not walked into: `MiniGameDispatcher (1801,-6353,8)` triggers it. Its coordinates are OUTSIDE walkable space — teleporting there puts you in the void; use `CNNFire MiniGameDispatcher`. | OK |
 
 Node 2 sits ~145 units from the spawn with a 150 radius, so `OnLevel2` is set on your
 first steps. `FlagTrigger` defaults (`bSetFlag=True`, `flagValue=True`, `flagExpiration=-1`,
@@ -215,16 +242,21 @@ south of and 1300 below the trigger that is supposed to introduce them.
 | **Mutiny** (worst) | **Die anywhere on L2.** Judged immediately — never needs the tube. | `PlayerDiedOnL2` or `PlayerDiedDuringUpload` | yes |
 | **Hijacking** (best) | Reach Magdalene, **play `MagdaleneHijackTheStation` to the end**, then reach the tube. | `CanArmMagdalene` | yes |
 | **Conspiracy** | Walk the spine, talk to nobody, reach the tube. | none of the above (passive) | yes |
-| **Transcend** | *No route exists.* See section 6. | `MikeWongExposed` or `SeedsOfDoubtPlanted` | **NO** |
+| **Transcend** | Walk the repaired `MeetSamanthaReed` trigger at `(841,-2031,8)`, reach the `ContinueOn` branch, then the tube. | `MikeWongExposed` or `SeedsOfDoubtPlanted` | repaired, **untested** |
 
 Decision logic lives in `Chapter06L2.CheckEndingReached()`, polled once a second. Death
 outranks everything; every other branch waits for `FinalGoodbyePlayed`.
 
 ---
 
-## 6. Transcend is unreachable in the shipped build
+## 6. Transcend — was unreachable in the shipped build; now repaired, still unverified
 
-Both of its conditions are dead, for different reasons.
+> **Status 2026-08-26.** Everything below describes the **shipped map**, and both faults
+> are now repaired in script. A larger root cause was found afterwards — duplicate
+> conversations in `Chapter06.con` shadowing L2's (§6c) — which blocked *every* ending, not
+> just this one. **Hijacking is confirmed reachable in play; Transcend is not yet tested.**
+
+Both of its conditions were dead, for different reasons.
 
 **`MikeWongExposed`** is SET in exactly one place: the `ContinueOn` record (`@0x009eca`,
 `ET_SetFlag`), part of the Samantha Reed scene. The only thing in the map that can start
@@ -312,6 +344,43 @@ The groups are already close (MJ12 at Y≈-1600, Avatars at Y≈-1790 to -2450, 
 
 ---
 
+## 6c. Root cause — duplicate conversations shadowing L2's (the big one)
+
+Found 2026-08-26 after "the soldiers conversation ended and nothing happened".
+
+**`Chapter06.con` holds duplicate copies of most L2 conversations** — same `conName`, same
+owner BindName — and they **load before** `OpheliaL2.con`'s.
+`StartConversationByName` walks the owner's `conListItems` and takes the **first** name
+match, so the stale copy always won. The scene played perfectly and **set nothing**.
+
+Confirmed live on this level before the fix:
+
+```
+MJ12Sergeant [0] MeetSoldiers                [1] MeetSoldiers
+Magdalene    [1] MagdaleneHijackTheStation   [4] (again)
+SamanthaReed [0] MeetSamanthaReed            [1] (again)
+OpheliaUI    [0] OpheliaHallway              [2] (again)
+```
+
+Load order was established from `OpheliaHallway`: only OpheliaL2's copy carries the
+`OnLevel2` precondition, and the live dump put that one at index `[2]`. So the **later**
+duplicate is the level-specific one. OK
+
+This single bug simultaneously blocked `ReadyForBossFight`, `CanArmMagdalene` **and**
+`FinalGoodbyePlayed` — the ending gate itself. It is why nothing ever fired.
+
+**Fixed** by `Chapter06L2.DedupeConversations()` (keep the last duplicate). Deleting them
+from `Chapter06.con` is the real fix but needs ConEdit.
+
+> Note: `Conversation.flagRefList` lists **preconditions**, not SET events — "(no flags)"
+> in the dump means "no gate", not "sets nothing".
+
+**Result:** first end-to-end ending through real gameplay —
+`ReadyForBossFight` @11s → `CanArmMagdalene` @32s → `FinalGoodbyePlayed` @75s →
+`Browse: 06_Hijacking`. OK
+
+---
+
 ## 7. Flags — the complete L2 picture
 
 Generated by `node tools/con_dump.js CNN/Conversations/OpheliaL2.con --flagmap`.
@@ -334,6 +403,53 @@ Generated by `node tools/con_dump.js CNN/Conversations/OpheliaL2.con --flagmap`.
 
 `PRECOND` polarity (wants true vs wants false) is **not recoverable** from the file format.
 UNK. Treat it as "gated on this flag" and nothing more.
+
+---
+
+## 7b. Known issue — invisible wall in the south corridor (needs UnrealEd)
+
+Measured 2026-08-26 with `CNNProbe`, which traces forward and reports whether the blocker
+is an Actor or world BSP. Three probes at different X, all identical:
+
+```
+ray -> WORLD BSP  hitLoc=(769,  -5464, 15)  normal=(0,-1,0)
+box -> WORLD BSP  hitLoc=(810,  -5525, 15)  normal=(0,-1,0)
+ray -> WORLD BSP  hitLoc=(1095, -5464, 15)  normal=(0,-1,0)
+box -> WORLD BSP  hitLoc=(1048, -5522, 15)  normal=(0,-1,0)
+ray -> WORLD BSP  hitLoc=(1281, -5464, 15)  normal=(0,-1,0)
+box -> WORLD BSP  hitLoc=(1250, -5528, 15)  normal=(0,-1,0)
+```
+
+| Property | Value | Conf |
+|---|---|---|
+| Blocker type | **World BSP** — no actor involved, so script cannot fix it | OK |
+| Plane orientation | faces `-Y`, normal `(0,-1,0)` | OK |
+| Visible wall | `Y = -5464` (where zero-extent rays land) | OK |
+| Player stopped at | `Y ≈ -5525`, about **60 units short** of the visible wall | OK |
+| Span | at least `X = 769 → 1281` (>500 units), at `Z ≈ 15` | OK |
+
+The ray/box disagreement is the diagnosis: a zero-extent ray passes straight through and
+hits the real wall at `Y=-5464`, while a player-sized box trace stops ~60 units earlier.
+Something thin and **unrendered but solid** sits in front of the wall across that span.
+
+**Fix requires UnrealEd** — rebuilding geometry in that corridor. Everything needed to find
+it is above: select brushes near `Y ≈ -5500..-5525`, `X 769..1281`, `Z ≈ 15`.
+
+Lead, **UNVERIFIED**: `Brush621` has `Location=(728, -5464, -32)`, matching the visible-wall
+plane. Do NOT trust bounding-box reasoning on it — it carries
+`Rotation=(Pitch=163840, Yaw=212992, Roll=32768)`, and a bbox query that ignored rotation
+already produced one confidently wrong answer here.
+
+**Ruled out** — do not re-investigate:
+
+- `RenderExt` — it *did* cause the flat grey/blue wedges at this spot (stock
+  `Render=Render.Render` draws the geometry correctly), but a renderer cannot create
+  collision. The wall persists on both. Two separate faults; the project keeps RenderExt.
+- Blocking actors — L2 contains no `BlockPlayer`/`BlockAll` class at all.
+- Movers — `CNNProbe` returns the LevelInfo, not a mover, at every probe.
+- Warp zones — nearest is >2000 units away.
+
+Reproduce with `CNNGoto wall` (`918, -5686, 15`), walk south, then `CNNProbe`.
 
 ---
 

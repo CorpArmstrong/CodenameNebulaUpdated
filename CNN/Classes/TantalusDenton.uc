@@ -827,6 +827,75 @@ exec function CNNTestEnding(string which)
 }
 
 // ----------------------------------------------------------------------
+// CNNProbe()
+//
+// Traces forward and reports what is actually there.
+//
+// Written after chasing L2's invisible wall through the .t3d export and
+// getting it wrong: a bounding-box query named a rotated 2D-lofted pipe
+// brush as the blocker, because the maths ignored brush rotation. Asking
+// the engine at runtime removes the guesswork entirely.
+//
+// The distinction that matters: Trace() returns the LevelInfo when the ray
+// hits world BSP, and the actual Actor otherwise. An Actor -- a mover, a
+// decoration -- can be repositioned or have its collision cleared from
+// script, so it is fixable on this branch. BSP cannot: that needs UnrealEd.
+//
+// Two traces are fired. A zero-extent ray finds the exact surface and its
+// normal; an extent trace uses a box roughly the size of the player's
+// collision cylinder, which is what actually decides whether the player can
+// walk through. They can disagree -- a thin blocker or a gap narrower than
+// the player will stop movement while a ray slips past.
+// ----------------------------------------------------------------------
+
+exec function CNNProbe()
+{
+    local vector start, dir, endPoint, hitLoc, hitNorm;
+    local Actor rayHit, boxHit;
+
+    start    = Location;
+    dir      = vector(Rotation);
+    endPoint = start + (dir * 500.0);
+
+    // Zero-extent ray: exact surface and normal.
+    rayHit = Trace(hitLoc, hitNorm, endPoint, start, true);
+    ReportProbeHit("ray", rayHit, hitLoc, hitNorm, start);
+
+    // Box trace approximating the player cylinder: what blocks movement.
+    boxHit = Trace(hitLoc, hitNorm, endPoint, start, true, vect(20, 20, 40));
+    ReportProbeHit("box", boxHit, hitLoc, hitNorm, start);
+}
+
+function ReportProbeHit(string label, Actor hit, vector hitLoc, vector hitNorm,
+                        vector start)
+{
+    local string what;
+    local int dist;
+
+    if (hit == None)
+    {
+        ClientMessage("CNNProbe " $ label $ ": nothing within 500");
+        Log("CNN L2 probe: " $ label $ " -> nothing within 500");
+        return;
+    }
+
+    dist = int(VSize(hitLoc - start));
+
+    if (hit == Level)
+        what = "WORLD BSP (needs UnrealEd -- script cannot change it)";
+    else
+        what = "ACTOR " $ string(hit.Class.Name) $ " name=" $ string(hit.Name) $
+               " tag=" $ string(hit.Tag) $ " (fixable from script)";
+
+    ClientMessage("CNNProbe " $ label $ ": " $ what $ " at " $ dist);
+
+    Log("CNN L2 probe: " $ label $ " -> " $ what $
+        " dist=" $ dist $
+        " hitLoc=(" $ int(hitLoc.X) $ ", " $ int(hitLoc.Y) $ ", " $ int(hitLoc.Z) $ ")" $
+        " normal=(" $ hitNorm.X $ ", " $ hitNorm.Y $ ", " $ hitNorm.Z $ ")");
+}
+
+// ----------------------------------------------------------------------
 // CNNFire()
 //
 // Triggers every actor carrying the given Tag, as a Dispatcher or trigger

@@ -86,6 +86,8 @@ function PrepareFirstFrame()
     RepairSamanthaReedTrigger();
     RepairCommCenterBattle();
     RemoveStrayL1Conversations();
+    DedupeConversations();
+    DumpConversationLists();
 }
 
 // ----------------------------------------------------------------------
@@ -120,6 +122,166 @@ function RemoveStrayL1Conversations()
 {
     StripConversation('Meet1InspRoom');
     StripConversation('ApproachingOphelia');
+}
+
+// ----------------------------------------------------------------------
+// DedupeConversations()
+//
+// Chapter06.con holds duplicate copies of most L2 conversations -- same
+// conName, same owner BindName -- and they load BEFORE OpheliaL2.con's.
+// StartConversationByName takes the first name match, so the stale copy
+// always wins. Confirmed live on this level:
+//
+//     MJ12Sergeant [0] MeetSoldiers   [1] MeetSoldiers
+//     Magdalene    [1] MagdaleneHijackTheStation  [4] (again)
+//     SamanthaReed [0] MeetSamanthaReed           [1] (again)
+//     OpheliaUI    [0] OpheliaHallway             [2] (again)
+//
+// Load order was established from OpheliaHallway: con_dump shows only
+// OpheliaL2.con's copy carries the OnLevel2 precondition, and the live dump
+// puts that one at index [2]. So the LATER duplicate is this level's real
+// one, and every earlier copy is Chapter06.con's.
+//
+// Consequence in play: MeetSoldiers ran to completion and set nothing,
+// because Chapter06.con's copy has no ReadyForBossFight SET and does not
+// fire CommCenterDispatcher -- so the comm centre battle could never start
+// no matter how the dispatcher was wired. The same mechanism sat in front
+// of MagdaleneHijackTheStation (CanArmMagdalene, the Hijacking ending) and
+// MagdaleneInsideTube (FinalGoodbyePlayed, the ending gate itself).
+//
+// Keeping the LAST duplicate keeps the level-specific copy. Deleting the
+// duplicates from Chapter06.con would be the real fix, but that needs
+// ConEdit; this achieves the same for L2 only and leaves the other maps'
+// use of Chapter06.con untouched.
+// ----------------------------------------------------------------------
+
+function DedupeConversations()
+{
+    local Actor a;
+
+    foreach AllActors(class'Actor', a)
+    {
+        if (a.conListItems != None)
+            DedupeOneActor(a);
+    }
+}
+
+function DedupeOneActor(Actor a)
+{
+    local ConListItem item, prev, scan;
+    local bool bLaterCopyExists;
+
+    prev = None;
+    item = ConListItem(a.conListItems);
+
+    while (item != None)
+    {
+        bLaterCopyExists = false;
+
+        if (item.con != None)
+        {
+            // Is this same conName repeated further down the list?
+            scan = item.next;
+            while (scan != None)
+            {
+                if ((scan.con != None) && (scan.con.conName == item.con.conName))
+                {
+                    bLaterCopyExists = true;
+                    break;
+                }
+                scan = scan.next;
+            }
+        }
+
+        if (bLaterCopyExists)
+        {
+            if (prev == None)
+                a.conListItems = item.next;
+            else
+                prev.next = item.next;
+
+            Log("CNN L2 dedupe: dropped stale " $ string(item.con.conName) $
+                " from " $ a.BindName);
+        }
+        else
+        {
+            prev = item;
+        }
+
+        item = item.next;
+    }
+}
+
+// ----------------------------------------------------------------------
+// DumpConversationLists()
+//
+// Logs every conversation bound to the level's key actors, in list order,
+// with the flags each one references.
+//
+// Why: Chapter06.con holds DUPLICATE copies of most L2 conversations --
+// same conName, same owner BindName -- and those copies reference none of
+// L2's flags. StartConversationByName walks conListItems and takes the
+// FIRST name match, so if a duplicate sits ahead of the real one the scene
+// plays perfectly and sets nothing. That matches the reports exactly:
+// MeetSoldiers "ended normally" but ReadyForBossFight never set, so
+// CommCenterDispatcher never fired and the comm centre battle never
+// started.
+//
+// Order and flag content cannot be read from the .con files -- they only
+// show what exists, not what the engine linked first -- so dump it from
+// the live list before changing anything.
+// ----------------------------------------------------------------------
+
+function DumpConversationLists()
+{
+    local Actor a;
+
+    foreach AllActors(class'Actor', a)
+    {
+        if ((a.conListItems == None) || (a.BindName == ""))
+            continue;
+
+        if ((a.BindName == "MJ12Sergeant") || (a.BindName == "Magdalene") ||
+            (a.BindName == "SamanthaReed") || (a.BindName == "OpheliaUI") ||
+            (a.BindName == "MikeWong")     || (a.BindName == "DrMephistopheles"))
+        {
+            DumpOneActorsConversations(a);
+        }
+    }
+}
+
+function DumpOneActorsConversations(Actor a)
+{
+    local ConListItem item;
+    local ConFlagRef flagRef;
+    local string flagList;
+    local int index;
+
+    item = ConListItem(a.conListItems);
+
+    while (item != None)
+    {
+        if (item.con != None)
+        {
+            flagList = "";
+            flagRef  = item.con.flagRefList;
+
+            while (flagRef != None)
+            {
+                flagList = flagList $ " " $ string(flagRef.flagName);
+                flagRef  = flagRef.nextFlagRef;
+            }
+
+            if (flagList == "")
+                flagList = " (no flags)";
+
+            Log("CNN L2 cons: " $ a.BindName $ " [" $ index $ "] " $
+                string(item.con.conName) $ " flags:" $ flagList);
+        }
+
+        index++;
+        item = item.next;
+    }
 }
 
 function StripConversation(name conName)

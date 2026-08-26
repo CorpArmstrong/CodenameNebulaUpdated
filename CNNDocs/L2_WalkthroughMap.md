@@ -88,6 +88,28 @@ zone. `CNNProbe` traces forward and reports whether what is in front of you is a
 normal. It fires both a zero-extent ray and a player-sized box, because they disagree
 usefully — see §7b.
 
+**Diagnosing geometry offline — `tools/map_probe.js`.** `CNNProbe` answers "what is in
+front of me right now"; it cannot answer "how tall is that gap" or "can the player get
+there at all", and guessing at those from bounding boxes already produced one wrong
+diagnosis (§7b). `map_probe.js` re-runs the map's CSG from `L2_export.t3d` and answers them
+in git, with no editor:
+
+```
+node tools/map_probe.js L2_export.t3d span  1140 -5550 16    floor/ceiling here
+node tools/map_probe.js L2_export.t3d clear -5624 -5464      tallest gap per Y plane
+node tools/map_probe.js L2_export.t3d reach 1400 -6100 4     where can you walk from here
+```
+
+Movers are actors, not BSP, so doors and lifts are invisible to it; a *negative* `reach`
+result is a hint to confirm with `clear`, a positive one is reliable.
+
+**It is a model, not a measurement.** It got L2 badly wrong once by ignoring `PrePivot`
+(§7b) and the answer was wrong in a way that looked entirely self-consistent. Before acting
+on anything it says about a specific spot, confirm the same spot with a `Trace` in the
+running game — `CNNProbe`, or a one-off `Trace` logged from `Chapter06L2`. A model that
+agrees with the engine at the point in question is evidence; one that has not been checked
+is a hypothesis.
+
 **Reading flags during a run.** `Chapter06L2` polls 22 flags every second and logs each
 change (`bLogFlagChanges`, on by default). `CNNGoto`, `CNNFire`, `CNNWhere` and `CNNProbe`
 all log too, so the run reads back as a session transcript:
@@ -191,7 +213,7 @@ flowchart TD
 | 4 | `MandatoryMovementTriger` | `(260, -1547, 8)` | Moves **the player** to `MovePlayer (-547,-1874,52)` | OK |
 | 5 | MJ12 group | `(853..923, -1587..-1653, ~22)` | `MeetSoldiers`; `GestureRight` **SETS `ReadyForBossFight`** so avatars turn hostile | OK |
 | 6 | `LoadingInTube` | `(843, -6084, 8)` | Starts upload scene; fires `WalkIntoATube` | OK |
-| 7 | `MagdaleneInsideTube` | `(1801, -6412, 8)` r=40 | **SETS `FinalGoodbyePlayed`** — the ending gate. **Dispatcher-fired**, not walked into: `MiniGameDispatcher (1801,-6353,8)` triggers it. Its coordinates are OUTSIDE walkable space — teleporting there puts you in the void; use `CNNFire MiniGameDispatcher`. | OK |
+| 7 | `MagdaleneInsideTube` | `(1801, -6412, 8)` r=40 | **SETS `FinalGoodbyePlayed`** — the ending gate. **Dispatcher-fired**, not walked into: `MiniGameDispatcher (1801,-6353,8)` triggers it. Its coordinates are OUTSIDE walkable space — teleporting there puts you in the void; use `CNNFire MiniGameDispatcher`. Independently confirmed: `map_probe.js L2_export.t3d at 1801 -6412 8` reports `SOLID <- world (never subtracted)`. | OK |
 
 Node 2 sits ~145 units from the spawn with a 150 radius, so `OnLevel2` is set on your
 first steps. `FlagTrigger` defaults (`bSetFlag=True`, `flagValue=True`, `flagExpiration=-1`,
@@ -406,50 +428,170 @@ UNK. Treat it as "gated on this flag" and nothing more.
 
 ---
 
-## 7b. Known issue — invisible wall in the south corridor (needs UnrealEd)
+## 7b. The invisible wall — a 3.9-unit membrane where two subtracts fail to meet
 
-Measured 2026-08-26 with `CNNProbe`, which traces forward and reports whether the blocker
-is an Actor or world BSP. Three probes at different X, all identical:
+Found 2026-08-26 with `tools/map_probe.js` after two wrong diagnoses (both recorded at the
+bottom, so nobody re-walks them).
+
+### The defect
+
+L2's south end is built as **a hollow hull inside a large void**, not as rooms carved
+straight out of solid:
+
+| CSG # | Brush | Op | What it is |
+|---|---|---|---|
+| 4 | `Brush91` | Subtract | a 2048 × 2048 × 4096 void, X −450…1598, Y −7486…−5438 |
+| 5 | `Brush1423` | Add | the station hull filling it, X 62…1598, Y −7102…−5438, Z −940…340 |
+| 81 | `Brush451` | Subtract | the tube room, carved back out of the hull |
+| 418 | `Brush1272` | Subtract | the north corridor |
+| 487 | `Brush287` | Add | the designed wall between them, X 792…1080 |
+
+`Brush451` stops at **Y = −5463.7**. `Brush1272` starts at **Y = −5459.8**. They miss each
+other by **3.9 units**, and what is left in the gap is unsubtracted `Brush1423` — a solid
+membrane 3.9 units thick running the full width of the join.
 
 ```
-ray -> WORLD BSP  hitLoc=(769,  -5464, 15)  normal=(0,-1,0)
-box -> WORLD BSP  hitLoc=(810,  -5525, 15)  normal=(0,-1,0)
-ray -> WORLD BSP  hitLoc=(1095, -5464, 15)  normal=(0,-1,0)
-box -> WORLD BSP  hitLoc=(1048, -5522, 15)  normal=(0,-1,0)
-ray -> WORLD BSP  hitLoc=(1281, -5464, 15)  normal=(0,-1,0)
-box -> WORLD BSP  hitLoc=(1250, -5528, 15)  normal=(0,-1,0)
+node tools/map_probe.js L2_export.t3d membranes 6 600 1400 -5600 -5300 0,15,60,100
+   Y=  -5463  Z=    0   X   1080..1192     thickness 4
+   Y=  -5463  Z=   15   X   1080..1192     thickness 4
+   Y=  -5463  Z=    0   X    728..776      thickness 4
+   ...
 ```
 
-| Property | Value | Conf |
+Its south face is at **Y = −5463.7**, and all three recorded `CNNProbe` zero-extent hits
+are at **Y = −5464**, at three different X. That is the match that identifies it.
+
+**Why it is invisible.** A 3.9-unit BSP sliver: UE1 routinely fails to keep renderable
+surfaces that thin while the collision hull keeps the solid. So you see straight through to
+the corridor and stop dead four units in front of nothing. INF — the mechanism is standard
+UE1 behaviour, not directly measured here.
+
+**What it blocks.** The join should be open across `Brush1272`'s width, X 690…1202, minus
+the designed wall `Brush287` at X 792…1080. Measured, only **X 872…998** is passable — the
+doorway through `Brush287`. The two strips that should also be open, **X ≈ 730…790** and
+**X ≈ 1080…1200**, are sealed by the membrane alone.
+
+### Why L1 does not do this
+
+The question was whether L1 wraps its station in a big CSG box with a cosmos sky and L2
+does not. Measured, it is the other way round, and neither map has a sky box around the
+station:
+
+| | L1 | L2 |
 |---|---|---|
-| Blocker type | **World BSP** — no actor involved, so script cannot fix it | OK |
-| Plane orientation | faces `-Y`, normal `(0,-1,0)` | OK |
-| Visible wall | `Y = -5464` (where zero-extent rays land) | OK |
-| Player stopped at | `Y ≈ -5525`, about **60 units short** of the visible wall | OK |
-| Span | at least `X = 769 → 1281` (>500 units), at `Z ≈ 15` | OK |
+| Add brushes over 5e8 bbox volume | **none** | `Brush1423` 3.27e9, `Brush1824` 3.22e9 |
+| Largest subtract | `Brush3` 3.79e9 (208 units tall — a floor area, not a void) | `Brush91` **17.18e9** |
+| Brushes containing a typical interior point | **1** | **3–5** |
+| Space outside the station hull | solid | **open** — `at -200 -6000 800` → `open <- Brush91` |
+| Sky | one 1024³ room at (8813,5267,781) | one 1024³ room at (6461,4739,781) |
 
-The ray/box disagreement is the diagnosis: a zero-extent ray passes straight through and
-hits the real wall at `Y=-5464`, while a player-sized box trace stops ~60 units earlier.
-Something thin and **unrendered but solid** sits in front of the wall across that span.
+So **L2 has the void-and-hull construction and L1 has none of it**, which is why you can
+fly out of L2's station and look back at it, and why this failure mode only exists there: a
+hull can be left with gaps in it, and solid carved directly out of rock cannot.
 
-**Fix requires UnrealEd** — rebuilding geometry in that corridor. Everything needed to find
-it is above: select brushes near `Y ≈ -5500..-5525`, `X 769..1281`, `Z ≈ 15`.
+`membranes` does find thin slabs on L1 too — most are ordinary thin walls and door frames.
+The tool narrows where to look; it does not decide.
 
-Lead, **UNVERIFIED**: `Brush621` has `Location=(728, -5464, -32)`, matching the visible-wall
-plane. Do NOT trust bounding-box reasoning on it — it carries
-`Rotation=(Pitch=163840, Yaw=212992, Roll=32768)`, and a bbox query that ignored rotation
-already produced one confidently wrong answer here.
+### It is not blocking anything
 
-**Ruled out** — do not re-investigate:
+Worth knowing before touching the editor: the level is **fully passable as it ships**.
+`reach 940 -5300 -20 1487 -6294 8` says the medbot is walkable from the south corridor
+through the `Brush287` doorway at X 872…998. The membrane costs you the two side strips and
+makes the threshold feel wrong; it blocks no route and no ending. Fixing it is polish, and
+can wait.
 
-- `RenderExt` — it *did* cause the flat grey/blue wedges at this spot (stock
-  `Render=Render.Render` draws the geometry correctly), but a renderer cannot create
-  collision. The wall persists on both. Two separate faults; the project keeps RenderExt.
+### The fix — paste one brush, touch nothing existing
+
+`CNNDocs/L2_SeamPatch.t3d` is a single `CSG_Subtract` box, 516 × 6 × 166, that removes the
+membrane and nothing else. Deliberately shaped so **no existing brush has to be edited,
+moved or reordered**, which is the whole point when you did not build the map:
+
+- **X 688…1204** — 2 units wider than `Brush1272` on each side, so no side face is coplanar
+  with an existing one.
+- **Y −5465…−5459** — just the membrane. It overlaps `Brush287` by 0.8 units, shaving its
+  32-unit face to 31, which is invisible and harmless.
+- **Z −36…130** — the height where *both* sides are open (room −32.381…127.257, corridor
+  −31.650…224.350), plus margin. Above 130 the membrane is a real wall with nothing behind
+  it, and is left alone.
+
+Because it only overlaps `Brush287` by 0.8 units, **CSG order does not matter** — pasting
+it last, which is what UnrealEd does by default, is fine. No `Brush → Order` juggling.
+
+**No manual backup needed — git is the undo.** `Maps/06_OpheliaL2.dx` is tracked in plain
+git (no LFS), and the two other copies of the map (`CodenameNebula/Maps/` in the repo and
+in the Deus Ex install) are gitignored build output that `cnn package && cnn install`
+regenerates. So the only file the editor can damage is one `git restore` away.
+
+1. `git status --short Maps/` — confirm it is clean before you start.
+2. Open **`<DeusExRoot>\CNNMaps\06_OpheliaL2.dx`** in the Community Update editor. That
+   junction points at the tracked `Maps\`, so the edit lands on the file git is watching.
+   Opening either `CodenameNebula\Maps\` copy instead edits a throwaway and gives you
+   nothing.
+3. Open `CNNDocs/L2_SeamPatch.t3d` in a text editor, select all, copy.
+4. **Edit → Paste** in UnrealEd. A subtractive brush appears at (946, −5462, 47).
+5. **Build → Geometry**, then rebuild lighting, and save.
+6. `git status --short Maps/` should now show `M Maps/06_OpheliaL2.dx` and nothing else —
+   that is the proof you edited the right copy.
+7. `cnn package && cnn install`, then test.
+
+If anything looks wrong at any point — a bad rebuild, geometry gone strange, the wrong
+brush selected and moved — throw the whole thing away and start over:
+
+```bash
+git restore Maps/06_OpheliaL2.dx
+```
+
+Nothing to remember, nothing to clean up. Commit only once you have walked the spot and it
+behaves.
+
+Verified offline by appending exactly this brush to `L2_export.t3d` and re-measuring:
+
+| X | before | after |
+|---|---|---|
+| 700 | `Brush621` solid, 48 thick | `Brush621` solid, 43.5 thick — wall intact |
+| 769 | **membrane, 4 thick** | clear |
+| 850 | `Brush287` solid, 36 thick | `Brush287` solid, 31 thick — **designed wall intact** |
+| 1095 | **membrane, 4 thick** | clear |
+| 1200 | **membrane, 4 thick** | clear |
+| 1281 | raw world, 64 thick | raw world — unchanged |
+
+`membranes 6 600 1400 -5600 -5300 0,15,60,100` returns **none** afterwards, and the open Z
+spans on both sides of the join are unchanged. Clear lines through the join go from
+`X 872…998` only, to `X 730…790, 872…998, 1080…1200`.
+
+The alternative — dragging `Brush451`'s north face 4 units north, or `Brush1272`'s south
+face 4 units south — is tidier map-making and equally safe on paper (`Brush287` is CSG
+#487, later than #81 and #418, so it is re-added either way). It edits an existing brush,
+which is the thing worth avoiding when you did not build the map. With `git restore` as the
+undo either route is recoverable; the pasted brush is still the one that leaves no trace to
+find later, since it is the only thing in the level that is not the original author's.
+
+**Not yet confirmed in game.** After the rebuild, walk north at X ≈ 1140, Y ≈ −5500.
+
+**Still unexplained:** the recorded box-trace hits sit ~61 units south of the ray hits, at
+different X. The traces were angled and no position or facing was logged, so they cannot be
+lined up against the geometry. Run `CNNWhere` *before* `CNNProbe` next time.
+
+### Retired diagnoses — do not re-walk these
+
+1. **"A thin unrendered solid, lead `Brush621`."** Right about the symptom, wrong about the
+   brush: `Brush621` was named by a bounding-box query that ignored brush rotation.
+2. **"The tube room is sealed behind a 32.000-unit slot."** `map_probe.js` ignored
+   `PrePivot`, which 981 of L2's brushes carry, so every one of them was misplaced. The
+   model reported a 32.000-unit slot, and a crouched Deus Ex player is exactly 32.000 tall,
+   which made it look conclusive. A `Trace` logged from `Chapter06L2` in play reported
+   **158 units clear** at the same point; the PrePivot-correct model says 159.638. The room
+   was never sealed.
+
+### Ruled out
+
+- `RenderExt` — it *did* cause the flat grey/blue wedges here (stock `Render=Render.Render`
+  draws the geometry correctly), but a renderer cannot create collision.
 - Blocking actors — L2 contains no `BlockPlayer`/`BlockAll` class at all.
 - Movers — `CNNProbe` returns the LevelInfo, not a mover, at every probe.
 - Warp zones — nearest is >2000 units away.
 
-Reproduce with `CNNGoto wall` (`918, -5686, 15`), walk south, then `CNNProbe`.
+Reproduce with `CNNGoto wall` (`918, -5686, 15`), walk north at X ≈ 1140.
 
 ---
 

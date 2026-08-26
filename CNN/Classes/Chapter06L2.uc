@@ -233,26 +233,26 @@ defaultproperties
     // Every flag OpheliaL2.con declares (via tools/con_dump.js), plus the
     // ending flags this script owns. None of the ending flags are set by any
     // conversation yet -- that is the gap this level's logic has to close.
-    trackedFlag(0)='MikeWongExposed'
-    trackedFlag(1)='MetReedAndWong'
-    trackedFlag(2)='IsArrivalPlayed'
-    trackedFlag(3)='OnLevel2'
-    trackedFlag(4)='CanArmMagdalene'
-    trackedFlag(5)='ReadyForBossFight'
-    trackedFlag(6)='ReadyForSocialBoss'
-    trackedFlag(7)='FinalGoodbyePlayed'
-    trackedFlag(8)='AllObjectsDestroyed'
-    trackedFlag(9)='SeedsOfDoubtPlanted'
-    trackedFlag(10)='WongParanoid'
-    trackedFlag(11)='SamUnfriendly'
-    trackedFlag(12)='PlayerDied'
-    trackedFlag(13)='PlayerDiedOnL2'
-    trackedFlag(14)='PlayerDiedDuringUpload'
-    trackedFlag(15)='TantalusUploadStarted'
-    trackedFlag(16)='TantalusUploaded'
-    trackedFlag(17)='UndockedL2'
-    trackedFlag(18)='StartedBlueFusion'
-    trackedFlag(19)='TookSteeringWheel'
-    trackedFlag(20)='TimerExpired'
-    trackedFlag(21)='IsGameCompleted'
+    trackedFlag(0)=MikeWongExposed
+    trackedFlag(1)=MetReedAndWong
+    trackedFlag(2)=IsArrivalPlayed
+    trackedFlag(3)=OnLevel2
+    trackedFlag(4)=CanArmMagdalene
+    trackedFlag(5)=ReadyForBossFight
+    trackedFlag(6)=ReadyForSocialBoss
+    trackedFlag(7)=FinalGoodbyePlayed
+    trackedFlag(8)=AllObjectsDestroyed
+    trackedFlag(9)=SeedsOfDoubtPlanted
+    trackedFlag(10)=WongParanoid
+    trackedFlag(11)=SamUnfriendly
+    trackedFlag(12)=PlayerDied
+    trackedFlag(13)=PlayerDiedOnL2
+    trackedFlag(14)=PlayerDiedDuringUpload
+    trackedFlag(15)=TantalusUploadStarted
+    trackedFlag(16)=TantalusUploaded
+    trackedFlag(17)=UndockedL2
+    trackedFlag(18)=StartedBlueFusion
+    trackedFlag(19)=TookSteeringWheel
+    trackedFlag(20)=TimerExpired
+    trackedFlag(21)=IsGameCompleted
 }

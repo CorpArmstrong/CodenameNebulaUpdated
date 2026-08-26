@@ -16,7 +16,14 @@
  *   name table: repeating [int32 index][int32 len][bytes]
  *
  * Usage:
- *   node tools/con_dump.js <file.con> [--names] [--flagmap] [--strings] [--raw]
+ *   node tools/con_dump.js <file.con> [--names] [--flagmap] [--records] [--strings] [--raw]
+ *
+ * --flagmap labels each reference SET / CHECK / PRECOND / REF. PRECOND is the
+ * conversation's availability condition (ConEdit's "Conversation Properties"),
+ * not an event -- it decides whether the conversation can start at all.
+ * Polarity (wants true vs wants false) is NOT recoverable; treat PRECOND as
+ * "gated on this flag". --records lists every conversation with its owner and
+ * its classified flag references.
  */
 
 const fs = require('fs');
@@ -95,7 +102,7 @@ function parse(file) {
 
 const args = process.argv.slice(2);
 const file = args.find(a => !a.startsWith('--'));
-if (!file) { console.error('usage: node con_dump.js <file.con> [--names] [--raw]'); process.exit(2); }
+if (!file) { console.error('usage: node con_dump.js <file.con> [--names] [--flagmap] [--records] [--strings] [--raw]'); process.exit(2); }
 
 const r = parse(file);
 console.log(`file        : ${file}`);
@@ -145,7 +152,7 @@ function scanStrings(buf) {
     return out;
 }
 
-if (args.includes('--strings') || args.includes('--flagmap')) {
+if (args.includes('--strings') || args.includes('--flagmap') || args.includes('--records')) {
     const strs = scanStrings(r.buf).filter(s => s.off >= r.tableEnd);
     const flagSet = new Set((r.tables[1] ? r.tables[1].rows : []).map(x => x.name));
     const speakerSet = new Set(r.names.map(x => x.name));
@@ -161,49 +168,118 @@ if (args.includes('--strings') || args.includes('--flagmap')) {
         }
     }
 
+    // ----------------------------------------------------------------------
+    // Record boundaries.
+    //
+    // A conversation record opens with four strings in fixed order:
+    //     [name] [per-record author] [per-record summary] [owner speaker]
+    // e.g. MagdaleneHijackTheStation / CorpArmstrong / ArtemD / Magdalene
+    //
+    // An earlier version split records on the FILE-level summary string
+    // instead. That breaks whenever a record's own author equals the file
+    // summary -- in OpheliaL2.con both are "ArtemD" for several records, and
+    // the MikeWongExposed SET (inside ContinueOn) was reported against
+    // MeetSamanthaReed as a result. Matching the four-string shape positionally
+    // has no such failure mode, so flags are attributed by offset.
+    // ----------------------------------------------------------------------
+    function kindOf(s) {
+        if (flagSet.has(s.text)) return 'FLAG';
+        if (speakerSet.has(s.text)) return 'SPK';
+        return 'OTHER';
+    }
+
+    // Two header shapes occur. The common one is [name][author][summary][owner].
+    // The first record in a file can instead read [name][speaker][author][owner]
+    // -- OpheliaL2.con opens with SocialBoss / Tantalus / ArtemD /
+    // DrMephistopheles -- so that variant is accepted too. Both require the
+    // 4th string to be a speaker, which is what keeps dialogue labels (their
+    // names look identical to record names) from being picked up: relaxing the
+    // middle two to "anything" took OpheliaL2.con from 24 records to 79.
+    const records = [];
+    for (let i = 0; i + 3 < strs.length; i++) {
+        const k = [0, 1, 2, 3].map(d => kindOf(strs[i + d]));
+        const shapeA = k[0] === 'OTHER' && k[1] === 'OTHER' && k[2] === 'OTHER' && k[3] === 'SPK';
+        const shapeB = k[0] === 'OTHER' && k[1] === 'SPK'   && k[2] === 'OTHER' && k[3] === 'SPK';
+        if ((shapeA || shapeB) && /^[A-Za-z][A-Za-z0-9_]{2,40}$/.test(strs[i].text)) {
+            records.push({ name: strs[i].text, owner: strs[i + 3].text,
+                           off: strs[i].off, hdrEnd: strs[i + 3].off, flags: [] });
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // Flag reference direction.
+    //
+    // Every flag reference ends with the same three ints before the name:
+    //     [1][flagIndex][nameLen] "FlagName"
+    // The 1 is the marker that makes a reference findable at all. What sits
+    // in FRONT of that marker is what distinguishes the kinds, and only these
+    // shapes have been confirmed against real files:
+    //
+    //   SET     [type=2][0][1][idx]     ConPlayBase.EEventType ET_SetFlag
+    //   CHECK   [type=3][0][1][idx]     ET_CheckFlag
+    //   PRECOND [-1][-1][0]...[1][idx]  the availability condition ConEdit
+    //                                   shows in "Conversation Properties" --
+    //                                   NOT an event, and it decides whether
+    //                                   the conversation can start at all
+    //   REF     marker present, none of the above. Seen where a flag rides
+    //           along with a choice or a label (the bytes in front are the
+    //           preceding string, e.g. an .mp3 path or "EndOfConvo").
+    //           Reported honestly as unclassified rather than guessed at.
+    //
+    // Polarity is NOT recoverable here: whether a PRECOND wants the flag true
+    // or false is not encoded in any int this scan can identify. Treat a
+    // PRECOND as "this conversation is gated on this flag", nothing more.
+    // ----------------------------------------------------------------------
+    function directionAt(off) {
+        if (off - 28 < 0) return '?';
+        const i = d => r.buf.readInt32LE(off + d);
+        if (i(-8) !== 1) return '?';                 // no flag-reference marker
+        const idx = i(-4);
+        if (idx < 0 || idx > 4096) return '?';
+        if (i(-28) === -1 && i(-24) === -1 && i(-20) === 0) return 'PRECOND';
+        if (i(-16) === 2 && i(-12) === 0) return 'SET';
+        if (i(-16) === 3 && i(-12) === 0) return 'CHECK';
+        return 'REF';
+    }
+
+    // Flags can also appear ahead of the first record - the tail of the file
+    // header. They are still real references, so they get their own bucket
+    // rather than being silently dropped.
+    const preRecord = { name: '(file header, before first conversation)',
+                        owner: '-', off: 0, hdrEnd: 0, flags: [] };
+
+    for (const s of strs) {
+        if (kindOf(s) !== 'FLAG') continue;
+        let rec = null;
+        for (const c of records) { if (c.off < s.off) rec = c; else break; }
+        if (!rec) rec = preRecord;
+        const dir = directionAt(s.off);
+        // A reference sitting between the owner line and the first dialogue
+        // is in the header region, which corroborates a PRECOND reading.
+        const inHeader = s.off - rec.hdrEnd < 256;
+        rec.flags.push({ name: s.text, off: s.off, dir, inHeader });
+    }
+    if (preRecord.flags.length) records.unshift(preRecord);
+
+    if (args.includes('--records')) {
+        console.log('\n--- conversation records (file order) ---');
+        for (const rec of records) {
+            console.log(`\n${rec.name}  [owner: ${rec.owner}]  @0x${rec.off.toString(16).padStart(6, '0')}`);
+            if (rec.flags.length === 0) { console.log('    (no flag references)'); continue; }
+            for (const f of rec.flags)
+                console.log(`    ${f.dir.padEnd(8)} ${f.name.padEnd(26)} @0x${f.off.toString(16).padStart(6, '0')}` +
+                            (f.inHeader && f.dir !== 'PRECOND' ? '  (header region)' : ''));
+        }
+    }
+
     if (args.includes('--flagmap')) {
-        // Record layout, confirmed by inspection:
-        //   [name] [per-record author] [summary] [owner speaker] ...events...
-        // e.g. MagdaleneHijackTheStation / CorpArmstrong / ArtemD / Magdalene
-        // So the summary string delimits records, and BOTH author fields must
-        // be excluded as name candidates or every record is misread as being
-        // named after its author.
-        const AUTHOR = r.summary;
-        const SKIP = { };
-        SKIP[r.author] = true;
-        let current = '(before first conversation)';
-        let pending = null;
         const map = {};
-
-        // Event direction. ConPlayBase.EEventType gives ET_SetFlag=2,
-        // ET_CheckFlag=3, and a flag event is laid out as:
-        //   [eventType][0][1][flagIndex][int32 len][name]
-        // so the type sits 16 bytes before the length prefix. Occurrences that
-        // don't match that shape (the flag table itself, or flag refs nested
-        // inside another event) report "?" rather than guessing.
-        function directionAt(off) {
-            if (off - 16 < 0) return '?';
-            const type     = r.buf.readInt32LE(off - 16);
-            const flagIdx  = r.buf.readInt32LE(off - 4);
-            const oneField = r.buf.readInt32LE(off - 8);
-            if (oneField !== 1 || flagIdx < 0 || flagIdx > 4096) return '?';
-            if (type === 2) return 'SET';
-            if (type === 3) return 'CHECK';
-            return '?';
-        }
-
-        for (const s of strs) {
-            if (s.text === AUTHOR) { if (pending) current = pending; continue; }
-            if (flagSet.has(s.text)) {
-                const dir = directionAt(s.off);
-                const entry = current + (dir === '?' ? '' : ' [' + dir + ']');
-                if (!map[s.text]) map[s.text] = [];
-                if (map[s.text].indexOf(entry) === -1) map[s.text].push(entry);
-                continue;
+        for (const rec of records)
+            for (const f of rec.flags) {
+                const entry = rec.name + (f.dir === '?' ? '' : ' [' + f.dir + ']');
+                if (!map[f.name]) map[f.name] = [];
+                if (map[f.name].indexOf(entry) === -1) map[f.name].push(entry);
             }
-            if (!speakerSet.has(s.text) && !SKIP[s.text] && /^[A-Za-z][A-Za-z0-9_]{2,40}$/.test(s.text))
-                pending = s.text;
-        }
 
         console.log('\n--- flag -> conversations referencing it ---');
         const names = Object.keys(map).sort();
@@ -214,6 +290,16 @@ if (args.includes('--strings') || args.includes('--flagmap')) {
         const unused = [...flagSet].filter(f => !map[f]).sort();
         if (unused.length)
             console.log('\n  declared but never referenced: ' + unused.join(', '));
+
+        // A flag no conversation SETs must come from script, a map actor, or
+        // an earlier level -- exactly the case that silently breaks a level
+        // when you enter it directly. Worth calling out on its own.
+        const setSomewhere = new Set();
+        for (const rec of records)
+            for (const f of rec.flags) if (f.dir === 'SET') setSomewhere.add(f.name);
+        const neverSet = Object.keys(map).filter(f => !setSomewhere.has(f)).sort();
+        if (neverSet.length)
+            console.log('\n  referenced but never SET in this file: ' + neverSet.join(', '));
     }
 }
 

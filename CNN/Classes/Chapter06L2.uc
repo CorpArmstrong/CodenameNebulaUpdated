@@ -71,6 +71,52 @@ function PrepareFirstFrame()
             anItem.Destroy();
         }
     }
+
+    RepairSamanthaReedTrigger();
+}
+
+// ----------------------------------------------------------------------
+// RepairSamanthaReedTrigger()
+//
+// The map's ConversationTrigger for MeetSamanthaReed was placed with
+// conversationTag set but BindName left empty. ConversationTrigger guards
+// its ENTIRE body with
+//
+//     if ((BindName != "") && (conversationTag != ''))
+//
+// so an empty BindName makes the trigger inert -- it never calls
+// StartConversationByName, and it does so silently, with no warning in the
+// log. The level's two working triggers both carry BindName="Magdalene".
+//
+// That one missing property is what made the Transcend ending unreachable:
+// MikeWongExposed is SET only inside ContinueOn, which is part of the
+// Samantha Reed scene, and this trigger is the only thing in the map that
+// can start it. Transcend's alternate condition, SeedsOfDoubtPlanted, is
+// gated behind ReadyForSocialBoss and is dead for separate reasons.
+//
+// Fixing it in UnrealEd would mean a binary .dx change that cannot be
+// diffed or reviewed. Assigning the property here keeps the fix in source
+// control, which is the same reason the rest of L2's logic lives in script.
+//
+// Matched on conversationTag rather than Tag: Tag is the generic
+// 'ConversationTrigger' on two of the three, while conversationTag is
+// unique. Only an empty BindName is filled in, so if the map is ever fixed
+// properly this becomes a no-op instead of fighting the map.
+// ----------------------------------------------------------------------
+
+function RepairSamanthaReedTrigger()
+{
+    local ConversationTrigger conTrigger;
+
+    foreach AllActors(class'ConversationTrigger', conTrigger)
+    {
+        if ((conTrigger.conversationTag == 'MeetSamanthaReed') &&
+            (conTrigger.BindName == ""))
+        {
+            conTrigger.BindName = "SamanthaReed";
+            Log("CNN L2: repaired MeetSamanthaReed trigger (BindName was empty)");
+        }
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -163,7 +209,9 @@ function CheckEndingReached()
 
     // TRANSCEND -- MJ12 exposed, but the real Tantalus dies. Earned by
     // winning the social confrontation with Wong, either by exposing him
-    // (MeetSamanthaReed) or by planting doubt during the boss (SocialBoss).
+    // (ContinueOn, inside the Samantha Reed scene) or by planting doubt during
+    // the boss (AccuseofBluffing, under SocialBoss). NOTE: neither is reachable
+    // in the shipped map -- see CNNDocs/L2_WalkthroughMap.md section 6.
     if (flags.GetBool('MikeWongExposed') || flags.GetBool('SeedsOfDoubtPlanted'))
     {
         TravelToEnding(MAP_TRANSCEND);

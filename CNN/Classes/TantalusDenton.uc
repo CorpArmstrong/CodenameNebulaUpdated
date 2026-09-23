@@ -981,6 +981,76 @@ exec function CNNFire(name eventTag)
 }
 
 // ----------------------------------------------------------------------
+// CNNFrob()
+//
+// Frobs the first actor with the given Tag, exactly as if the player had
+// aimed at it and pressed the frob key -- same underlying call
+// DeusExPlayer.DoFrob() makes (FrobTarget.Frob(Frobber, frobWith)), just
+// without needing crosshair/line-of-sight. Added 2026-09-23 to expand
+// player-action emulation beyond GOTO/FIRE/CONVERSE: terminals, switches,
+// pickups, and other non-conversation interactables that CNNFire's
+// Trigger() call doesn't reach (Trigger() is for dispatchers/triggers
+// specifically; Frob() is the general "player interacted with this
+// object" entry point most map objects actually implement).
+//
+// Known limitation, same class as CONVERSE's: frobbing something that
+// opens its own UWindow-based screen (ComputerUIWindow, PersonaScreen,
+// etc.) will likely get stuck the same way third-person conversations do
+// -- see memory/project_agent_bridge.md. Simple binary-state objects
+// (doors, switches, non-UI pickups) don't have that dependency and should
+// work cleanly.
+// ----------------------------------------------------------------------
+
+exec function CNNFrob(name targetTag)
+{
+    local Actor a;
+    local int count;
+
+    if (targetTag == '')
+    {
+        ClientMessage("CNNFrob <tag> -- frobs the first actor with this Tag");
+        return;
+    }
+
+    foreach AllActors(class'Actor', a, targetTag)
+    {
+        a.Frob(self, None);
+        count++;
+        Log("CNN L2 frob: frobbed " $ string(a.Class.Name) $ " tag=" $ string(targetTag) $
+            " dist=" $ int(VSize(Location - a.Location)));
+        break; // Frob() can destroy/move/reparent the actor -- unsafe to keep iterating the same foreach
+    }
+
+    ClientMessage("CNNFrob: " $ string(targetTag) $ " -> " $ count $ " actor(s)");
+    Log("CNN L2 frob: " $ string(targetTag) $ " matched " $ count $ " actor(s)");
+}
+
+// ----------------------------------------------------------------------
+// CNNDamage()
+//
+// Applies damage directly to the player via TakeDamage(), added
+// 2026-09-23 to test player-death-gated flags/endings (PlayerDied,
+// PlayerDiedOnL2, PlayerDiedDuringUpload -- see CNNFlags()) without
+// needing a real combat encounter. Uses the same TakeDamage(amount, none,
+// Location, vect(0,0,0), 'Shot') shape already used throughout this
+// codebase (CNNDetonationTrigger, DamageLaserTrigger, etc.) for a generic,
+// no-instigator hit.
+// ----------------------------------------------------------------------
+
+exec function CNNDamage(int amount)
+{
+    if (amount <= 0)
+    {
+        ClientMessage("CNNDamage <amount> -- e.g. CNNDamage 999 to test death-gated flags");
+        return;
+    }
+
+    TakeDamage(amount, none, Location, vect(0, 0, 0), 'Shot');
+    Log("CNN L2 damage: applied " $ amount $ " -- health now " $ Health);
+    ClientMessage("CNNDamage: " $ amount $ " -> health=" $ Health);
+}
+
+// ----------------------------------------------------------------------
 // CNNConverse()
 //
 // Starts a named conversation with Magdalene, exactly as if the player had
@@ -1654,6 +1724,10 @@ exec function CNNAgentRun(int seq, string rest)
         CNNAgentGotoVec(arg);
     else if (cmd == "FIRE")
         ConsoleCommand("CNNFire " $ arg); // string->name needs the console's own parser; no script-side cast exists
+    else if (cmd == "FROB")
+        ConsoleCommand("CNNFrob " $ arg); // same string->name reason as FIRE
+    else if (cmd == "DAMAGE")
+        CNNDamage(int(arg));
     else if (cmd == "OPEN")
         ConsoleCommand("open " $ arg);
     else if (cmd == "CONVERSE")
@@ -1680,7 +1754,7 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
     else
         ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
-            " -- use GOTO/GOTOVEC/FIRE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
 }
 
 // ----------------------------------------------------------------------

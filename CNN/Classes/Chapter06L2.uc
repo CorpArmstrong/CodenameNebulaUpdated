@@ -153,6 +153,39 @@ function RemoveStrayL1Conversations()
 // duplicates from Chapter06.con would be the real fix, but that needs
 // ConEdit; this achieves the same for L2 only and leaves the other maps'
 // use of Chapter06.con untouched.
+//
+// UPDATE (2026-09-23): "last wins" is only a proxy for "the real one", and
+// it is WRONG for Magdalene specifically. Confirmed live via CNNConverse:
+// after dedup, Magdalene's surviving MagdaleneHijackTheStation still had
+// "(no flags)" -- Chapter06.con's contentless stub was the one that loaded
+// last for this actor, so dedup kept the stub and threw away OpheliaL2.con's
+// real copy (the one with SET CanArmMagdalene). Playing it organically
+// completed in under a second and set nothing, which looked like a broken
+// conversation system but was actually the wrong .con surviving dedup.
+//
+// Fixed by preferring flag content over position: if ANY duplicate for a
+// given name carries real flag references (SET/CHECK -- a stub never does,
+// that's the whole reason it's a stub), keep the last FLAGGED one and drop
+// every flagless copy outright, regardless of where it sits in the list.
+// Only fall back to pure "last wins" when every duplicate is equally
+// flagless (e.g. MeetSoldiers, where the load-order assumption above still
+// holds and there's no flag content to tell copies apart by).
+//
+// UPDATE 2 (2026-09-23): flagRefList wasn't the right signal either -- live
+// testing after the first update showed Magdalene's surviving
+// MagdaleneHijackTheStation STILL had flagRefList==None (so bAnyFlagged was
+// False for this name and dedupe silently fell back to plain "last wins",
+// same stub as before), and a deeper CNNConverse diagnostic then showed WHY
+// it looks empty either way: ConPlay.StartConversation() does
+// `currentEvent = con.eventList`, and for this actor's surviving copy
+// eventList is also None -- a conversation with literally zero events,
+// which state PlayEvent's Begin: label detects and immediately
+// TerminateConversation()s, before a single line plays. That is a stronger,
+// more direct stub signal than flagRefList (whose relationship to
+// mid-conversation SET/CHECK events is unclear -- ArmMagdalene shows real
+// flags through it, but a SetFlag event buried in a conversation body
+// apparently doesn't). Switched the criterion to eventList: a conversation
+// with no events cannot possibly be the real one, full stop.
 // ----------------------------------------------------------------------
 
 function DedupeConversations()
@@ -166,39 +199,70 @@ function DedupeConversations()
     }
 }
 
+function bool ConNameHasNonEmptyCopy(Actor a, Name conName)
+{
+    local ConListItem scan;
+
+    scan = ConListItem(a.conListItems);
+    while (scan != None)
+    {
+        if ((scan.con != None) && (scan.con.conName == conName) && (scan.con.eventList != None))
+            return true;
+        scan = scan.next;
+    }
+    return false;
+}
+
+function bool IsLastOccurrence(ConListItem item, bool bNonEmptyOnly)
+{
+    local ConListItem scan;
+
+    scan = item.next;
+    while (scan != None)
+    {
+        if ((scan.con != None) && (scan.con.conName == item.con.conName) &&
+            (!bNonEmptyOnly || (scan.con.eventList != None)))
+        {
+            return false;
+        }
+        scan = scan.next;
+    }
+    return true;
+}
+
 function DedupeOneActor(Actor a)
 {
-    local ConListItem item, prev, scan;
-    local bool bLaterCopyExists;
+    local ConListItem item, prev, next;
+    local bool bKeep, bThisNonEmpty, bAnyNonEmpty;
 
     prev = None;
     item = ConListItem(a.conListItems);
 
     while (item != None)
     {
-        bLaterCopyExists = false;
+        next = item.next;
 
-        if (item.con != None)
+        if (item.con == None)
         {
-            // Is this same conName repeated further down the list?
-            scan = item.next;
-            while (scan != None)
-            {
-                if ((scan.con != None) && (scan.con.conName == item.con.conName))
-                {
-                    bLaterCopyExists = true;
-                    break;
-                }
-                scan = scan.next;
-            }
+            bKeep = true;
+        }
+        else
+        {
+            bThisNonEmpty = (item.con.eventList != None);
+            bAnyNonEmpty = ConNameHasNonEmptyCopy(a, item.con.conName);
+
+            if (bAnyNonEmpty)
+                bKeep = bThisNonEmpty && IsLastOccurrence(item, true);
+            else
+                bKeep = IsLastOccurrence(item, false);
         }
 
-        if (bLaterCopyExists)
+        if (!bKeep)
         {
             if (prev == None)
-                a.conListItems = item.next;
+                a.conListItems = next;
             else
-                prev.next = item.next;
+                prev.next = next;
 
             Log("CNN L2 dedupe: dropped stale " $ string(item.con.conName) $
                 " from " $ a.BindName);
@@ -208,7 +272,7 @@ function DedupeOneActor(Actor a)
             prev = item;
         }
 
-        item = item.next;
+        item = next;
     }
 }
 

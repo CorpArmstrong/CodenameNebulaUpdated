@@ -988,24 +988,44 @@ exec function CNNFire(name eventTag)
 // Only Magdalene for now -- generalize to "find by BindName" if a future
 // test needs a different NPC.
 //
-// KNOWN ISSUE (2026-09-23, unresolved): after the two self-heals below,
-// StartConversationByName genuinely returns True and Magdalene's state
-// flips to 'Conversation' -- but the resulting playback is visually
-// broken (confirmed via screenshot: gameplay crosshair and mouse cursor
-// both showing at once, frozen on the opening line for 35+ real seconds
-// with no auto-advance) and `conPlay` stays None the whole time, so
-// CNNAdvance() has nothing to act on and the flag this conversation sets
-// (CanArmMagdalene) never gets reached organically. Leading theory: a
-// real frob goes through UI setup (FrobDisplayWindow or similar) that
-// calling StartConversationByName directly from script skips, so the
-// engine ends up in a state a real player interaction never produces.
-// Not yet root-caused -- see memory/project_agent_bridge.md.
+// ROOT-CAUSED (2026-09-23): the "UI setup skipped" theory below was wrong
+// and is kept only as a note not to re-chase it. StartConversationByName
+// DOES genuinely start the conversation the same way a real frob would --
+// GotoState('Conversation'), conPlay spawned, conPlay.StartConversation()
+// called, all confirmed live. The actual bug: ConPlay.StartConversation()
+// does `currentEvent = con.eventList`, and Magdalene's live conListItems
+// entry for MagdaleneHijackTheStation (the one Chapter06L2.DedupeOneActor
+// keeps after dropping duplicates) has eventList == None -- a conversation
+// with ZERO events. State PlayEvent's Begin: label sees currentEvent ==
+// None and immediately TerminateConversation()s, before a single line
+// plays, which is why conPlay goes back to None within one CNNAgentBridge
+// poll and CNNAdvance() always finds "no active conPlay". The subtitle
+// that appears to "freeze" is leftover HUD text from the auto-greeting
+// bark this function force-terminates a few lines below, not this
+// conversation's own output.
+//
+// This is NOT a StartConversationByName/UI bug and cannot be fixed from
+// this file. Chapter06L2.DedupeOneActor was rewritten (2026-09-23) to
+// prefer whichever duplicate has a non-empty eventList over "last wins",
+// which is strictly more correct and left every other deduped conversation
+// unaffected (OpheliaHallway, SamGivesQuest, SocialBoss verified still
+// correct) -- but for MagdaleneHijackTheStation specifically, BOTH copies
+// bound to the live Magdalene actor have eventList == None. That is a
+// ConEdit-level data problem (the conversation's events never got attached
+// to either .con export), not a dedup ordering problem, and needs someone
+// with ConEdit to open OpheliaL2.con and Chapter06.con and check/rebuild
+// MagdaleneHijackTheStation's event list. MagdaleneInsideTube (the other
+// Hijacking-critical conversation, sets FinalGoodbyePlayed) shows the same
+// "(no flags)" signature in CNNFlags()'s conversation dump and is likely
+// the same problem, unconfirmed -- see memory/project_agent_bridge.md.
 // ----------------------------------------------------------------------
 
 exec function CNNConverse(name conName)
 {
     local Magdalene mag;
     local bool bStarted;
+    local ConListItem conListItem;
+    local Conversation con;
 
     foreach AllActors(class'Magdalene', mag)
     {
@@ -1072,6 +1092,36 @@ exec function CNNConverse(name conName)
             conPlay.CanInterrupt() $ " conFirstPerson=" $ conPlay.con.bFirstPerson);
     }
 
+    // Diagnostic (2026-09-23): look up the target conversation's
+    // bFirstPerson/interactive flags the same way the engine's own
+    // StartConversationByName walks conListItems, so we know BEFORE the
+    // call whether we should expect a first-person (GotoState stays put,
+    // conPlay.StartConversation() called directly) or third-person
+    // (GotoState('Conversation') on the player, conPlay.StartConversation()
+    // deferred to that state's Begin: label) playback path.
+    conListItem = ConListItem(mag.conListItems);
+    while (conListItem != None)
+    {
+        if (conListItem.con.conName == conName)
+        {
+            con = conListItem.con;
+            break;
+        }
+        conListItem = conListItem.next;
+    }
+
+    if (con == None)
+    {
+        Log("CNN L2 converse: " $ conName $ " not found in Magdalene's conListItems");
+    }
+    else
+    {
+        Log("CNN L2 converse: " $ conName $ " lookup -- bFirstPerson=" $ con.bFirstPerson $
+            " bNonInteractive=" $ con.bNonInteractive $
+            " bCannotBeInterrupted=" $ con.bCannotBeInterrupted $
+            " radiusDistance=" $ con.radiusDistance);
+    }
+
     bStarted = StartConversationByName(conName, mag, false, false);
 
     ClientMessage("CNNConverse: " $ conName $ " -> " $ bStarted);
@@ -1080,7 +1130,27 @@ exec function CNNConverse(name conName)
         " magInterruptState=" $ mag.bInterruptState $
         " magOrders=" $ mag.Orders $ " magState=" $ mag.GetStateName() $
         " dist=" $ int(VSize(Location - mag.Location)) $
-        " playerCanStartConv=" $ CanStartConversation());
+        " playerCanStartConv=" $ CanStartConversation() $
+        " playerState=" $ GetStateName() $
+        " playerConPlayNone=" $ (conPlay == None));
+
+    // Diagnostic (2026-09-23): the conversation terminates and returns
+    // conPlay to None within a single CNNAgentBridge poll (~1s) even after
+    // fixing DedupeConversations, well before CNNAdvance can ever act on
+    // it. Log the first event queued up so we can tell whether it's really
+    // one long ET_Speech (WaitForSpeech auto-advancing on missing/instant
+    // audio) versus something branching straight to ET_End.
+    if (conPlay != None)
+    {
+        if (conPlay.currentEvent != None)
+        {
+            Log("CNN L2 converse: currentEvent.EventType=" $ conPlay.currentEvent.EventType);
+        }
+        else
+        {
+            Log("CNN L2 converse: currentEvent is None");
+        }
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -1110,6 +1180,34 @@ exec function CNNAdvance()
     conPlay.PlayNextEvent();
     ClientMessage("CNNAdvance: advanced");
     Log("CNN L2 advance: PlayNextEvent called");
+}
+
+// ----------------------------------------------------------------------
+// CNNStatus()
+//
+// Diagnostic-only (2026-09-23): cheap one-line snapshot of conversation
+// state, meant to be polled repeatedly (once per CNNAgentBridge Timer
+// tick, ~1s apart) right after CNNConverse to catch the exact tick
+// conPlay flips back to None -- CNNConverse's own log confirms conPlay is
+// NOT None immediately after StartConversationByName returns, but by the
+// time the first CNNAdvance lands (one bridge poll later) it already is.
+// Does not touch state, safe to call at any time.
+// ----------------------------------------------------------------------
+
+exec function CNNStatus()
+{
+    local bool bConPlayHasCon;
+
+    if (conPlay != None)
+    {
+        bConPlayHasCon = (conPlay.con != None);
+    }
+
+    Log("CNN L2 status: playerState=" $ GetStateName() $
+        " conPlayNone=" $ (conPlay == None) $
+        " conPlayHasCon=" $ bConPlayHasCon $
+        " nextState=" $ NextState $
+        " physics=" $ Physics);
 }
 
 // ----------------------------------------------------------------------
@@ -1455,6 +1553,8 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("CNNConverse " $ arg); // string->name needs the console's own parser, same reason as FIRE
     else if (cmd == "ADVANCE")
         CNNAdvance();
+    else if (cmd == "STATUS")
+        CNNStatus();
     else if (cmd == "WHERE")
         CNNWhere();
     else if (cmd == "FLAGS")

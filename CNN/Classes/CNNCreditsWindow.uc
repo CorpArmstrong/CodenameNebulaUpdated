@@ -84,9 +84,6 @@ function ProcessText()
         PrintText("Additional 3D modelling");
         PrintLn();
         PrintLn();
-        PrintText("Full credits: CNNText/Text/credits/CNNCredits.txt");
-        PrintLn();
-        PrintLn();
         PrintText("In memory of Chester Bennington (1976-2017)");
     }
 

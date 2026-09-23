@@ -60,6 +60,23 @@ function PostBeginPlay()
     chinese = Spawn(class'ChineseSkillController', none);
     Super.PostBeginPlay();
 
+    // bAgentAutoStart resets to False on any respawn that isn't a true
+    // seamless travel -- confirmed 2026-09-23 twice: once for the OPEN
+    // reload-storm bug, and separately in a long multi-ending playtest
+    // session where, after several ending-and-return-to-L2 cycles, a
+    // respawn silently lost bAgentAutoStart. The bridge then went
+    // completely deaf with zero error -- confirmed by a user watching the
+    // screen that the game was sitting fine at the real main menu, just
+    // not responding to any further commands, which looked indistinguishable
+    // from a hang until they said what they actually saw. FlagBase survives
+    // every kind of transition in this codebase (that's the whole reason
+    // ending flags like CanArmMagdalene work at all), so use it as a
+    // durable backing store: rehydrate bAgentAutoStart from it here, before
+    // any command can arrive. CNNAgentRun persists into FlagBase the first
+    // time the gate succeeds -- see its own comment.
+    if ((FlagBase != None) && FlagBase.GetBool('CNNAgentAutoStart'))
+        bAgentAutoStart = True;
+
     // Always spawns CNNAgentBridge (cheap -- it just execs a possibly-empty
     // file once a second) instead of requiring `CNNAgentStart` typed at the
     // console. The actual on/off gate for a normal playthrough is
@@ -1721,14 +1738,33 @@ exec function CNNGotoVec(float x, float y, float z)
 
 exec function CNNAgentStart()
 {
+    local CNNAgentBridge b;
+    local int liveCount;
+
     if (agentBridge != None)
         return; // already running -- PostBeginPlay always calls this now
+
+    // Diagnostic (2026-09-23), kept permanently -- cheap and useful if this
+    // recurs. Added to test whether CNNAgentBridge actors accumulate
+    // across `open` transitions instead of being cleanly destroyed with
+    // their old level. RULED OUT: this always logs 0, confirmed across
+    // several rapid multi-ending test sessions where the bridge eventually
+    // went silent (no errors) after 2-3 consecutive OPEN+ending+return
+    // cycles in one process -- so that reproducible degradation has a
+    // different cause, likely cumulative resource/timing pressure from
+    // rapidly reloading a large level (06_OpheliaL2) back to back, not an
+    // actor leak. Not something a real player triggers (nobody chains
+    // TESTENDING calls); see memory/project_agent_bridge.md for the full
+    // investigation. Launching fresh per ending, rather than chaining
+    // several in one process, is the reliable pattern.
+    foreach AllActors(class'CNNAgentBridge', b)
+        liveCount++;
 
     agentBridge = Spawn(class'CNNAgentBridge');
     agentBridge.SetTarget(self);
     ClientMessage("CNNAgentStart: polling CNNAgentCmd.txt every " $
         agentBridge.pollInterval $ "s");
-    Log("CNN agent: bridge started");
+    Log("CNN agent: bridge started, preexisting CNNAgentBridge actors found=" $ liveCount);
 }
 
 exec function CNNAgentRun(int seq, string rest)
@@ -1747,6 +1783,12 @@ exec function CNNAgentRun(int seq, string rest)
     // the -EXEC file has long since run.
     if (!bAgentAutoStart)
         return;
+
+    // Persist to FlagBase the first time the gate succeeds, so a LATER
+    // respawn that resets the instance var can rehydrate it in
+    // PostBeginPlay -- see that comment for the full incident this fixes.
+    if ((FlagBase != None) && !FlagBase.GetBool('CNNAgentAutoStart'))
+        FlagBase.SetBool('CNNAgentAutoStart', True);
 
     if (seq <= lastAgentSeq)
         return;

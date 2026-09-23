@@ -40,6 +40,12 @@ function Timer()
         return;
 
     targetPlayer.ConsoleCommand("exec CNNAgentCmd.txt");
+
+    // Drives CNNWaitFlag()'s poll-with-timeout primitive (2026-09-23) --
+    // checked every tick regardless of whether a new command just arrived,
+    // so a pending wait keeps progressing toward its deadline even on
+    // ticks where CNNAgentCmd.txt hasn't changed. See TantalusDenton.uc.
+    targetPlayer.CNNAgentCheckWait();
 }
 
 defaultproperties

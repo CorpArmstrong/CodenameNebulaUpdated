@@ -41,6 +41,16 @@ var private CNNAgentBridge agentBridge;
 // False so normal CNNConverse behavior is unchanged.
 var bool bAgentSkipSelfHeal;
 
+// Backing state for CNNWaitFlag()/CNNAgentCheckWait() -- see those for
+// the mechanism. Not `travel`: a pending wait silently lapses if the
+// level changes mid-wait (e.g. an ending fires), same as every other
+// non-travel agent var on this class; acceptable since the intended use
+// is a short wait for something to happen on the CURRENT level.
+var bool bAgentWaitPending;
+var name agentWaitFlagName;
+var bool agentWaitExpectedValue;
+var float agentWaitDeadline;
+
 //var travel AiAugmentationManager AugmentationSystem;
 
 //var CASConPlay conplay; UNCOMMENT!
@@ -1462,6 +1472,79 @@ exec function CNNSetFlag(name flagName, bool value)
 }
 
 // ----------------------------------------------------------------------
+// CNNWaitFlag() / CNNAgentCheckWait()
+//
+// Poll-with-timeout primitive, added 2026-09-23 (mechanism wishlist item
+// #2 in memory/project_agent_bridge.md). Every test this session used a
+// fixed real-world PowerShell sleep and then just hoped it was long
+// enough -- this replaces "guess a duration" with "watch the actual
+// condition" for anything expressed as a FlagBase bool.
+//
+// exec functions cannot call latent functions like Sleep() (UnrealScript
+// only allows those in state code), so this does NOT block. Instead it
+// stores the target condition and deadline, and CNNAgentBridge.Timer()
+// calls CNNAgentCheckWait() once per poll tick (~1s, same cadence
+// everything else in this bridge already runs at) until it resolves.
+// Other CNNAgentRun commands keep processing normally on the same and
+// later ticks while a wait is pending -- this never blocks the bridge.
+//
+// Usage: `CNNAgentRun <seq> WAITFLAG <flagName> <True|False> <timeoutSecs>`.
+// Resolution (success or timeout) is logged once, with the flag's actual
+// value, so `cnn log "CNN L2 wait"` gives a definitive answer instead of
+// silence. Routed through ConsoleCommand from the dispatcher for the same
+// string->name reason as FIRE/FROB/CONVERSE/SETFLAG.
+// ----------------------------------------------------------------------
+
+exec function CNNWaitFlag(name flagName, bool expectedValue, float timeoutSeconds)
+{
+    if (flagName == '')
+    {
+        ClientMessage("CNNWaitFlag <flagName> <True|False> <timeoutSeconds> -- polls FlagBase once per bridge tick until it matches or the timeout elapses");
+        return;
+    }
+
+    if (timeoutSeconds <= 0)
+        timeoutSeconds = 30.0;
+
+    agentWaitFlagName = flagName;
+    agentWaitExpectedValue = expectedValue;
+    agentWaitDeadline = Level.TimeSeconds + timeoutSeconds;
+    bAgentWaitPending = True;
+
+    Log("CNN L2 wait: started, flag=" $ flagName $ " expected=" $ expectedValue $
+        " timeout=" $ timeoutSeconds $ "s current=" $ FlagBase.GetBool(flagName));
+
+    // Resolve immediately if already satisfied rather than waiting a full
+    // extra tick for CNNAgentCheckWait() to notice.
+    CNNAgentCheckWait();
+}
+
+function CNNAgentCheckWait()
+{
+    local bool current;
+
+    if (!bAgentWaitPending)
+        return;
+
+    current = FlagBase.GetBool(agentWaitFlagName);
+
+    if (current == agentWaitExpectedValue)
+    {
+        bAgentWaitPending = False;
+        Log("CNN L2 wait: OK -- " $ agentWaitFlagName $ " reached " $ agentWaitExpectedValue $
+            ", " $ (agentWaitDeadline - Level.TimeSeconds) $ "s of timeout left unused");
+        return;
+    }
+
+    if (Level.TimeSeconds >= agentWaitDeadline)
+    {
+        bAgentWaitPending = False;
+        Log("CNN L2 wait: TIMEOUT -- " $ agentWaitFlagName $ " still " $ current $
+            ", wanted " $ agentWaitExpectedValue);
+    }
+}
+
+// ----------------------------------------------------------------------
 // BringFollowers()
 //
 // Moves Magdalene to the player after a teleport, when she is following.
@@ -1883,6 +1966,8 @@ exec function CNNAgentRun(int seq, string rest)
         CNNConDump(arg);
     else if (cmd == "SETFLAG")
         ConsoleCommand("CNNSetFlag " $ arg); // string->name needs the console's own parser, same reason as FIRE/FROB/CONVERSE
+    else if (cmd == "WAITFLAG")
+        ConsoleCommand("CNNWaitFlag " $ arg); // string->name needs the console's own parser, same reason as SETFLAG
     else if (cmd == "NEWGAME")
     {
         // Same call ApocalypseInsideMenuStartNewGame.ApocalypseInsideGo()
@@ -1911,7 +1996,7 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
     else
         ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
-            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/SETFLAG/NEWGAME/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/SETFLAG/WAITFLAG/NEWGAME/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
 }
 
 // ----------------------------------------------------------------------

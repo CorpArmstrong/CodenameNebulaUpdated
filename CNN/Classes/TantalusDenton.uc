@@ -1778,7 +1778,7 @@ exec function CNNAgentRun(int seq, string rest)
     else if (cmd == "DAMAGE")
         CNNDamage(int(arg));
     else if (cmd == "OPEN")
-        ConsoleCommand("open " $ arg);
+        CNNAgentOpen(arg);
     else if (cmd == "CONVERSE")
         ConsoleCommand("CNNConverse " $ arg); // string->name needs the console's own parser, same reason as FIRE
     else if (cmd == "ADVANCE")
@@ -1789,6 +1789,18 @@ exec function CNNAgentRun(int seq, string rest)
         CNNMagState();
     else if (cmd == "CONDUMP")
         CNNConDump(arg);
+    else if (cmd == "NEWGAME")
+    {
+        // Same call ApocalypseInsideMenuStartNewGame.ApocalypseInsideGo()
+        // makes when a real player clicks Begin -- ShowIntro(True) runs
+        // the real StartNewGame(strStartMap) path (ResetPlayer,
+        // DeleteSaveGameFiles, fresh AugmentationSystem/SkillSystem/
+        // inventory), not a raw `open` travel that skips all of that.
+        // Added 2026-09-23 for a real New-Game-to-ending playthrough test
+        // -- see memory/project_agent_bridge.md.
+        Log("CNN L2 newgame: calling ShowIntro(True) -- strStartMap=" $ strStartMap);
+        ShowIntro(True);
+    }
     else if (cmd == "RAW")
         ConsoleCommand(arg); // generic passthrough for ad hoc `set`/console commands during diagnostics, same trust level as FIRE/OPEN/CONVERSE which already reach ConsoleCommand
     else if (cmd == "WHERE")
@@ -1805,7 +1817,49 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
     else
         ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
-            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/NEWGAME/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+}
+
+// ----------------------------------------------------------------------
+// CNNAgentOpen()
+//
+// Guards CNNAgentRun's OPEN command against the reload storm confirmed
+// live 2026-09-23: `open <map>` is NOT a seamless travel here -- it
+// respawns TantalusDenton as a completely fresh instance (defaultproperties,
+// lastAgentSeq back to 0 despite the `travel` qualifier, which only
+// applies to actual seamless travels). CNNAgentCmd.txt still holds the
+// same OPEN line until the external writer sends a new command, so every
+// single CNNAgentBridge poll after each respawn sees seq > lastAgentSeq(0)
+// again and reissues `open`, which respawns again, forever -- observed
+// live as 40+ consecutive "Browse: 06_OpheliaL2..." reloads in one run
+// (visible to a human watching as the level repeatedly restarting), far
+// beyond the "6-7 times, harmless" this was previously measured at.
+//
+// First fix attempt used DeusExLevelInfo.mapName (the same field CNNGoto's
+// wrong-map check trusts) and did NOT work: confirmed live it stayed at
+// 15 reloads, unchanged, because L2's DeusExLevelInfo has no mapName
+// property authored at all -- it reads back empty, always (documented
+// separately in CNNDocs/L2_WalkthroughMap.md, and the exact reason
+// CNNMissionEndgame.Timer() already had to use GetURLMap() instead of
+// dxInfo.mapName for the M5 fix -- see its own comment). Switched to
+// `Level.Game.GetURLMap()`, the same proven-reliable source, which
+// returns the actual loaded map filename (e.g. "06_OpheliaL2") regardless
+// of whether the per-map DeusExLevelInfo property was ever authored.
+// ----------------------------------------------------------------------
+
+function CNNAgentOpen(string targetMap)
+{
+    local string currentMap;
+
+    currentMap = Caps(Level.Game.GetURLMap());
+
+    if ((currentMap != "") && (currentMap == Caps(targetMap)))
+    {
+        Log("CNN L2 open: already on " $ targetMap $ " -- skipping redundant open");
+        return;
+    }
+
+    ConsoleCommand("open " $ targetMap);
 }
 
 // ----------------------------------------------------------------------

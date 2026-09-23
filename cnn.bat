@@ -309,9 +309,42 @@ for %%f in (%CNN_PACKAGES%) do (
 
 echo Compiling...
 cd /d "%SYSTEM_DIR%"
-"%SYSTEM_DIR%\ucc.exe" make
-if errorlevel 1 echo. && echo COMPILE FAILED && goto :eof
 
+:: ucc.exe (32-bit, pre-2000) intermittently GPFs during CONVERSATION/AUDIO
+:: IMPORT on large .con files -- heap fragmentation in the compiler itself,
+:: not a real source problem (see memory/feedback_ucc_gpf.md: ~25-30% of
+:: clean compiles hit this, and the exact same input compiles fine on
+:: retry). Detect the GPF signature and retry up to 3x before treating it
+:: as a real failure -- 3 retries at a 25% per-run failure rate gives
+:: ~99.6% cumulative success.
+set "COMPILE_LOG=!TEMP!\cnn_compile_output.log"
+set "COMPILE_ATTEMPT=0"
+
+:compile_attempt
+set /a "COMPILE_ATTEMPT+=1"
+"%SYSTEM_DIR%\ucc.exe" make > "!COMPILE_LOG!" 2>&1
+set "UCC_EXITCODE=!errorlevel!"
+type "!COMPILE_LOG!"
+
+findstr /C:"General protection fault" "!COMPILE_LOG!" >nul
+if not errorlevel 1 goto :compile_gpf_hit
+
+if !UCC_EXITCODE! NEQ 0 echo. && echo COMPILE FAILED && goto :eof
+goto :compile_succeeded
+
+:compile_gpf_hit
+if !COMPILE_ATTEMPT! GEQ 3 goto :compile_gpf_exhausted
+echo.
+echo GPF on attempt !COMPILE_ATTEMPT!/3 -- known intermittent ucc.exe issue ^(memory/feedback_ucc_gpf.md^), not a real error. Retrying...
+echo.
+goto :compile_attempt
+
+:compile_gpf_exhausted
+echo.
+echo COMPILE FAILED -- GPF persisted across 3 attempts ^(unusual; normally clears within 1-2^)
+goto :eof
+
+:compile_succeeded
 echo.
 echo Copying compiled packages to repo...
 for %%f in (%CNN_PACKAGES%) do (

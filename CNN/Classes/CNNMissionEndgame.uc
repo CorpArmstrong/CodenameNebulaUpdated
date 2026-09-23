@@ -51,6 +51,19 @@ function Timer()
         // (line) and endgameQuote[2*n+1] (author).
         mapName = Caps(Level.Game.GetURLMap());
 
+        // Self-heal DeusExLevelInfo.mapName from the same value computed
+        // above, at runtime, no UnrealEd needed -- see CODE_REVIEW.md M5.
+        // `dxInfo` (declared on MissionScript) IS the actual placed
+        // DeusExLevelInfo actor for whichever map this mission script is
+        // running on (found via foreach AllActors in InitStateMachine), so
+        // this only touches the current map's own instance, not the class
+        // default. Runs once (guarded by bQuotePrinted, same as the quote
+        // selection above), so CNNWhere/CNNGoto and anything else that
+        // reads dxInfo.mapName see the correct value from here on for
+        // this session.
+        if (dxInfo != None)
+            dxInfo.mapName = mapName;
+
         // Hijacking has no slot in the inherited table -- see hijackQuote.
         if (InStr(mapName, "HIJACK") != -1)
         {

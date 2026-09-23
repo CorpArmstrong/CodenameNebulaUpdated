@@ -5,6 +5,30 @@ class TantalusDenton extends JCDentonMale;
 
 var travel ChineseSkillController chinese;
 var private QuestSystem questSystem;
+// CNNAgentRun's OPEN command re-fires several times on the destination map
+// before settling (confirmed 2026-09-23, looped 6-7x both with and without
+// the `travel` qualifier below) -- ConsoleCommand("open ...") apparently
+// respawns TantalusDenton as a fresh instance rather than a seamless
+// travel, so lastAgentSeq starts at 0 regardless and re-reads whatever
+// seq is still sitting in CNNAgentCmd.txt as new. Harmless in practice:
+// each re-fire just re-issues the same "open" while already loading, and
+// it stops once the external writer's next command overtakes it in the
+// file. Kept `travel` anyway since it costs nothing and does apply to
+// real seamless travels (mission-to-mission, not this raw exec command).
+var travel private int lastAgentSeq;
+
+// Gates CNNAgentRun (see below), NOT the bridge's spawn -- a normal
+// playthrough spawns CNNAgentBridge same as everyone (cheap: it just execs
+// a possibly-empty file once a second) but every command is a no-op until
+// this is True. Defaults off. Set it the same way bCheatsEnabled already
+// gets set for dev testing -- a startup "-EXEC=<file>" containing:
+//     set cnn.tantalusdenton bAgentAutoStart True
+// (see tools/cnn_playtest_launch.ps1, which writes and passes that file).
+// Not `var config`: this codebase has no existing config-var usage on this
+// class to model against, while the `set`-via-exec-file mechanism is
+// already proven working here (cheaton.txt/cheatoff.txt in System\).
+var bool bAgentAutoStart;
+var private CNNAgentBridge agentBridge;
 
 //var travel AiAugmentationManager AugmentationSystem;
 
@@ -24,6 +48,13 @@ function PostBeginPlay()
 {
     chinese = Spawn(class'ChineseSkillController', none);
     Super.PostBeginPlay();
+
+    // Always spawns CNNAgentBridge (cheap -- it just execs a possibly-empty
+    // file once a second) instead of requiring `CNNAgentStart` typed at the
+    // console. The actual on/off gate for a normal playthrough is
+    // bAgentAutoStart, checked in CNNAgentRun, NOT here -- see the comment
+    // there for why a PostBeginPlay-time check cannot work.
+    CNNAgentStart();
 }
 
 event TravelPostAccept()
@@ -939,6 +970,149 @@ exec function CNNFire(name eventTag)
 }
 
 // ----------------------------------------------------------------------
+// CNNConverse()
+//
+// Starts a named conversation with Magdalene, exactly as if the player had
+// frobbed her -- the only way to test an ending's ORGANIC route (real
+// conversation content setting the flag) rather than CNNTestEnding's
+// shortcut of setting the flag directly. Needed for Hijacking: the gate is
+// CanArmMagdalene, set inside MagdaleneHijackTheStation, which is
+// owner-bound to her (no map trigger reaches it -- see
+// CNNDocs/L2_WalkthroughMap.md).
+//
+// Finds her the same way BringFollowers() below does: by class, not
+// BindName/Tag, since L2 has exactly one Magdalene instance. StartConversat
+// ionByName refuses outright past 800 units (see BringFollowers' comment),
+// so GOTO magdalene first.
+//
+// Only Magdalene for now -- generalize to "find by BindName" if a future
+// test needs a different NPC.
+//
+// KNOWN ISSUE (2026-09-23, unresolved): after the two self-heals below,
+// StartConversationByName genuinely returns True and Magdalene's state
+// flips to 'Conversation' -- but the resulting playback is visually
+// broken (confirmed via screenshot: gameplay crosshair and mouse cursor
+// both showing at once, frozen on the opening line for 35+ real seconds
+// with no auto-advance) and `conPlay` stays None the whole time, so
+// CNNAdvance() has nothing to act on and the flag this conversation sets
+// (CanArmMagdalene) never gets reached organically. Leading theory: a
+// real frob goes through UI setup (FrobDisplayWindow or similar) that
+// calling StartConversationByName directly from script skips, so the
+// engine ends up in a state a real player interaction never produces.
+// Not yet root-caused -- see memory/project_agent_bridge.md.
+// ----------------------------------------------------------------------
+
+exec function CNNConverse(name conName)
+{
+    local Magdalene mag;
+    local bool bStarted;
+
+    foreach AllActors(class'Magdalene', mag)
+    {
+        break;
+    }
+
+    if (mag == None)
+    {
+        ClientMessage("CNNConverse: no Magdalene on this map");
+        Log("CNN L2 converse: " $ conName $ " -- no Magdalene found");
+        return;
+    }
+
+    // Self-heal: confirmed live 2026-09-23 that walking up to Magdalene
+    // auto-starts a short greeting bark that leaves her GetStateName()==
+    // 'Conversation' indefinitely (nothing was ever there to close it --
+    // CNNAdvance()/conPlay.PlayNextEvent() does NOT clear this; it's her
+    // own AI state, not the player's conPlay), which then makes
+    // StartConversationByName refuse silently. Force her out of it first.
+    if (mag.GetStateName() == 'Conversation')
+    {
+        mag.EndConversation();
+        Log("CNN L2 converse: Magdalene was stuck in 'Conversation' state -- called EndConversation() first");
+    }
+
+    // Clearing HER state wasn't enough -- StartConversation() (DeusExPlayer.uc)
+    // separately refuses outright while the PLAYER's own conPlay still
+    // references that same stale bark (conPlay.invokeActor == Magdalene,
+    // first-person, player has a speaking part -- exact match for what an
+    // unclosed greeting leaves behind). The engine self-cleans this same
+    // way, but only *after* those earlier refusal checks -- do it
+    // proactively first so we never hit them.
+    if (conPlay != None)
+    {
+        conPlay.InterruptConversation();
+        conPlay.TerminateConversation();
+        // Confirmed live 2026-09-23: TerminateConversation() does NOT null
+        // the reference out. CanStartConversation() refuses whenever
+        // conPlay is non-None with con.bFirstPerson != True (true for the
+        // stale bark, a third-person conversation) -- so the leftover
+        // object alone keeps blocking every future attempt regardless of
+        // its internal state. Null it explicitly.
+        conPlay = None;
+        Log("CNN L2 converse: player conPlay was stale -- interrupted+terminated+cleared");
+    }
+
+    // Confirms the explicit `conPlay = None` above actually worked --
+    // CanStartConversation() (DeusExPlayer.uc) refuses whenever conPlay is
+    // non-None with con.bFirstPerson != True, and TerminateConversation()
+    // alone does NOT null the reference out, which is what made this take
+    // three iterations to find. Left in as a cheap sanity check.
+    if (conPlay == None)
+    {
+        Log("CNN L2 converse: conPlay is None after cleanup (good)");
+    }
+    else if (conPlay.con == None)
+    {
+        Log("CNN L2 converse: conPlay still non-None after cleanup -- CanInterrupt=" $
+            conPlay.CanInterrupt() $ " conPlay.con is None");
+    }
+    else
+    {
+        Log("CNN L2 converse: conPlay still non-None after cleanup -- CanInterrupt=" $
+            conPlay.CanInterrupt() $ " conFirstPerson=" $ conPlay.con.bFirstPerson);
+    }
+
+    bStarted = StartConversationByName(conName, mag, false, false);
+
+    ClientMessage("CNNConverse: " $ conName $ " -> " $ bStarted);
+    Log("CNN L2 converse: " $ conName $ " owner=Magdalene started=" $ bStarted $
+        " magPhysics=" $ mag.Physics $ " magCanConverse=" $ mag.bCanConverse $
+        " magInterruptState=" $ mag.bInterruptState $
+        " magOrders=" $ mag.Orders $ " magState=" $ mag.GetStateName() $
+        " dist=" $ int(VSize(Location - mag.Location)) $
+        " playerCanStartConv=" $ CanStartConversation());
+}
+
+// ----------------------------------------------------------------------
+// CNNAdvance()
+//
+// Advances the current conversation exactly like a real player pressing
+// Enter/Space or clicking -- see ConWindow.VirtualKeyPressed() /
+// MouseButtonReleased() in the reference source, both of which just call
+// conPlay.PlayNextEvent(). Needed because CONVERSE starts a conversation
+// but nothing ever progresses it without this: confirmed live 2026-09-23
+// that walking up to Magdalene alone auto-starts a greeting bark that
+// left her GetStateName()=='Conversation' indefinitely (nothing was ever
+// there to advance it), which then blocked a later CNNConverse attempt
+// outright -- CanStartConversation() refuses while the player's own
+// conPlay is already mid-conversation.
+// ----------------------------------------------------------------------
+
+exec function CNNAdvance()
+{
+    if (conPlay == None)
+    {
+        ClientMessage("CNNAdvance: no active conversation");
+        Log("CNN L2 advance: no active conPlay");
+        return;
+    }
+
+    conPlay.PlayNextEvent();
+    ClientMessage("CNNAdvance: advanced");
+    Log("CNN L2 advance: PlayNextEvent called");
+}
+
+// ----------------------------------------------------------------------
 // BringFollowers()
 //
 // Moves Magdalene to the player after a teleport, when she is following.
@@ -979,6 +1153,46 @@ function BringFollowers(vector playerLoc)
 
         break;
     }
+}
+
+// ----------------------------------------------------------------------
+// CNNFlags()
+//
+// Dumps the same L2 ending-relevant flags Chapter06L2.LogChangedFlags()
+// already tracks (see its trackedFlag[] array), on demand instead of only
+// on change. Needed to tell an ORGANIC playthrough (walking the real
+// route, talking to NPCs) apart from CNNTestEnding's shortcut -- both end
+// up on the same ending map, but only this shows whether the flag that
+// actually gates it (e.g. CanArmMagdalene for Hijacking) was set by real
+// conversation/trigger content along the way, not by the test harness.
+// ----------------------------------------------------------------------
+
+exec function CNNFlags()
+{
+    Log("CNN L2 flags: MikeWongExposed=" $ FlagBase.GetBool('MikeWongExposed') $
+        " MetReedAndWong=" $ FlagBase.GetBool('MetReedAndWong') $
+        " IsArrivalPlayed=" $ FlagBase.GetBool('IsArrivalPlayed') $
+        " OnLevel2=" $ FlagBase.GetBool('OnLevel2') $
+        " CanArmMagdalene=" $ FlagBase.GetBool('CanArmMagdalene') $
+        " ReadyForBossFight=" $ FlagBase.GetBool('ReadyForBossFight') $
+        " ReadyForSocialBoss=" $ FlagBase.GetBool('ReadyForSocialBoss') $
+        " FinalGoodbyePlayed=" $ FlagBase.GetBool('FinalGoodbyePlayed'));
+    Log("CNN L2 flags: AllObjectsDestroyed=" $ FlagBase.GetBool('AllObjectsDestroyed') $
+        " SeedsOfDoubtPlanted=" $ FlagBase.GetBool('SeedsOfDoubtPlanted') $
+        " WongParanoid=" $ FlagBase.GetBool('WongParanoid') $
+        " SamUnfriendly=" $ FlagBase.GetBool('SamUnfriendly') $
+        " PlayerDied=" $ FlagBase.GetBool('PlayerDied') $
+        " PlayerDiedOnL2=" $ FlagBase.GetBool('PlayerDiedOnL2') $
+        " PlayerDiedDuringUpload=" $ FlagBase.GetBool('PlayerDiedDuringUpload'));
+    Log("CNN L2 flags: TantalusUploadStarted=" $ FlagBase.GetBool('TantalusUploadStarted') $
+        " TantalusUploaded=" $ FlagBase.GetBool('TantalusUploaded') $
+        " UndockedL2=" $ FlagBase.GetBool('UndockedL2') $
+        " StartedBlueFusion=" $ FlagBase.GetBool('StartedBlueFusion') $
+        " TookSteeringWheel=" $ FlagBase.GetBool('TookSteeringWheel') $
+        " TimerExpired=" $ FlagBase.GetBool('TimerExpired') $
+        " IsGameCompleted=" $ FlagBase.GetBool('IsGameCompleted'));
+
+    ClientMessage("CNNFlags: dumped to log");
 }
 
 // ----------------------------------------------------------------------
@@ -1130,8 +1344,137 @@ exec function CNNGoto(string where)
     Log("CNN L2 goto: " $ where $ " BLOCKED at " $ dest);
 }
 
+// ----------------------------------------------------------------------
+// CNNAgentStart() / CNNAgentRun()
+//
+// Lets an external process drive this pawn's own exec functions through
+// CNNAgentBridge, which polls CNN\System\CNNAgentCmd.txt once a second via
+// "exec" (see CNNAgentBridge.uc for why that poll lives on its own Actor
+// instead of here).
+//
+// CNNAgentRun is the ONLY line that file should ever contain, and it is
+// sequence-gated:
+//
+//     CNNAgentRun <seq> <cmd> <arg>
+//
+// UnrealScript has no confirmed API in this codebase for a script to
+// truncate or delete a file (grepped both this tree and the DeusExPlus
+// reference source for FileLog/OpenLog and found nothing), so the file
+// cannot be cleared after each read. Without gating, the same line would
+// re-fire on every poll until the external side overwrites it -- harmless
+// for CNNGoto/CNNWhere/CNNProbe, but CNNFire re-triggers dispatchers and
+// CNNTestEnding rewrites ending flags, so a stale re-read must be a no-op.
+// The external writer increments seq for every new command and never has
+// to touch the file except to write the next one.
+//
+// <cmd> and <arg> are ONE trailing string parameter (rest), split by hand
+// with InStr/Left/Right -- confirmed in-game 2026-09-23 that the console's
+// exec-file parser does NOT tokenize two consecutive trailing string
+// params on a multi-arg exec function; both received the identical
+// leftover text ("GOTO TUBE" landed in both cmd AND arg). A single
+// trailing string is the same idiom CNNGoto(string where) already relies
+// on and is known good.
+//
+// From the console, once started:
+//     CNNAgentStart
+//     CNNAgentRun 1 GOTO TUBE
+//     CNNAgentRun 2 FIRE MiniGameDispatcher
+//     CNNAgentRun 3 WHERE
+//     CNNAgentRun 4 PROBE
+//     CNNAgentRun 5 TESTENDING hijack
+//     CNNAgentRun 6 SHOT
+//     CNNAgentRun 7 OPEN 06_OpheliaL2
+//
+// GOTO/FIRE/WHERE/PROBE/TESTENDING just call the existing exec functions
+// above, so their behaviour (including everything logged) is identical
+// whether triggered by hand or by the agent. SHOT calls the engine's own
+// screenshot console command -- confirmed working in-game 2026-09-23,
+// writes ShotNNNN.bmp into System\. OPEN travels to another map by name
+// (ConsoleCommand("open <map>")) -- e.g. to leave the CNNentry/menu level
+// (mapName "DXOnly", confirmed 2026-09-23 that CNN boots there even with
+// LocalMap=/Map= overridden in a launch INI) and reach 06_OpheliaL2. A
+// fresh TantalusDenton spawns on the new map and re-runs CNNAgentStart
+// from PostBeginPlay, so the bridge survives the travel.
+// ----------------------------------------------------------------------
+
+exec function CNNAgentStart()
+{
+    if (agentBridge != None)
+        return; // already running -- PostBeginPlay always calls this now
+
+    agentBridge = Spawn(class'CNNAgentBridge');
+    agentBridge.SetTarget(self);
+    ClientMessage("CNNAgentStart: polling CNNAgentCmd.txt every " $
+        agentBridge.pollInterval $ "s");
+    Log("CNN agent: bridge started");
+}
+
+exec function CNNAgentRun(int seq, string rest)
+{
+    local string cmd, arg;
+    local int spacePos;
+
+    // The real gate, not PostBeginPlay: confirmed 2026-09-23 that the
+    // engine processes a startup -EXEC file's `set bAgentAutoStart True`
+    // AFTER the first level's actors have already spawned and PostBeginPlay
+    // has already run (a diagnostic Log() there printed False every time,
+    // with the file's own "Execing ..." line appearing later in the same
+    // log). CNNAgentBridge is spawned unconditionally now; this check is
+    // what actually keeps a normal playthrough inert -- by the time any
+    // command reaches here (the bridge's first poll is ~1s after spawn),
+    // the -EXEC file has long since run.
+    if (!bAgentAutoStart)
+        return;
+
+    if (seq <= lastAgentSeq)
+        return;
+
+    lastAgentSeq = seq;
+
+    spacePos = InStr(rest, " ");
+    if (spacePos == -1)
+    {
+        cmd = Caps(rest);
+        arg = "";
+    }
+    else
+    {
+        cmd = Caps(Left(rest, spacePos));
+        arg = Right(rest, Len(rest) - spacePos - 1);
+    }
+
+    Log("CNN agent: seq=" $ seq $ " cmd=" $ cmd $ " arg=" $ arg);
+
+    if (cmd == "GOTO")
+        CNNGoto(arg);
+    else if (cmd == "FIRE")
+        ConsoleCommand("CNNFire " $ arg); // string->name needs the console's own parser; no script-side cast exists
+    else if (cmd == "OPEN")
+        ConsoleCommand("open " $ arg);
+    else if (cmd == "CONVERSE")
+        ConsoleCommand("CNNConverse " $ arg); // string->name needs the console's own parser, same reason as FIRE
+    else if (cmd == "ADVANCE")
+        CNNAdvance();
+    else if (cmd == "WHERE")
+        CNNWhere();
+    else if (cmd == "FLAGS")
+        CNNFlags();
+    else if (cmd == "PROBE")
+        CNNProbe();
+    else if (cmd == "TESTENDING")
+        CNNTestEnding(arg);
+    else if (cmd == "SHOT")
+        ConsoleCommand("shot");
+    else if (cmd == "QUIT")
+        ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
+    else
+        ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
+            " -- use GOTO/FIRE/OPEN/CONVERSE/ADVANCE/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+}
+
 defaultproperties
 {
+    bAgentAutoStart=False
     TruePlayerName="Blake Denton"
     BindName=Tantalus
     Credits=0

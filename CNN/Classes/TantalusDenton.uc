@@ -1004,20 +1004,33 @@ exec function CNNFire(name eventTag)
 // bark this function force-terminates a few lines below, not this
 // conversation's own output.
 //
-// This is NOT a StartConversationByName/UI bug and cannot be fixed from
-// this file. Chapter06L2.DedupeOneActor was rewritten (2026-09-23) to
-// prefer whichever duplicate has a non-empty eventList over "last wins",
-// which is strictly more correct and left every other deduped conversation
-// unaffected (OpheliaHallway, SamGivesQuest, SocialBoss verified still
-// correct) -- but for MagdaleneHijackTheStation specifically, BOTH copies
-// bound to the live Magdalene actor have eventList == None. That is a
-// ConEdit-level data problem (the conversation's events never got attached
-// to either .con export), not a dedup ordering problem, and needs someone
-// with ConEdit to open OpheliaL2.con and Chapter06.con and check/rebuild
-// MagdaleneHijackTheStation's event list. MagdaleneInsideTube (the other
-// Hijacking-critical conversation, sets FinalGoodbyePlayed) shows the same
-// "(no flags)" signature in CNNFlags()'s conversation dump and is likely
-// the same problem, unconfirmed -- see memory/project_agent_bridge.md.
+// This is NOT a StartConversationByName/UI bug. Chapter06L2.DedupeOneActor
+// was rewritten (2026-09-23) to prefer whichever duplicate has a non-empty
+// eventList over "last wins", which is strictly more correct and left
+// every other deduped conversation unaffected (OpheliaHallway, SamGivesQuest,
+// SocialBoss verified still correct) -- kept regardless of the paragraph
+// below, since it degrades to identical "last wins" behavior whenever it
+// can't tell copies apart, so it cannot have regressed anything.
+//
+// CORRECTION (2026-09-23, same day): the "ConEdit-level data problem, both
+// copies genuinely empty" conclusion above was WRONG. The user directly
+// confirmed hearing/seeing this exact conversation (MagdaleneHijackTheStation
+// on L2) play correctly in normal gameplay -- so con.eventList is NOT
+// actually empty in the real game data; `currentEvent is None` was an
+// artifact of THIS testing path specifically. The two candidates, in order
+// of suspicion: (1) the self-heal block a few lines below, which forcibly
+// EndConversation()/InterruptConversation()/TerminateConversation()s a
+// stale auto-greeting bark immediately before calling
+// StartConversationByName -- TerminateConversation() calls
+// `con.ClearBindEvents()` on the BARK's Conversation object, and if that
+// native/ConSys call has any cross-conversation side effect this is the
+// prime suspect; (2) GOTO-teleporting next to Magdalene rather than
+// walking up naturally may leave her in a different precondition state
+// than a real approach does (the bark firing at all is itself a symptom of
+// the teleport). Not yet re-investigated -- next session should test
+// WITHOUT the self-heal block (accepting that a stuck bark will make
+// StartConversationByName legitimately refuse) to isolate which of the two
+// it is, rather than trusting the "empty eventList" diagnosis further.
 // ----------------------------------------------------------------------
 
 exec function CNNConverse(name conName)

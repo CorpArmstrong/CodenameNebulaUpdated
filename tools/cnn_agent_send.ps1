@@ -25,7 +25,7 @@
 param(
     [Parameter(Mandatory=$true)][string]$SystemDir,
     [Parameter(Mandatory=$true)]
-    [ValidateSet('GOTO','FIRE','OPEN','CONVERSE','ADVANCE','STATUS','WHERE','FLAGS','PROBE','TESTENDING','SHOT','QUIT')]
+    [ValidateSet('GOTO','FIRE','OPEN','CONVERSE','ADVANCE','STATUS','MAGSTATE','RAW','WHERE','FLAGS','PROBE','TESTENDING','SHOT','QUIT')]
     [string]$Cmd,
     [string]$Arg = ""
 )

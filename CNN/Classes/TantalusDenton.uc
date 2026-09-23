@@ -30,6 +30,17 @@ var travel private int lastAgentSeq;
 var bool bAgentAutoStart;
 var private CNNAgentBridge agentBridge;
 
+// Diagnostic-only (2026-09-23): when True, CNNConverse() skips its own
+// self-heal block (forced EndConversation()/InterruptConversation()/
+// TerminateConversation() on a stale bark) entirely. Added to isolate
+// whether that self-heal is what leaves the REAL conversation's
+// conPlay.currentEvent looking empty afterward -- see CNNConverse's header
+// comment and memory/project_agent_bridge.md. Set the same way
+// bAgentAutoStart is, via console: `set cnn.tantalusdenton
+// bAgentSkipSelfHeal True` (or the bridge's RAW passthrough). Defaults
+// False so normal CNNConverse behavior is unchanged.
+var bool bAgentSkipSelfHeal;
+
 //var travel AiAugmentationManager AugmentationSystem;
 
 //var CASConPlay conplay; UNCOMMENT!
@@ -1052,6 +1063,12 @@ exec function CNNConverse(name conName)
         return;
     }
 
+    if (bAgentSkipSelfHeal)
+    {
+        Log("CNN L2 converse: bAgentSkipSelfHeal is True -- self-heal skipped, calling StartConversationByName as-is");
+    }
+    else
+    {
     // Self-heal: confirmed live 2026-09-23 that walking up to Magdalene
     // auto-starts a short greeting bark that leaves her GetStateName()==
     // 'Conversation' indefinitely (nothing was ever there to close it --
@@ -1104,6 +1121,7 @@ exec function CNNConverse(name conName)
         Log("CNN L2 converse: conPlay still non-None after cleanup -- CanInterrupt=" $
             conPlay.CanInterrupt() $ " conFirstPerson=" $ conPlay.con.bFirstPerson);
     }
+    } // !bAgentSkipSelfHeal
 
     // Diagnostic (2026-09-23): look up the target conversation's
     // bFirstPerson/interactive flags the same way the engine's own
@@ -1221,6 +1239,40 @@ exec function CNNStatus()
         " conPlayHasCon=" $ bConPlayHasCon $
         " nextState=" $ NextState $
         " physics=" $ Physics);
+}
+
+// ----------------------------------------------------------------------
+// CNNMagState()
+//
+// Diagnostic-only (2026-09-23): polls Magdalene's GetStateName() without
+// touching anything, meant to be called repeatedly after GOTO magdalene to
+// characterize whether the auto-greeting bark clears on its own over real
+// time (and how long that takes) versus staying stuck in 'Conversation'
+// indefinitely without CNNConverse's self-heal forcing it closed. Needed
+// to isolate whether that self-heal (vs. the GOTO teleport itself) is what
+// leaves the real conversation looking empty afterward -- see
+// CNNConverse's header comment.
+// ----------------------------------------------------------------------
+
+exec function CNNMagState()
+{
+    local Magdalene mag;
+
+    foreach AllActors(class'Magdalene', mag)
+    {
+        break;
+    }
+
+    if (mag == None)
+    {
+        Log("CNN L2 magstate: no Magdalene found");
+        return;
+    }
+
+    Log("CNN L2 magstate: magState=" $ mag.GetStateName() $
+        " magOrders=" $ mag.Orders $
+        " magInterruptState=" $ mag.bInterruptState $
+        " dist=" $ int(VSize(Location - mag.Location)));
 }
 
 // ----------------------------------------------------------------------
@@ -1568,6 +1620,10 @@ exec function CNNAgentRun(int seq, string rest)
         CNNAdvance();
     else if (cmd == "STATUS")
         CNNStatus();
+    else if (cmd == "MAGSTATE")
+        CNNMagState();
+    else if (cmd == "RAW")
+        ConsoleCommand(arg); // generic passthrough for ad hoc `set`/console commands during diagnostics, same trust level as FIRE/OPEN/CONVERSE which already reach ConsoleCommand
     else if (cmd == "WHERE")
         CNNWhere();
     else if (cmd == "FLAGS")
@@ -1582,12 +1638,13 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
     else
         ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
-            " -- use GOTO/FIRE/OPEN/CONVERSE/ADVANCE/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/FIRE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
 }
 
 defaultproperties
 {
     bAgentAutoStart=False
+    bAgentSkipSelfHeal=False
     TruePlayerName="Blake Denton"
     BindName=Tantalus
     Credits=0

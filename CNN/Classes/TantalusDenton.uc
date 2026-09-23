@@ -1380,35 +1380,85 @@ exec function CNNConDump(string targetTag)
 // ----------------------------------------------------------------------
 // CNNMagState()
 //
-// Diagnostic-only (2026-09-23): polls Magdalene's GetStateName() without
-// touching anything, meant to be called repeatedly after GOTO magdalene to
-// characterize whether the auto-greeting bark clears on its own over real
-// time (and how long that takes) versus staying stuck in 'Conversation'
-// indefinitely without CNNConverse's self-heal forcing it closed. Needed
-// to isolate whether that self-heal (vs. the GOTO teleport itself) is what
-// leaves the real conversation looking empty afterward -- see
-// CNNConverse's header comment.
+// Diagnostic-only. Originally Magdalene-only (2026-09-23, built to poll
+// GetStateName() after GOTO magdalene and characterize whether the
+// auto-greeting bark clears on its own -- see CNNConverse's header
+// comment for why that mattered). Generalized same day to any actor by
+// BindName, matching the lookup CNNConDump already uses, so it can be
+// polled for whichever NPC a future test cares about. Empty targetTag
+// defaults to "Magdalene" so existing `MAGSTATE` calls with no arg keep
+// working unchanged. Only meaningful for ScriptedPawn actors (Orders/
+// bInterruptState/GetStateName's AI-relevant value) -- reports what it
+// can for anything else rather than refusing.
 // ----------------------------------------------------------------------
 
-exec function CNNMagState()
+exec function CNNMagState(string targetTag)
 {
-    local Magdalene mag;
+    local Actor a;
+    local ScriptedPawn sp;
 
-    foreach AllActors(class'Magdalene', mag)
+    if (targetTag == "")
+        targetTag = "Magdalene";
+
+    foreach AllActors(class'Actor', a)
     {
-        break;
+        if (a.BindName == targetTag)
+            break;
     }
 
-    if (mag == None)
+    if (a == None)
     {
-        Log("CNN L2 magstate: no Magdalene found");
+        Log("CNN L2 magstate: no actor with BindName " $ targetTag);
         return;
     }
 
-    Log("CNN L2 magstate: magState=" $ mag.GetStateName() $
-        " magOrders=" $ mag.Orders $
-        " magInterruptState=" $ mag.bInterruptState $
-        " dist=" $ int(VSize(Location - mag.Location)));
+    sp = ScriptedPawn(a);
+
+    if (sp != None)
+    {
+        Log("CNN L2 magstate: " $ targetTag $ " state=" $ sp.GetStateName() $
+            " orders=" $ sp.Orders $
+            " interruptState=" $ sp.bInterruptState $
+            " dist=" $ int(VSize(Location - sp.Location)));
+    }
+    else
+    {
+        Log("CNN L2 magstate: " $ targetTag $ " state=" $ a.GetStateName() $
+            " (not a ScriptedPawn -- orders/interruptState unavailable)" $
+            " dist=" $ int(VSize(Location - a.Location)));
+    }
+}
+
+// ----------------------------------------------------------------------
+// CNNSetFlag()
+//
+// Writes exactly one FlagBase bool directly, added 2026-09-23 (mechanism
+// wishlist item #4 in memory/project_agent_bridge.md). Narrower than
+// CNNTestEnding, which always writes a whole bundle of flags at once, and
+// doesn't need the UI-only `EditFlags`/FlagEditWindow the bridge can't
+// drive. Meant for tests that want to set ONE precondition organically
+// satisfied (e.g. CanArmMagdalene) and then walk the rest of a route for
+// real, instead of an all-or-nothing choice between fully organic and
+// fully TESTENDING-shortcut.
+//
+// Routed through the console's own parser via CNNAgentRun (RAW-style,
+// same reason as FIRE/FROB/CONVERSE): no script-side string->name cast
+// exists in this codebase, and the console already knows how to tokenize
+// "<name> <bool>" into typed exec params.
+// ----------------------------------------------------------------------
+
+exec function CNNSetFlag(name flagName, bool value)
+{
+    if (flagName == '')
+    {
+        ClientMessage("CNNSetFlag <flagName> <True|False> -- writes one FlagBase bool directly");
+        return;
+    }
+
+    FlagBase.SetBool(flagName, value);
+    ClientMessage("CNNSetFlag: " $ flagName $ " -> " $ value);
+    Log("CNN L2 setflag: " $ flagName $ " -> " $ value $
+        " (confirmed=" $ FlagBase.GetBool(flagName) $ ")");
 }
 
 // ----------------------------------------------------------------------
@@ -1828,9 +1878,11 @@ exec function CNNAgentRun(int seq, string rest)
     else if (cmd == "STATUS")
         CNNStatus();
     else if (cmd == "MAGSTATE")
-        CNNMagState();
+        CNNMagState(arg);
     else if (cmd == "CONDUMP")
         CNNConDump(arg);
+    else if (cmd == "SETFLAG")
+        ConsoleCommand("CNNSetFlag " $ arg); // string->name needs the console's own parser, same reason as FIRE/FROB/CONVERSE
     else if (cmd == "NEWGAME")
     {
         // Same call ApocalypseInsideMenuStartNewGame.ApocalypseInsideGo()
@@ -1859,7 +1911,7 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
     else
         ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
-            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/NEWGAME/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/SETFLAG/NEWGAME/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
 }
 
 // ----------------------------------------------------------------------

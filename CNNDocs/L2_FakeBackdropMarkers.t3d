@@ -1,0 +1,62 @@
+Begin Map
+Begin Actor Class=InterpolationPoint Name=CNNMark1
+    Tag=MARK1_Brush1272_mid
+    Group=CNNMarker
+    Location=(X=946.000000,Y=-4644.000000,Z=96.000000)
+    Name=CNNMark1
+End Actor
+Begin Actor Class=InterpolationPoint Name=CNNMark2
+    Tag=MARK2_Brush1272_southend
+    Group=CNNMarker
+    Location=(X=946.000000,Y=-5300.000000,Z=96.000000)
+    Name=CNNMark2
+End Actor
+Begin Actor Class=InterpolationPoint Name=CNNMark3
+    Tag=MARK3_Brush1272_northend
+    Group=CNNMarker
+    Location=(X=946.000000,Y=-4000.000000,Z=96.000000)
+    Name=CNNMark3
+End Actor
+Begin Actor Class=InterpolationPoint Name=CNNMark4
+    Tag=MARK4_Brush626_entryledge
+    Group=CNNMarker
+    Location=(X=-1185.000000,Y=-1884.000000,Z=951.000000)
+    Name=CNNMark4
+End Actor
+Begin Actor Class=InterpolationPoint Name=CNNMark5
+    Tag=MARK5_Brush630
+    Group=CNNMarker
+    Location=(X=-1185.000000,Y=-1884.000000,Z=1395.000000)
+    Name=CNNMark5
+End Actor
+Begin Actor Class=InterpolationPoint Name=CNNMark6
+    Tag=MARK6_Brush634
+    Group=CNNMarker
+    Location=(X=-1185.000000,Y=-1884.000000,Z=1811.000000)
+    Name=CNNMark6
+End Actor
+Begin Actor Class=InterpolationPoint Name=CNNMark7
+    Tag=MARK7_Brush573_lowerlabs
+    Group=CNNMarker
+    Location=(X=883.000000,Y=-1714.000000,Z=-1211.000000)
+    Name=CNNMark7
+End Actor
+Begin Actor Class=InterpolationPoint Name=CNNMark8
+    Tag=MARK8_Brush910
+    Group=CNNMarker
+    Location=(X=883.000000,Y=-1714.000000,Z=-767.000000)
+    Name=CNNMark8
+End Actor
+Begin Actor Class=InterpolationPoint Name=CNNMark9
+    Tag=MARK9_Brush914
+    Group=CNNMarker
+    Location=(X=883.000000,Y=-1714.000000,Z=-351.000000)
+    Name=CNNMark9
+End Actor
+Begin Actor Class=InterpolationPoint Name=CNNMark10
+    Tag=MARK10_Brush960_checkbyeye
+    Group=CNNMarker
+    Location=(X=129.000000,Y=-1855.000000,Z=65.000000)
+    Name=CNNMark10
+End Actor
+End Map

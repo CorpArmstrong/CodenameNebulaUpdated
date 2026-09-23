@@ -1,0 +1,76 @@
+Begin Map
+Begin Actor Class=Brush Name=CNNSeamPatch
+    CsgOper=CSG_Subtract
+    MainScale=(SheerAxis=SHEER_ZX)
+    PostScale=(SheerAxis=SHEER_ZX)
+    Group=CNNRepair
+    Tag=Brush
+    Location=(X=946.000000,Y=-5462.000000,Z=47.000000)
+    Begin Brush Name=CNNSeamPatchModel
+       Begin PolyList
+          Begin Polygon Item=CNNSeamPatch Texture=ClenGrayMetal_A
+             Origin   -0258.000000,-0003.000000,+0083.000000
+             Normal   +0000.000000,+0000.000000,+0001.000000
+             TextureU +0001.000000,+0000.000000,+0000.000000
+             TextureV +0000.000000,+0001.000000,+0000.000000
+             Vertex   -0258.000000,-0003.000000,+0083.000000
+             Vertex   +0258.000000,-0003.000000,+0083.000000
+             Vertex   +0258.000000,+0003.000000,+0083.000000
+             Vertex   -0258.000000,+0003.000000,+0083.000000
+          End Polygon
+          Begin Polygon Item=CNNSeamPatch Texture=ClenGrayMetal_A
+             Origin   -0258.000000,+0003.000000,-0083.000000
+             Normal   +0000.000000,+0000.000000,-0001.000000
+             TextureU +0001.000000,+0000.000000,+0000.000000
+             TextureV +0000.000000,-0001.000000,+0000.000000
+             Vertex   -0258.000000,+0003.000000,-0083.000000
+             Vertex   +0258.000000,+0003.000000,-0083.000000
+             Vertex   +0258.000000,-0003.000000,-0083.000000
+             Vertex   -0258.000000,-0003.000000,-0083.000000
+          End Polygon
+          Begin Polygon Item=CNNSeamPatch Texture=ClenGrayMetal_A
+             Origin   -0258.000000,-0003.000000,-0083.000000
+             Normal   +0000.000000,-0001.000000,+0000.000000
+             TextureU +0001.000000,+0000.000000,+0000.000000
+             TextureV +0000.000000,+0000.000000,+0001.000000
+             Vertex   -0258.000000,-0003.000000,-0083.000000
+             Vertex   +0258.000000,-0003.000000,-0083.000000
+             Vertex   +0258.000000,-0003.000000,+0083.000000
+             Vertex   -0258.000000,-0003.000000,+0083.000000
+          End Polygon
+          Begin Polygon Item=CNNSeamPatch Texture=ClenGrayMetal_A
+             Origin   -0258.000000,+0003.000000,+0083.000000
+             Normal   +0000.000000,+0001.000000,+0000.000000
+             TextureU +0001.000000,+0000.000000,+0000.000000
+             TextureV +0000.000000,+0000.000000,-0001.000000
+             Vertex   -0258.000000,+0003.000000,+0083.000000
+             Vertex   +0258.000000,+0003.000000,+0083.000000
+             Vertex   +0258.000000,+0003.000000,-0083.000000
+             Vertex   -0258.000000,+0003.000000,-0083.000000
+          End Polygon
+          Begin Polygon Item=CNNSeamPatch Texture=ClenGrayMetal_A
+             Origin   -0258.000000,-0003.000000,+0083.000000
+             Normal   -0001.000000,+0000.000000,+0000.000000
+             TextureU +0000.000000,+0001.000000,+0000.000000
+             TextureV +0000.000000,+0000.000000,-0001.000000
+             Vertex   -0258.000000,-0003.000000,+0083.000000
+             Vertex   -0258.000000,+0003.000000,+0083.000000
+             Vertex   -0258.000000,+0003.000000,-0083.000000
+             Vertex   -0258.000000,-0003.000000,-0083.000000
+          End Polygon
+          Begin Polygon Item=CNNSeamPatch Texture=ClenGrayMetal_A
+             Origin   +0258.000000,-0003.000000,-0083.000000
+             Normal   +0001.000000,+0000.000000,+0000.000000
+             TextureU +0000.000000,+0001.000000,+0000.000000
+             TextureV +0000.000000,+0000.000000,+0001.000000
+             Vertex   +0258.000000,-0003.000000,-0083.000000
+             Vertex   +0258.000000,+0003.000000,-0083.000000
+             Vertex   +0258.000000,+0003.000000,+0083.000000
+             Vertex   +0258.000000,-0003.000000,+0083.000000
+          End Polygon
+       End PolyList
+    End Brush
+    Brush=Model'MyLevel.CNNSeamPatchModel'
+    Name=CNNSeamPatch
+End Actor
+End Map

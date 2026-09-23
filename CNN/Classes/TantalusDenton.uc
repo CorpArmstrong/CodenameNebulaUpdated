@@ -1312,6 +1312,55 @@ exec function CNNStatus()
 }
 
 // ----------------------------------------------------------------------
+// CNNConDump()
+//
+// Diagnostic-only (2026-09-23): dumps every conversation bound to a named
+// actor (found by BindName) with its bFirstPerson/bNonInteractive/
+// radiusDistance, the same fields CNNConverse's own pre-call lookup logs
+// for Magdalene, generalized to any actor. Built to find a bFirstPerson=
+// True candidate elsewhere on L2 -- CNNConverse's target,
+// MagdaleneHijackTheStation, is bFirstPerson=False (third-person,
+// ConWindowActive), and that window never completed correctly through the
+// headless agent bridge (see memory/project_agent_bridge.md). CNNFrob
+// proved simple ComputerUIWindow-style UI DOES render fine through the
+// bridge, so the open question is whether a first-person conversation
+// (no ConWindowActive, subtitle-only) fares better than third-person did.
+// ----------------------------------------------------------------------
+
+exec function CNNConDump(string targetTag)
+{
+    local Actor a;
+    local ConListItem item;
+
+    foreach AllActors(class'Actor', a)
+    {
+        if (a.BindName == targetTag)
+        {
+            break;
+        }
+    }
+
+    if (a == None)
+    {
+        Log("CNN L2 condump: no actor with BindName " $ targetTag);
+        return;
+    }
+
+    item = ConListItem(a.conListItems);
+    while (item != None)
+    {
+        if (item.con != None)
+        {
+            Log("CNN L2 condump: " $ targetTag $ " con=" $ item.con.conName $
+                " bFirstPerson=" $ item.con.bFirstPerson $
+                " bNonInteractive=" $ item.con.bNonInteractive $
+                " radiusDistance=" $ item.con.radiusDistance);
+        }
+        item = item.next;
+    }
+}
+
+// ----------------------------------------------------------------------
 // CNNMagState()
 //
 // Diagnostic-only (2026-09-23): polls Magdalene's GetStateName() without
@@ -1738,6 +1787,8 @@ exec function CNNAgentRun(int seq, string rest)
         CNNStatus();
     else if (cmd == "MAGSTATE")
         CNNMagState();
+    else if (cmd == "CONDUMP")
+        CNNConDump(arg);
     else if (cmd == "RAW")
         ConsoleCommand(arg); // generic passthrough for ad hoc `set`/console commands during diagnostics, same trust level as FIRE/OPEN/CONVERSE which already reach ConsoleCommand
     else if (cmd == "WHERE")
@@ -1754,7 +1805,7 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
     else
         ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
-            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
 }
 
 // ----------------------------------------------------------------------

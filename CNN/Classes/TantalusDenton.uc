@@ -1415,8 +1415,7 @@ exec function CNNWhere()
 
 exec function CNNGoto(string where)
 {
-    local vector dest, tryLoc;
-    local int attempt, ring;
+    local vector dest;
     local DeusExLevelInfo info;
     local bool bKnown;
 
@@ -1445,45 +1444,8 @@ exec function CNNGoto(string where)
         return;
     }
 
-    Velocity = vect(0, 0, 0);
-    Acceleration = vect(0, 0, 0);
-
-    // The landmarks are actor ORIGINS taken from the map export. Triggers and
-    // NPCs sit near floor level, so teleporting the player's centre there
-    // buries the bottom of their collision cylinder in the floor and
-    // SetLocation refuses outright -- the first version of this function
-    // reported BLOCKED for every ground-level landmark. Lift the destination
-    // clear of the floor and climb if the first try is still occupied.
-    // Try straight up first, then step outward on a ring at each height.
-    // A pure vertical climb is not enough on its own: CNNGoto final sits on
-    // the MagdaleneInsideTube trigger, whose collision radius is only 40, and
-    // every vertical offset there was refused -- the spot is walled in
-    // closely enough that the player cylinder never fits directly above it.
-    for (attempt = 0; attempt < 20; attempt++)
-    {
-        tryLoc = dest;
-        tryLoc.Z += 50 + ((attempt / 5) * 60);
-
-        // attempt%5 == 0 is the exact spot; 1-4 fan out N/E/S/W by 80 units.
-        ring = attempt % 5;
-        if (ring == 1)      tryLoc.X += 80;
-        else if (ring == 2) tryLoc.X -= 80;
-        else if (ring == 3) tryLoc.Y += 80;
-        else if (ring == 4) tryLoc.Y -= 80;
-
-        if (SetLocation(tryLoc))
-        {
-            // Logged as well as shown on the HUD: ClientMessage never reaches
-            // the log, so a run driven from the console leaves no trace of
-            // where the player went. "cnn log CNN L2" then reads back as a
-            // session transcript -- teleports interleaved with the flag
-            // changes they caused.
-            ClientMessage("CNNGoto: " $ where $ " " $ tryLoc);
-            Log("CNN L2 goto: " $ where $ " -> " $ tryLoc);
-            BringFollowers(tryLoc);
-            return;
-        }
-    }
+    if (TryLandNear(dest, where))
+        return;
 
     // Every offset refused. Being on the wrong map is one cause -- these are
     // L2 coordinates and land in solid geometry anywhere else -- but only say
@@ -1505,6 +1467,84 @@ exec function CNNGoto(string where)
 
     ClientMessage("CNNGoto: " $ where $ " is blocked -- type ghost first, then retry");
     Log("CNN L2 goto: " $ where $ " BLOCKED at " $ dest);
+}
+
+// ----------------------------------------------------------------------
+// TryLandNear()
+//
+// Shared landing-spot search extracted from CNNGoto (2026-09-23) so
+// CNNGotoVec can reuse it for arbitrary coordinates, not just the named
+// landmark table. See CNNGoto's own comment for why the search exists at
+// all: landmarks are actor ORIGINS at floor level, so teleporting the
+// player's centre there buries their collision cylinder and SetLocation
+// refuses outright. Lifts clear of the floor and fans out on a ring at
+// each height if the first try is still occupied.
+// ----------------------------------------------------------------------
+
+function bool TryLandNear(vector dest, string label)
+{
+    local vector tryLoc;
+    local int attempt, ring;
+
+    Velocity = vect(0, 0, 0);
+    Acceleration = vect(0, 0, 0);
+
+    for (attempt = 0; attempt < 20; attempt++)
+    {
+        tryLoc = dest;
+        tryLoc.Z += 50 + ((attempt / 5) * 60);
+
+        // attempt%5 == 0 is the exact spot; 1-4 fan out N/E/S/W by 80 units.
+        ring = attempt % 5;
+        if (ring == 1)      tryLoc.X += 80;
+        else if (ring == 2) tryLoc.X -= 80;
+        else if (ring == 3) tryLoc.Y += 80;
+        else if (ring == 4) tryLoc.Y -= 80;
+
+        if (SetLocation(tryLoc))
+        {
+            // Logged as well as shown on the HUD: ClientMessage never reaches
+            // the log, so a run driven from the console leaves no trace of
+            // where the player went. "cnn log CNN L2" then reads back as a
+            // session transcript -- teleports interleaved with the flag
+            // changes they caused.
+            ClientMessage("CNNGoto: " $ label $ " " $ tryLoc);
+            Log("CNN L2 goto: " $ label $ " -> " $ tryLoc);
+            BringFollowers(tryLoc);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// ----------------------------------------------------------------------
+// CNNGotoVec()
+//
+// Raw-coordinate teleport, added 2026-09-23 to test approaching Magdalene
+// in stages (several waypoints with real waits between, driven externally
+// by the agent bridge) instead of one instant point-blank CNNGoto jump --
+// see CNNConverse's header comment and memory/project_agent_bridge.md.
+// Live testing found her auto-greeting bark never resolves on its own
+// after an instant teleport to dist=4; this exists to test whether a
+// gradual approach avoids triggering that stuck state in the first place.
+// No map/landmark validation beyond TryLandNear's own search -- caller is
+// responsible for sane coordinates.
+// ----------------------------------------------------------------------
+
+exec function CNNGotoVec(float x, float y, float z)
+{
+    local vector dest;
+
+    dest.X = x;
+    dest.Y = y;
+    dest.Z = z;
+
+    if (!TryLandNear(dest, "vec"))
+    {
+        ClientMessage("CNNGotoVec: blocked at " $ dest);
+        Log("CNN L2 goto: vec " $ dest $ " BLOCKED");
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -1610,6 +1650,8 @@ exec function CNNAgentRun(int seq, string rest)
 
     if (cmd == "GOTO")
         CNNGoto(arg);
+    else if (cmd == "GOTOVEC")
+        CNNAgentGotoVec(arg);
     else if (cmd == "FIRE")
         ConsoleCommand("CNNFire " $ arg); // string->name needs the console's own parser; no script-side cast exists
     else if (cmd == "OPEN")
@@ -1638,7 +1680,42 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
     else
         ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
-            " -- use GOTO/FIRE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/GOTOVEC/FIRE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+}
+
+// ----------------------------------------------------------------------
+// CNNAgentGotoVec()
+//
+// Splits a "<x> <y> <z>" arg string (space-separated, whole numbers or
+// decimals) and calls CNNGotoVec. Kept separate from CNNAgentRun's own
+// single first-space split (cmd/rest) since this needs two more splits for
+// three tokens.
+// ----------------------------------------------------------------------
+
+function CNNAgentGotoVec(string arg)
+{
+    local string xStr, yStr, zStr, rest;
+    local int p1, p2;
+
+    p1 = InStr(arg, " ");
+    if (p1 == -1)
+    {
+        Log("CNN L2 goto: GOTOVEC malformed arg (expected \"x y z\"): " $ arg);
+        return;
+    }
+    xStr = Left(arg, p1);
+    rest = Right(arg, Len(arg) - p1 - 1);
+
+    p2 = InStr(rest, " ");
+    if (p2 == -1)
+    {
+        Log("CNN L2 goto: GOTOVEC malformed arg (expected \"x y z\"): " $ arg);
+        return;
+    }
+    yStr = Left(rest, p2);
+    zStr = Right(rest, Len(rest) - p2 - 1);
+
+    CNNGotoVec(float(xStr), float(yStr), float(zStr));
 }
 
 defaultproperties

@@ -629,3 +629,54 @@ including ones no live actor owns, labels each reference SET / CHECK / PRECOND /
 its output can be diffed in git. Neither replaces the other — but note that Invoke Con
 could not have found the inert trigger, because it inspects actor-bound conversations, not
 triggers.
+
+---
+
+## 9. Manual QA test plan — reaching each ending by hand
+
+For a human tester playing normally (no console). All four share the same opening: arrive
+on L2 (from L1, or `CNNGoto start` for a dev build), walk forward a few steps — `OnLevel2`
+sets itself automatically (trigger radius 150, right at spawn). Everything below happens
+after that.
+
+**Mutiny (worst ending)** — the outlier: doesn't touch the tube at all.
+1. Die anywhere on L2, by any means (or die during the upload sequence later).
+2. Judged instantly, no further action needed. Takes priority over every other ending if
+   it happens at any point in the run.
+
+**Conspiracy (default/neutral ending)** — the baseline: do nothing extra.
+1. Walk the main path toward the tube area (`LoadingInTube`, deep south of spawn) without
+   talking to Magdalene, Samantha Reed, or triggering the Level-2-Labs terminal.
+2. Reach the tube — this fires the upload cutscene automatically.
+3. Ending resolves to Conspiracy because none of the other endings' conditions were met.
+
+**Hijacking (best ending)** — talk to Magdalene, finish the conversation.
+1. Find Magdalene (friendly from the start, follows you once you clear her for the labs).
+2. Frob her and play `MagdaleneHijackTheStation` **all the way to its last line** — the
+   flag that unlocks this ending is set at the very end of the conversation, so walking
+   away partway through earns nothing.
+3. (Optional, part of the same content) use the IoT terminal to give her clearance to the
+   Level 2 labs — she'll relocate and start following you.
+4. Reach the tube same as Conspiracy. Ending resolves to Hijacking instead.
+
+**Transcend (alternate ending)** — talk to Samantha Reed, expose Mike Wong. **Two known
+data bugs, both already worked around in script, but the actual scene was never confirmed
+to play end-to-end by a human:**
+1. Walk into the trigger near the early corridor (the one that starts `MeetSamanthaReed`)
+   — it used to be silently dead (no `BindName`), a startup script patch now fixes it, log
+   confirms the patch runs every load.
+2. **Open question for this test:** Samantha Reed herself is physically far away (deep in
+   the lower labs), and Deus Ex needs a conversation's speakers actually present to run the
+   scene — nobody has confirmed live whether touching the trigger from that distance
+   successfully starts her dialogue, or just fires the trigger into nothing. If dialogue
+   doesn't start, that's the finding — report exactly where you triggered it from.
+3. Follow the conversation to its `ContinueOn` branch to set the flag this ending needs.
+4. Reach the tube as usual.
+5. **Do not bother with the "expose via social boss" alternate route** — it needs a
+   precondition (`ReadyForSocialBoss`) that nothing in the shipped map ever sets. Confirmed
+   dead by reading the data, not worth a tester's time.
+
+**What to report back, for any ending that doesn't resolve as expected:** which ending
+screen you actually landed on, and — if you have console access — `cnn log "CNN L2 flag"`
+right after, which prints every flag change with a timestamp and reads back as a
+transcript of exactly what the level thought had happened.

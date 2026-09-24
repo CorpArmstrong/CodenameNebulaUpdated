@@ -68,6 +68,9 @@ var float        mj12SecondsLeft;
 var float        mj12ArrivedSeconds;
 var TimerDisplay mj12Window;
 var bool         bWheelHintShown;
+var vector       bridgeGuardSpot[4];
+var Avatar       bridgeGuard[4];
+var localized string BridgeNotClearMessage;
 var localized string MJ12GoalText;
 var localized string MJ12StartMessage;
 var localized string MJ12TimerLabel;
@@ -845,6 +848,8 @@ function StartMJ12Countdown()
         Log("CNN L2: bridge door " $ door.Name $ " state=" $ door.GetStateName() $ " keyNum=" $ door.KeyNum $ " opening=" $ door.bOpening);
     }
 
+    SpawnBridgeGuards();
+
     goal = Player.AddGoal('L2_HijackBeforeMJ12', true);
     if (goal != None)
         goal.SetText(MJ12GoalText);
@@ -908,6 +913,49 @@ function UpdateMJ12Countdown()
 }
 
 // ----------------------------------------------------------------------
+// SpawnBridgeGuards() / IsBridgeClear()
+//
+// The bridge is two thousand units from Magdalene's conversation, so the
+// MJ12 countdown alone made Hijacking the shortest path of the three. Per
+// her own line ("Wipe all enemies and hijack the station"), Page's avatars
+// now hold the bridge: they spawn in the approach corridor in front of the
+// helm platform when the countdown starts -- the player is down in the labs
+// then, well out of sight -- and the wheel only counts once they are dead.
+// Spots were picked with tools/map_probe.js (corridor floor -1352, 48 up
+// for the collision half-height), clear of Mephistopheles at the wheel and
+// the Wong/Reed scene further north. User-decided 2026-09-24.
+// ----------------------------------------------------------------------
+
+function SpawnBridgeGuards()
+{
+    local int i, spawned;
+    local rotator facing;
+
+    facing.Yaw = 16384;   // face north, toward the bridge door
+
+    for (i = 0; i < ArrayCount(bridgeGuardSpot); i++)
+    {
+        bridgeGuard[i] = Spawn(class'Avatar',,, bridgeGuardSpot[i], facing);
+        if (bridgeGuard[i] != None)
+        {
+            bridgeGuard[i].SetOrders('Standing', '', true);
+            spawned++;
+        }
+    }
+    Log("CNN L2: " $ spawned $ " avatar guard(s) placed on the bridge");
+}
+
+function bool IsBridgeClear()
+{
+    local int i;
+
+    for (i = 0; i < ArrayCount(bridgeGuard); i++)
+        if ((bridgeGuard[i] != None) && (bridgeGuard[i].Health > 0) && !bridgeGuard[i].IsInState('Dying'))
+            return false;
+    return true;
+}
+
+// ----------------------------------------------------------------------
 // CheckShipsWheel()
 //
 // Taking the wheel is frobbing ShipsWheel0 on the bridge, which spins it
@@ -934,6 +982,16 @@ function CheckShipsWheel()
     if (!wheel.bSpinning)
     {
         bWheelHintShown = false;
+        return;
+    }
+
+    if (!IsBridgeClear())
+    {
+        if (!bWheelHintShown)
+        {
+            bWheelHintShown = true;
+            Player.ClientMessage(BridgeNotClearMessage);
+        }
         return;
     }
 
@@ -1113,7 +1171,12 @@ defaultproperties
     trackedFlag(22)=MagdaleneArmed
     trackedFlag(23)=MJ12TimerStarted
     trackedFlag(24)=MJ12Arrived
-    MJ12GoalText="Hijack the station: take the ship's wheel on the bridge with Magdalene before MJ12 arrive. Or upload yourselves in the Avatar Lab tube."
+    MJ12GoalText="Hijack the station: clear Page's avatars off the bridge and take the ship's wheel with Magdalene before MJ12 arrive. Or upload yourselves in the Avatar Lab tube."
+    BridgeNotClearMessage="Page's avatars still hold the bridge. Clear it first."
+    bridgeGuardSpot(0)=(X=700.000000,Y=-4250.000000,Z=-1304.000000)
+    bridgeGuardSpot(1)=(X=1000.000000,Y=-4250.000000,Z=-1304.000000)
+    bridgeGuardSpot(2)=(X=780.000000,Y=-4380.000000,Z=-1304.000000)
+    bridgeGuardSpot(3)=(X=940.000000,Y=-4380.000000,Z=-1304.000000)
     MJ12StartMessage="MJ12 are on their way. The bridge is open."
     MJ12TimerLabel="MJ12 ARRIVAL"
     MJ12ArrivedMessage="MJ12 have docked with Ophelia."

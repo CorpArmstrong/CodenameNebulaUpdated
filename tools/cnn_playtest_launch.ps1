@@ -89,7 +89,7 @@ Start-Sleep -Seconds 3
 
 $proc = Get-Process -Name "DeusEx 1112fm (Original EXE)" -ErrorAction SilentlyContinue
 if ($proc) {
-    Write-Host "Launched (PID $($proc.Id)). Next: toolsn_agent_wait_alive.ps1 (returns as soon as the bridge answers)."
+    Write-Host "Launched (PID $($proc.Id)). Next: tools\cnn_agent_wait_alive.ps1 (returns as soon as the bridge answers)."
 } else {
     Write-Host "WARNING: process not found after launch -- check for a blocking dialog (e.g. Recovery Mode) on screen."
 }

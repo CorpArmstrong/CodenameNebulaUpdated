@@ -115,7 +115,7 @@ function Trigger(Actor Other, Pawn EventInstigator)
         // freed window.
         timerWin = DeusExRootWindow(player.rootWindow).hud.timer;
         if (timerWin == none)
-            timerWin = DeusExRootWindow(player.rootWindow).hud.CreateTimerWindow();
+            timerWin = class'CNNTimerDisplay'.static.CreateIn(DeusExRootWindow(player.rootWindow).hud);
         if (timerWin == none)
             return;
         timerWin.bFlash = False;

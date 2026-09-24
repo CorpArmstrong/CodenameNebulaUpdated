@@ -579,6 +579,7 @@ function DoLevelStuff()
     CheckMagdaleneArmed();
     CheckUploadStarted();
     UpdateMJ12Countdown();
+    AggroBridgeGuards();
     CheckShipsWheel();
     CheckPlayerDeath();
     CheckEndingReached();
@@ -792,8 +793,8 @@ function CheckEndingReached()
     // user-decided 2026-09-24). Her conversation opens the bridge and starts
     // the MJ12 arrival countdown -- see UpdateMJ12Countdown().
 
-    // HIJACKING (best) -- Tantalus takes the ship's wheel on the bridge with
-    // Magdalene beside him before MJ12 arrive. See CheckShipsWheel().
+    // HIJACKING (best) -- Tantalus clears the bridge and takes the ship's
+    // wheel before MJ12 arrive, with Magdalene alive. See CheckShipsWheel().
     if (flags.GetBool('TookSteeringWheel'))
     {
         TravelToEnding(MAP_HIJACKING);
@@ -888,7 +889,7 @@ function UpdateMJ12Countdown()
     {
         root = DeusExRootWindow(Player.rootWindow);
         if ((root != None) && (root.hud != None))
-            mj12Window = root.hud.CreateTimerWindow();
+            mj12Window = class'CNNTimerDisplay'.static.CreateIn(root.hud);
         if (mj12Window != None)
             mj12Window.message = MJ12TimerLabel;
     }
@@ -938,11 +939,70 @@ function SpawnBridgeGuards()
         bridgeGuard[i] = Spawn(class'Avatar',,, bridgeGuardSpot[i], facing);
         if (bridgeGuard[i] != None)
         {
+            // A ScriptedPawn gets its InitialInventory (the knife) and
+            // InitialAlliances in its StartUp state; the immediate SetOrders
+            // below would skip that, leaving an unarmed guard that drops out
+            // of Attacking every second (seen 2026-09-24). Do it first.
+            bridgeGuard[i].InitializePawn();
+
+            // The class's InitialAlliances alone left them passive in play
+            // (2026-09-24): state the hostility explicitly, for whatever
+            // alliance the player and Magdalene are actually in.
+            bridgeGuard[i].ChangeAlly('Player', -1, true);
+            if (Player.Alliance != '')
+                bridgeGuard[i].ChangeAlly(Player.Alliance, -1, true);
+
+            // Avatar extends Male1, a civilian: HumanCivilian's fears made the
+            // guards FLEE the player in play -- they ran onto the helm
+            // platform and fell into the pit around it (2026-09-24). Guards
+            // stand their ground and answer weapons and shots with attacks.
+            bridgeGuard[i].bFearHacking = false;
+            bridgeGuard[i].bFearWeapon = false;
+            bridgeGuard[i].bFearShot = false;
+            bridgeGuard[i].bFearInjury = false;
+            bridgeGuard[i].bFearIndirectInjury = false;
+            bridgeGuard[i].bFearCarcass = false;
+            bridgeGuard[i].bFearDistress = false;
+            bridgeGuard[i].bFearAlarm = false;
+            bridgeGuard[i].bFearProjectiles = false;
+            bridgeGuard[i].bHateWeapon = true;
+            bridgeGuard[i].bHateShot = true;
+            bridgeGuard[i].bHateInjury = true;
+
             bridgeGuard[i].SetOrders('Standing', '', true);
             spawned++;
         }
     }
     Log("CNN L2: " $ spawned $ " avatar guard(s) placed on the bridge");
+}
+
+// Perception alone didn't turn them on the player in play, so once the
+// player comes within range the script hands each guard its enemy and sends
+// it into Attacking. Not during a conversation (the JCboss scene plays in
+// this corridor), and they hold position until then.
+function AggroBridgeGuards()
+{
+    local int i;
+
+    if (Player.IsInState('Conversation') || flags.GetBool('TookSteeringWheel'))
+        return;
+
+    for (i = 0; i < ArrayCount(bridgeGuard); i++)
+    {
+        if ((bridgeGuard[i] == None) || (bridgeGuard[i].Health <= 0) || bridgeGuard[i].IsInState('Dying'))
+            continue;
+        // Only nudge guards that are idle or running away; any combat state
+        // of their own (Attacking, Seeking, TakingHit...) is left alone.
+        if (!bridgeGuard[i].IsInState('Standing') && !bridgeGuard[i].IsInState('Wandering') &&
+            !bridgeGuard[i].IsInState('Fleeing'))
+            continue;
+        if (VSize(bridgeGuard[i].Location - Player.Location) > 1000)
+            continue;
+
+        bridgeGuard[i].SetEnemy(Player, Level.TimeSeconds, true);
+        bridgeGuard[i].GotoState('Attacking');
+        Log("CNN L2: bridge guard " $ bridgeGuard[i].Name $ " engaging the player, state=" $ bridgeGuard[i].GetStateName());
+    }
 }
 
 function bool IsBridgeClear()
@@ -961,7 +1021,7 @@ function bool IsBridgeClear()
 // Taking the wheel is frobbing ShipsWheel0 on the bridge, which spins it
 // (vanilla ShipsWheel.Frob sets bSpinning for 2-7s -- long enough for this
 // 1s poll). It only counts while the MJ12 countdown runs, and only with
-// Magdalene alive and on the bridge: hijacking is her plan, and the ending
+// the guards dead and Magdalene alive: hijacking is her plan, and the ending
 // shows her at the wheel. Otherwise the player is told why, once per spin.
 // ----------------------------------------------------------------------
 
@@ -995,14 +1055,16 @@ function CheckShipsWheel()
         return;
     }
 
+    // Magdalene only has to be alive, not at the wheel: she can't get up to
+    // the helm platform (found in play 2026-09-24), and it's her plan either
+    // way. User-decided.
     foreach AllActors(class'Magdalene', mag)
         break;
 
-    if ((mag != None) && (mag.Health > 0) && !mag.IsInState('Dying') &&
-        (VSize(mag.Location - wheel.Location) <= 800))
+    if ((mag != None) && (mag.Health > 0) && !mag.IsInState('Dying'))
     {
         flags.SetBool('TookSteeringWheel', true);
-        Log("CNN L2: took the ship's wheel with Magdalene on the bridge");
+        Log("CNN L2: took the ship's wheel, bridge cleared, Magdalene alive");
     }
     else if (!bWheelHintShown)
     {
@@ -1180,5 +1242,5 @@ defaultproperties
     MJ12StartMessage="MJ12 are on their way. The bridge is open."
     MJ12TimerLabel="MJ12 ARRIVAL"
     MJ12ArrivedMessage="MJ12 have docked with Ophelia."
-    WheelNeedsMagdaleneMessage="You can't fly her alone. Bring Magdalene to the bridge."
+    WheelNeedsMagdaleneMessage="Without Magdalene there is no one to fly her with."
 }

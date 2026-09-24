@@ -87,7 +87,6 @@ function PrepareFirstFrame()
     RepairSamanthaReedTrigger();
     RepairCommCenterBattle();
     DisableStaleTubeMapExit();
-    RepairArmMagdaleneWeapons();
     RemoveStrayL1Conversations();
     DedupeConversations();
     DumpConversationLists();
@@ -595,7 +594,8 @@ function CheckMagdaleneArmed()
     if ((mag.FindInventoryType(class'WeaponPlasmaRifle') != None) ||
         (mag.FindInventoryType(class'WeaponAssaultGun') != None) ||
         (mag.FindInventoryType(class'WeaponSnowblind') != None) ||
-        (mag.FindInventoryType(class'WeaponMiniCrossbow') != None))
+        (mag.FindInventoryType(class'WeaponMiniCrossbow') != None) ||
+        (mag.FindInventoryType(class'WeaponCrowbar') != None))  // the "mini-crossbow" line actually hands over WeaponCrowbar
     {
         flags.SetBool('MagdaleneArmed', true);
     }
@@ -715,68 +715,6 @@ function BringMagdaleneToTube()
         if ((Player.conPlay == None) && Player.StartConversationByName('MagdaleneInsideTube', mag, false, true))
             Log("CNN L2: started the MagdaleneInsideTube goodbye after the button");
     }
-}
-
-// ----------------------------------------------------------------------
-// RepairArmMagdaleneWeapons()
-//
-// ArmMagdalene (the "I'll give you a weapon" choice) checks and transfers
-// weapons by class name, and two names don't exist: WeaponAssaultRifle
-// (Deus Ex's is WeaponAssaultGun -- the line says "Take my assault gun")
-// and WeaponSnowblind / ApocalypseInside.WeaponSnowblind (the class is
-// CNN.WeaponSnowblind). Those two branches could never fire, and every
-// evaluation logged "Failed to load 'Class DeusEx.WeaponAssaultRifle'".
-// Fixed on the loaded conversation, same reasoning as the other repairs:
-// no ConEdit, and a no-op once the .con is corrected.
-// ----------------------------------------------------------------------
-
-function RepairArmMagdaleneWeapons()
-{
-    local Magdalene mag;
-    local ConListItem item;
-    local ConEvent ev;
-    local int fixed;
-
-    foreach AllActors(class'Magdalene', mag)
-    {
-        for (item = ConListItem(mag.conListItems); item != None; item = item.next)
-        {
-            if ((item.con == None) || (item.con.conName != 'ArmMagdalene'))
-                continue;
-
-            for (ev = item.con.eventList; ev != None; ev = ev.nextEvent)
-            {
-                if (ConEventCheckObject(ev) != None)
-                    fixed += FixArmWeaponRef(ConEventCheckObject(ev).objectName, ConEventCheckObject(ev).checkObject);
-                else if (ConEventTransferObject(ev) != None)
-                    fixed += FixArmWeaponRef(ConEventTransferObject(ev).objectName, ConEventTransferObject(ev).giveObject);
-            }
-        }
-    }
-
-    if (fixed > 0)
-        Log("CNN L2: repaired " $ fixed $ " weapon reference(s) in ArmMagdalene");
-}
-
-function int FixArmWeaponRef(out string objName, out class<Inventory> objClass)
-{
-    local string key;
-
-    key = Caps(objName);
-
-    if (key == "WEAPONASSAULTRIFLE")
-    {
-        objName = "WeaponAssaultGun";
-        objClass = class'WeaponAssaultGun';
-        return 1;
-    }
-    if ((key == "WEAPONSNOWBLIND") || (key == "APOCALYPSEINSIDE.WEAPONSNOWBLIND"))
-    {
-        objName = "CNN.WeaponSnowblind";
-        objClass = class'WeaponSnowblind';
-        return 1;
-    }
-    return 0;
 }
 
 // ----------------------------------------------------------------------

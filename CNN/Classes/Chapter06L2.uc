@@ -630,18 +630,14 @@ function CheckEndingReached()
     if (bEndingTriggered)
         return;
 
-    // Death is judged immediately, without waiting for the level's final
-    // beat. Per the GDD (L2_UploadTimerCheck in L2_QuestSystem_Nodes.md),
-    // dying once the upload is under way is the sad Transcendence ending --
-    // the real Tantalus dies, the uploaded copies live on -- while dying
-    // any earlier is MUTINY (worst; Gray Goo consumes LA). User-confirmed
-    // 2026-09-24.
-    if (flags.GetBool('PlayerDiedDuringUpload'))
-    {
-        TravelToEnding(MAP_TRANSCEND);
-        return;
-    }
-    if (flags.GetBool('PlayerDiedOnL2'))
+    // MUTINY (worst) -- Gray Goo consumes LA. Death is judged immediately,
+    // without waiting for the level's final beat, whether it happens before
+    // the upload or during it. The GDD (L2_UploadTimerCheck) sends a death
+    // during the upload to the sad Transcendence instead, but that shares
+    // 06_Transcend and its quote with surviving the upload, so dying would
+    // have been a shortcut to the same screen. Deliberate departure,
+    // user-decided 2026-09-24.
+    if (flags.GetBool('PlayerDiedOnL2') || flags.GetBool('PlayerDiedDuringUpload'))
     {
         TravelToEnding(MAP_MUTINY);
         return;

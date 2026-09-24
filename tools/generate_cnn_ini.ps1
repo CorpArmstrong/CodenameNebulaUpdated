@@ -247,6 +247,53 @@ if (-not $pathsInjected) {
     $result += $cnnPaths
 }
 
+# ---- Kentie/Han renderer settings ----
+# Kentie's launcher runs its own D3D10 renderer and keeps that renderer's
+# settings in <Documents>\Deus Ex\System\DeusEx.ini, not in the game's
+# System\DeusEx.ini this script reads. Without the section CNN.ini falls
+# back to the renderer's defaults -- ClassicLighting and
+# simulateMultipassTexturing off -- and the maps render much darker than
+# the same player's vanilla game (reported 2026-09-24). Copy the player's
+# own sections across; failing that, write the two settings that restore
+# the original lighting.
+function Get-DocumentsPath {
+    try {
+        $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+        $raw = (Get-ItemProperty -Path $key -Name 'Personal' -ErrorAction Stop).Personal
+        return [Environment]::ExpandEnvironmentVariables($raw)
+    } catch {
+        return (Join-Path $env:USERPROFILE 'Documents')
+    }
+}
+
+$rendererSections = @('D3D10Drv.D3D10RenderDevice', 'D3D11Drv.D3D11RenderDevice')
+$presentSections = $result | Where-Object { $_ -match '^\[(.+)\]\s*$' } | ForEach-Object { $_.Trim('[', ']', ' ') }
+$kentieIni = Join-Path (Get-DocumentsPath) 'Deus Ex\System\DeusEx.ini'
+$kentieLines = if (Test-Path $kentieIni) { [System.IO.File]::ReadAllLines($kentieIni) } else { @() }
+
+foreach ($section in $rendererSections) {
+    if ($presentSections -contains $section) { continue }
+
+    $copied = @()
+    $inSection = $false
+    foreach ($line in $kentieLines) {
+        if ($line -match '^\[(.+)\]\s*$') { $inSection = ($matches[1] -eq $section); if ($inSection) { $copied += $line }; continue }
+        if ($inSection) { $copied += $line }
+    }
+
+    if ($copied.Count -gt 0) {
+        $result += ''
+        $result += $copied
+        Write-Host "    Renderer settings: copied [$section] from $kentieIni"
+    } elseif ($section -eq 'D3D10Drv.D3D10RenderDevice') {
+        $result += ''
+        $result += "[$section]"
+        $result += 'ClassicLighting=True'
+        $result += 'simulateMultipassTexturing=True'
+        Write-Host "    Renderer settings: default [$section] (original lighting)"
+    }
+}
+
 # ---- Write CNN.ini ----
 [System.IO.File]::WriteAllLines($OutputIni, $result)
 Write-Host "  Generated CNN.ini from player's DeusEx.ini"

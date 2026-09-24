@@ -690,6 +690,13 @@ function BringMagdaleneToTube()
         }
         if ((button == None) || (VSize(Player.Location - button.Location) > 700))
             return;
+
+        // Close enough for the map's own LoadingInTube scene to walk her in;
+        // only step in when she has fallen out of conversation range. Moving
+        // her while she was right there looked odd in play (2026-09-24): she
+        // popped into the tube and then the map sent her there again.
+        if (VSize(mag.Location - Player.Location) <= 800)
+            return;
     }
 
     if (VSize(mag.Location - point.Location) > 200)

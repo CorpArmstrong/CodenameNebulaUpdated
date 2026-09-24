@@ -435,17 +435,17 @@ function RepairSamanthaReedTrigger()
 // The tube button fires MiniGameDispatcher, which starts a 30s survival
 // countdown (CNNEventTimer). When it runs out it fires
 // LabEndingSuccessDispatcher, whose OutEvents(3) is MutinyMapExit -- a
-// MapExit left over from before the four ending maps existed, with
-// DestMap="transcendence", a map that doesn't exist. Found from play
-// 2026-09-24: a player who reached the tube without Magdalene (so the
-// MagdaleneInsideTube goodbye never ran) got "Failed to load
-// 'transcendence'" instead of an ending.
+// MapExit with DestMap="transcendence". That was the GDD's "survived the
+// upload -> Benevolent Dictator" exit, but the map is now 06_Transcend, so
+// it fails. Found from play 2026-09-24: a player who reached the tube
+// without Magdalene (so the MagdaleneInsideTube goodbye never ran) got
+// "Failed to load 'transcendence'" instead of an ending.
 //
 // Retagging it leaves the dispatcher's other events (shake, tube mover,
 // lifecycle toggle) intact while the dispatcher's MutinyMapExit event finds
-// nothing. The ending is chosen by CheckEndingReached() instead, which
-// treats TimerExpired (set by CNNEventTimer) like FinalGoodbyePlayed. Only
-// an exit pointing at the missing map is touched.
+// nothing. CheckEndingReached() makes the same trip on TimerExpired (set by
+// CNNEventTimer), so the ending is logged and chosen in one place like the
+// others. Only an exit pointing at the missing map is touched.
 // ----------------------------------------------------------------------
 
 function DisableStaleTubeMapExit()
@@ -559,8 +559,36 @@ function DoLevelStuff()
     if (bLogMagdalene)
         LogMagdaleneState();
 
+    CheckUploadStarted();
     CheckPlayerDeath();
     CheckEndingReached();
+}
+
+// ----------------------------------------------------------------------
+// CheckUploadStarted()
+//
+// The tube button (MiniGameDispatcher) is the GDD's L2_PressUploadButton:
+// it starts the upload countdown, shown by CNNEventTimer's window. Nothing
+// in the map or the conversations sets TantalusUploadStarted, so without
+// this CheckPlayerDeath() could never tell a death during the upload from
+// one before it.
+// ----------------------------------------------------------------------
+
+function CheckUploadStarted()
+{
+    local CNNEventTimer uploadTimer;
+
+    if (flags.GetBool('TantalusUploadStarted'))
+        return;
+
+    foreach AllActors(class'CNNEventTimer', uploadTimer)
+    {
+        if (uploadTimer.timerWin != None)
+        {
+            flags.SetBool('TantalusUploadStarted', true);
+            return;
+        }
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -602,23 +630,39 @@ function CheckEndingReached()
     if (bEndingTriggered)
         return;
 
-    // MUTINY (worst) -- Gray Goo consumes LA. Death is its own failure state
-    // and is judged immediately, without waiting for the level's final beat.
-    if (flags.GetBool('PlayerDiedOnL2') || flags.GetBool('PlayerDiedDuringUpload'))
+    // Death is judged immediately, without waiting for the level's final
+    // beat. Per the GDD (L2_UploadTimerCheck in L2_QuestSystem_Nodes.md),
+    // dying once the upload is under way is the sad Transcendence ending --
+    // the real Tantalus dies, the uploaded copies live on -- while dying
+    // any earlier is MUTINY (worst; Gray Goo consumes LA). User-confirmed
+    // 2026-09-24.
+    if (flags.GetBool('PlayerDiedDuringUpload'))
+    {
+        TravelToEnding(MAP_TRANSCEND);
+        return;
+    }
+    if (flags.GetBool('PlayerDiedOnL2'))
     {
         TravelToEnding(MAP_MUTINY);
         return;
     }
 
-    // Everything below is judged only once L2 reaches its final beat:
-    // FinalGoodbyePlayed (SET by the MagdaleneInsideTube conversation), or
-    // surviving the tube countdown without her (TimerExpired, set by
-    // CNNEventTimer -- see DisableStaleTubeMapExit()). A conversation still
-    // playing when the timer runs out is allowed to finish first.
+    // Everything below is judged only once L2 reaches its final beat. The
+    // usual one is FinalGoodbyePlayed (SET by the MagdaleneInsideTube
+    // conversation); its outcomes follow further down.
+    //
+    // The other is surviving the upload countdown without that goodbye
+    // (TimerExpired, set by CNNEventTimer). The GDD sends that to Benevolent
+    // Dictator on 06_Transcend, which is also where the map's own MapExit
+    // pointed before the map was renamed -- see DisableStaleTubeMapExit().
+    // A conversation still playing when the timer runs out finishes first.
     if (!flags.GetBool('FinalGoodbyePlayed'))
     {
         if (!flags.GetBool('TimerExpired') || Player.IsInState('Conversation'))
             return;
+
+        TravelToEnding(MAP_TRANSCEND);
+        return;
     }
 
     // HIJACKING (best) -- docks and L1 fall away, Tantalus and Magdalene make
@@ -647,6 +691,18 @@ function CheckEndingReached()
 
 function TravelToEnding(string endMapName)
 {
+    local DeusExRootWindow root;
+
+    // Travelling within mission 6 saves L2 first, and that save walks the
+    // HUD. Dying during the upload countdown left an aug icon whose
+    // clientObject pointed at a freed object, and the save GPFed on it
+    // (FArchiveSaveTagExports <- IwHUDActiveAug.clientObject, 2026-09-24).
+    // L2's HUD is never shown again after an ending, so drop those
+    // references rather than chase which object went first.
+    root = DeusExRootWindow(Player.rootWindow);
+    if ((root != None) && (root.hud != None) && (IwHUDActiveItemsDisplay(root.hud.activeItems) != None))
+        IwHUDActiveItemsDisplay(root.hud.activeItems).ClearAugmentationDisplay();
+
     bEndingTriggered = true;
     flags.SetBool('IsGameCompleted', true);
     Log("CNN L2: ending reached after " $ int(levelSeconds) $ "s -> " $ endMapName);

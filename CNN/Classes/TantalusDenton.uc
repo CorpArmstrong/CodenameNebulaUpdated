@@ -865,6 +865,7 @@ exec function CNNTestEnding(string which)
     FlagBase.SetBool('PlayerDiedOnL2', false);
     FlagBase.SetBool('PlayerDiedDuringUpload', false);
     FlagBase.SetBool('CanArmMagdalene', false);
+    FlagBase.SetBool('MagdaleneArmed', false);
     FlagBase.SetBool('MikeWongExposed', false);
     FlagBase.SetBool('SeedsOfDoubtPlanted', false);
     FlagBase.SetBool('FinalGoodbyePlayed', false);
@@ -876,6 +877,7 @@ exec function CNNTestEnding(string which)
     else if (which == "HIJACK")
     {
         FlagBase.SetBool('CanArmMagdalene', true);
+        FlagBase.SetBool('MagdaleneArmed', true);
         FlagBase.SetBool('FinalGoodbyePlayed', true);
     }
     else if (which == "TRANSCEND")
@@ -1607,6 +1609,7 @@ exec function CNNFlags()
         " IsArrivalPlayed=" $ FlagBase.GetBool('IsArrivalPlayed') $
         " OnLevel2=" $ FlagBase.GetBool('OnLevel2') $
         " CanArmMagdalene=" $ FlagBase.GetBool('CanArmMagdalene') $
+        " MagdaleneArmed=" $ FlagBase.GetBool('MagdaleneArmed') $
         " ReadyForBossFight=" $ FlagBase.GetBool('ReadyForBossFight') $
         " ReadyForSocialBoss=" $ FlagBase.GetBool('ReadyForSocialBoss') $
         " FinalGoodbyePlayed=" $ FlagBase.GetBool('FinalGoodbyePlayed'));

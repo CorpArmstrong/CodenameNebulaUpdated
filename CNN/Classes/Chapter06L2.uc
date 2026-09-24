@@ -561,9 +561,44 @@ function DoLevelStuff()
     if (bLogMagdalene)
         LogMagdaleneState();
 
+    CheckMagdaleneArmed();
     CheckUploadStarted();
     CheckPlayerDeath();
     CheckEndingReached();
+}
+
+// ----------------------------------------------------------------------
+// CheckMagdaleneArmed()
+//
+// MagdaleneHijackTheStation is linear and unavoidable on the way to the IoT
+// terminal, and always ends by setting CanArmMagdalene -- which, as its name
+// says, only unlocks ArmMagdalene ("I'll give you a weapon"). Keying
+// Hijacking on CanArmMagdalene alone made Conspiracy unreachable in play
+// (found 2026-09-24). ArmMagdalene sets no flag; its outcome is the weapon
+// it transfers to her. So Hijacking now needs her actually armed by the
+// player: one of the four weapons ArmMagdalene can hand over. Her own coil
+// gun (InitialInventory) doesn't count. User-decided 2026-09-24.
+// ----------------------------------------------------------------------
+
+function CheckMagdaleneArmed()
+{
+    local Magdalene mag;
+
+    if (flags.GetBool('MagdaleneArmed') || !flags.GetBool('CanArmMagdalene'))
+        return;
+
+    foreach AllActors(class'Magdalene', mag)
+        break;
+    if (mag == None)
+        return;
+
+    if ((mag.FindInventoryType(class'WeaponPlasmaRifle') != None) ||
+        (mag.FindInventoryType(class'WeaponAssaultGun') != None) ||
+        (mag.FindInventoryType(class'WeaponSnowblind') != None) ||
+        (mag.FindInventoryType(class'WeaponMiniCrossbow') != None))
+    {
+        flags.SetBool('MagdaleneArmed', true);
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -808,9 +843,10 @@ function CheckEndingReached()
     }
 
     // HIJACKING (best) -- docks and L1 fall away, Tantalus and Magdalene make
-    // it out. Earned by arming Magdalene, i.e. the MagdaleneHijackTheStation
-    // path, which is what sets CanArmMagdalene.
-    if (flags.GetBool('CanArmMagdalene'))
+    // it out. Earned by actually arming Magdalene in ArmMagdalene, which
+    // MagdaleneHijackTheStation unlocks (CanArmMagdalene); a goodbye without
+    // arming her falls through to Conspiracy. See CheckMagdaleneArmed().
+    if (flags.GetBool('CanArmMagdalene') && flags.GetBool('MagdaleneArmed'))
     {
         TravelToEnding(MAP_HIJACKING);
         return;
@@ -980,4 +1016,5 @@ defaultproperties
     trackedFlag(19)=TookSteeringWheel
     trackedFlag(20)=TimerExpired
     trackedFlag(21)=IsGameCompleted
+    trackedFlag(22)=MagdaleneArmed
 }

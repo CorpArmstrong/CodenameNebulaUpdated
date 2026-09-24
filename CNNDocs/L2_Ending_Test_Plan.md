@@ -76,9 +76,11 @@ Linkin Park*.
 
 ## 2. Conspiracy (нейтральная, «пассивная» концовка)
 
-**Условие:** прощание с Магдаленой в капсуле (`FinalGoodbyePlayed`, разговор
-`MagdaleneInsideTube`) без условий Hijacking и Transcend (`CanArmMagdalene`,
-`MikeWongExposed`, `SeedsOfDoubtPlanted` все `False`).
+**Условие (изменено 24.09.2026):** прощание с Магдаленой в капсуле (`FinalGoodbyePlayed`,
+разговор `MagdaleneInsideTube`), **не отдав ей оружие** в разговоре `ArmMagdalene`
+(`MagdaleneArmed=False`), и без условий Transcend (`MikeWongExposed`, `SeedsOfDoubtPlanted`
+оба `False`). `CanArmMagdalene=True` здесь нормально: разговор `MagdaleneHijackTheStation`
+у терминала IoT неизбежен и всегда его ставит.
 
 **Важно (изменено 24.09.2026 по GDD):** кнопка у капсулы — это запуск загрузки
 (`L2_PressUploadButton`). Если нажать её **без Магдалены** и дожить до конца таймера, это
@@ -86,33 +88,29 @@ Linkin Park*.
 ведёт в Mutiny. Для Conspiracy Магдалена должна быть в капсуле, чтобы прощание сыграло.
 
 **Маршрут:**
-1. Привести Магдалену к капсуле: терминал IoT → «Give clearance to Level 2 Labs», и она
-   идёт за тобой. Разговор `MagdaleneHijackTheStation` **до конца не доводить**, иначе будет
-   Hijacking.
-2. **Не** трогать Саманту Рид и доктора Мефистофеля.
-3. У капсулы нажать кнопку. Через ~1 с должно пойти прощание `MagdaleneInsideTube`, и сразу
-   после него переход в концовку.
-4. Проверить `CNNFlags`: `FinalGoodbyePlayed=True`, а `CanArmMagdalene`, `MikeWongExposed`,
-   `SeedsOfDoubtPlanted` все `False`.
+1. Спуститься к Магдалене и терминалу IoT. Разговор `MagdaleneHijackTheStation` пройдёт
+   сам, после него она идёт за тобой.
+2. **Не** заговаривать с ней второй раз, то есть не открывать `ArmMagdalene` («I'll give
+   you a weapon»). Если он открылся, выбрать отказ «I'll handle the enemy».
+3. Терминал IoT → «Give clearance to Level 2 Labs», подняться наверх.
+4. **Не** трогать Саманту Рид и доктора Мефистофеля.
+5. Подойти к кнопке у капсулы. Магдалену скрипт сам поставит в капсулу (в логе `moved
+   Magdalene into the tube`). Нажать кнопку: прощание, затем переход в концовку.
+6. Проверить `CNNFlags`: `FinalGoodbyePlayed=True`, `MagdaleneArmed=False`.
 
-**Если Магдалена отстала** (с 24.09.2026): если она идёт за тобой (`Following`), при нажатии
-кнопки скрипт сам перенесёт её в капсулу и запустит прощание. В логе будут строки `moved
-Magdalene to the tube` и `started the MagdaleneInsideTube goodbye`. Если прощание всё равно
-не пошло (она не шла за тобой, враждебна или мертва), таймер дойдёт до конца и игра уйдёт в
-`06_Transcend`. Это правильное поведение. Запиши, где была Магдалена.
+**Если Магдалена отстала:** если она идёт за тобой (`Following`), скрипт ставит её в
+капсулу, как только ты подходишь к кнопке. Если нажать кнопку раньше, будет одна попытка
+после нажатия (в логе `started the MagdaleneInsideTube goodbye after the button`). Если
+прощание всё равно не пошло (она не шла за тобой, враждебна или мертва), таймер дойдёт до
+конца и игра уйдёт в `06_Transcend`. Это правильное поведение. Запиши, где была Магдалена.
 
-**Как перевести Магдалену в `Following`, не доводя до Hijacking:** освободить её через
-терминал IoT («Give clearance to Level 2 Labs»). Разговор `MagdaleneHijackTheStation`
-**до конца не доводить**: он ставит `CanArmMagdalene`, и будет Hijacking (так и вышло в
-прогоне 24.09.2026).
+**Закрытая дверь** по пути к капсуле — это люк `AvatarLabHatch`. Он открывается терминалом
+IoT, так задумано.
 
 **Исправлено 24.09.2026** (найдено этим тестом): конец таймера раньше вёл на несуществующую
 карту `transcendence`, падал с GPF в `CNNEventTimer`, вылетал при переходе из-за отладочного
 спама в `CNNSimpleActorSpawner.Tick()`, а смерть во время загрузки роняла сохранение L2 на
 иконке аугментации в HUD.
-
-**Открытый вопрос:** по дороге к капсуле была закрытая дверь, пришлось пролетать через
-`ghost`. Отметь, какая дверь и чем она должна открываться по сюжету (`CNNWhere` у двери).
 
 **Ожидается:** карта `06_Conspiracy`, цитата *«Under the burning sun I take a look around…»
 — Oblivion, 30 Seconds to Mars*.
@@ -121,20 +119,19 @@ Magdalene to the tube` и `started the MagdaleneInsideTube goodbye`. Если п
 
 ## 3. Hijacking (лучшая концовка)
 
-**Условие:** флаг `CanArmMagdalene` (последняя реплика разговора
-`MagdaleneHijackTheStation`), затем финал у капсулы.
+**Условие (изменено 24.09.2026):** `CanArmMagdalene` **и** Магдалена вооружена тобой в
+разговоре `ArmMagdalene` (`MagdaleneArmed=True`), затем прощание в капсуле.
 
 **Маршрут:**
-1. Найти Магдалену. В начале уровня она в нижних лабораториях (`CNNGoto magdalene`, если
-   не находится). Если уже дал допуск через терминал IoT, она наверху, у стартовой зоны
-   (`CNNGoto maglab`).
-2. Заговорить с ней (frob) и пройти `MagdaleneHijackTheStation` **до самой последней
-   реплики**. Флаг ставится только в конце: если прервёшь разговор, концовку не получишь.
-3. Сразу проверить `CNNFlags`: `CanArmMagdalene=True`. Если `False`, это главная находка
-   этого теста. Запиши, дошёл ли разговор до конца.
-4. (По желанию) терминал IoT → «Give clearance to Level 2 Labs»: Магдалена начнёт ходить
-   за тобой.
-5. Дойти до капсулы, дождаться прощания (`FinalGoodbyePlayed=True`).
+1. Спуститься к Магдалене: `MagdaleneHijackTheStation` пройдёт сам, `CanArmMagdalene=True`.
+2. Заговорить с ней ещё раз (frob). Откроется `ArmMagdalene` («I'll give you a weapon»).
+   Отдать ей одно из оружий: плазменную винтовку, автомат, напалмомёт или мини-арбалет. Оно
+   должно быть у тебя в инвентаре (можно `AllWeapons`). Автомат и напалмомёт раньше не
+   работали, это починено 24.09.2026, так что проверь именно их.
+3. Проверить `CNNFlags`: `MagdaleneArmed=True` (появится в течение секунды после передачи).
+4. Терминал IoT → «Give clearance to Level 2 Labs», подняться к капсуле. Магдалену скрипт
+   поставит в капсулу сам.
+5. Нажать кнопку, дождаться прощания (`FinalGoodbyePlayed=True`).
 
 **Ожидается:** карта `06_Hijacking`, Магдалена у штурвала на фоне планеты, цитата
 *«To strive, to seek, to find, and not to yield.» — Ulysses, Alfred, Lord Tennyson*.

@@ -27,6 +27,9 @@ function UpdateButtonStatus()
 {
 	local DeusExLevelInfo info;
 
+	if (player == None)
+		return;
+
 	info = player.GetLevelInfo();
 
 	// Disable the "Save Game" and "Back to Game" menu choices

@@ -22,26 +22,26 @@ This is a sampling-based review — not every file was read line-by-line.
 
 ---
 
-## HIGH — open
+## HIGH — all fixed or mitigated (2026-09-24)
 
 | # | Issue | Location | Severity rationale |
 |---|---|---|---|
-| H1 | **Empty bool function** — `function bool CheckActorDistances() { }` declares `bool` return but has empty body. Returns undefined value. | [TantalusDenton.uc:152-155](CNN/Classes/TantalusDenton.uc#L152) | Undefined return value used by callers |
-| H2 | **Duplicate augmentation grant** — Identical `if (HasHeartAug && !PlayerGotHeartAug)` block appears twice. Player can receive `AugHeartLung` twice. | [Chapter05.uc:115,160](CNN/Classes/Chapter05.uc#L115) | Gameplay duplication |
-| H3 | **Missing null check on `conOwner`** — `AllActors` loop may not find a matching actor; `conOwner` stays `None` and is passed directly to `StartConversationByName()`. | [CnnConversTrigger.uc:52](CNN/Classes/CnnConversTrigger.uc#L52) | Potential crash |
-| H4 | **Missing player null guard in menu** — `UpdateButtonStatus()` accesses `player.IsInState('Dying')` without null-check on `player`. | [ApocalypseInsideMenuMain.uc:39-46](CNN/Classes/ApocalypseInsideMenuMain.uc#L39) | Edge-case crash |
+| H1 | **FIXED (verified 2026-09-24, was already in code)** — ~~**Empty bool function**~~ now an explicit `return false;` intentional override with a comment. Original: — `function bool CheckActorDistances() { }` declares `bool` return but has empty body. Returns undefined value. | [TantalusDenton.uc:152-155](CNN/Classes/TantalusDenton.uc#L152) | Undefined return value used by callers |
+| H2 | **FIXED 2026-09-24** — second block removed (it was dead: the first block already sets `PlayerGotHeartAug`, so it could never fire, but it was noise). Original: ~~**Duplicate augmentation grant**~~ — Identical `if (HasHeartAug && !PlayerGotHeartAug)` block appears twice. Player can receive `AugHeartLung` twice. | [Chapter05.uc:115,160](CNN/Classes/Chapter05.uc#L115) | Gameplay duplication |
+| H3 | **FIXED (verified 2026-09-24, was already in code)** — `if (conOwner == none) return;` present after the loop. Original: ~~**Missing null check on `conOwner`**~~ — `AllActors` loop may not find a matching actor; `conOwner` stays `None` and is passed directly to `StartConversationByName()`. | [CnnConversTrigger.uc:52](CNN/Classes/CnnConversTrigger.uc#L52) | Potential crash |
+| H4 | **FIXED 2026-09-24** — early `if (player == None) return;` (vanilla MenuMain has the same unguarded code; defensive only). Original: ~~**Missing player null guard in menu**~~ — `UpdateButtonStatus()` accesses `player.IsInState('Dying')` without null-check on `player`. | [ApocalypseInsideMenuMain.uc:39-46](CNN/Classes/ApocalypseInsideMenuMain.uc#L39) | Edge-case crash |
 | H5 | **MITIGATED 2026-09-23 (permanent safety net; underlying compiler flakiness not fully root-caused)** — **Scrolling end-credits showed no text, which collapsed the entire ending sequence to a few seconds and dumped the player at the main menu** (`CreditsScrollWindow`'s scroll-to-bottom check has nothing to scroll when the text is empty, so `FinishedScrolling()` fires almost immediately and [CNNCreditsWindow.uc](CNN/Classes/CNNCreditsWindow.uc)'s `DestroyWindow()` sends the player to `"cnnentry"`). Confirmed live on Hijacking/Mutiny/Transcend and by the user watching a Conspiracy playtest. **Investigation trail:** (1) a real, reproducible bug found and fixed — `CNNText/Classes/CNNTextImport.uc` had an explicit `#exec DEUSEXTEXT IMPORT` for `CNNCredits.txt` at the same time `CNN/Classes/ApocalypseInsideText.uc`'s `#exec ALLDEUSEXTEXT IMPORT` auto-discovered the same file (it used to sit directly at `CNNText\Text\` root, the only spot ALLDEUSEXTEXT's top-level-only cross-package scan reaches — every other CNNText content file lives one level deeper in a mission05/mission06 subfolder and was never affected), so two mechanisms raced to import one file into a resource both named `CNNCredits`; removing the duplicate directive let one real compile through with the content present (verified: `grep -aoc "Project director" CNN.u` → `3`). (2) Moved `CNNCredits.txt` to `CNNText/Text/credits/CNNCredits.txt`, fully out of `ALLDEUSEXTEXT`'s reach, importing it solely via the same explicit `DEUSEXTEXT IMPORT` every other (reliably-working) CNNText text file uses; `CNNCreditsWindow.uc`'s `textPackage` changed from `"CNN"` to `"CNNText"` to match. (3) Despite this, the import proved **nondeterministic across repeat compiles with zero source changes** — content present in only ~1 of 8 otherwise-identical rebuilds, tested down to a 10-line excerpt and a differently-named resource, ruling out file length, resource-name collision, and location as the sole cause. This rate is in the same ballpark as the already-documented ~25% intermittent GPF on `CONVERSATION IMPORT` (`feedback_ucc_gpf` memory) and is suspected to be the same underlying 32-bit `ucc.exe` heap flakiness, manifesting as a silently dropped resource instead of a hard crash — not confirmed. **Fix landed:** [CNNCreditsWindow.ProcessText()](CNN/Classes/CNNCreditsWindow.uc#L12) now has a permanent hardcoded fallback (behind `if (!bGotText)`) that renders whenever `parser.OpenText()` fails for that compile, so players always see real credits text either way. Verified live twice: once via the real import (full scroll, correct pace, correct formatting) and once via the fallback (same rendering quality, shorter list) — confirming `CreditsScrollWindow`/`CNNCreditsWindow`'s display logic was never the problem. **Still open:** root cause of the ucc-level nondeterminism itself. **Re-confirmed 2026-09-23 (later same day):** all four endings (Hijacking, Mutiny, Conspiracy, Transcend) individually re-tested via fresh `CNNAgentBridge` sessions — credits scroll with real content and the game returns cleanly to `cnnentry` every time, no exceptions. The fallback text was also expanded since first written here (now lists all 8 known team members, not a short excerpt) and briefly grew a dev-facing `"Full credits: <path>"` pointer line alongside that expansion; a user caught it as player-visible during a playtest and it was removed. | [ApocalypseInsideText.uc:5](CNN/Classes/ApocalypseInsideText.uc#L5), [CNNTextImport.uc](CNNText/Classes/CNNTextImport.uc), [CNNCreditsWindow.uc](CNN/Classes/CNNCreditsWindow.uc) | Player-visible content bug, ending sequence — mitigated |
 
 ---
 
-## MEDIUM — open
+## MEDIUM — all fixed (2026-09-24)
 
 | # | Issue | Location | Severity |
 |---|---|---|---|
-| M1 | **Debug msgbox in production** — `msgbox("MovedPawn not finded")` blocks game with a dialog (also typo: "finded" → "found", and filename typo: "Triger"). Should be `ClientMessage()` or removed. | [MandatoryMovementTriger.uc:72](CNN/Classes/MandatoryMovementTriger.uc#L72) | UX issue + dual typo |
-| M2 | **Debug msgbox calls in production** — multiple `self.MsgBox()` calls in trigger handlers. | [DestroyTrigger.uc:38,42,49](CNN/Classes/DestroyTrigger.uc#L38) | UX issue |
-| M3 | **Skin assignment without validation** — `proxy.Skin = SkinTex;` without checking SkinTex was populated. | [AiLaserEmitter.uc](CNN/Classes/AiLaserEmitter.uc) (around BeginPlay) | Silent visual bug |
-| M4 | **Cryptic history comments** — Two alternative laser-filter implementations preserved as inline commented-out lines with annotation markers. Future maintainers can't tell which branch was authoritative. | [AiLaserEmitter.uc:25-31](CNN/Classes/AiLaserEmitter.uc#L25), [CNNLaserEmitter.uc:25-29](CNN/Classes/CNNLaserEmitter.uc#L25) | Maintainability |
+| M1 | **FIXED (verified 2026-09-24, was already in code)** — now `Log(...)`. Original: ~~**Debug msgbox in production**~~ — `msgbox("MovedPawn not finded")` blocks game with a dialog (also typo: "finded" → "found", and filename typo: "Triger"). Should be `ClientMessage()` or removed. | [MandatoryMovementTriger.uc:72](CNN/Classes/MandatoryMovementTriger.uc#L72) | UX issue + dual typo |
+| M2 | **FIXED (verified 2026-09-24, was already in code)** — no `MsgBox` left in DestroyTrigger. Original: ~~**Debug msgbox calls in production**~~ — multiple `self.MsgBox()` calls in trigger handlers. | [DestroyTrigger.uc:38,42,49](CNN/Classes/DestroyTrigger.uc#L38) | UX issue |
+| M3 | **FIXED 2026-09-24** — guarded on `SkinTex != none`; also fixed an unguarded `spot[i].Skin` right after `Spawn` in `CalcTrace`. Original: ~~**Skin assignment without validation**~~ — `proxy.Skin = SkinTex;` without checking SkinTex was populated. | [AiLaserEmitter.uc](CNN/Classes/AiLaserEmitter.uc) (around BeginPlay) | Silent visual bug |
+| M4 | **FIXED 2026-09-24** — commented alternatives removed from AiLaserEmitter and CNNLaserEmitter, replaced by one comment stating the difference from vanilla. Original: ~~**Cryptic history comments**~~ — Two alternative laser-filter implementations preserved as inline commented-out lines with annotation markers. Future maintainers can't tell which branch was authoritative. | [AiLaserEmitter.uc:25-31](CNN/Classes/AiLaserEmitter.uc#L25), [CNNLaserEmitter.uc:25-29](CNN/Classes/CNNLaserEmitter.uc#L25) | Maintainability |
 | M5 | ~~`DeusExLevelInfo.mapName` copy-pasted across three L2 ending maps~~ **FIXED 2026-09-23 (self-heal, no UnrealEd)** — `06_Conspiracy`, `06_Hijacking`, `06_Transcend` all reported `mapName="MUTINY"`. Rather than editing the `.dx` files in UnrealEd, [CNNMissionEndgame.uc:52-62](CNN/Classes/CNNMissionEndgame.uc#L52) now writes the correct value at runtime: `dxInfo.mapName = mapName` right where `mapName` is already computed from `GetURLMap()`. `dxInfo` (declared on `MissionScript`) is the actual placed `DeusExLevelInfo` instance for the current map, found via `foreach AllActors` — writing to it changes only that map's instance, not the class default, and runs once per map load (guarded by `bQuotePrinted`). Verified live: `CNNWhere` on `06_Transcend` now reports `map=06_TRANSCEND` instead of `Mutiny`. | [CNNMissionEndgame.uc:52-62](CNN/Classes/CNNMissionEndgame.uc#L52) | Fixed |
 
 ---
@@ -63,15 +63,15 @@ The existing review section in [CLAUDE.md:254-321](CLAUDE.md#L254) lists 20 issu
 | 1 | Incomplete file `ApocalypseInsideMenuStartNewGame.uc:62` | **FIXED** (2026-04-05) | `defaultproperties` now closes properly at line 64 |
 | 2 | Self-assignment `ToggleActorLifecycleTrigger.uc:44` | **FALSE POSITIVE** (verified 2026-04-25) | See C1 |
 | 3 | Pass-by-value `ObjectsDestroyNotifier.uc:78` | **FIXED** (2026-04-25) | See C2 |
-| 4 | Empty bool `TantalusDenton.uc:155` | **OPEN** | See H1 |
+| 4 | Empty bool `TantalusDenton.uc:155` | **FIXED** | See H1 |
 | 5 | Buffer overflow `Converter/obj2de/main.cpp:285` | OUT OF SCOPE (C++) | This review is UC only |
 | 6 | Unsigned underflow `main.cpp:281` | OUT OF SCOPE (C++) | |
 | 7 | AllActors in Tick `CNNUPS.uc:287-334` | **WITHDRAWN** (idiomatic UE1) | See N1 |
-| 8 | Missing null `CnnConversTrigger.uc:52` | **OPEN** | See H3 |
+| 8 | Missing null `CnnConversTrigger.uc:52` | **FIXED** | See H3 |
 | 9 | Missing null `LaserSecurityController.uc:91` | **FIXED** (2026-04-25) | See C3 |
-| 10 | Duplicate aug grant `Chapter05.uc:115,160` | **OPEN** | See H2 |
+| 10 | Duplicate aug grant `Chapter05.uc:115,160` | **FIXED** (2026-09-24) | See H2 |
 | 11-13 | Various C++ issues | OUT OF SCOPE | |
-| 14 | Debug msgbox `MandatoryMovementTriger.uc:72` | **OPEN** | See M1 + M2 |
+| 14 | Debug msgbox `MandatoryMovementTriger.uc:72` | **FIXED** | See M1 + M2 |
 | 15 | Uninitialized `bKeyHandled` `CNNCreditsWindowTest.uc:206-211` | NOT VERIFIED | Worth a follow-up |
 | 16 | Variable shadowing in C++ | OUT OF SCOPE | |
 | 17 | Path inconsistency `InstallUtil.cs:119-123` | OUT OF SCOPE (C#) | |
@@ -79,7 +79,7 @@ The existing review section in [CLAUDE.md:254-321](CLAUDE.md#L254) lists 20 issu
 | 19 | Code dup `GreenLaserTrigger`/`DamageLaserTrigger` | NOT VERIFIED | Worth a follow-up |
 | 20 | Typo `laserDipatcher` `CNNMisson01.uc:7` | NOT VERIFIED | Trivial fix |
 
-**Net:** Of 12 UnrealScript issues from the original list: 3 fixed, 1 false positive, 1 withdrawn, 4 confirmed open, 3 unverified.
+**Net (2026-09-24):** Of 12 UnrealScript issues from the original list: 7 fixed, 1 false positive, 1 withdrawn, 0 open, 3 unverified.
 
 ---
 
@@ -100,7 +100,7 @@ The existing review section in [CLAUDE.md:254-321](CLAUDE.md#L254) lists 20 issu
 
 ## Recommendations
 
-### Immediate fixes (~1-2 hours total)
+### Immediate fixes — all done 2026-09-24
 
 | Priority | Action | File:Line | Effort |
 |---|---|---|---|

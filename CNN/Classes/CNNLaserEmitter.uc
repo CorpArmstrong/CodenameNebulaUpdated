@@ -22,11 +22,13 @@ function CalcTrace(float deltaTime)
     {
         foreach TraceTexture(class'Actor', target, texName, texGroup, texFlags, HitLocation, HitNormal, EndTrace, StartTrace)
         {
-            if ((target.DrawType == DT_None) || target.IsA('Triggers')) // JJ change here
+            // Unlike vanilla LaserEmitter: pass through triggers rather than
+            // hidden actors, and let movers interrupt the beam like any actor.
+            if ((target.DrawType == DT_None) || target.IsA('Triggers'))
             {
                 // do nothing - keep on tracing
             }
-            else if (target == Level)                         // JJ change here
+            else if (target == Level)
             {
                 break;
             }

@@ -70,9 +70,14 @@ event Tick(float deltaTime)
 //
 function Timer()
 {
+    // Clear the reference too: windows are freed on Destroy(), and a dangling
+    // one GPFs in ULevel::CleanupDestroyed on the next tick (confirmed
+    // 2026-09-24 once the level stopped travelling away at timer end).
+    // Vanilla Timer.uc has the same bug; it just never survives long enough.
     if (timerWin != none)
     {
         timerWin.Destroy();
+        timerWin = none;
     }
 }
 
@@ -129,8 +134,6 @@ function FindAndSetDispatcher()
     {
         disp = dp;
     }
-
-    BroadcastMessage("Dispatcher name: " $  disp.Name);
 }
 
 function StopTimer()
@@ -144,13 +147,16 @@ function StopTimer()
 
 function TimerEvent()
 {
-    BroadcastMessage("Inside TimerEvent!");
+    local DeusExPlayer player;
+
+    // Lets the mission script treat "survived the countdown" as the level's
+    // final beat -- Chapter06L2.CheckEndingReached() reads this.
+    player = DeusExPlayer(GetPlayerPawn());
+    if ((player != none) && (player.FlagBase != none))
+        player.FlagBase.SetBool('TimerExpired', true);
 
     if (disp != none)
-    {
-        BroadcastMessage("Dispatcher is not null!");
-	    disp.Trigger(self, DeusExPlayer(GetPlayerPawn()));
-    }
+        disp.Trigger(self, player);
 }
 
 defaultproperties

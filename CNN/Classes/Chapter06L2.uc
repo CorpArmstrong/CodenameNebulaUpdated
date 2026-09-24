@@ -85,6 +85,7 @@ function PrepareFirstFrame()
 
     RepairSamanthaReedTrigger();
     RepairCommCenterBattle();
+    DisableStaleTubeMapExit();
     RemoveStrayL1Conversations();
     DedupeConversations();
     DumpConversationLists();
@@ -429,6 +430,39 @@ function RepairSamanthaReedTrigger()
 }
 
 // ----------------------------------------------------------------------
+// DisableStaleTubeMapExit()
+//
+// The tube button fires MiniGameDispatcher, which starts a 30s survival
+// countdown (CNNEventTimer). When it runs out it fires
+// LabEndingSuccessDispatcher, whose OutEvents(3) is MutinyMapExit -- a
+// MapExit left over from before the four ending maps existed, with
+// DestMap="transcendence", a map that doesn't exist. Found from play
+// 2026-09-24: a player who reached the tube without Magdalene (so the
+// MagdaleneInsideTube goodbye never ran) got "Failed to load
+// 'transcendence'" instead of an ending.
+//
+// Retagging it leaves the dispatcher's other events (shake, tube mover,
+// lifecycle toggle) intact while the dispatcher's MutinyMapExit event finds
+// nothing. The ending is chosen by CheckEndingReached() instead, which
+// treats TimerExpired (set by CNNEventTimer) like FinalGoodbyePlayed. Only
+// an exit pointing at the missing map is touched.
+// ----------------------------------------------------------------------
+
+function DisableStaleTubeMapExit()
+{
+    local MapExit exit;
+
+    foreach AllActors(class'MapExit', exit)
+    {
+        if (Caps(exit.DestMap) == "TRANSCENDENCE")
+        {
+            exit.Tag = 'DisabledStaleMapExit';
+            Log("CNN L2: disabled stale MapExit '" $ exit.Name $ "' (DestMap=transcendence)");
+        }
+    }
+}
+
+// ----------------------------------------------------------------------
 // RepairCommCenterBattle()
 //
 // The CommCenterDispatcher fires the comm centre fight:
@@ -576,10 +610,16 @@ function CheckEndingReached()
         return;
     }
 
-    // Everything below is judged only once L2 reaches its final beat.
-    // FinalGoodbyePlayed is SET by the MagdaleneInsideTube conversation.
+    // Everything below is judged only once L2 reaches its final beat:
+    // FinalGoodbyePlayed (SET by the MagdaleneInsideTube conversation), or
+    // surviving the tube countdown without her (TimerExpired, set by
+    // CNNEventTimer -- see DisableStaleTubeMapExit()). A conversation still
+    // playing when the timer runs out is allowed to finish first.
     if (!flags.GetBool('FinalGoodbyePlayed'))
-        return;
+    {
+        if (!flags.GetBool('TimerExpired') || Player.IsInState('Conversation'))
+            return;
+    }
 
     // HIJACKING (best) -- docks and L1 fall away, Tantalus and Magdalene make
     // it out. Earned by arming Magdalene, i.e. the MagdaleneHijackTheStation

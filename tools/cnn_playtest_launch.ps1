@@ -85,11 +85,11 @@ $argList = @("INI=`"$tempIni`"", "-EXEC=`"$autoStartFile`"", "-log")
 if (Test-Path $userIni) { $argList += "USERINI=`"$userIni`"" }
 
 Start-Process -FilePath $exe -ArgumentList $argList -WorkingDirectory $SystemDir
-Start-Sleep -Seconds 6
+Start-Sleep -Seconds 3
 
 $proc = Get-Process -Name "DeusEx 1112fm (Original EXE)" -ErrorAction SilentlyContinue
 if ($proc) {
-    Write-Host "Launched (PID $($proc.Id)). Wait ~10-15s for the menu level's bridge to come up, then use cnn_agent_send.ps1."
+    Write-Host "Launched (PID $($proc.Id)). Next: toolsn_agent_wait_alive.ps1 (returns as soon as the bridge answers)."
 } else {
     Write-Host "WARNING: process not found after launch -- check for a blocking dialog (e.g. Recovery Mode) on screen."
 }

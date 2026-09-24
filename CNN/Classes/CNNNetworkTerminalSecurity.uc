@@ -19,11 +19,8 @@ event InitWindow()
 
     if (player != none)
     {
-        player.BroadcastMessage("Player found!");
-
         foreach player.AllActors(class'CNNConversTrigger', _conTrig, conTrigTag)
         {
-            player.BroadcastMessage("ConTrig found!");
             conTrig = _conTrig;
             break;
         }
@@ -35,7 +32,6 @@ function OnLoginAction()
     if (!AreSpecialOptionsAvailable(true))
     {
         PlayBark();
-        player.BroadcastMessage("After triggering conversation!");
     }
 
     super.OnLoginAction();
@@ -45,7 +41,6 @@ function PlayBark()
 {
     if (player != none && conTrig != none)
     {
-        player.BroadcastMessage("Triggering conversation!");
         conTrig.Trigger(none, player);
     }
 }

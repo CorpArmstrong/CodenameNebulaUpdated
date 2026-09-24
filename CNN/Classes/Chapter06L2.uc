@@ -86,6 +86,7 @@ function PrepareFirstFrame()
     RepairSamanthaReedTrigger();
     RepairCommCenterBattle();
     DisableStaleTubeMapExit();
+    RepairArmMagdaleneWeapons();
     RemoveStrayL1Conversations();
     DedupeConversations();
     DumpConversationLists();
@@ -578,17 +579,130 @@ function CheckUploadStarted()
 {
     local CNNEventTimer uploadTimer;
 
-    if (flags.GetBool('TantalusUploadStarted'))
-        return;
-
-    foreach AllActors(class'CNNEventTimer', uploadTimer)
+    if (!flags.GetBool('TantalusUploadStarted'))
     {
-        if (uploadTimer.timerWin != None)
+        foreach AllActors(class'CNNEventTimer', uploadTimer)
         {
-            flags.SetBool('TantalusUploadStarted', true);
-            return;
+            if (uploadTimer.timerWin != None)
+            {
+                flags.SetBool('TantalusUploadStarted', true);
+                break;
+            }
         }
     }
+
+    // Checked every tick of the countdown, not just its first: she may only
+    // start following, or catch up, after the button was pressed.
+    if (flags.GetBool('TantalusUploadStarted') && !flags.GetBool('TimerExpired'))
+        BringMagdaleneToTube();
+}
+
+// ----------------------------------------------------------------------
+// BringMagdaleneToTube()
+//
+// The goodbye (MagdaleneInsideTube) is what lets a Hijacking, Transcend or
+// Conspiracy run end. The map starts it from the tube button, but only if
+// Magdalene is within the engine's 800-unit conversation radius, and the
+// map's own way of getting her there (LoadingInTube -> WalkIntoATube) needs
+// her close too. Found from play 2026-09-24: she was Following but still
+// fighting avatars far behind when the button was pressed, so a run that
+// had earned Hijacking fell through to the no-goodbye route.
+//
+// So when the upload starts and she is alive and following the player but
+// the goodbye didn't start, put her at MagdalenePoint (the tube spot
+// OrdersTrigger2 sends her to) and start it. If she isn't with the player
+// -- never freed, hostile or dead -- nothing happens and the upload plays
+// out without her. User-decided 2026-09-24.
+// ----------------------------------------------------------------------
+
+function BringMagdaleneToTube()
+{
+    local Magdalene mag;
+    local Actor point;
+
+    if (flags.GetBool('FinalGoodbyePlayed') || (Player.conPlay != None))
+        return;
+
+    foreach AllActors(class'Magdalene', mag)
+        break;
+
+    if ((mag == None) || (mag.Health <= 0) || mag.IsInState('Dying') || (mag.Orders != 'Following'))
+        return;
+
+    foreach AllActors(class'Actor', point, 'MagdalenePoint')
+        break;
+
+    if ((point != None) && (VSize(mag.Location - point.Location) > 200))
+    {
+        mag.SetLocation(point.Location);
+        mag.SetRotation(point.Rotation);
+        Log("CNN L2: moved Magdalene to the tube for the goodbye (she was following but not there)");
+    }
+
+    if (Player.StartConversationByName('MagdaleneInsideTube', mag, false, true))
+        Log("CNN L2: started the MagdaleneInsideTube goodbye");
+}
+
+// ----------------------------------------------------------------------
+// RepairArmMagdaleneWeapons()
+//
+// ArmMagdalene (the "I'll give you a weapon" choice) checks and transfers
+// weapons by class name, and two names don't exist: WeaponAssaultRifle
+// (Deus Ex's is WeaponAssaultGun -- the line says "Take my assault gun")
+// and WeaponSnowblind / ApocalypseInside.WeaponSnowblind (the class is
+// CNN.WeaponSnowblind). Those two branches could never fire, and every
+// evaluation logged "Failed to load 'Class DeusEx.WeaponAssaultRifle'".
+// Fixed on the loaded conversation, same reasoning as the other repairs:
+// no ConEdit, and a no-op once the .con is corrected.
+// ----------------------------------------------------------------------
+
+function RepairArmMagdaleneWeapons()
+{
+    local Magdalene mag;
+    local ConListItem item;
+    local ConEvent ev;
+    local int fixed;
+
+    foreach AllActors(class'Magdalene', mag)
+    {
+        for (item = ConListItem(mag.conListItems); item != None; item = item.next)
+        {
+            if ((item.con == None) || (item.con.conName != 'ArmMagdalene'))
+                continue;
+
+            for (ev = item.con.eventList; ev != None; ev = ev.nextEvent)
+            {
+                if (ConEventCheckObject(ev) != None)
+                    fixed += FixArmWeaponRef(ConEventCheckObject(ev).objectName, ConEventCheckObject(ev).checkObject);
+                else if (ConEventTransferObject(ev) != None)
+                    fixed += FixArmWeaponRef(ConEventTransferObject(ev).objectName, ConEventTransferObject(ev).giveObject);
+            }
+        }
+    }
+
+    if (fixed > 0)
+        Log("CNN L2: repaired " $ fixed $ " weapon reference(s) in ArmMagdalene");
+}
+
+function int FixArmWeaponRef(out string objName, out class<Inventory> objClass)
+{
+    local string key;
+
+    key = Caps(objName);
+
+    if (key == "WEAPONASSAULTRIFLE")
+    {
+        objName = "WeaponAssaultGun";
+        objClass = class'WeaponAssaultGun';
+        return 1;
+    }
+    if ((key == "WEAPONSNOWBLIND") || (key == "APOCALYPSEINSIDE.WEAPONSNOWBLIND"))
+    {
+        objName = "CNN.WeaponSnowblind";
+        objClass = class'WeaponSnowblind';
+        return 1;
+    }
+    return 0;
 }
 
 // ----------------------------------------------------------------------

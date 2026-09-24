@@ -26,7 +26,6 @@ function DestroyObjects()
         {
             foreach AllActors(class'Actor', actr, objects[i].tag)
             {
-                BroadcastMessage("Object: " $ actr.tag);
                 objects[i].tag = '';
                 actr.TakeDamage(300, none, vect(0, 0, 0), vect(0, 0, 0), 'Shot');
             }

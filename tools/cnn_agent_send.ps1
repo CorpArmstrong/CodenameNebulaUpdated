@@ -47,6 +47,16 @@ $seq++
 
 $line = "CNNAgentRun $seq $Cmd $Arg".TrimEnd()
 
+# Re-arm TantalusDenton's gate on every poll. Confirmed 2026-09-24 that no
+# in-game store survives a real travel into an ending map (the instance var,
+# the FlagBase copy -- wiped by MissionEndgame's DeleteAllFlags -- and even
+# the class default all come back False), so the bridge went deaf after every
+# TESTENDING. Not for QUIT: it is the last line left in the file, and a stale
+# file that re-arms itself would replay into the next normal launch.
+if ($Cmd -ne 'QUIT') {
+    $line = "set cnn.tantalusdenton bAgentAutoStart True`r`n$line"
+}
+
 # ASCII, no BOM: the engine's console-exec reader is old-school and a UTF-8
 # BOM on the first line has caused misparsed commands elsewhere in this repo.
 #
@@ -69,6 +79,6 @@ while ($true) {
 }
 [System.IO.File]::WriteAllText($seqFile, "$seq", [System.Text.Encoding]::ASCII)
 
-Write-Host "Queued (seq=$seq): $line"
+Write-Host "Queued (seq=$seq): $($line -replace "`r`n", ' | ')"
 Write-Host "Wrote: $cmdFile"
 Write-Host "Confirm with: tools\find_log.ps1 -SystemDir `"$SystemDir`" -Pattern `"CNN agent: seq=$seq`""

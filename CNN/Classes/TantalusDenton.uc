@@ -29,6 +29,7 @@ var travel private int lastAgentSeq;
 // already proven working here (cheaton.txt/cheatoff.txt in System\).
 var bool bAgentAutoStart;
 var private CNNAgentBridge agentBridge;
+var private int lastRejectedAgentSeq; // logs each rejected seq once, not every poll
 
 // Diagnostic-only (2026-09-23): when True, CNNConverse() skips its own
 // self-heal block (forced EndConversation()/InterruptConversation()/
@@ -1914,8 +1915,25 @@ exec function CNNAgentRun(int seq, string rest)
     // what actually keeps a normal playthrough inert -- by the time any
     // command reaches here (the bridge's first poll is ~1s after spawn),
     // the -EXEC file has long since run.
+    // Rehydrate here too, not only in PostBeginPlay: after a real travel the
+    // player's FlagBase can arrive after PostBeginPlay has already run.
+    if (!bAgentAutoStart && (FlagBase != None) && FlagBase.GetBool('CNNAgentAutoStart'))
+        bAgentAutoStart = True;
+
     if (!bAgentAutoStart)
+    {
+        // Only reachable when CNNAgentCmd.txt holds a command, which a
+        // normal playthrough never writes -- so this can't spam real play.
+        if (seq != lastRejectedAgentSeq)
+        {
+            lastRejectedAgentSeq = seq;
+            Log("CNN agent: seq=" $ seq $ " rejected -- bAgentAutoStart=False (default=" $
+                default.bAgentAutoStart $ " flagBase=" $ (FlagBase != None) $ ")");
+            if (FlagBase != None)
+                Log("CNN agent:   CNNAgentAutoStart flag=" $ FlagBase.GetBool('CNNAgentAutoStart'));
+        }
         return;
+    }
 
     // Persist to FlagBase the first time the gate succeeds, so a LATER
     // respawn that resets the instance var can rehydrate it in
@@ -1923,8 +1941,24 @@ exec function CNNAgentRun(int seq, string rest)
     if ((FlagBase != None) && !FlagBase.GetBool('CNNAgentAutoStart'))
         FlagBase.SetBool('CNNAgentAutoStart', True);
 
+    // The flag alone is not enough: every ending map's mission script
+    // (vanilla MissionEndgame.InitStateMachine) calls DeleteAllFlags, and a
+    // real travel into an ending map also resets TantalusDenton's class
+    // defaults (a script-written default read back 1 on L2, 0 on arrival
+    // at 06_Conspiracy) -- confirmed 2026-09-24, the real cause of the
+    // "multi-cycle degradation" seen 2026-09-23. Nothing in-process survives
+    // that, so tools/cnn_agent_send.ps1 re-arms the gate from outside by
+    // writing a `set ... bAgentAutoStart True` line ahead of every command.
+
     if (seq <= lastAgentSeq)
+    {
+        if ((seq != lastRejectedAgentSeq) && (seq < lastAgentSeq))
+        {
+            lastRejectedAgentSeq = seq;
+            Log("CNN agent: seq=" $ seq $ " rejected -- stale, lastAgentSeq=" $ lastAgentSeq);
+        }
         return;
+    }
 
     lastAgentSeq = seq;
 

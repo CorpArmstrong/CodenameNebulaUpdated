@@ -850,6 +850,7 @@ function StartMJ12Countdown()
     }
 
     SpawnBridgeGuards();
+    MoveMephistophelesOffTheWheel();
 
     goal = Player.AddGoal('L2_HijackBeforeMJ12', true);
     if (goal != None)
@@ -943,6 +944,9 @@ function SpawnBridgeGuards()
             // InitialAlliances in its StartUp state; the immediate SetOrders
             // below would skip that, leaving an unarmed guard that drops out
             // of Attacking every second (seen 2026-09-24). Do it first.
+            // Bridge guards carry swords instead of the class's knife.
+            bridgeGuard[i].InitialInventory[0].Inventory = class'WeaponSword';
+            bridgeGuard[i].InitialInventory[0].Count = 1;
             bridgeGuard[i].InitializePawn();
 
             // The class's InitialAlliances alone left them passive in play
@@ -1005,14 +1009,49 @@ function AggroBridgeGuards()
     }
 }
 
-function bool IsBridgeClear()
+// Mephistopheles (Doctor7, Tag Mephistopheles) stands at (866,-4480), right
+// between the approach and the wheel at (861,-4563), so in play he blocks
+// frobbing it (reported 2026-09-24). Move him behind the wheel, onto the
+// helm platform (floor -1263 at (861,-4650), per map_probe), facing the
+// player's approach.
+function MoveMephistophelesOffTheWheel()
 {
-    local int i;
+    local ScriptedPawn meph;
+    local vector spot;
+    local rotator facing;
+
+    spot.X = 861;
+    spot.Y = -4650;
+    spot.Z = -1215;
+    facing.Yaw = 16384;
+
+    foreach AllActors(class'ScriptedPawn', meph, 'Mephistopheles')
+    {
+        if (meph.SetLocation(spot))
+        {
+            meph.SetOrders('Standing', '', true);
+            meph.SetRotation(facing);
+            meph.DesiredRotation = facing;   // Standing otherwise turns him back to face the screens
+            Log("CNN L2: moved Mephistopheles behind the ship's wheel");
+        }
+        else
+            Log("CNN L2: could not move Mephistopheles off the wheel (blocked)");
+    }
+}
+
+function int AliveBridgeGuards()
+{
+    local int i, alive;
 
     for (i = 0; i < ArrayCount(bridgeGuard); i++)
         if ((bridgeGuard[i] != None) && (bridgeGuard[i].Health > 0) && !bridgeGuard[i].IsInState('Dying'))
-            return false;
-    return true;
+            alive++;
+    return alive;
+}
+
+function bool IsBridgeClear()
+{
+    return (AliveBridgeGuards() == 0);
 }
 
 // ----------------------------------------------------------------------
@@ -1051,6 +1090,7 @@ function CheckShipsWheel()
         {
             bWheelHintShown = true;
             Player.ClientMessage(BridgeNotClearMessage);
+            Log("CNN L2: wheel refused, " $ AliveBridgeGuards() $ " bridge guard(s) still alive");
         }
         return;
     }

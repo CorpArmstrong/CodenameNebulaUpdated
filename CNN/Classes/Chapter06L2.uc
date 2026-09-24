@@ -59,6 +59,7 @@ var Magdalene watchedMagdalene;
 var name      lastMagOrders;
 var string    lastMagEnemy;
 var bool      bMagWatchPrimed;
+var bool      bGoodbyeRescueTried;
 
 function InitStateMachine()
 {
@@ -591,10 +592,7 @@ function CheckUploadStarted()
         }
     }
 
-    // Checked every tick of the countdown, not just its first: she may only
-    // start following, or catch up, after the button was pressed.
-    if (flags.GetBool('TantalusUploadStarted') && !flags.GetBool('TimerExpired'))
-        BringMagdaleneToTube();
+    BringMagdaleneToTube();
 }
 
 // ----------------------------------------------------------------------
@@ -608,19 +606,30 @@ function CheckUploadStarted()
 // fighting avatars far behind when the button was pressed, so a run that
 // had earned Hijacking fell through to the no-goodbye route.
 //
-// So when the upload starts and she is alive and following the player but
-// the goodbye didn't start, put her at MagdalenePoint (the tube spot
-// OrdersTrigger2 sends her to) and start it. If she isn't with the player
-// -- never freed, hostile or dead -- nothing happens and the upload plays
-// out without her. User-decided 2026-09-24.
+// First fix placed her AFTER the button, every tick -- which looped: the
+// avatars reached her, the goodbye broke off, Following walked her back to
+// the player, and she was moved and restarted again (9 starts in one run).
+// So now she is placed the way the map intends, BEFORE the button: once the
+// player is near the tube button with her following, she is put at
+// MagdalenePoint inside the still-open tube and told to stand there. The
+// button then closes the tube on her and the map starts the goodbye itself.
+// If the button beats that anyway, there is a single rescue attempt after
+// it, never a retry. If she isn't with the player -- never freed, hostile
+// or dead -- nothing happens and the upload plays out without her.
+// User-decided 2026-09-24.
 // ----------------------------------------------------------------------
 
 function BringMagdaleneToTube()
 {
     local Magdalene mag;
-    local Actor point;
+    local Actor point, a, button;
+    local bool bUploading;
 
-    if (flags.GetBool('FinalGoodbyePlayed') || (Player.conPlay != None))
+    if (flags.GetBool('FinalGoodbyePlayed') || flags.GetBool('TimerExpired'))
+        return;
+
+    bUploading = flags.GetBool('TantalusUploadStarted');
+    if (bUploading && bGoodbyeRescueTried)
         return;
 
     foreach AllActors(class'Magdalene', mag)
@@ -631,16 +640,39 @@ function BringMagdaleneToTube()
 
     foreach AllActors(class'Actor', point, 'MagdalenePoint')
         break;
+    if (point == None)
+        return;
 
-    if ((point != None) && (VSize(mag.Location - point.Location) > 200))
+    if (!bUploading)
     {
-        mag.SetLocation(point.Location);
-        mag.SetRotation(point.Rotation);
-        Log("CNN L2: moved Magdalene to the tube for the goodbye (she was following but not there)");
+        foreach AllActors(class'Actor', a)
+        {
+            if (a.Event == 'MiniGameDispatcher')
+            {
+                button = a;
+                break;
+            }
+        }
+        if ((button == None) || (VSize(Player.Location - button.Location) > 700))
+            return;
     }
 
-    if (Player.StartConversationByName('MagdaleneInsideTube', mag, false, true))
-        Log("CNN L2: started the MagdaleneInsideTube goodbye");
+    if (VSize(mag.Location - point.Location) > 200)
+    {
+        if (mag.SetLocation(point.Location))
+            Log("CNN L2: moved Magdalene into the tube (she was following but not there)");
+        else
+            Log("CNN L2: could not move Magdalene into the tube (blocked)");
+        mag.SetRotation(point.Rotation);
+    }
+    mag.SetOrders('Standing', '', true);
+
+    if (bUploading)
+    {
+        bGoodbyeRescueTried = true;
+        if ((Player.conPlay == None) && Player.StartConversationByName('MagdaleneInsideTube', mag, false, true))
+            Log("CNN L2: started the MagdaleneInsideTube goodbye after the button");
+    }
 }
 
 // ----------------------------------------------------------------------

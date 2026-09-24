@@ -109,7 +109,16 @@ function Trigger(Actor Other, Pawn EventInstigator)
             time = 0;
         }
 
-        timerWin = DeusExRootWindow(player.rootWindow).hud.CreateTimerWindow();
+        // The HUD has a single timer slot. On L2 it may already hold the MJ12
+        // arrival countdown (Chapter06L2); take that window over rather than
+        // destroying it, so the mission script is never left pointing at a
+        // freed window.
+        timerWin = DeusExRootWindow(player.rootWindow).hud.timer;
+        if (timerWin == none)
+            timerWin = DeusExRootWindow(player.rootWindow).hud.CreateTimerWindow();
+        if (timerWin == none)
+            return;
+        timerWin.bFlash = False;
         timerWin.time = time;
         timerWin.bCritical = False;
         timerWin.message = message;

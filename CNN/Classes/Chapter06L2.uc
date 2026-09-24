@@ -61,6 +61,19 @@ var string    lastMagEnemy;
 var bool      bMagWatchPrimed;
 var bool      bGoodbyeRescueTried;
 
+// MJ12 arrival countdown and the ship's wheel -- see StartMJ12Countdown().
+const MJ12_COUNTDOWN_SECONDS = 240.0;
+const MJ12_ARRIVAL_GRACE     = 3.0;
+var float        mj12SecondsLeft;
+var float        mj12ArrivedSeconds;
+var TimerDisplay mj12Window;
+var bool         bWheelHintShown;
+var localized string MJ12GoalText;
+var localized string MJ12StartMessage;
+var localized string MJ12TimerLabel;
+var localized string MJ12ArrivedMessage;
+var localized string WheelNeedsMagdaleneMessage;
+
 function InitStateMachine()
 {
     super.InitStateMachine();
@@ -562,6 +575,8 @@ function DoLevelStuff()
 
     CheckMagdaleneArmed();
     CheckUploadStarted();
+    UpdateMJ12Countdown();
+    CheckShipsWheel();
     CheckPlayerDeath();
     CheckEndingReached();
 }
@@ -769,47 +784,173 @@ function CheckEndingReached()
         return;
     }
 
-    // Everything below is judged only once L2 reaches its final beat. The
-    // usual one is FinalGoodbyePlayed (SET by the MagdaleneInsideTube
-    // conversation); its outcomes follow further down.
-    //
-    // The other is surviving the upload countdown without that goodbye
-    // (TimerExpired, set by CNNEventTimer). The GDD sends that to Benevolent
-    // Dictator on 06_Transcend, which is also where the map's own MapExit
-    // pointed before the map was renamed -- see DisableStaleTubeMapExit().
-    // A conversation still playing when the timer runs out finishes first.
-    if (!flags.GetBool('FinalGoodbyePlayed'))
-    {
-        if (!flags.GetBool('TimerExpired') || Player.IsInState('Conversation'))
-            return;
+    // The three living endings are three choices after Magdalene proposes
+    // the hijack (GDD, L2_QuestImplementation.txt Phases 5-8; "variant A",
+    // user-decided 2026-09-24). Her conversation opens the bridge and starts
+    // the MJ12 arrival countdown -- see UpdateMJ12Countdown().
 
-        TravelToEnding(MAP_TRANSCEND);
-        return;
-    }
-
-    // HIJACKING (best) -- docks and L1 fall away, Tantalus and Magdalene make
-    // it out. Earned by actually arming Magdalene in ArmMagdalene, which
-    // MagdaleneHijackTheStation unlocks (CanArmMagdalene); a goodbye without
-    // arming her falls through to Conspiracy. See CheckMagdaleneArmed().
-    if (flags.GetBool('CanArmMagdalene') && flags.GetBool('MagdaleneArmed'))
+    // HIJACKING (best) -- Tantalus takes the ship's wheel on the bridge with
+    // Magdalene beside him before MJ12 arrive. See CheckShipsWheel().
+    if (flags.GetBool('TookSteeringWheel'))
     {
         TravelToEnding(MAP_HIJACKING);
         return;
     }
 
-    // TRANSCEND -- MJ12 exposed, but the real Tantalus dies. Earned by
-    // winning the social confrontation with Wong, either by exposing him
-    // (ContinueOn, inside the Samantha Reed scene) or by planting doubt during
-    // the boss (AccuseofBluffing, under SocialBoss). NOTE: neither is reachable
-    // in the shipped map -- see CNNDocs/L2_WalkthroughMap.md section 6.
-    if (flags.GetBool('MikeWongExposed') || flags.GetBool('SeedsOfDoubtPlanted'))
+    // TRANSCEND -- the upload in the tube. With Magdalene it ends on her
+    // goodbye (FinalGoodbyePlayed, MagdaleneInsideTube). Without her it ends
+    // when the upload countdown is survived (TimerExpired, set by
+    // CNNEventTimer); that is the GDD's Benevolent Dictator, and where the
+    // map's own MapExit pointed before the rename -- DisableStaleTubeMapExit().
+    // A conversation still playing when the timer runs out finishes first.
+    if (flags.GetBool('FinalGoodbyePlayed') ||
+        (flags.GetBool('TimerExpired') && !Player.IsInState('Conversation')))
     {
         TravelToEnding(MAP_TRANSCEND);
         return;
     }
 
-    // CONSPIRACY -- the passive outcome. Page wins.
-    TravelToEnding(MAP_CONSPIRACY);
+    // CONSPIRACY -- MJ12 docked before either was done. Page wins. Waits a
+    // few seconds after the arrival message so it doesn't cut to black.
+    if (flags.GetBool('MJ12Arrived') && (mj12ArrivedSeconds >= MJ12_ARRIVAL_GRACE))
+        TravelToEnding(MAP_CONSPIRACY);
+}
+
+// ----------------------------------------------------------------------
+// StartMJ12Countdown() / UpdateMJ12Countdown()
+//
+// The GDD's hijack window: once Magdalene proposes hijacking the station
+// (the end of MagdaleneHijackTheStation sets CanArmMagdalene), MJ12 are on
+// their way. The bridge door opens -- nothing in the map or conversations
+// ever opened BridgeDoor -- and a countdown starts. It is paused, and its
+// window handed over, once the tube upload has started: that path has its
+// own countdown, and must not fail into Conspiracy mid-upload. No voiced
+// line announces MJ12 (Page's infolink is a panic, not a warning), so the
+// countdown is shown with text only.
+// ----------------------------------------------------------------------
+
+function StartMJ12Countdown()
+{
+    local DeusExMover door;
+    local DeusExGoal goal;
+
+    flags.SetBool('MJ12TimerStarted', true);
+    mj12SecondsLeft = MJ12_COUNTDOWN_SECONDS;
+
+    foreach AllActors(class'DeusExMover', door, 'BridgeDoor')
+    {
+        door.bLocked = false;
+        if (door.KeyNum == 0)
+            door.DoOpen();
+        Log("CNN L2: bridge door " $ door.Name $ " state=" $ door.GetStateName() $ " keyNum=" $ door.KeyNum $ " opening=" $ door.bOpening);
+    }
+
+    goal = Player.AddGoal('L2_HijackBeforeMJ12', true);
+    if (goal != None)
+        goal.SetText(MJ12GoalText);
+    Player.ClientMessage(MJ12StartMessage);
+    Log("CNN L2: MJ12 countdown started (" $ int(MJ12_COUNTDOWN_SECONDS) $ "s), bridge door opened");
+}
+
+function UpdateMJ12Countdown()
+{
+    local DeusExRootWindow root;
+
+    if (flags.GetBool('MJ12Arrived'))
+    {
+        mj12ArrivedSeconds += checkTime;
+        return;
+    }
+
+    if (!flags.GetBool('MJ12TimerStarted'))
+    {
+        if (flags.GetBool('CanArmMagdalene'))
+            StartMJ12Countdown();
+        return;
+    }
+
+    // The tube upload owns the timer window from here on (CNNEventTimer
+    // replaces ours) and the MJ12 clock stops.
+    if (flags.GetBool('TantalusUploadStarted'))
+    {
+        mj12Window = None;
+        return;
+    }
+
+    mj12SecondsLeft -= checkTime;
+
+    if (mj12Window == None)
+    {
+        root = DeusExRootWindow(Player.rootWindow);
+        if ((root != None) && (root.hud != None))
+            mj12Window = root.hud.CreateTimerWindow();
+        if (mj12Window != None)
+            mj12Window.message = MJ12TimerLabel;
+    }
+    if (mj12Window != None)
+    {
+        mj12Window.time = FMax(mj12SecondsLeft, 0);
+        mj12Window.bCritical = (mj12SecondsLeft <= 30);
+    }
+
+    if (mj12SecondsLeft <= 0)
+    {
+        flags.SetBool('MJ12Arrived', true);
+        if (mj12Window != None)
+        {
+            mj12Window.bFlash = true;
+            mj12Window.Destroy();
+            mj12Window = None;
+        }
+        Player.ClientMessage(MJ12ArrivedMessage);
+        Log("CNN L2: MJ12 countdown ran out");
+    }
+}
+
+// ----------------------------------------------------------------------
+// CheckShipsWheel()
+//
+// Taking the wheel is frobbing ShipsWheel0 on the bridge, which spins it
+// (vanilla ShipsWheel.Frob sets bSpinning for 2-7s -- long enough for this
+// 1s poll). It only counts while the MJ12 countdown runs, and only with
+// Magdalene alive and on the bridge: hijacking is her plan, and the ending
+// shows her at the wheel. Otherwise the player is told why, once per spin.
+// ----------------------------------------------------------------------
+
+function CheckShipsWheel()
+{
+    local ShipsWheel wheel;
+    local Magdalene mag;
+
+    if (flags.GetBool('TookSteeringWheel') || !flags.GetBool('MJ12TimerStarted') ||
+        flags.GetBool('MJ12Arrived') || flags.GetBool('TantalusUploadStarted'))
+        return;
+
+    foreach AllActors(class'ShipsWheel', wheel)
+        break;
+    if (wheel == None)
+        return;
+
+    if (!wheel.bSpinning)
+    {
+        bWheelHintShown = false;
+        return;
+    }
+
+    foreach AllActors(class'Magdalene', mag)
+        break;
+
+    if ((mag != None) && (mag.Health > 0) && !mag.IsInState('Dying') &&
+        (VSize(mag.Location - wheel.Location) <= 800))
+    {
+        flags.SetBool('TookSteeringWheel', true);
+        Log("CNN L2: took the ship's wheel with Magdalene on the bridge");
+    }
+    else if (!bWheelHintShown)
+    {
+        bWheelHintShown = true;
+        Player.ClientMessage(WheelNeedsMagdaleneMessage);
+    }
 }
 
 function TravelToEnding(string endMapName)
@@ -825,6 +966,14 @@ function TravelToEnding(string endMapName)
     root = DeusExRootWindow(Player.rootWindow);
     if ((root != None) && (root.hud != None) && (IwHUDActiveItemsDisplay(root.hud.activeItems) != None))
         IwHUDActiveItemsDisplay(root.hud.activeItems).ClearAugmentationDisplay();
+
+    // The root window travels with the player; don't carry the MJ12
+    // countdown onto the ending map.
+    if (mj12Window != None)
+    {
+        mj12Window.Destroy();
+        mj12Window = None;
+    }
 
     bEndingTriggered = true;
     flags.SetBool('IsGameCompleted', true);
@@ -962,4 +1111,11 @@ defaultproperties
     trackedFlag(20)=TimerExpired
     trackedFlag(21)=IsGameCompleted
     trackedFlag(22)=MagdaleneArmed
+    trackedFlag(23)=MJ12TimerStarted
+    trackedFlag(24)=MJ12Arrived
+    MJ12GoalText="Hijack the station: take the ship's wheel on the bridge with Magdalene before MJ12 arrive. Or upload yourselves in the Avatar Lab tube."
+    MJ12StartMessage="MJ12 are on their way. The bridge is open."
+    MJ12TimerLabel="MJ12 ARRIVAL"
+    MJ12ArrivedMessage="MJ12 have docked with Ophelia."
+    WheelNeedsMagdaleneMessage="You can't fly her alone. Bring Magdalene to the bridge."
 }

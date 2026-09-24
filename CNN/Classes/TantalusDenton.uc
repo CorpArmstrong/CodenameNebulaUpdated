@@ -864,30 +864,29 @@ exec function CNNTestEnding(string which)
     // an earlier, higher-priority ending win.
     FlagBase.SetBool('PlayerDiedOnL2', false);
     FlagBase.SetBool('PlayerDiedDuringUpload', false);
-    FlagBase.SetBool('CanArmMagdalene', false);
-    FlagBase.SetBool('MagdaleneArmed', false);
-    FlagBase.SetBool('MikeWongExposed', false);
-    FlagBase.SetBool('SeedsOfDoubtPlanted', false);
+    FlagBase.SetBool('TookSteeringWheel', false);
     FlagBase.SetBool('FinalGoodbyePlayed', false);
+    FlagBase.SetBool('TimerExpired', false);
+    FlagBase.SetBool('MJ12Arrived', false);
 
+    // One flag per ending, matching Chapter06L2.CheckEndingReached()
+    // ("variant A", 2026-09-24): wheel, upload, MJ12 arrival, death.
     if (which == "MUTINY")
     {
         FlagBase.SetBool('PlayerDiedOnL2', true);
     }
     else if (which == "HIJACK")
     {
-        FlagBase.SetBool('CanArmMagdalene', true);
-        FlagBase.SetBool('MagdaleneArmed', true);
-        FlagBase.SetBool('FinalGoodbyePlayed', true);
+        FlagBase.SetBool('TookSteeringWheel', true);
     }
     else if (which == "TRANSCEND")
     {
-        FlagBase.SetBool('MikeWongExposed', true);
         FlagBase.SetBool('FinalGoodbyePlayed', true);
     }
     else if (which == "CONSPIRACY")
     {
-        FlagBase.SetBool('FinalGoodbyePlayed', true);
+        // Chapter06L2 waits MJ12_ARRIVAL_GRACE seconds after this before travelling.
+        FlagBase.SetBool('MJ12Arrived', true);
     }
     else
     {
@@ -1625,6 +1624,8 @@ exec function CNNFlags()
         " UndockedL2=" $ FlagBase.GetBool('UndockedL2') $
         " StartedBlueFusion=" $ FlagBase.GetBool('StartedBlueFusion') $
         " TookSteeringWheel=" $ FlagBase.GetBool('TookSteeringWheel') $
+        " MJ12TimerStarted=" $ FlagBase.GetBool('MJ12TimerStarted') $
+        " MJ12Arrived=" $ FlagBase.GetBool('MJ12Arrived') $
         " TimerExpired=" $ FlagBase.GetBool('TimerExpired') $
         " IsGameCompleted=" $ FlagBase.GetBool('IsGameCompleted'));
 

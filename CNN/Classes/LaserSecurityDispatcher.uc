@@ -59,6 +59,7 @@ function ToggleOff()
 
 defaultproperties
 {
+    bHidden=true   // logic-only Actor; visible, it drew the default Actor sprite in game
     bIsOn=false
     Delay=20.000000
     targetTag(0)=LaserEmittersMoverFR

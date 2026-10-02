@@ -413,6 +413,10 @@ from `Chapter06.con` is the real fix but needs ConEdit.
 
 ## 6d. Out-of-scope content is inert (verified 2026-10-02)
 
+> **Update, same day:** the `SocialBoss` scene is no longer inert -- it was revived in code on
+> `feature/l2-social-boss` and replaces the bridge guards (see `CNNDocs/L2_SocialBoss_Plan.md`).
+> The Samantha rows below still hold.
+
 Samantha Reed, the Social Boss and Mephistopheles stay in the map but cannot start a scene.
 Checked live with `CNNConDump <BindName>` (frob pick plus the engine's own `CheckFlagRefs` /
 `CheckActors` / `CheckActorDistances` gates) and, for Mephistopheles, by standing next to him

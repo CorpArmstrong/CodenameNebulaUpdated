@@ -22,6 +22,9 @@ const MAP_CONSPIRACY = "06_Conspiracy";
 const MAP_HIJACKING  = "06_Hijacking";
 const MAP_TRANSCEND  = "06_Transcend";
 
+// The tube button is routed through this script -- see RouteTubeButton().
+const TUBE_BUTTON_TAG = 'CNNTubeButton';
+
 // Set true to log every flag change to the game log. Launch with -log to
 // watch it. This is how we learn which flags the authored conversations
 // actually fire, since no .con declares an ending flag.
@@ -105,6 +108,7 @@ function PrepareFirstFrame()
     RepairCommCenterBattle();
     DisableStaleTubeMapExit();
     FixTubeMover();
+    RouteTubeButton();
     RemoveStrayL1Conversations();
     DedupeConversations();
     DropDeadGoals();
@@ -507,15 +511,84 @@ function StripConversation(name conName)
 }
 
 // ----------------------------------------------------------------------
+// RouteTubeButton() / Trigger() / PutMagdaleneInTube()
+//
+// Magdalene must be inside the tube when its glass comes down (user,
+// 2026-10-02, variant A). The map's LoadingInTube scene walks her in, but
+// only if she arrives before the player presses the button, and polling for
+// the button from Timer() is up to a second late while the glass takes
+// about that long to close. So the button is routed through this script:
+// at load its Event becomes TUBE_BUTTON_TAG (this actor's Tag), and
+// Trigger() puts her at MagdalenePoint first, then fires the map's own
+// MiniGameDispatcher (glass, goodbye, upload timer, avatar spawner)
+// unchanged. FixTubeMover() keeps the glass from bouncing off her.
+// ----------------------------------------------------------------------
+
+function RouteTubeButton()
+{
+    local Actor a;
+
+    foreach AllActors(class'Actor', a)
+    {
+        if (a.Event == 'MiniGameDispatcher')
+        {
+            a.Event = TUBE_BUTTON_TAG;
+            Tag = TUBE_BUTTON_TAG;
+            Log("CNN L2: tube button " $ a.Name $ " routed through the mission script");
+        }
+    }
+}
+
+function Trigger(Actor Other, Pawn EventInstigator)
+{
+    local Dispatcher disp;
+
+    PutMagdaleneInTube();
+
+    foreach AllActors(class'Dispatcher', disp, 'MiniGameDispatcher')
+        disp.Trigger(Other, EventInstigator);
+}
+
+function PutMagdaleneInTube()
+{
+    local Magdalene mag;
+    local Actor point;
+
+    foreach AllActors(class'Magdalene', mag)
+        break;
+    if ((mag == None) || (mag.Health <= 0) || mag.IsInState('Dying'))
+        return;
+
+    // MagdalenePoint is the tube's centre -- see FixTubeMover().
+    foreach AllActors(class'Actor', point, 'MagdalenePoint')
+        break;
+    if (point == None)
+        return;
+
+    if (VSize(mag.Location - point.Location) > 16)
+    {
+        if (mag.SetLocation(point.Location))
+            Log("CNN L2: put Magdalene in the tube at the button");
+        else
+            Log("CNN L2: could not put Magdalene in the tube (blocked)");
+    }
+    mag.SetRotation(point.Rotation);
+    mag.SetOrders('Standing', '', true);
+}
+
+// ----------------------------------------------------------------------
 // FixTubeMover()
 //
-// The upload tube's glass (CNNMover0, tag CNNMoverTube) comes down over
-// MagdalenePoint, where the map's LoadingInTube scene parks Magdalene, and
-// it slides diagonally on the way. Movers default to
-// ME_ReturnWhenEncroach, so touching her sent it back up: in play the tube
-// stayed open around her for the whole upload fight and the avatars could
-// reach her (2026-10-02). She is meant to be shut inside (user, variant A),
-// so let the glass pass her.
+// The upload tube's glass (CNNMover0, tag CNNMoverTube) is mis-keyed in the
+// map. Open (key 1, where the level starts) it hangs over the tube's base
+// in line with the neighbouring Bob Page tube; MagdalenePoint, where the
+// map's LoadingInTube scene parks Magdalene, is within 4 units of its
+// centre (brush bbox minus PrePivot, measured from L2_export.t3d). But the
+// closed key is offset by (-64,-64): the glass slid diagonally off the base
+// and came down beside her instead of on her (seen in play 2026-10-02).
+// Moving BasePos under the open key makes it rise and fall vertically over
+// the base; the glass does not move at load. ME_IgnoreWhenEncroach stops it
+// bouncing back off her. She is meant to be shut inside (user, variant A).
 // ----------------------------------------------------------------------
 
 function FixTubeMover()
@@ -525,7 +598,12 @@ function FixTubeMover()
     foreach AllActors(class'Mover', tube, 'CNNMoverTube')
     {
         tube.MoverEncroachType = ME_IgnoreWhenEncroach;
-        Log("CNN L2: tube mover " $ tube.Name $ " no longer reopens on Magdalene");
+        tube.BasePos.X += tube.KeyPos[1].X;
+        tube.BasePos.Y += tube.KeyPos[1].Y;
+        tube.KeyPos[1].X = 0;
+        tube.KeyPos[1].Y = 0;
+        Log("CNN L2: tube mover " $ tube.Name $ " now closes straight down onto " $
+            tube.BasePos $ ", keyNum=" $ tube.KeyNum $ " loc=" $ tube.Location);
     }
 }
 
@@ -545,7 +623,7 @@ function LogTubeAfterUpload()
     bTubeLogged = true;
     foreach AllActors(class'Mover', tube, 'CNNMoverTube')
         Log("CNN L2: tube after button: KeyNum=" $ tube.KeyNum $ " state=" $ tube.GetStateName() $
-            " opening=" $ tube.bOpening);
+            " opening=" $ tube.bOpening $ " loc=" $ tube.Location);
 }
 
 // ----------------------------------------------------------------------
@@ -838,7 +916,7 @@ function BringMagdaleneToTube()
 
     foreach AllActors(class'Actor', a)
     {
-        if (a.Event == 'MiniGameDispatcher')
+        if ((a.Event == 'MiniGameDispatcher') || (a.Event == TUBE_BUTTON_TAG))
         {
             button = a;
             break;

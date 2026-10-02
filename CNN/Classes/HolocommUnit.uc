@@ -27,7 +27,6 @@ var(SpawnInfo) SpawnInfo _spawnInfo;
 var(ContactInfo) ContactInfo contacts[8];
 
 var TantalusDenton player;
-var FlagBase flags;
 var int contactIndex;
 var bool bCheckForConvoEnd;
 
@@ -40,6 +39,13 @@ var bool bCheckForConvoEnd;
 // "Accessed None" warnings from Tick alone, 97% of the whole log, on top of
 // the per-frame script error. Re-resolve lazily instead of trusting a
 // single early attempt.
+//
+// The FlagBase is deliberately NOT cached: the engine rebuilds it during a
+// ClientTravel, and a stale copy in a field made the old level's
+// CleanupDestroyed fail with "Assertion failed: LinkedObjects[k]->IsValid()"
+// (Class CNN.HolocommUnit) on any travel after a holocomm button was pressed
+// (found 2026-10-02; caching came in with 02da182). Read player.flagBase at
+// the point of use, as the original code did.
 // ----------------------------------------------------------------------
 
 function bool ResolvePlayer()
@@ -51,10 +57,7 @@ function bool ResolvePlayer()
             return false;
     }
 
-    if (flags == None)
-        flags = player.flagBase;
-
-    return (flags != None);
+    return (player.flagBase != None);
 }
 
 function PostBeginPlay()
@@ -130,10 +133,10 @@ function SetAndSpawnActor(out ContactInfo info)
                               _spawnInfo.spawnRotation);
 
     // Called from PostBeginPlay(), where the player may not exist yet, so
-    // resolve rather than assume `flags` was cached successfully.
+    // resolve rather than assume the player was found there.
     if ((info.hideFlagName != '') && ResolvePlayer())
     {
-        flags.SetBool(info.hideFlagName, false);
+        player.flagBase.SetBool(info.hideFlagName, false);
         bCheckForConvoEnd = true;
     }
 }
@@ -189,7 +192,7 @@ simulated function Tick(float TimeDelta)
         return;
     }
 
-    if (flags.GetBool(contacts[contactIndex].hideFlagName))
+    if (player.flagBase.GetBool(contacts[contactIndex].hideFlagName))
     {
         contacts[contactIndex].contactActor.bHidden = true;
         bCheckForConvoEnd = false;

@@ -100,12 +100,70 @@ function PrepareFirstFrame()
         }
     }
 
-    RepairSamanthaReedTrigger();
     RepairCommCenterBattle();
     DisableStaleTubeMapExit();
     RemoveStrayL1Conversations();
     DedupeConversations();
+    DropDeadGoals();
     DumpConversationLists();
+}
+
+// ----------------------------------------------------------------------
+// DropDeadGoals()
+//
+// Two L2 infolinks hand out goals that nothing on the level completes:
+//
+//     DL_BobPageInElevator                     TalkToPage
+//     DL_DaedalusSuggestsMeetHimAtCommCenter   MeetDaedalusInTheCommandCenter
+//
+// Both point at the Social Boss scene with Mephistopheles, which is out of
+// scope: its hostage speakers were never placed, so the engine refuses to
+// start it (verified live 2026-10-02 with ReadyForSocialBoss set, standing
+// at Mephistopheles and frobbing him). The voice lines still play; only the
+// goal events are flipped to "mark complete", which ConPlayBase ignores
+// when the player does not have the goal. Both .con files carry a copy of
+// each infolink, so every conversation is scanned, not just the survivor
+// of DedupeConversations().
+// ----------------------------------------------------------------------
+
+function DropDeadGoals()
+{
+    local ConListItem item;
+    local ConEvent ev;
+    local ConEventAddGoal goalEvent;
+
+    DeleteGoalIfPresent('TalkToPage');
+    DeleteGoalIfPresent('MeetDaedalusInTheCommandCenter');
+
+    item = ConListItem(Player.conListItems);
+    while (item != None)
+    {
+        if (item.con != None)
+        {
+            for (ev = item.con.eventList; ev != None; ev = ev.nextEvent)
+            {
+                goalEvent = ConEventAddGoal(ev);
+                if ((goalEvent != None) && !goalEvent.bGoalCompleted &&
+                    ((goalEvent.goalName == 'TalkToPage') ||
+                     (goalEvent.goalName == 'MeetDaedalusInTheCommandCenter')))
+                {
+                    goalEvent.bGoalCompleted = true;
+                    Log("CNN L2: dropped dead goal " $ goalEvent.goalName $
+                        " from " $ item.con.conName);
+                }
+            }
+        }
+        item = item.next;
+    }
+}
+
+function DeleteGoalIfPresent(name goalName)
+{
+    local DeusExGoal goal;
+
+    goal = Player.FindGoal(goalName);
+    if (goal != None)
+        Player.DeleteGoal(goal);
 }
 
 // ----------------------------------------------------------------------
@@ -403,50 +461,6 @@ function StripConversation(name conName)
 }
 
 // ----------------------------------------------------------------------
-// RepairSamanthaReedTrigger()
-//
-// The map's ConversationTrigger for MeetSamanthaReed was placed with
-// conversationTag set but BindName left empty. ConversationTrigger guards
-// its ENTIRE body with
-//
-//     if ((BindName != "") && (conversationTag != ''))
-//
-// so an empty BindName makes the trigger inert -- it never calls
-// StartConversationByName, and it does so silently, with no warning in the
-// log. The level's two working triggers both carry BindName="Magdalene".
-//
-// That one missing property is what made the Transcend ending unreachable:
-// MikeWongExposed is SET only inside ContinueOn, which is part of the
-// Samantha Reed scene, and this trigger is the only thing in the map that
-// can start it. Transcend's alternate condition, SeedsOfDoubtPlanted, is
-// gated behind ReadyForSocialBoss and is dead for separate reasons.
-//
-// Fixing it in UnrealEd would mean a binary .dx change that cannot be
-// diffed or reviewed. Assigning the property here keeps the fix in source
-// control, which is the same reason the rest of L2's logic lives in script.
-//
-// Matched on conversationTag rather than Tag: Tag is the generic
-// 'ConversationTrigger' on two of the three, while conversationTag is
-// unique. Only an empty BindName is filled in, so if the map is ever fixed
-// properly this becomes a no-op instead of fighting the map.
-// ----------------------------------------------------------------------
-
-function RepairSamanthaReedTrigger()
-{
-    local ConversationTrigger conTrigger;
-
-    foreach AllActors(class'ConversationTrigger', conTrigger)
-    {
-        if ((conTrigger.conversationTag == 'MeetSamanthaReed') &&
-            (conTrigger.BindName == ""))
-        {
-            conTrigger.BindName = "SamanthaReed";
-            Log("CNN L2: repaired MeetSamanthaReed trigger (BindName was empty)");
-        }
-    }
-}
-
-// ----------------------------------------------------------------------
 // DisableStaleTubeMapExit()
 //
 // The tube button fires MiniGameDispatcher, which starts a 30s survival
@@ -501,9 +515,9 @@ function DisableStaleTubeMapExit()
 // other".
 //
 // Rewriting the slot here rather than in UnrealEd keeps the change
-// reviewable, same reasoning as RepairSamanthaReedTrigger(). Only a slot
-// that still holds the duplicate is touched, so fixing the map properly
-// later makes this a no-op.
+// reviewable and keeps it in source control. Only a slot that still holds
+// the duplicate is touched, so fixing the map properly later makes this a
+// no-op.
 // ----------------------------------------------------------------------
 
 function RepairCommCenterBattle()

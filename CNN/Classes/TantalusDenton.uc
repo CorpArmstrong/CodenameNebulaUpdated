@@ -1354,39 +1354,60 @@ exec function CNNStatus()
 // proved simple ComputerUIWindow-style UI DOES render fine through the
 // bridge, so the open question is whether a first-person conversation
 // (no ConWindowActive, subtitle-only) fares better than third-person did.
+//
+// Extended 2026-10-02 to answer "can this conversation ever start?" without
+// playing it: covers every actor sharing the BindName (L2 has offstage
+// doubles), names what a frob would pick (GetActiveConversation), and runs
+// the same CheckFlagRefs / CheckActors / CheckActorDistances gates that
+// ConPlayBase.StartConversation applies. CheckActors(True) logs any speaker
+// missing from the map.
 // ----------------------------------------------------------------------
 
 exec function CNNConDump(string targetTag)
 {
     local Actor a;
     local ConListItem item;
+    local Conversation frobCon;
+    local string frobName;
+    local int count;
 
     foreach AllActors(class'Actor', a)
     {
-        if (a.BindName == targetTag)
+        if (a.BindName != targetTag)
+            continue;
+
+        count++;
+        frobCon = GetActiveConversation(a, IM_Frob);
+        frobName = "None";
+        if (frobCon != None)
+            frobName = string(frobCon.conName);
+        Log("CNN L2 condump: " $ targetTag $ " actor=" $ a.Name $
+            " loc=" $ a.Location $ " dist=" $ int(VSize(Location - a.Location)) $
+            " frobPicks=" $ frobName);
+
+        item = ConListItem(a.conListItems);
+        while (item != None)
         {
-            break;
+            if (item.con != None)
+            {
+                Log("CNN L2 condump: " $ targetTag $ " con=" $ item.con.conName $
+                    " bFirstPerson=" $ item.con.bFirstPerson $
+                    " bNonInteractive=" $ item.con.bNonInteractive $
+                    " radiusDistance=" $ item.con.radiusDistance $
+                    " frob=" $ item.con.bInvokeFrob $
+                    " bump=" $ item.con.bInvokeBump $
+                    " sight=" $ item.con.bInvokeSight $
+                    " radius=" $ item.con.bInvokeRadius $
+                    " flagsOK=" $ CheckFlagRefs(item.con.flagRefList) $
+                    " actorsOK=" $ item.con.CheckActors(True) $
+                    " distancesOK=" $ item.con.CheckActorDistances(self));
+            }
+            item = item.next;
         }
     }
 
-    if (a == None)
-    {
+    if (count == 0)
         Log("CNN L2 condump: no actor with BindName " $ targetTag);
-        return;
-    }
-
-    item = ConListItem(a.conListItems);
-    while (item != None)
-    {
-        if (item.con != None)
-        {
-            Log("CNN L2 condump: " $ targetTag $ " con=" $ item.con.conName $
-                " bFirstPerson=" $ item.con.bFirstPerson $
-                " bNonInteractive=" $ item.con.bNonInteractive $
-                " radiusDistance=" $ item.con.radiusDistance);
-        }
-        item = item.next;
-    }
 }
 
 // ----------------------------------------------------------------------

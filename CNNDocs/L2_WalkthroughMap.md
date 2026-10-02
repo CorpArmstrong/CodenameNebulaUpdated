@@ -154,8 +154,8 @@ flowchart TD
     MOVE["MandatoryMovementTriger (260,-1547,8)<br/>moves PLAYER to MovePlayer (-547,-1874,52)"]
     SOLD["MeetSoldiers / GestureRight<br/>MJ12 group (853..923, -1587..-1653, ~22)<br/>SETS ReadyForBossFight"]
 
-    SAM["ConversationTrigger0 (841,-2031,8)<br/>conversationTag=MeetSamanthaReed<br/>BindName was EMPTY - repaired in script"]
-    DEAD["was INERT; now fires (untested)"]
+    SAM["ConversationTrigger0 (841,-2031,8)<br/>conversationTag=MeetSamanthaReed<br/>BindName EMPTY - inert, out of scope (6d)"]
+    DEAD["INERT - verified 2026-10-02 (6d)"]
 
     IOT["IoTterminal (701,-2861,-1348)<br/>'Give clearance to Level 2 Labs'"]
     OPENLABS["Dispatcher 'OpenLabs'<br/>to MagdaleneMandatoryMovementTriger<br/>and AvatarLabHatch"]
@@ -259,6 +259,11 @@ south of and 1300 below the trigger that is supposed to introduce them.
 
 ## 5. Route per ending
 
+> **Superseded 2026-09-24 (variant A).** Endings now hinge on the MJ12 countdown, the bridge
+> wheel and the tube upload; Samantha Reed and the Social Boss are out of scope. The current
+> spec and manual QA plan are in `CNNDocs/L2_Ending_Test_Plan.md`. The table below is the
+> pre-variant-A design, kept for history.
+
 | Ending | What the player does | Condition | Reachable |
 |---|---|---|---|
 | **Mutiny** (worst) | **Die anywhere on L2.** Judged immediately — never needs the tube. | `PlayerDiedOnL2` or `PlayerDiedDuringUpload` | yes |
@@ -272,6 +277,9 @@ outranks everything; every other branch waits for `FinalGoodbyePlayed`.
 ---
 
 ## 6. Transcend — was unreachable in the shipped build; now repaired, still unverified
+
+> **Obsolete 2026-10-02.** Under variant A, Transcend no longer needs `MikeWongExposed` or
+> `SeedsOfDoubtPlanted`. The script repair below was removed; it never worked anyway (see 6d).
 
 > **Status 2026-08-26.** Everything below describes the **shipped map**, and both faults
 > are now repaired in script. A larger root cause was found afterwards — duplicate
@@ -400,6 +408,27 @@ from `Chapter06.con` is the real fix but needs ConEdit.
 **Result:** first end-to-end ending through real gameplay —
 `ReadyForBossFight` @11s → `CanArmMagdalene` @32s → `FinalGoodbyePlayed` @75s →
 `Browse: 06_Hijacking`. OK
+
+---
+
+## 6d. Out-of-scope content is inert (verified 2026-10-02)
+
+Samantha Reed, the Social Boss and Mephistopheles stay in the map but cannot start a scene.
+Checked live with `CNNConDump <BindName>` (frob pick plus the engine's own `CheckFlagRefs` /
+`CheckActors` / `CheckActorDistances` gates) and, for Mephistopheles, by standing next to him
+and frobbing him: OK
+
+| Content | Why it never starts |
+|---|---|
+| `MeetSamanthaReed` via `ConversationTrigger0` | Even with `BindName` filled in, the trigger is ~2350 units from the lab Samantha and ~5800 from the offstage one; `StartConversationByName` refuses beyond 800. |
+| `MeetSamanthaReed` by frob/radius | Its second speaker is the offstage `MikeWong1` at Y≈+3860, so `CheckActorDistances` fails for both Samantha actors. |
+| `SamGivesQuest` | PRECOND `MetReedAndWong`, which nothing sets. |
+| `SocialBoss` (radius 500 around Mephistopheles) | Speakers `CorpArmstrongHostage`, `DrJohnsonHostage`, `SamanthaReedHostage` were never placed. Standing at Mephistopheles with `ReadyForSocialBoss` set started nothing. |
+| `MeetDrMephistopheles` (frob/bump on Mephistopheles) | Stray L1 initiation scene; needs Isaac, who is not on L2. Frobbing him started nothing. |
+
+So `Chapter06L2.RepairSamanthaReedTrigger()` was removed. The infolink goals that point at
+this content, `TalkToPage` (Bob Page, elevator) and `MeetDaedalusInTheCommandCenter`, are
+neutralised at load by `Chapter06L2.DropDeadGoals()`; the voice lines still play.
 
 ---
 

@@ -24,6 +24,8 @@ const MAP_TRANSCEND  = "06_Transcend";
 
 // The tube button is routed through this script -- see RouteTubeButton().
 const TUBE_BUTTON_TAG = 'CNNTubeButton';
+// Tube glass bottom below its mover origin -- see FixTubeMover().
+const TUBE_GLASS_BOTTOM = 50.0;
 
 // Set true to log every flag change to the game log. Launch with -log to
 // watch it. This is how we learn which flags the authored conversations
@@ -589,21 +591,43 @@ function PutMagdaleneInTube()
 // Moving BasePos under the open key makes it rise and fall vertically over
 // the base; the glass does not move at load. ME_IgnoreWhenEncroach stops it
 // bouncing back off her. She is meant to be shut inside (user, variant A).
+//
+// The closed key was also too low: the glass sank into the floor
+// and stopped at Magdalene's shoulders (seen in play 2026-10-02). So the
+// closed height is set from the floor traced under MagdalenePoint: the
+// glass bottom is TUBE_GLASS_BOTTOM below the mover origin (brush bbox
+// -64 plus PrePivot 14, from L2_export.t3d), and the open key is
+// re-expressed so the open glass stays exactly where the map put it.
 // ----------------------------------------------------------------------
 
 function FixTubeMover()
 {
     local Mover tube;
+    local Actor point;
+    local vector openPos, hitLocation, hitNormal;
+
+    foreach AllActors(class'Actor', point, 'MagdalenePoint')
+        break;
 
     foreach AllActors(class'Mover', tube, 'CNNMoverTube')
     {
         tube.MoverEncroachType = ME_IgnoreWhenEncroach;
-        tube.BasePos.X += tube.KeyPos[1].X;
-        tube.BasePos.Y += tube.KeyPos[1].Y;
-        tube.KeyPos[1].X = 0;
-        tube.KeyPos[1].Y = 0;
-        Log("CNN L2: tube mover " $ tube.Name $ " now closes straight down onto " $
-            tube.BasePos $ ", keyNum=" $ tube.KeyNum $ " loc=" $ tube.Location);
+        openPos = tube.BasePos + tube.KeyPos[1];
+
+        tube.BasePos.X = openPos.X;
+        tube.BasePos.Y = openPos.Y;
+
+        if ((point != None) &&
+            (Trace(hitLocation, hitNormal, point.Location - vect(0,0,300),
+                   point.Location + vect(0,0,40), true) != None))
+        {
+            tube.BasePos.Z = hitLocation.Z + TUBE_GLASS_BOTTOM;
+        }
+
+        tube.KeyPos[1] = openPos - tube.BasePos;
+        Log("CNN L2: tube mover " $ tube.Name $ " closes straight down onto " $
+            tube.BasePos $ " (floor " $ hitLocation.Z $ "), open key " $ tube.KeyPos[1] $
+            ", keyNum=" $ tube.KeyNum $ " loc=" $ tube.Location);
     }
 }
 

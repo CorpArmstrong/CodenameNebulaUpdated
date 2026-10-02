@@ -105,25 +105,23 @@ function PrepareFirstFrame()
     RemoveStrayL1Conversations();
     DedupeConversations();
     DropDeadGoals();
+    DisablePageAndSamantha();
     DumpConversationLists();
 }
 
 // ----------------------------------------------------------------------
 // DropDeadGoals()
 //
-// Two L2 infolinks hand out goals that nothing on the level completes:
-//
-//     DL_BobPageInElevator                     TalkToPage
-//     DL_DaedalusSuggestsMeetHimAtCommCenter   MeetDaedalusInTheCommandCenter
-//
-// Both point at the Social Boss scene with Mephistopheles, which is out of
-// scope: its hostage speakers were never placed, so the engine refuses to
-// start it (verified live 2026-10-02 with ReadyForSocialBoss set, standing
-// at Mephistopheles and frobbing him). The voice lines still play; only the
-// goal events are flipped to "mark complete", which ConPlayBase ignores
-// when the player does not have the goal. Both .con files carry a copy of
-// each infolink, so every conversation is scanned, not just the survivor
-// of DedupeConversations().
+// DL_DaedalusSuggestsMeetHimAtCommCenter hands out
+// MeetDaedalusInTheCommandCenter, which points at the Social Boss scene
+// with Mephistopheles. That scene is out of scope: its hostage speakers
+// were never placed, so the engine refuses to start it (verified live
+// 2026-10-02 with ReadyForSocialBoss set, standing at Mephistopheles and
+// frobbing him). The voice line still plays; only the goal event is
+// flipped to "mark complete", which ConPlayBase ignores when the player
+// does not have the goal. Both .con files carry a copy of the infolink, so
+// every conversation is scanned, not just the survivor of
+// DedupeConversations().
 // ----------------------------------------------------------------------
 
 function DropDeadGoals()
@@ -131,9 +129,11 @@ function DropDeadGoals()
     local ConListItem item;
     local ConEvent ev;
     local ConEventAddGoal goalEvent;
+    local DeusExGoal goal;
 
-    DeleteGoalIfPresent('TalkToPage');
-    DeleteGoalIfPresent('MeetDaedalusInTheCommandCenter');
+    goal = Player.FindGoal('MeetDaedalusInTheCommandCenter');
+    if (goal != None)
+        Player.DeleteGoal(goal);
 
     item = ConListItem(Player.conListItems);
     while (item != None)
@@ -144,8 +144,7 @@ function DropDeadGoals()
             {
                 goalEvent = ConEventAddGoal(ev);
                 if ((goalEvent != None) && !goalEvent.bGoalCompleted &&
-                    ((goalEvent.goalName == 'TalkToPage') ||
-                     (goalEvent.goalName == 'MeetDaedalusInTheCommandCenter')))
+                    (goalEvent.goalName == 'MeetDaedalusInTheCommandCenter'))
                 {
                     goalEvent.bGoalCompleted = true;
                     Log("CNN L2: dropped dead goal " $ goalEvent.goalName $
@@ -157,11 +156,55 @@ function DropDeadGoals()
     }
 }
 
-function DeleteGoalIfPresent(name goalName)
+// ----------------------------------------------------------------------
+// DisablePageAndSamantha()
+//
+// The Bob Page / Samantha Reed storyline is not implemented on L2: Page's
+// elevator infolink sends the player to his daughter in the Gravity Lab,
+// and nothing there plays (MeetSamanthaReed's second speaker is an
+// offstage double, SamGivesQuest needs a flag nothing sets). Until it is
+// built, switch the whole thread off so the player is not sent after it:
+//
+//   - the DataLinkTrigger for DL_BobPageInElevator (and its TalkToPage goal);
+//   - the ConversationTrigger for MeetSamanthaReed;
+//   - Samantha's own conversations, so frobbing her does nothing.
+//
+// The Uber Alles holocomm is a separate thread and is left alone.
+// User-decided 2026-10-02. To bring the storyline back, drop this call
+// from PrepareFirstFrame().
+// ----------------------------------------------------------------------
+
+function DisablePageAndSamantha()
 {
+    local DataLinkTrigger dlTrigger;
+    local ConversationTrigger conTrigger;
     local DeusExGoal goal;
 
-    goal = Player.FindGoal(goalName);
+    foreach AllActors(class'DataLinkTrigger', dlTrigger)
+    {
+        if (dlTrigger.datalinkTag == 'DL_BobPageInElevator')
+        {
+            dlTrigger.SetCollision(false, false, false);
+            dlTrigger.datalinkTag = '';
+            Log("CNN L2: disabled Bob Page infolink trigger " $ dlTrigger.Name);
+        }
+    }
+
+    foreach AllActors(class'ConversationTrigger', conTrigger)
+    {
+        if (conTrigger.conversationTag == 'MeetSamanthaReed')
+        {
+            conTrigger.SetCollision(false, false, false);
+            conTrigger.conversationTag = '';
+            Log("CNN L2: disabled Samantha Reed trigger " $ conTrigger.Name);
+        }
+    }
+
+    StripConversation('MeetSamanthaReed');
+    StripConversation('SamGivesQuest');
+    StripConversation('FindMeganReed');
+
+    goal = Player.FindGoal('TalkToPage');
     if (goal != None)
         Player.DeleteGoal(goal);
 }
@@ -447,7 +490,7 @@ function StripConversation(name conName)
                 else
                     prev.next = item.next;
 
-                Log("CNN L2: removed stray L1 conversation '" $ conName $
+                Log("CNN L2: removed conversation '" $ conName $
                     "' from " $ a.BindName);
             }
             else

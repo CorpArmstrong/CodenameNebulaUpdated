@@ -1012,7 +1012,7 @@ exec function CNNFire(name eventTag)
 // ----------------------------------------------------------------------
 // CNNFrob()
 //
-// Frobs the first actor with the given Tag, exactly as if the player had
+// Frobs the nearest actor with the given Tag or BindName, as if the player had
 // aimed at it and pressed the frob key -- same underlying call
 // DeusExPlayer.DoFrob() makes (FrobTarget.Frob(Frobber, frobWith)), just
 // without needing crosshair/line-of-sight. Added 2026-09-23 to expand
@@ -1032,22 +1032,31 @@ exec function CNNFire(name eventTag)
 
 exec function CNNFrob(name targetTag)
 {
-    local Actor a;
+    local Actor a, best;
     local int count;
 
     if (targetTag == '')
     {
-        ClientMessage("CNNFrob <tag> -- frobs the first actor with this Tag");
+        ClientMessage("CNNFrob <tag|BindName> -- frobs the nearest actor with this Tag or BindName");
         return;
     }
 
-    foreach AllActors(class'Actor', a, targetTag)
+    // Tag or BindName, nearest first: runtime-spawned actors such as the
+    // holocomm holograms have no Tag to find them by (2026-10-02).
+    foreach AllActors(class'Actor', a)
     {
-        a.Frob(self, None);
+        if ((a.Tag != targetTag) && (a.BindName != string(targetTag)))
+            continue;
         count++;
-        Log("CNN L2 frob: frobbed " $ string(a.Class.Name) $ " tag=" $ string(targetTag) $
-            " dist=" $ int(VSize(Location - a.Location)));
-        break; // Frob() can destroy/move/reparent the actor -- unsafe to keep iterating the same foreach
+        if ((best == None) || (VSize(Location - a.Location) < VSize(Location - best.Location)))
+            best = a;
+    }
+
+    if (best != None)
+    {
+        Log("CNN L2 frob: frobbed " $ string(best.Class.Name) $ " " $ string(targetTag) $
+            " dist=" $ int(VSize(Location - best.Location)));
+        best.Frob(self, None);
     }
 
     ClientMessage("CNNFrob: " $ string(targetTag) $ " -> " $ count $ " actor(s)");

@@ -426,9 +426,12 @@ and frobbing him: OK
 | `SocialBoss` (radius 500 around Mephistopheles) | Speakers `CorpArmstrongHostage`, `DrJohnsonHostage`, `SamanthaReedHostage` were never placed. Standing at Mephistopheles with `ReadyForSocialBoss` set started nothing. |
 | `MeetDrMephistopheles` (frob/bump on Mephistopheles) | Stray L1 initiation scene; needs Isaac, who is not on L2. Frobbing him started nothing. |
 
-So `Chapter06L2.RepairSamanthaReedTrigger()` was removed. The infolink goals that point at
-this content, `TalkToPage` (Bob Page, elevator) and `MeetDaedalusInTheCommandCenter`, are
-neutralised at load by `Chapter06L2.DropDeadGoals()`; the voice lines still play.
+So `Chapter06L2.RepairSamanthaReedTrigger()` was removed. The Page/Samantha storyline is not
+implemented on L2 (Page's elevator infolink sends the player to Samantha in the Gravity Lab), so
+`Chapter06L2.DisablePageAndSamantha()` switches it off at load: the `DL_BobPageInElevator`
+trigger, the `MeetSamanthaReed` trigger and Samantha's conversations. The Uber Alles holocomm is a
+separate thread and stays. Daedalus's `MeetDaedalusInTheCommandCenter` goal is neutralised by
+`Chapter06L2.DropDeadGoals()`; his voice lines still play. User-decided 2026-10-02.
 
 ---
 

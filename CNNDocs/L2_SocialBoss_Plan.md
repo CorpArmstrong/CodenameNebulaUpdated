@@ -7,14 +7,104 @@
 (китайский Trained) → Вонг убивает Мефистофеля и нападает → Hijacking; «улики уничтожены» →
 JoinedMutiny без расстрела; таймер MJ12 стоит на время сцены. Реализация — в
 `Chapter06L2` (`WatchConversation`, блок «Social Boss»); `CNNConPlay` не используется
-(`StartConversation` закомментирован с 2020). Видеозапись Вонга — открытый вопрос (см. ниже).
-Осталось: ручной просмотр (как выглядят расстрелы и бой) и решение по видеозаписи.
+(`StartConversation` закомментирован с 2020). Видеозапись Вонга оставлена как есть: в игре
+её нет, «Манипулировать» открывается после «Обвинить Вонга» (решение 02.10.2026).
+Осталось: ручной просмотр (как выглядят расстрелы и бой), затем слияние в `master`.
+
 Решение (02.10.2026): оживить **уже написанную и озвученную** сцену `SocialBoss` из
 `OpheliaL2.con` кодом, без ConEdit. Сцена **заменяет охрану из 4 аватаров** на мостике.
 Полноценный HR-стиль (шкала убеждения, «чтение» собеседника, новая озвучка) — не делаем.
 
 Исследование и факты: память `project_social_boss_research`, схема авторов
 `CNNDocs/Story/CNNL2StoryFlowchart.pdf`.
+
+## Развёртка диалога `SocialBoss` и исходы (как реализовано, 02.10.2026)
+
+Номера `[N]` — индексы событий в разговоре (дамп `CONEVENTS DrMephistopheles SocialBoss`).
+**Жирным** — то, что делает код (`Chapter06L2`), а не сам `.con`.
+
+### Подготовка (до разговора)
+
+- **Загрузка L2:** заложникам у штурвала даются имена из разговора — Армстронг →
+  `CorpArmstrongHostage`, Джонсон → `DrJohnsonHostage`, Саманта (у мостика) →
+  `SamanthaReedHostage`. **Штурвал делается неуязвимым.** Раскладка событий проверяется
+  (`social boss event layout as expected` в логе).
+- **Конец разговора с Магдаленой (`CanArmMagdalene`):** открывается дверь на мостик, старт
+  таймера MJ12 (4:00), **Вонгу выдаётся пистолет, рядом с ним ставится безоружный солдат
+  MJ12-заложник, выставляется `ReadyForSocialBoss`**, Мефистофель переходит за штурвал.
+- **Запуск:** разговор начинается сам, когда игрок подходит к Мефистофелю ближе 500 юнитов.
+  **Таймер MJ12 на время разговора стоит. Цель Дедала «Meet Daedalus in the command center»
+  отмечается выполненной.**
+
+### Вступление
+
+| # | Кто | Реплика (кратко) | Что происходит |
+|---|---|---|---|
+| [0] | Вонг | «That's far enough, bullsass!» | старт сцены |
+| [1] | Мефистофель | «Tantalus! I'm glad you were able to attend our mutiny!» | |
+| [2] | Тантал | «I'm here to put an end to your madness, Mephistopheles.» | |
+| [3] | — | проверка: улики в доках уничтожены (`AllObjectsDestroyed`)? | да → [10] |
+| [4] | Мефистофель | «So mote it be… you verily leave me no choice» | ветка «нет» |
+| [5–6] | — | комментарий + триггер `MikeExecutesMJ12Troop` | |
+| [7] | Тантал | «Son of a bitch!» | **Вонг расстреливает солдата MJ12** |
+| [8] | Вонг | «…I will kill all the hostages…» | → [13] |
+| [10] | Мефистофель | `JoinedMutiny`: «…you are part of this madness… Daedalus…» | ветка «да», **без расстрела** |
+| [11] | Тантал | «One of the artifacts was my son's dead body…» | |
+| [12] | Мефистофель | «And now mankind can start anew!…» | |
+| [13] | Тантал | `PullsaGun`: «I have no time for this! (pulls a gun)» | |
+| [14] | Вонг | «I wouldn't do that if I were you… Or I disconnect you…» | |
+
+### Выбор 1 `[15]`
+
+| Вариант | Ветка | Итог |
+|---|---|---|
+| 1. «(Put down the gun)» | `MephistophelesCalm` [16–19]: разговор о мифе о Тантале | → `MikeThreatens` [28] |
+| 2. «(Threaten Mephistopheles)» | `MephistophelesAngry` [21–24]: Пикадон, «оружие судного дня»; [26] Армстронг «(Groans)», [27] Тантал «Armstrong!» | **Вонг расстреливает Армстронга (на [27])** → [28] |
+
+`[28]` Вонг: «You better behave yourself… next time YOU will be executed.»
+
+### Выбор 2 `[29]`
+
+| Вариант | Ветка | Итог |
+|---|---|---|
+| 1. «(Plant Seeds of doubt)» | `PlantSeeds` [30–33]: «How does it feel to become a mass-murderer…»; **флаг `SeedsOfDoubtPlanted`** | → Выбор 3 |
+| 2. «(Ignore Wong's threat)» | `AccuseofBluffing` [35–39]: Джонсон «Don't kill me!», Тантал «No!!!» | **Вонг расстреливает Джонсона (на [39])** → Выбор 3 |
+
+### Выбор 3 `[40]` — узел, к нему возвращаются ветки
+
+| Вариант | Условие | Ветка | Итог |
+|---|---|---|---|
+| «(Compromise with Dr. Mephistopheles)» | — | [41–45]: «Now I am become death…», Вонг «We will crap all over the world!» | назад к Выбору 3 |
+| «(Accuse Wong of hypocricy)» | `SeedsOfDoubtPlanted` | [47–54]: «start with yourself!»; **флаг `WongParanoid`**; Саманта «(Screams)», Тантал «Samantha, your mother transcended…», Вонг «You are NEXT» | **Вонг расстреливает Саманту (на [54])** → назад к Выбору 3 |
+| «(Apologize to Wong)» | **китайский Trained** | [60–67]: извинение по-китайски, «I need your help, Mike. Now!», «So mote it be.», Вонг «Your Chinese sucks heck.» | **Вонг убивает Мефистофеля (на [66]), затем нападает на игрока** → бой |
+| «(Manipulate Wong)» | **китайский Trained** + `WongParanoid` | [71–78]: «I've seen the video…», «you are an avatar… Wake up, Mike. Now!», Мефистофель «Time's up…», «So mote it be.», Вонг «You still Dontgivafucker!» | **Вонг убивает Мефистофеля (на [77]), затем нападает на игрока** → бой |
+| «(ATTACK)» | — | [56] «I have no time for this!» | **Вонг и Мефистофель нападают** → бой |
+| «(CAUSE AN APOCALYPSE)» | — | [58] «Wait! I'll do it. Let's finish off the conspirators! God help us...» | **флаг `PlayerGaveUp`** → после разговора **Mutiny** |
+
+Без китайского игроку доступны: компромисс (петля), обвинение Вонга (после «посеять
+сомнения»), атака, сдача. Видеозапись Вонга упоминается в реплике «Manipulate», но в игре её
+нет (компьютер в недостроенной комнате) — оставлено так (решение 02.10.2026).
+
+### После разговора
+
+| Ситуация | Что делает код | Концовка |
+|---|---|---|
+| Бой (атака или Вонг напал) | **враждебным становится тот из двоих, кто жив; ему выдаётся пистолет; страхи отключены, он подталкивается в атаку** | — |
+| Мефистофель и Вонг мертвы | штурвал засчитывается («Mephistopheles and Wong still hold the bridge.» — пока нет) | крутанул штурвал при живой Магдалене и идущем таймере → **Hijacking** |
+| `PlayerGaveUp` | — | **Mutiny** |
+| Игрок погиб | — | **Mutiny** |
+| Таймер MJ12 истёк | — | **Conspiracy** |
+| Ушёл к капсуле | — | **Transcend** |
+
+### Проверено мостом (`CONRUN`)
+
+| Пути выборов | Результат |
+|---|---|
+| Угрожать → Игнорировать → ATTACK | солдат, Армстронг, Джонсон расстреляны; бой; штурвал → Hijacking |
+| Успокоить → Посеять → Обвинить → Сдаться | Саманта расстреляна; `PlayerGaveUp` → Mutiny |
+| (китайский) Успокоить → Посеять → Обвинить → Манипулировать | Вонг убил Мефистофеля, напал; штурвал → Hijacking |
+| (китайский, улики уничтожены) Успокоить → Игнорировать → Извиниться | JoinedMutiny без расстрела солдата; Джонсон; Вонг убил Мефистофеля → Hijacking |
+| во всех | таймер MJ12 стоит на время сцены (237 → 236 с) |
 
 ---
 

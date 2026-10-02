@@ -1624,7 +1624,7 @@ exec function CNNConState()
     for (ev = conPlay.con.eventList; (ev != None) && (ev != conPlay.currentEvent); ev = ev.nextEvent)
         i++;
 
-    Log("CNN L2 constate: " $ conPlay.con.conName $ " conPlay=" $ conPlay.GetStateName() $
+    Log("CNN L2 constate: " $ conPlay.con.conName $ " class=" $ conPlay.Class $ " conPlay=" $ conPlay.GetStateName() $
         " event[" $ i $ "] " $ ConEventText(conPlay.currentEvent));
 
     if (ConEventChoice(conPlay.currentEvent) != None)

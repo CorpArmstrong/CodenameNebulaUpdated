@@ -75,12 +75,31 @@ var float     tubeLogDelay;
 // MJ12 arrival countdown and the ship's wheel -- see StartMJ12Countdown().
 const MJ12_COUNTDOWN_SECONDS = 240.0;
 const MJ12_ARRIVAL_GRACE     = 3.0;
+
+// SocialBoss event indices (bridge CONEVENTS dump, 2026-10-02) -- see
+// ValidateSocialBoss(). Actions key on the SPEECH line that follows each
+// placeholder: speech waits for audio, so WatchConversation() always sees
+// it, while comments and triggers can pass within a single frame.
+const SB_TROOPER_SHOT   = 7;    // Tantalus "Son of a bitch!" (after TRIGGER MikeExecutesMJ12Troop)
+const SB_ARMSTRONG_SHOT = 27;   // Tantalus "Armstrong!", after his groan -- a speaker
+                                // killed on his own line aborts the scene
+const SB_JOHNSON_SHOT   = 39;   // Tantalus "No!!!", after Johnson's plea
+const SB_SAMANTHA_SHOT  = 54;   // Wong "You are NEXT", after "Samantha, your mother..."
+const SB_MEPH_SHOT_A    = 66;   // "So mote it be." -- Apologize branch
+const SB_MEPH_SHOT_B    = 77;   // "So mote it be." -- Manipulate branch
+const SB_WONG_TURNS_A   = 67;   // Wong "Your Chinese sucks heck."
+const SB_WONG_TURNS_B   = 78;   // Wong "You still Dontgivafucker!"
+var Conversation watchedCon;
+var ConEvent     lastSeenEvent;
+
 var float        mj12SecondsLeft;
 var float        mj12ArrivedSeconds;
 var TimerDisplay mj12Window;
 var bool         bWheelHintShown;
-var vector       bridgeGuardSpot[4];
-var Avatar       bridgeGuard[4];
+var ScriptedPawn sbTrooper;
+var bool         bSocialBossFight;
+var bool         bWongHostile;
+var bool         bMephHostile;
 var localized string BridgeNotClearMessage;
 var localized string MJ12GoalText;
 var localized string MJ12StartMessage;
@@ -117,56 +136,11 @@ function PrepareFirstFrame()
     RouteTubeButton();
     RemoveStrayL1Conversations();
     DedupeConversations();
-    DropDeadGoals();
+    RebindHostages();
+    ValidateSocialBoss();
+    ProtectShipsWheel();
     DisablePageAndSamantha();
     DumpConversationLists();
-}
-
-// ----------------------------------------------------------------------
-// DropDeadGoals()
-//
-// DL_DaedalusSuggestsMeetHimAtCommCenter hands out
-// MeetDaedalusInTheCommandCenter, which points at the Social Boss scene
-// with Mephistopheles. That scene is out of scope: its hostage speakers
-// were never placed, so the engine refuses to start it (verified live
-// 2026-10-02 with ReadyForSocialBoss set, standing at Mephistopheles and
-// frobbing him). The voice line still plays; only the goal event is
-// flipped to "mark complete", which ConPlayBase ignores when the player
-// does not have the goal. Both .con files carry a copy of the infolink, so
-// every conversation is scanned, not just the survivor of
-// DedupeConversations().
-// ----------------------------------------------------------------------
-
-function DropDeadGoals()
-{
-    local ConListItem item;
-    local ConEvent ev;
-    local ConEventAddGoal goalEvent;
-    local DeusExGoal goal;
-
-    goal = Player.FindGoal('MeetDaedalusInTheCommandCenter');
-    if (goal != None)
-        Player.DeleteGoal(goal);
-
-    item = ConListItem(Player.conListItems);
-    while (item != None)
-    {
-        if (item.con != None)
-        {
-            for (ev = item.con.eventList; ev != None; ev = ev.nextEvent)
-            {
-                goalEvent = ConEventAddGoal(ev);
-                if ((goalEvent != None) && !goalEvent.bGoalCompleted &&
-                    (goalEvent.goalName == 'MeetDaedalusInTheCommandCenter'))
-                {
-                    goalEvent.bGoalCompleted = true;
-                    Log("CNN L2: dropped dead goal " $ goalEvent.goalName $
-                        " from " $ item.con.conName);
-                }
-            }
-        }
-        item = item.next;
-    }
 }
 
 // ----------------------------------------------------------------------
@@ -827,7 +801,7 @@ function DoLevelStuff()
     CheckMagdaleneArmed();
     CheckUploadStarted();
     UpdateMJ12Countdown();
-    AggroBridgeGuards();
+    CheckSocialBossFight();
     CheckShipsWheel();
     CheckSoldierSoftlock();
     LogTubeAfterUpload();
@@ -1017,7 +991,11 @@ function CheckEndingReached()
     // 06_Transcend and its quote with surviving the upload, so dying would
     // have been a shortcut to the same screen. Deliberate departure,
     // user-decided 2026-09-24.
-    if (flags.GetBool('PlayerDiedOnL2') || flags.GetBool('PlayerDiedDuringUpload'))
+    // Giving up to Mephistopheles in the social boss scene ("CAUSE AN
+    // APOCALYPSE") ends the same way, once the scene is over (authors'
+    // flowchart; user, 2026-10-02).
+    if (flags.GetBool('PlayerDiedOnL2') || flags.GetBool('PlayerDiedDuringUpload') ||
+        (flags.GetBool('PlayerGaveUp') && !Player.IsInState('Conversation')))
     {
         TravelToEnding(MAP_MUTINY);
         return;
@@ -1085,7 +1063,7 @@ function StartMJ12Countdown()
         Log("CNN L2: bridge door " $ door.Name $ " state=" $ door.GetStateName() $ " keyNum=" $ door.KeyNum $ " opening=" $ door.bOpening);
     }
 
-    SpawnBridgeGuards();
+    PrepareSocialBoss();
     MoveMephistophelesOffTheWheel();
 
     goal = Player.AddGoal('L2_HijackBeforeMJ12', true);
@@ -1120,6 +1098,10 @@ function UpdateMJ12Countdown()
         return;
     }
 
+    // Paused while the social boss scene plays (user, 2026-10-02).
+    if (IsSocialBossPlaying())
+        return;
+
     mj12SecondsLeft -= checkTime;
 
     if (mj12Window == None)
@@ -1151,97 +1133,382 @@ function UpdateMJ12Countdown()
 }
 
 // ----------------------------------------------------------------------
-// SpawnBridgeGuards() / IsBridgeClear()
+// Social Boss (Mephistopheles and Wong at the ship's wheel)
 //
-// The bridge is two thousand units from Magdalene's conversation, so the
-// MJ12 countdown alone made Hijacking the shortest path of the three. Per
-// her own line ("Wipe all enemies and hijack the station"), Page's avatars
-// now hold the bridge: they spawn in the approach corridor in front of the
-// helm platform when the countdown starts -- the player is down in the labs
-// then, well out of sight -- and the wheel only counts once they are dead.
-// Spots were picked with tools/map_probe.js (corridor floor -1352, 48 up
-// for the collision half-height), clear of Mephistopheles at the wheel and
-// the Wong/Reed scene further north. User-decided 2026-09-24.
+// OpheliaL2.con's SocialBoss is written and voiced but never played: its
+// hostages are named CorpArmstrongHostage / DrJohnsonHostage /
+// SamanthaReedHostage while the pawns sitting on the bridge carry
+// CorpArmstrong / DrJohnson / SamanthaReed, and every execution and shot is
+// an ET_Comment placeholder the engine skips. This replaces the four avatar
+// guards of 2026-09-24 (plan: CNNDocs/L2_SocialBoss_Plan.md, user-approved
+// 2026-10-02):
+//
+//   - at load the bridge hostages take the conversation's names;
+//   - when the MJ12 countdown opens the bridge, Wong is armed and an MJ12
+//     trooper hostage is placed for the opening execution;
+//   - WatchConversation() follows the running conversation every frame and
+//     the placeholders are acted out on the speech line after each one, by
+//     event index -- comment text loads as garbage, so positions are the
+//     only reliable key, and ValidateSocialBoss() checks them at load;
+//   - outcomes: GiveUp -> PlayerGaveUp -> Mutiny; ATTACK, or Wong turning
+//     on the player after the Chinese branches -> a fight; the wheel opens
+//     once Mephistopheles and Wong are both dead.
 // ----------------------------------------------------------------------
 
-function SpawnBridgeGuards()
+function ScriptedPawn FindPawnByBindName(string bindName)
 {
-    local int i, spawned;
-    local rotator facing;
+    local ScriptedPawn p;
 
-    facing.Yaw = 16384;   // face north, toward the bridge door
-
-    for (i = 0; i < ArrayCount(bridgeGuardSpot); i++)
-    {
-        bridgeGuard[i] = Spawn(class'Avatar',,, bridgeGuardSpot[i], facing);
-        if (bridgeGuard[i] != None)
-        {
-            // A ScriptedPawn gets its InitialInventory (the knife) and
-            // InitialAlliances in its StartUp state; the immediate SetOrders
-            // below would skip that, leaving an unarmed guard that drops out
-            // of Attacking every second (seen 2026-09-24). Do it first.
-            // Bridge guards carry swords instead of the class's knife.
-            bridgeGuard[i].InitialInventory[0].Inventory = class'WeaponSword';
-            bridgeGuard[i].InitialInventory[0].Count = 1;
-            bridgeGuard[i].InitializePawn();
-
-            // The class's InitialAlliances alone left them passive in play
-            // (2026-09-24): state the hostility explicitly, for whatever
-            // alliance the player and Magdalene are actually in.
-            bridgeGuard[i].ChangeAlly('Player', -1, true);
-            if (Player.Alliance != '')
-                bridgeGuard[i].ChangeAlly(Player.Alliance, -1, true);
-
-            // Avatar extends Male1, a civilian: HumanCivilian's fears made the
-            // guards FLEE the player in play -- they ran onto the helm
-            // platform and fell into the pit around it (2026-09-24). Guards
-            // stand their ground and answer weapons and shots with attacks.
-            bridgeGuard[i].bFearHacking = false;
-            bridgeGuard[i].bFearWeapon = false;
-            bridgeGuard[i].bFearShot = false;
-            bridgeGuard[i].bFearInjury = false;
-            bridgeGuard[i].bFearIndirectInjury = false;
-            bridgeGuard[i].bFearCarcass = false;
-            bridgeGuard[i].bFearDistress = false;
-            bridgeGuard[i].bFearAlarm = false;
-            bridgeGuard[i].bFearProjectiles = false;
-            bridgeGuard[i].bHateWeapon = true;
-            bridgeGuard[i].bHateShot = true;
-            bridgeGuard[i].bHateInjury = true;
-
-            bridgeGuard[i].SetOrders('Standing', '', true);
-            spawned++;
-        }
-    }
-    Log("CNN L2: " $ spawned $ " avatar guard(s) placed on the bridge");
+    foreach AllActors(class'ScriptedPawn', p)
+        if (p.BindName == bindName)
+            return p;
+    return None;
 }
 
-// Perception alone didn't turn them on the player in play, so once the
-// player comes within range the script hands each guard its enemy and sends
-// it into Attacking. Not during a conversation (the JCboss scene plays in
-// this corridor), and they hold position until then.
-function AggroBridgeGuards()
+function bool IsAlive(ScriptedPawn p)
 {
+    return (p != None) && (p.Health > 0) && !p.IsInState('Dying');
+}
+
+// The hostages are the pawns already sitting in the bridge corridor; the
+// Y/Z test keeps offstage doubles (Samantha has one at Y=+3788) out.
+function RebindHostages()
+{
+    local ScriptedPawn p;
+
+    foreach AllActors(class'ScriptedPawn', p)
+    {
+        if ((p.Location.Y > -3500) || (p.Location.Z > -1000))
+            continue;
+        if (p.BindName == "CorpArmstrong")
+            p.BindName = "CorpArmstrongHostage";
+        else if (p.BindName == "DrJohnson")
+            p.BindName = "DrJohnsonHostage";
+        else if (p.BindName == "SamanthaReed")
+            p.BindName = "SamanthaReedHostage";
+        else
+            continue;
+        Log("CNN L2: social boss hostage " $ p.Name $ " -> " $ p.BindName);
+    }
+}
+
+function Conversation FindSocialBossConversation()
+{
+    local ScriptedPawn meph;
+    local ConListItem item;
+
+    meph = FindPawnByBindName("DrMephistopheles");
+    if (meph == None)
+        return None;
+    for (item = ConListItem(meph.conListItems); item != None; item = item.next)
+        if ((item.con != None) && (item.con.conName == 'SocialBoss'))
+            return item.con;
+    return None;
+}
+
+function ConEvent SocialBossEvent(Conversation con, int index)
+{
+    local ConEvent ev;
     local int i;
 
-    if (Player.IsInState('Conversation') || flags.GetBool('TookSteeringWheel'))
+    for (ev = con.eventList; (ev != None) && (i < index); ev = ev.nextEvent)
+        i++;
+    return ev;
+}
+
+// The event indices below come from the bridge's CONEVENTS dump of the
+// shipped .con (2026-10-02). If the conversation is ever re-edited they
+// shift, so say so in the log rather than act on the wrong lines.
+function ValidateSocialBoss()
+{
+    local Conversation con;
+    local bool bOk;
+
+    con = FindSocialBossConversation();
+    if (con == None)
+    {
+        Log("CNN L2: social boss conversation not found");
+        return;
+    }
+
+    bOk = (ConEventTrigger(SocialBossEvent(con, SB_TROOPER_SHOT - 1)) != None) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_TROOPER_SHOT)) != None) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_ARMSTRONG_SHOT)) != None) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_JOHNSON_SHOT)) != None) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_SAMANTHA_SHOT)) != None) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_MEPH_SHOT_A)) != None) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_MEPH_SHOT_B)) != None) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_WONG_TURNS_A)) != None) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_WONG_TURNS_B)) != None) &&
+          (SocialBossEvent(con, 56).label == "AttackMeph") &&
+          (SocialBossEvent(con, 58).label == "GiveUp");
+
+    if (bOk)
+        Log("CNN L2: social boss event layout as expected");
+    else
+        Log("CNN L2: WARNING social boss event layout changed -- executions may hit the wrong lines");
+}
+
+// Called by StartMJ12Countdown(): the bridge is open from here on.
+function PrepareSocialBoss()
+{
+    local ScriptedPawn wong, trooper;
+    local vector spot;
+    local int i;
+
+    // Normally set by Daedalus's infolink on the main deck, which a player
+    // can walk past; the scene must not depend on it.
+    flags.SetBool('ReadyForSocialBoss', true);
+
+    wong = FindPawnByBindName("MikeWong");
+    if (wong != None)
+        GiveWeapon(wong, class'WeaponPistol');
+
+    // The opening execution needs an MJ12 hostage; none stands on the bridge.
+    if (wong != None)
+    {
+        spot = wong.Location + vect(-70, 70, 0);
+        trooper = Spawn(class'MJ12Troop',,, spot, wong.Rotation);
+        if (trooper == None)
+            trooper = Spawn(class'MJ12Troop',,, wong.Location + vect(70, 70, 0), wong.Rotation);
+    }
+    if (trooper != None)
+    {
+        for (i = 0; i < ArrayCount(trooper.InitialInventory); i++)
+            trooper.InitialInventory[i].Inventory = None;
+        trooper.InitializePawn();
+        trooper.ChangeAlly('Player', 1, true);
+        trooper.bInvincible = false;
+        trooper.SetOrders('Standing', '', true);
+        sbTrooper = trooper;
+    }
+    Log("CNN L2: social boss prepared -- Wong armed=" $ (wong != None) $ " MJ12 hostage=" $ (sbTrooper != None));
+}
+
+function GiveWeapon(ScriptedPawn p, class<Inventory> weaponClass)
+{
+    if (p.FindInventoryType(weaponClass) != None)
+        return;
+    p.InitialInventory[0].Inventory = weaponClass;
+    p.InitialInventory[0].Count = 1;
+    p.InitializeInventory();
+}
+
+// Wong shoots someone on a conversation line. The victim is first taken out
+// of the conversation, or its death aborts the whole scene twice over:
+// ScriptedPawn.Died() calls AbortConversation while bInConversation, and
+// leaving the Conversation state does too unless bConversationEndedNormally,
+// and ConPlayBase.ActorDestroyed() terminates it when the pawn is destroyed
+// for its carcass while still in ConActorsBound (all three seen in play
+// 2026-10-02). Victims are shot after their last line, so dropping them
+// from the bound lists is safe.
+function WongExecutes(ScriptedPawn victim)
+{
+    local ScriptedPawn wong;
+    local int k;
+
+    if (!IsAlive(victim))
         return;
 
-    for (i = 0; i < ArrayCount(bridgeGuard); i++)
+    wong = FindPawnByBindName("MikeWong");
+    victim.bInConversation = false;
+    victim.bConversationEndedNormally = true;
+    if (Player.conPlay != None)
     {
-        if ((bridgeGuard[i] == None) || (bridgeGuard[i].Health <= 0) || bridgeGuard[i].IsInState('Dying'))
-            continue;
-        // Only nudge guards that are idle or running away; any combat state
-        // of their own (Attacking, Seeking, TakingHit...) is left alone.
-        if (!bridgeGuard[i].IsInState('Standing') && !bridgeGuard[i].IsInState('Wandering') &&
-            !bridgeGuard[i].IsInState('Fleeing'))
-            continue;
-        if (VSize(bridgeGuard[i].Location - Player.Location) > 1000)
-            continue;
+        for (k = 0; k < ArrayCount(Player.conPlay.ConActorsBound); k++)
+            if (Player.conPlay.ConActorsBound[k] == victim)
+                Player.conPlay.ConActorsBound[k] = None;
+        Player.conPlay.IsConActorInList(victim, true);
+    }
+    victim.bInvincible = false;
+    if (wong != None)
+        wong.PlaySound(Sound'DeusExSounds.Weapons.PistolFire', SLOT_None, 2.0);
+    victim.TakeDamage(1000, wong, victim.Location + vect(0, 0, 30), vect(0, 0, 0), 'Shot');
+    Log("CNN L2: social boss -- Wong shot " $ victim.Name);
+}
 
-        bridgeGuard[i].SetEnemy(Player, Level.TimeSeconds, true);
-        bridgeGuard[i].GotoState('Attacking');
-        Log("CNN L2: bridge guard " $ bridgeGuard[i].Name $ " engaging the player, state=" $ bridgeGuard[i].GetStateName());
+// ----------------------------------------------------------------------
+// WatchConversation() -- runs every frame from Tick()
+//
+// Conversations play on DeusEx.ConPlay: TantalusDenton's StartConversation
+// override (the only place CNN's own ConPlay subclass would be spawned) has
+// been commented out since 2020, so nothing can hook ConPlay itself. This
+// follows the player's conPlay instead: each new current event is reported
+// to ConversationEventStarted(), and each newly started conversation gets
+// its skill gates repaired before any choice is shown (PatchChoiceSkills).
+// ----------------------------------------------------------------------
+
+function Tick(float deltaTime)
+{
+    Super.Tick(deltaTime);
+    WatchConversation();
+}
+
+function WatchConversation()
+{
+    local ConEvent ev;
+
+    if ((Player == None) || (Player.conPlay == None) || (Player.conPlay.con == None))
+    {
+        watchedCon = None;
+        lastSeenEvent = None;
+        return;
+    }
+
+    if (Player.conPlay.con != watchedCon)
+    {
+        watchedCon = Player.conPlay.con;
+        lastSeenEvent = None;
+        PatchChoiceSkills(watchedCon);
+    }
+
+    ev = Player.conPlay.currentEvent;
+    if ((ev != None) && (ev != lastSeenEvent))
+    {
+        lastSeenEvent = ev;
+        ConversationEventStarted(watchedCon, ev);
+    }
+}
+
+// SocialBoss gates "(Apologize to Wong)" and "(Manipulate Wong)" on skill
+// "Chinese", but the engine resolves no class by that name (CNN's is
+// AiSkillChinese), leaves skillNeeded None and offered both to every player
+// (found 2026-10-02). ConChoice keeps no skill-name string, so the gated
+// choices are recognised by their jump labels. The .con asks for level 3
+// (Master, as in the authors' flowchart); Trained is enough, Master being
+// out of reach in one playthrough (user, 2026-10-02). Runs once the
+// conversation has started, i.e. after the engine's own bind.
+function PatchChoiceSkills(Conversation con)
+{
+    local ConEvent ev;
+    local ConChoice choice;
+
+    for (ev = con.eventList; ev != None; ev = ev.nextEvent)
+    {
+        if (ConEventChoice(ev) == None)
+            continue;
+        for (choice = ConEventChoice(ev).ChoiceList; choice != None; choice = choice.nextChoice)
+        {
+            if ((choice.skillNeeded == None) &&
+                ((choice.choiceLabel == "ApologizetoWong") || (choice.choiceLabel == "ManipulateWong")))
+            {
+                choice.skillNeeded = class'AiSkillChinese';
+                choice.skillLevelNeeded = 1;
+            }
+        }
+    }
+}
+
+// Called by WatchConversation() for every event of a conversation as it
+// becomes current.
+function ConversationEventStarted(Conversation con, ConEvent ev)
+{
+    local ConEvent scan;
+    local int i;
+
+    if ((con == None) || (con.conName != 'SocialBoss'))
+        return;
+
+    for (scan = con.eventList; (scan != None) && (scan != ev); scan = scan.nextEvent)
+        i++;
+    if (scan == None)
+        return;
+
+    if (i == 0)
+    {
+        Player.GoalCompleted('MeetDaedalusInTheCommandCenter');
+        Log("CNN L2: social boss started, MJ12 timer at " $ int(mj12SecondsLeft) $ "s");
+    }
+
+    if (i == SB_TROOPER_SHOT)
+        WongExecutes(sbTrooper);
+    else if (i == SB_ARMSTRONG_SHOT)
+        WongExecutes(FindPawnByBindName("CorpArmstrongHostage"));
+    else if (i == SB_JOHNSON_SHOT)
+        WongExecutes(FindPawnByBindName("DrJohnsonHostage"));
+    else if (i == SB_SAMANTHA_SHOT)
+        WongExecutes(FindPawnByBindName("SamanthaReedHostage"));
+    else if ((i == SB_MEPH_SHOT_A) || (i == SB_MEPH_SHOT_B))
+    {
+        flags.SetBool('WongBetrayedMeph', true);
+        // Wong turns on the player right after; set it now in case losing
+        // the conversation's owner cuts the last lines short.
+        bSocialBossFight = true;
+        WongExecutes(FindPawnByBindName("DrMephistopheles"));
+    }
+    else if ((i == SB_WONG_TURNS_A) || (i == SB_WONG_TURNS_B))
+        bSocialBossFight = true;
+
+    if (ev.label == "AttackMeph")
+        bSocialBossFight = true;
+    else if (ev.label == "GiveUp")
+        flags.SetBool('PlayerGaveUp', true);
+}
+
+function bool IsSocialBossPlaying()
+{
+    return (Player.conPlay != None) && (Player.conPlay.con != None) &&
+           (Player.conPlay.con.conName == 'SocialBoss');
+}
+
+// After ATTACK, or once Wong turns on the player, whoever of the two is
+// still alive fights; nudged back into Attacking while idle or fleeing
+// (both are civilians by class and would otherwise run).
+function CheckSocialBossFight()
+{
+    local ScriptedPawn wong, meph;
+
+    if (!bSocialBossFight || Player.IsInState('Conversation') || (Player.conPlay != None))
+        return;
+
+    wong = FindPawnByBindName("MikeWong");
+    meph = FindPawnByBindName("DrMephistopheles");
+
+    if (!bWongHostile && IsAlive(wong))
+    {
+        MakeHostile(wong);
+        bWongHostile = true;
+    }
+    if (!bMephHostile && IsAlive(meph))
+    {
+        MakeHostile(meph);
+        bMephHostile = true;
+    }
+    NudgeToAttack(wong);
+    NudgeToAttack(meph);
+}
+
+function MakeHostile(ScriptedPawn p)
+{
+    GiveWeapon(p, class'WeaponPistol');
+    p.bInvincible = false;
+    p.ChangeAlly('Player', -1, true);
+    if (Player.Alliance != '')
+        p.ChangeAlly(Player.Alliance, -1, true);
+    p.bFearHacking = false;
+    p.bFearWeapon = false;
+    p.bFearShot = false;
+    p.bFearInjury = false;
+    p.bFearIndirectInjury = false;
+    p.bFearCarcass = false;
+    p.bFearDistress = false;
+    p.bFearAlarm = false;
+    p.bFearProjectiles = false;
+    p.bHateWeapon = true;
+    p.bHateShot = true;
+    p.bHateInjury = true;
+    Log("CNN L2: social boss -- " $ p.Name $ " turns on the player, MJ12 timer at " $ int(mj12SecondsLeft) $ "s");
+}
+
+function NudgeToAttack(ScriptedPawn p)
+{
+    if (!IsAlive(p))
+        return;
+    if (p.IsInState('Standing') || p.IsInState('Wandering') || p.IsInState('Fleeing') ||
+        p.IsInState('Sitting') || p.IsInState('Conversation'))
+    {
+        p.SetEnemy(Player, Level.TimeSeconds, true);
+        p.GotoState('Attacking');
     }
 }
 
@@ -1275,19 +1542,25 @@ function MoveMephistophelesOffTheWheel()
     }
 }
 
-function int AliveBridgeGuards()
+// The ship's wheel is a breakable decoration and stands right where the
+// social boss fight happens: stray pistol fire destroyed it in a test run
+// (2026-10-02), after which Hijacking could never be reached.
+function ProtectShipsWheel()
 {
-    local int i, alive;
+    local ShipsWheel wheel;
 
-    for (i = 0; i < ArrayCount(bridgeGuard); i++)
-        if ((bridgeGuard[i] != None) && (bridgeGuard[i].Health > 0) && !bridgeGuard[i].IsInState('Dying'))
-            alive++;
-    return alive;
+    foreach AllActors(class'ShipsWheel', wheel)
+    {
+        wheel.bInvincible = true;
+        Log("CNN L2: ship's wheel " $ wheel.Name $ " made indestructible");
+    }
 }
 
+// The wheel opens once Mephistopheles and Wong are both dead -- one rule
+// for every way the scene can go (user, 2026-10-02).
 function bool IsBridgeClear()
 {
-    return (AliveBridgeGuards() == 0);
+    return !IsAlive(FindPawnByBindName("DrMephistopheles")) && !IsAlive(FindPawnByBindName("MikeWong"));
 }
 
 // ----------------------------------------------------------------------
@@ -1296,7 +1569,7 @@ function bool IsBridgeClear()
 // Taking the wheel is frobbing ShipsWheel0 on the bridge, which spins it
 // (vanilla ShipsWheel.Frob sets bSpinning for 2-7s -- long enough for this
 // 1s poll). It only counts while the MJ12 countdown runs, and only with
-// the guards dead and Magdalene alive: hijacking is her plan, and the ending
+// Mephistopheles and Wong dead and Magdalene alive: hijacking is her plan, and the ending
 // shows her at the wheel. Otherwise the player is told why, once per spin.
 // ----------------------------------------------------------------------
 
@@ -1326,7 +1599,7 @@ function CheckShipsWheel()
         {
             bWheelHintShown = true;
             Player.ClientMessage(BridgeNotClearMessage);
-            Log("CNN L2: wheel refused, " $ AliveBridgeGuards() $ " bridge guard(s) still alive");
+            Log("CNN L2: wheel refused, Mephistopheles or Wong still alive");
         }
         return;
     }
@@ -1509,12 +1782,10 @@ defaultproperties
     trackedFlag(22)=MagdaleneArmed
     trackedFlag(23)=MJ12TimerStarted
     trackedFlag(24)=MJ12Arrived
+    trackedFlag(25)=PlayerGaveUp
+    trackedFlag(26)=WongBetrayedMeph
     MJ12GoalText="Hijack the station: clear Page's avatars off the bridge and take the ship's wheel with Magdalene before MJ12 arrive. Or upload yourselves in the Avatar Lab tube."
-    BridgeNotClearMessage="Page's avatars still hold the bridge. Clear it first."
-    bridgeGuardSpot(0)=(X=700.000000,Y=-4250.000000,Z=-1304.000000)
-    bridgeGuardSpot(1)=(X=1000.000000,Y=-4250.000000,Z=-1304.000000)
-    bridgeGuardSpot(2)=(X=780.000000,Y=-4380.000000,Z=-1304.000000)
-    bridgeGuardSpot(3)=(X=940.000000,Y=-4380.000000,Z=-1304.000000)
+    BridgeNotClearMessage="Mephistopheles and Wong still hold the bridge."
     MJ12StartMessage="MJ12 are on their way. The bridge is open."
     MJ12TimerLabel="MJ12 ARRIVAL"
     MJ12ArrivedMessage="MJ12 have docked with Ophelia."

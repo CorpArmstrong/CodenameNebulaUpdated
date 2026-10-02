@@ -11,6 +11,12 @@
 // ArmMagdalene, whose assault-gun and napalm branches never worked).
 // So resolve it here, at the moment the event runs, and only when the
 // engine left it empty.
+//
+// NOTE (2026-10-02): this class is not spawned. TantalusDenton's
+// StartConversation override, the only place that would create it, has
+// been commented out since 2020 (ed6f49d), so every conversation plays on
+// DeusEx.ConPlay and the fixes below never ran. L2's SocialBoss needs are
+// handled by Chapter06L2.WatchConversation() instead.
 //=============================================================================
 class CNNConPlay extends ConPlay;
 
@@ -45,28 +51,4 @@ function EEventAction SetupEventTransferObject(ConEventTransferObject event, out
         event.giveObject = ResolveItemClass(event.objectName);
 
     return Super.SetupEventTransferObject(event, nextLabel);
-}
-
-// Skill-gated choices have the same problem: OpheliaL2.con's SocialBoss
-// gates "(Apologize to Wong)" and "(Manipulate Wong)" on skill "Chinese",
-// level 3 (Master -- matches the authors' flowchart), but the engine
-// resolves no class by that name (CNN's is AiSkillChinese), leaves
-// skillNeeded None, and so offered both to every player (found 2026-10-02).
-// ConChoice keeps no skill-name string to resolve from, so the gated
-// choices are recognised by their jump labels.
-function EEventAction SetupEventChoice(ConEventChoice event, out String nextLabel)
-{
-    local ConChoice choice;
-
-    for (choice = event.ChoiceList; choice != None; choice = choice.nextChoice)
-    {
-        if ((choice.skillNeeded == None) &&
-            ((choice.choiceLabel == "ApologizetoWong") || (choice.choiceLabel == "ManipulateWong")))
-        {
-            choice.skillNeeded = class'AiSkillChinese';
-            choice.skillLevelNeeded = 3;
-        }
-    }
-
-    return Super.SetupEventChoice(event, nextLabel);
 }

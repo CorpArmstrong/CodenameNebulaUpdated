@@ -59,6 +59,9 @@ var Magdalene watchedMagdalene;
 var name      lastMagOrders;
 var string    lastMagEnemy;
 var bool      bMagWatchPrimed;
+var bool      bSoldierFallbackDone;
+var bool      bTubeLogged;
+var float     tubeLogDelay;
 
 // MJ12 arrival countdown and the ship's wheel -- see StartMJ12Countdown().
 const MJ12_COUNTDOWN_SECONDS = 240.0;
@@ -101,6 +104,7 @@ function PrepareFirstFrame()
 
     RepairCommCenterBattle();
     DisableStaleTubeMapExit();
+    FixTubeMover();
     RemoveStrayL1Conversations();
     DedupeConversations();
     DropDeadGoals();
@@ -503,6 +507,88 @@ function StripConversation(name conName)
 }
 
 // ----------------------------------------------------------------------
+// FixTubeMover()
+//
+// The upload tube's glass (CNNMover0, tag CNNMoverTube) comes down over
+// MagdalenePoint, where the map's LoadingInTube scene parks Magdalene, and
+// it slides diagonally on the way. Movers default to
+// ME_ReturnWhenEncroach, so touching her sent it back up: in play the tube
+// stayed open around her for the whole upload fight and the avatars could
+// reach her (2026-10-02). She is meant to be shut inside (user, variant A),
+// so let the glass pass her.
+// ----------------------------------------------------------------------
+
+function FixTubeMover()
+{
+    local Mover tube;
+
+    foreach AllActors(class'Mover', tube, 'CNNMoverTube')
+    {
+        tube.MoverEncroachType = ME_IgnoreWhenEncroach;
+        Log("CNN L2: tube mover " $ tube.Name $ " no longer reopens on Magdalene");
+    }
+}
+
+// Logs where the tube glass is a few seconds after the button, so a manual
+// run shows whether it actually closed (KeyNum 0 = down).
+function LogTubeAfterUpload()
+{
+    local Mover tube;
+
+    if (bTubeLogged || !flags.GetBool('TantalusUploadStarted'))
+        return;
+
+    tubeLogDelay += checkTime;
+    if (tubeLogDelay < 4.0)
+        return;
+
+    bTubeLogged = true;
+    foreach AllActors(class'Mover', tube, 'CNNMoverTube')
+        Log("CNN L2: tube after button: KeyNum=" $ tube.KeyNum $ " state=" $ tube.GetStateName() $
+            " opening=" $ tube.bOpening);
+}
+
+// ----------------------------------------------------------------------
+// CheckSoldierSoftlock()
+//
+// The only way down to the lower labs is OpenCommCenterDoors (a locked,
+// unbreakable, unfrobbable DeusExMover), fired by CommCenterDispatcher from
+// the end of MeetSoldiers. That conversation is owned by the MJ12 sergeant
+// (MJ12Commando0, BindName MJ12Sergeant), and eight avatars stand within
+// ~500 units of his squad. If he dies before the talk -- crossfire while the
+// player fights the avatars -- the conversation can never start and the
+// level is soft-locked (user, 2026-10-02). In that case do what the
+// conversation would have done.
+// ----------------------------------------------------------------------
+
+function CheckSoldierSoftlock()
+{
+    local ScriptedPawn sergeant, p;
+    local Dispatcher disp;
+
+    if (bSoldierFallbackDone || flags.GetBool('ReadyForBossFight'))
+        return;
+
+    foreach AllActors(class'ScriptedPawn', p)
+    {
+        if (p.BindName == "MJ12Sergeant")
+        {
+            sergeant = p;
+            break;
+        }
+    }
+
+    if ((sergeant != None) && (sergeant.Health > 0) && !sergeant.IsInState('Dying'))
+        return;
+
+    bSoldierFallbackDone = true;
+    flags.SetBool('ReadyForBossFight', true);
+    foreach AllActors(class'Dispatcher', disp, 'CommCenterDispatcher')
+        disp.Trigger(Player, Player);
+    Log("CNN L2: MJ12 sergeant died before MeetSoldiers -- opened the comm centre doors anyway");
+}
+
+// ----------------------------------------------------------------------
 // DisableStaleTubeMapExit()
 //
 // The tube button fires MiniGameDispatcher, which starts a 30s survival
@@ -637,6 +723,8 @@ function DoLevelStuff()
     UpdateMJ12Countdown();
     AggroBridgeGuards();
     CheckShipsWheel();
+    CheckSoldierSoftlock();
+    LogTubeAfterUpload();
     CheckPlayerDeath();
     CheckEndingReached();
 }

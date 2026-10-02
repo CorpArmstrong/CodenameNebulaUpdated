@@ -59,7 +59,6 @@ var Magdalene watchedMagdalene;
 var name      lastMagOrders;
 var string    lastMagEnemy;
 var bool      bMagWatchPrimed;
-var bool      bGoodbyeRescueTried;
 
 // MJ12 arrival countdown and the ship's wheel -- see StartMJ12Countdown().
 const MJ12_COUNTDOWN_SECONDS = 240.0;
@@ -709,87 +708,71 @@ function CheckUploadStarted()
 // ----------------------------------------------------------------------
 // BringMagdaleneToTube()
 //
-// The goodbye (MagdaleneInsideTube) is what lets a Hijacking, Transcend or
-// Conspiracy run end. The map starts it from the tube button, but only if
-// Magdalene is within the engine's 800-unit conversation radius, and the
-// map's own way of getting her there (LoadingInTube -> WalkIntoATube) needs
-// her close too. Found from play 2026-09-24: she was Following but still
-// fighting avatars far behind when the button was pressed, so a run that
-// had earned Hijacking fell through to the no-goodbye route.
+// The tube scenes need Magdalene close: the map's LoadingInTube walks her
+// into the tube and the button starts the MagdaleneInsideTube goodbye, both
+// only within the engine's 800-unit conversation radius. In play she falls
+// behind when she stops to fight (a bridge guard drew her off, 2026-10-02).
 //
-// First fix placed her AFTER the button, every tick -- which looped: the
-// avatars reached her, the goodbye broke off, Following walked her back to
-// the player, and she was moved and restarted again (9 starts in one run).
-// So now she is placed the way the map intends, BEFORE the button: once the
-// player is near the tube button with her following, she is put at
-// MagdalenePoint inside the still-open tube and told to stand there. The
-// button then closes the tube on her and the map starts the goodbye itself.
-// If the button beats that anyway, there is a single rescue attempt after
-// it, never a retry. If she isn't with the player -- never freed, hostile
-// or dead -- nothing happens and the upload plays out without her.
-// User-decided 2026-09-24.
+// Earlier versions moved her straight into the tube once the player was
+// within 700 units of the button -- through walls, before the player had
+// even entered the lab -- so she seemed to appear there by magic (user,
+// 2026-10-02). Now she only catches up: once she is out of range and out of
+// the player's sight, she is put a few steps behind the player and keeps
+// following, and the map's own scene takes it from there. Never after the
+// button, and never while either of them is in a conversation. If she is
+// not following -- never freed, hostile or dead -- nothing happens and the
+// upload plays out without her.
 // ----------------------------------------------------------------------
 
 function BringMagdaleneToTube()
 {
     local Magdalene mag;
-    local Actor point, a, button;
-    local bool bUploading;
+    local Actor a, button;
+    local rotator facing;
+    local vector behind;
+    local int dist;
 
-    if (flags.GetBool('FinalGoodbyePlayed') || flags.GetBool('TimerExpired'))
+    if (flags.GetBool('TantalusUploadStarted') || flags.GetBool('TimerExpired'))
         return;
-
-    bUploading = flags.GetBool('TantalusUploadStarted');
-    if (bUploading && bGoodbyeRescueTried)
+    if (Player.IsInState('Conversation'))
         return;
 
     foreach AllActors(class'Magdalene', mag)
         break;
 
-    if ((mag == None) || (mag.Health <= 0) || mag.IsInState('Dying') || (mag.Orders != 'Following'))
+    if ((mag == None) || (mag.Health <= 0) || mag.IsInState('Dying') ||
+        mag.IsInState('Conversation') || (mag.Orders != 'Following'))
         return;
 
-    foreach AllActors(class'Actor', point, 'MagdalenePoint')
-        break;
-    if (point == None)
+    dist = VSize(mag.Location - Player.Location);
+    if (dist <= 800)
         return;
 
-    if (!bUploading)
+    foreach AllActors(class'Actor', a)
     {
-        foreach AllActors(class'Actor', a)
+        if (a.Event == 'MiniGameDispatcher')
         {
-            if (a.Event == 'MiniGameDispatcher')
-            {
-                button = a;
-                break;
-            }
+            button = a;
+            break;
         }
-        if ((button == None) || (VSize(Player.Location - button.Location) > 700))
-            return;
-
-        // Close enough for the map's own LoadingInTube scene to walk her in;
-        // only step in when she has fallen out of conversation range. Moving
-        // her while she was right there looked odd in play (2026-09-24): she
-        // popped into the tube and then the map sent her there again.
-        if (VSize(mag.Location - Player.Location) <= 800)
-            return;
     }
+    if ((button == None) || (VSize(Player.Location - button.Location) > 1500))
+        return;
 
-    if (VSize(mag.Location - point.Location) > 200)
-    {
-        if (mag.SetLocation(point.Location))
-            Log("CNN L2: moved Magdalene into the tube (she was following but not there)");
-        else
-            Log("CNN L2: could not move Magdalene into the tube (blocked)");
-        mag.SetRotation(point.Rotation);
-    }
-    mag.SetOrders('Standing', '', true);
+    // Out of sight only, so nobody watches her appear.
+    if (Player.LineOfSightTo(mag))
+        return;
 
-    if (bUploading)
+    facing = Player.Rotation;
+    facing.Pitch = 0;
+    behind = Player.Location - 150 * vector(facing);
+    if (!FastTrace(behind, Player.Location))
+        return;
+
+    if (mag.SetLocation(behind))
     {
-        bGoodbyeRescueTried = true;
-        if ((Player.conPlay == None) && Player.StartConversationByName('MagdaleneInsideTube', mag, false, true))
-            Log("CNN L2: started the MagdaleneInsideTube goodbye after the button");
+        mag.SetRotation(facing);
+        Log("CNN L2: Magdalene caught up behind the player (was " $ dist $ " units away)");
     }
 }
 
@@ -858,14 +841,15 @@ function CheckEndingReached()
         return;
     }
 
-    // TRANSCEND -- the upload in the tube. With Magdalene it ends on her
-    // goodbye (FinalGoodbyePlayed, MagdaleneInsideTube). Without her it ends
-    // when the upload countdown is survived (TimerExpired, set by
-    // CNNEventTimer); that is the GDD's Benevolent Dictator, and where the
-    // map's own MapExit pointed before the rename -- DisableStaleTubeMapExit().
-    // A conversation still playing when the timer runs out finishes first.
-    if (flags.GetBool('FinalGoodbyePlayed') ||
-        (flags.GetBool('TimerExpired') && !Player.IsInState('Conversation')))
+    // TRANSCEND -- the upload in the tube. The button closes the tube, starts
+    // Magdalene's goodbye (MagdaleneInsideTube) if she is in it, a 60 s
+    // upload countdown (CNNEventTimer) and the avatar spawner; the level ends
+    // only once that minute is survived (TimerExpired). Ending on the goodbye
+    // instead cut the fight out entirely -- it played ~7 s after the button
+    // (user, 2026-10-02). Where the map's own MapExit pointed before the
+    // rename -- see DisableStaleTubeMapExit(). A conversation still playing
+    // when the timer runs out finishes first.
+    if (flags.GetBool('TimerExpired') && !Player.IsInState('Conversation'))
     {
         TravelToEnding(MAP_TRANSCEND);
         return;

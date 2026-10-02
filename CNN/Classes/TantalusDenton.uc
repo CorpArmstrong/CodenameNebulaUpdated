@@ -881,7 +881,8 @@ exec function CNNTestEnding(string which)
     }
     else if (which == "TRANSCEND")
     {
-        FlagBase.SetBool('FinalGoodbyePlayed', true);
+        // The upload countdown survived (CNNEventTimer sets this).
+        FlagBase.SetBool('TimerExpired', true);
     }
     else if (which == "CONSPIRACY")
     {

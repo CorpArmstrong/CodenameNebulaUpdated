@@ -11,6 +11,7 @@ function PostBeginPlay()
 
 defaultproperties
 {
+    Flammability=20.000000
     Mesh=LodMesh'DeusExCharacters.GM_DressShirt_Carcass'
     Fatness=102
     MultiSkins(0)=Texture'DeusExDeco.Skins.BoneSkullTex1'

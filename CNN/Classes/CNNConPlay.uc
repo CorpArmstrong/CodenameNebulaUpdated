@@ -46,3 +46,27 @@ function EEventAction SetupEventTransferObject(ConEventTransferObject event, out
 
     return Super.SetupEventTransferObject(event, nextLabel);
 }
+
+// Skill-gated choices have the same problem: OpheliaL2.con's SocialBoss
+// gates "(Apologize to Wong)" and "(Manipulate Wong)" on skill "Chinese",
+// level 3 (Master -- matches the authors' flowchart), but the engine
+// resolves no class by that name (CNN's is AiSkillChinese), leaves
+// skillNeeded None, and so offered both to every player (found 2026-10-02).
+// ConChoice keeps no skill-name string to resolve from, so the gated
+// choices are recognised by their jump labels.
+function EEventAction SetupEventChoice(ConEventChoice event, out String nextLabel)
+{
+    local ConChoice choice;
+
+    for (choice = event.ChoiceList; choice != None; choice = choice.nextChoice)
+    {
+        if ((choice.skillNeeded == None) &&
+            ((choice.choiceLabel == "ApologizetoWong") || (choice.choiceLabel == "ManipulateWong")))
+        {
+            choice.skillNeeded = class'AiSkillChinese';
+            choice.skillLevelNeeded = 3;
+        }
+    }
+
+    return Super.SetupEventChoice(event, nextLabel);
+}

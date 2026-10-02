@@ -52,6 +52,10 @@ var name agentWaitFlagName;
 var bool agentWaitExpectedValue;
 var float agentWaitDeadline;
 
+// Backing state for CNNConRun()/CNNAgentConStep().
+var bool bAgentConRun;
+var string agentConPicks;
+
 //var travel AiAugmentationManager AugmentationSystem;
 
 //var CASConPlay conplay; UNCOMMENT!
@@ -1421,6 +1425,306 @@ exec function CNNConDump(string targetTag)
 }
 
 // ----------------------------------------------------------------------
+// Conversation driving for the agent bridge (2026-10-02)
+//
+// CNNConEvents dumps a conversation's event graph from the engine's own
+// loaded objects -- labels, jumps, choice conditions, flags, comments --
+// which tools/con_dump.js can only guess at from the binary. CNNTalk
+// starts any conversation with any actor by BindName; CNNConState reports
+// where a running conversation is and which choices are on offer;
+// CNNChoose picks one through ConPlay.PlayChoice, the same call the
+// conversation window makes on a click. Together with CNNAdvance
+// (PlayNextEvent) the bridge can walk a branching scene without input.
+// ----------------------------------------------------------------------
+
+function SplitFirstWord(string s, out string first, out string rest)
+{
+    local int i;
+
+    i = InStr(s, " ");
+    if (i < 0)
+    {
+        first = s;
+        rest = "";
+        return;
+    }
+    first = Left(s, i);
+    rest = Right(s, Len(s) - i - 1);
+}
+
+// The actor with this BindName that owns a conversation called conName
+// (L2 has offstage doubles sharing BindNames).
+function Actor FindConversationOwner(string bindName, string conName, out Conversation con)
+{
+    local Actor a;
+    local ConListItem item;
+
+    foreach AllActors(class'Actor', a)
+    {
+        if (a.BindName != bindName)
+            continue;
+        for (item = ConListItem(a.conListItems); item != None; item = item.next)
+        {
+            if ((item.con != None) && (Caps(string(item.con.conName)) == Caps(conName)))
+            {
+                con = item.con;
+                return a;
+            }
+        }
+    }
+    return None;
+}
+
+function string FlagRefsText(ConFlagRef ref)
+{
+    local string s;
+
+    while (ref != None)
+    {
+        s = s $ " " $ ref.flagName $ "=" $ ref.value;
+        ref = ref.nextFlagRef;
+    }
+    return s;
+}
+
+function string ConEventText(ConEvent ev)
+{
+    local string s;
+    local ConEventSpeech speech;
+
+    if (ev == None)
+        return "None";
+
+    speech = ConEventSpeech(ev);
+    if (speech != None)
+    {
+        s = "SPEECH " $ speech.speakerName $ " -> " $ speech.speakingToName;
+        if (speech.conSpeech != None)
+            s = s $ ": " $ Left(speech.conSpeech.speech, 90);
+    }
+    else if (ConEventChoice(ev) != None)
+        s = "CHOICE";
+    else if (ConEventSetFlag(ev) != None)
+        s = "SETFLAG" $ FlagRefsText(ConEventSetFlag(ev).flagRef);
+    else if (ConEventCheckFlag(ev) != None)
+        s = "CHECKFLAG" $ FlagRefsText(ConEventCheckFlag(ev).flagRef) $ " -> " $ ConEventCheckFlag(ev).setLabel;
+    else if (ConEventJump(ev) != None)
+        s = "JUMP -> " $ ConEventJump(ev).jumpLabel;
+    else if (ConEventTrigger(ev) != None)
+        s = "TRIGGER " $ ConEventTrigger(ev).triggerTag;
+    else if (ConEventComment(ev) != None)
+        s = "COMMENT " $ ConEventComment(ev).commentText;
+    else if (ConEventEnd(ev) != None)
+        s = "END";
+    else if (ConEventAddGoal(ev) != None)
+        s = "ADDGOAL " $ ConEventAddGoal(ev).goalName $ " completed=" $ ConEventAddGoal(ev).bGoalCompleted;
+    else if (ConEventAnimation(ev) != None)
+        s = "ANIM " $ ConEventAnimation(ev).eventOwnerName $ " " $ ConEventAnimation(ev).sequence;
+    else if (ConEventCheckPersona(ev) != None)
+        s = "CHECKPERSONA -> " $ ConEventCheckPersona(ev).jumpLabel;
+    else if (ConEventRandomLabel(ev) != None)
+        s = "RANDOM (labels are native, not readable from script)";
+    else
+        s = string(ev.Class.Name);
+
+    if (ev.label != "")
+        s = "<" $ ev.label $ "> " $ s;
+    return s;
+}
+
+function bool ChoiceAvailable(ConChoice choice)
+{
+    if (!CheckFlagRefs(choice.flagRef))
+        return false;
+    if (choice.skillNeeded == None)
+        return true;
+    return SkillSystem.IsSkilled(choice.skillNeeded, choice.skillLevelNeeded);
+}
+
+function string ChoiceText(ConChoice choice)
+{
+    local string s;
+
+    s = "\"" $ choice.choiceText $ "\" -> " $ choice.choiceLabel;
+    if (choice.skillNeeded != None)
+        s = s $ " skill=" $ choice.skillNeeded.Name $ ":" $ choice.skillLevelNeeded;
+    if (choice.flagRef != None)
+        s = s $ " flags:" $ FlagRefsText(choice.flagRef);
+    return s;
+}
+
+exec function CNNConEvents(string args)
+{
+    local string bindName, conName;
+    local Conversation con;
+    local Actor owner;
+    local ConEvent ev;
+    local ConChoice choice;
+    local int i;
+
+    SplitFirstWord(args, bindName, conName);
+    owner = FindConversationOwner(bindName, conName, con);
+    if (owner == None)
+    {
+        Log("CNN L2 conevents: no " $ conName $ " on any actor with BindName " $ bindName);
+        return;
+    }
+
+    Log("CNN L2 conevents: " $ con.conName $ " owner=" $ owner.Name $ " frob=" $ con.bInvokeFrob $
+        " radius=" $ con.bInvokeRadius $ ":" $ con.radiusDistance $ " flags:" $ FlagRefsText(con.flagRefList));
+    for (ev = con.eventList; ev != None; ev = ev.nextEvent)
+    {
+        Log("CNN L2 conevents: [" $ i $ "] " $ ConEventText(ev));
+        if (ConEventChoice(ev) != None)
+            for (choice = ConEventChoice(ev).ChoiceList; choice != None; choice = choice.nextChoice)
+                Log("CNN L2 conevents:      choice " $ ChoiceText(choice));
+        i++;
+    }
+}
+
+exec function CNNTalk(string args)
+{
+    local string bindName, conName, rest;
+    local Conversation con;
+    local Actor owner;
+    local bool bForce, bStarted;
+
+    SplitFirstWord(args, bindName, rest);
+    SplitFirstWord(rest, conName, rest);
+    bForce = (Caps(rest) == "FORCE");
+
+    owner = FindConversationOwner(bindName, conName, con);
+    if (owner == None)
+    {
+        Log("CNN L2 talk: no " $ conName $ " on any actor with BindName " $ bindName);
+        return;
+    }
+    if (conPlay != None)
+    {
+        Log("CNN L2 talk: a conversation is already running");
+        return;
+    }
+
+    bStarted = StartConversation(owner, IM_Named, con, false, bForce);
+    Log("CNN L2 talk: " $ con.conName $ " with " $ owner.Name $ " force=" $ bForce $ " started=" $ bStarted);
+}
+
+exec function CNNConState()
+{
+    local ConEvent ev;
+    local ConChoice choice;
+    local int i, n;
+
+    if ((conPlay == None) || (conPlay.con == None))
+    {
+        Log("CNN L2 constate: no conversation");
+        return;
+    }
+
+    for (ev = conPlay.con.eventList; (ev != None) && (ev != conPlay.currentEvent); ev = ev.nextEvent)
+        i++;
+
+    Log("CNN L2 constate: " $ conPlay.con.conName $ " conPlay=" $ conPlay.GetStateName() $
+        " event[" $ i $ "] " $ ConEventText(conPlay.currentEvent));
+
+    if (ConEventChoice(conPlay.currentEvent) != None)
+    {
+        for (choice = ConEventChoice(conPlay.currentEvent).ChoiceList; choice != None; choice = choice.nextChoice)
+        {
+            if (ChoiceAvailable(choice))
+            {
+                n++;
+                Log("CNN L2 constate:   " $ n $ ") " $ ChoiceText(choice));
+            }
+            else
+                Log("CNN L2 constate:   -) " $ ChoiceText(choice) $ " [locked]");
+        }
+    }
+}
+
+exec function CNNChoose(int n)
+{
+    local ConChoice choice;
+    local int k;
+
+    if ((conPlay == None) || (ConEventChoice(conPlay.currentEvent) == None))
+    {
+        Log("CNN L2 choose: not at a choice");
+        return;
+    }
+    if (!conPlay.IsInState('WaitForInput'))
+    {
+        Log("CNN L2 choose: choice not on screen yet (conPlay=" $ conPlay.GetStateName() $ ")");
+        return;
+    }
+
+    for (choice = ConEventChoice(conPlay.currentEvent).ChoiceList; choice != None; choice = choice.nextChoice)
+    {
+        if (ChoiceAvailable(choice))
+        {
+            k++;
+            if (k == n)
+            {
+                Log("CNN L2 choose: " $ n $ ") " $ ChoiceText(choice));
+                conPlay.PlayChoice(choice);
+                return;
+            }
+        }
+    }
+    Log("CNN L2 choose: no available choice " $ n);
+}
+
+// CONRUN: walks a running conversation one step per bridge tick (~1s).
+// Speech is advanced (PlayNextEvent, as a click would); at each choice the
+// next number from the pick list is taken (CNNChoose). Every step is
+// logged, so the log reads back as the path the scene took. With no picks
+// left it stops at the choice and lists what is on offer.
+exec function CNNConRun(string picks)
+{
+    bAgentConRun = true;
+    agentConPicks = picks;
+    Log("CNN L2 conrun: on, picks=[" $ picks $ "]");
+}
+
+function CNNAgentConStep()
+{
+    local string pick;
+
+    if (!bAgentConRun)
+        return;
+
+    if ((conPlay == None) || (conPlay.con == None))
+    {
+        bAgentConRun = false;
+        Log("CNN L2 conrun: conversation ended");
+        return;
+    }
+
+    if (ConEventChoice(conPlay.currentEvent) != None)
+    {
+        if (!conPlay.IsInState('WaitForInput'))
+            return;
+        if (agentConPicks == "")
+        {
+            bAgentConRun = false;
+            Log("CNN L2 conrun: stopped at a choice, no picks left");
+            CNNConState();
+            return;
+        }
+        SplitFirstWord(agentConPicks, pick, agentConPicks);
+        CNNChoose(int(pick));
+        return;
+    }
+
+    if (conPlay.IsInState('WaitForInput') || conPlay.IsInState('WaitForSpeech') ||
+        conPlay.IsInState('WaitForText'))
+    {
+        Log("CNN L2 conrun: " $ ConEventText(conPlay.currentEvent));
+        conPlay.PlayNextEvent();
+    }
+}
+
+// ----------------------------------------------------------------------
 // CNNMagState()
 //
 // Diagnostic-only. Originally Magdalene-only (2026-09-23, built to poll
@@ -1555,6 +1859,8 @@ exec function CNNWaitFlag(name flagName, bool expectedValue, float timeoutSecond
 function CNNAgentCheckWait()
 {
     local bool current;
+
+    CNNAgentConStep();
 
     if (!bAgentWaitPending)
         return;
@@ -2033,6 +2339,16 @@ exec function CNNAgentRun(int seq, string rest)
         CNNMagState(arg);
     else if (cmd == "CONDUMP")
         CNNConDump(arg);
+    else if (cmd == "CONEVENTS")
+        CNNConEvents(arg);
+    else if (cmd == "TALK")
+        CNNTalk(arg);
+    else if (cmd == "CONSTATE")
+        CNNConState();
+    else if (cmd == "CHOOSE")
+        CNNChoose(int(arg));
+    else if (cmd == "CONRUN")
+        CNNConRun(arg);
     else if (cmd == "SETFLAG")
         ConsoleCommand("CNNSetFlag " $ arg); // string->name needs the console's own parser, same reason as FIRE/FROB/CONVERSE
     else if (cmd == "WAITFLAG")
@@ -2065,7 +2381,7 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
     else
         ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
-            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/SETFLAG/WAITFLAG/NEWGAME/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/SETFLAG/WAITFLAG/NEWGAME/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
 }
 
 // ----------------------------------------------------------------------

@@ -27,15 +27,44 @@ var(SpawnInfo) SpawnInfo _spawnInfo;
 var(ContactInfo) ContactInfo contacts[8];
 
 var TantalusDenton player;
-var FlagBase flags;
 var int contactIndex;
 var bool bCheckForConvoEnd;
 
+// ----------------------------------------------------------------------
+// ResolvePlayer()
+//
+// PostBeginPlay() can run before the player pawn exists, so caching the
+// player once there leaves `player` permanently None -- and Tick() then
+// dereferenced it every single frame. A 5-minute L2 session logged 16,489
+// "Accessed None" warnings from Tick alone, 97% of the whole log, on top of
+// the per-frame script error. Re-resolve lazily instead of trusting a
+// single early attempt.
+//
+// The FlagBase is deliberately NOT cached: the engine rebuilds it during a
+// ClientTravel, and a stale copy in a field made the old level's
+// CleanupDestroyed fail with "Assertion failed: LinkedObjects[k]->IsValid()"
+// (Class CNN.HolocommUnit) on any travel after a holocomm button was pressed
+// (found 2026-10-02; caching came in with 02da182). Read player.flagBase at
+// the point of use, as the original code did.
+// ----------------------------------------------------------------------
+
+function bool ResolvePlayer()
+{
+    if (player == None)
+    {
+        player = TantalusDenton(GetPlayerPawn());
+        if (player == None)
+            return false;
+    }
+
+    return (player.flagBase != None);
+}
+
 function PostBeginPlay()
 {
-    // Get player and his flags.
-    player = TantalusDenton(GetPlayerPawn());
-    flags = player.flagBase;
+    // May legitimately fail this early; Tick() and the frobbing path both
+    // retry through ResolvePlayer().
+    ResolvePlayer();
 
     // Setup the spawn point!
     if (!CanSetSpawnPoint())
@@ -103,9 +132,11 @@ function SetAndSpawnActor(out ContactInfo info)
                               _spawnInfo.spawnLocation,
                               _spawnInfo.spawnRotation);
 
-    if (info.hideFlagName != '')
+    // Called from PostBeginPlay(), where the player may not exist yet, so
+    // resolve rather than assume the player was found there.
+    if ((info.hideFlagName != '') && ResolvePlayer())
     {
-        flags.SetBool(info.hideFlagName, false);
+        player.flagBase.SetBool(info.hideFlagName, false);
         bCheckForConvoEnd = true;
     }
 }
@@ -141,12 +172,29 @@ simulated function Tick(float TimeDelta)
 {
     super.Tick(TimeDelta);
 
-    if (bCheckForConvoEnd && !player.IsInState('Conversation'))
+    // Cheapest test first: this is per-frame code and the flag is false for
+    // almost the whole level.
+    if (!bCheckForConvoEnd)
+        return;
+
+    if (!ResolvePlayer())
+        return;
+
+    if (player.IsInState('Conversation'))
+        return;
+
+    // contactActor is spawned by SetAndSpawnActor, but a Spawn() can fail
+    // (no room at the spawn point), which would make this the next per-frame
+    // Accessed None. Stop watching rather than retry forever.
+    if (contacts[contactIndex].contactActor == None)
     {
-        if (DeusExPlayer(GetPlayerPawn()).flagBase.GetBool(contacts[contactIndex].hideFlagName))
-        {
-            contacts[contactIndex].contactActor.bHidden = true;
-            bCheckForConvoEnd = false;
-        }
+        bCheckForConvoEnd = false;
+        return;
+    }
+
+    if (player.flagBase.GetBool(contacts[contactIndex].hideFlagName))
+    {
+        contacts[contactIndex].contactActor.bHidden = true;
+        bCheckForConvoEnd = false;
     }
 }

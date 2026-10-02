@@ -10,6 +10,7 @@ setlocal enabledelayedexpansion
 ::   install        - Install the mod to local Deus Ex (for testing)
 ::   test           - Launch the mod in Deus Ex
 ::   test-meshes    - Mesh-resolution diagnostic via map load + log grep
+::   log [pattern]  - Show the game log (finds it wherever the launcher put it)
 ::   edit <map>     - Open a map in UnrealEd (CU editor preferred)
 ::   steam          - Launch via Steam (overlay + play time tracking)
 ::   reset          - Regenerate CNN.ini/CNNUser.ini from player's config
@@ -136,6 +137,7 @@ if /i "%~1"=="installer" goto :installer
 if /i "%~1"=="install" goto :install
 if /i "%~1"=="test" goto :test
 if /i "%~1"=="test-meshes" goto :test_meshes
+if /i "%~1"=="log" goto :log
 if /i "%~1"=="edit" goto :edit
 if /i "%~1"=="steam" goto :steam
 if /i "%~1"=="reset" goto :reset
@@ -307,9 +309,51 @@ for %%f in (%CNN_PACKAGES%) do (
 
 echo Compiling...
 cd /d "%SYSTEM_DIR%"
-"%SYSTEM_DIR%\ucc.exe" make
-if errorlevel 1 echo. && echo COMPILE FAILED && goto :eof
 
+:: ucc.exe (32-bit, pre-2000) intermittently GPFs during CONVERSATION/AUDIO
+:: IMPORT on large .con files -- heap fragmentation in the compiler itself,
+:: not a real source problem (see memory/feedback_ucc_gpf.md: ~25-30% of
+:: clean compiles hit this, and the exact same input compiles fine on
+:: retry). No source-level fix exists: the import count that stresses the
+:: allocator (472 audio paths in OpheliaDocksAndL1.Con) is baked into that
+:: .con binary itself, not the #exec directives in ImportConversations.uc/
+:: ImportSounds.uc, so it can't be reduced without ConEdit; an LAA patch on
+:: ucc.exe only reduces the rate (~25-30% -> ~10%), it doesn't eliminate it.
+:: Detect the GPF signature and retry up to 8x before treating it as a real
+:: failure -- at the WORST measured per-run rate (30%), 8 retries gives
+:: 1 - 0.3^8 =~ 99.9994% cumulative success (about 1 in 150,000 to still
+:: fail); at the typical ~25% rate it's better still. Each extra retry only
+:: costs a few seconds beyond a normal compile, and only in the unlucky
+:: case -- a successful compile still takes exactly 1 attempt.
+set "COMPILE_LOG=!TEMP!\cnn_compile_output.log"
+set "COMPILE_ATTEMPT=0"
+set "COMPILE_MAX_ATTEMPTS=8"
+
+:compile_attempt
+set /a "COMPILE_ATTEMPT+=1"
+"%SYSTEM_DIR%\ucc.exe" make > "!COMPILE_LOG!" 2>&1
+set "UCC_EXITCODE=!errorlevel!"
+type "!COMPILE_LOG!"
+
+findstr /C:"General protection fault" "!COMPILE_LOG!" >nul
+if not errorlevel 1 goto :compile_gpf_hit
+
+if !UCC_EXITCODE! NEQ 0 echo. && echo COMPILE FAILED && goto :eof
+goto :compile_succeeded
+
+:compile_gpf_hit
+if !COMPILE_ATTEMPT! GEQ !COMPILE_MAX_ATTEMPTS! goto :compile_gpf_exhausted
+echo.
+echo GPF on attempt !COMPILE_ATTEMPT!/!COMPILE_MAX_ATTEMPTS! -- known intermittent ucc.exe issue ^(memory/feedback_ucc_gpf.md^), not a real error. Retrying...
+echo.
+goto :compile_attempt
+
+:compile_gpf_exhausted
+echo.
+echo COMPILE FAILED -- GPF persisted across !COMPILE_MAX_ATTEMPTS! attempts ^(extremely unusual; normally clears within 1-2^)
+goto :eof
+
+:compile_succeeded
 echo.
 echo Copying compiled packages to repo...
 for %%f in (%CNN_PACKAGES%) do (
@@ -697,6 +741,30 @@ if exist "%CU_SYSTEM%" (
 echo.
 echo INSTALL SUCCEEDED
 echo You can now run: cnn test
+goto :eof
+
+:: ============================================================================
+:: LOG - Show the game log
+::
+:: The log is NOT always in System\. Kentie/Han's exe redirects it to
+:: <Documents>\Deus Ex\System\deusex.log, and Documents may be both
+:: OneDrive-redirected and localised, so it hides from a naive search.
+:: tools\find_log.ps1 checks every candidate and picks the newest.
+::
+:: Usage: cnn log            - tail the newest log
+::        cnn log <pattern>  - print only matching lines (regex)
+::        cnn log list       - list every log found, newest first
+:: ============================================================================
+:log
+if /i "%~2"=="list" (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\find_log.ps1" -SystemDir "!SYSTEM_DIR!" -List
+    goto :eof
+)
+if "%~2"=="" (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\find_log.ps1" -SystemDir "!SYSTEM_DIR!"
+) else (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\find_log.ps1" -SystemDir "!SYSTEM_DIR!" -Pattern "%~2"
+)
 goto :eof
 
 :: ============================================================================

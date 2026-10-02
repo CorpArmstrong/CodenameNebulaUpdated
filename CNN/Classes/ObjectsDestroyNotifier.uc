@@ -115,6 +115,7 @@ function Destroyed()
 
 defaultproperties
 {
+    bHidden=true   // logic-only Actor; visible, it drew the default Actor sprite in game
     goalCompleteName=BurnEvidence
     objects(0)=(tag=LibertyEvidence)
     objects(1)=(tag=BigTank)

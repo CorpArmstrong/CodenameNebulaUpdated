@@ -266,7 +266,7 @@ For a verified open-issues list, see [CODE_REVIEW.md](CODE_REVIEW.md). For class
 
 3. ~~**Pass-by-value counter never increments** — `CNN/Classes/ObjectsDestroyNotifier.uc:78`~~ **FIXED** (2026-04-25). Added `out` keyword to function parameter so the increment propagates to the caller. Quest goals using ObjectsDestroyNotifier now complete correctly when all objects are destroyed in the same poll cycle.
 
-4. **Empty bool function with no return** — `CNN/Classes/TantalusDenton.uc:155`
+4. ~~**Empty bool function with no return** — `CNN/Classes/TantalusDenton.uc:155`~~ **FIXED** (verified 2026-09-24). Now an explicit `return false;` override.
    `CheckActorDistances()` declares `bool` return but has an empty body. Returns undefined value.
 
 5. **Buffer overflow in C++ converter** — `Converter/obj2de/Source/main.cpp:285`
@@ -280,12 +280,12 @@ For a verified open-issues list, see [CODE_REVIEW.md](CODE_REVIEW.md). For class
 7. **AllActors in Tick — performance** — `CNN/Classes/CNNUPS.uc:287-334`
    Three `foreach AllActors()` loops iterate every actor every frame. Should cache references or use a timer.
 
-8. **Missing null check on conOwner** — `CNN/Classes/CnnConversTrigger.uc:52`
+8. ~~**Missing null check on conOwner** — `CNN/Classes/CnnConversTrigger.uc:52`~~ **FIXED** (verified 2026-09-24).
    If `AllActors` loop finds no matching actor, `conOwner` stays `None` and is passed directly to `StartConversationByName()`.
 
 9. ~~**Missing null check on sCam** — `CNN/Classes/LaserSecurityController.uc:91`~~ **FIXED** (2026-04-25). Wrapped in `if (sCam != none)` guard.
 
-10. **Duplicate augmentation grant** — `CNN/Classes/Chapter05.uc:115,160`
+10. ~~**Duplicate augmentation grant** — `CNN/Classes/Chapter05.uc:115,160`~~ **FIXED** (2026-09-24). Dead second block removed.
     Identical `HasHeartAug` check + `GivePlayerAugmentation(AugHeartLung)` block appears twice. Player can receive the augmentation twice.
 
 11. **Division by zero risk** — `Converter/obj2de/Source/FileOBJ.cpp:25-27`
@@ -299,7 +299,7 @@ For a verified open-issues list, see [CODE_REVIEW.md](CODE_REVIEW.md). For class
 
 ### Medium Priority
 
-14. **Debug msgbox calls left in production code:**
+14. ~~**Debug msgbox calls left in production code:**~~ **FIXED** (verified 2026-09-24).
     - `CNN/Classes/MandatoryMovementTriger.uc:72` — `msgbox("MovedPawn not finded")`
     - `CNN/Classes/DestroyTrigger.uc:38,42,49` — multiple `self.MsgBox()` calls
 

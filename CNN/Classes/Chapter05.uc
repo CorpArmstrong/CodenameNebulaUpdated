@@ -157,11 +157,6 @@ function GivePlayerHisAugs()
         Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugEnviro');
         flags.SetBool('PlayerGotEnviroAug', true, true, 0);
     }
-    if (flags.GetBool('HasHeartAug') && !flags.GetBool('PlayerGotHeartAug'))
-    {
-        Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugHeartLung');
-        flags.SetBool('PlayerGotHeartAug', true, true, 0);
-    }
     if (flags.GetBool('HasRadarAug') && !flags.GetBool('PlayerGotRadarAug'))
     {
         Player.AugmentationSystem.GivePlayerAugmentation(Class'DeusEx.AugRadarTrans');

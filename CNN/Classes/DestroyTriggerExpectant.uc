@@ -49,5 +49,6 @@ function TurnOff()
 
 defaultproperties
 {
+    bHidden=true   // logic-only Actor; visible, it drew the default Actor sprite in game
     CheckDelay=0.200000
 }

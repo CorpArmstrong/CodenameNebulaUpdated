@@ -24,33 +24,35 @@ function Trigger(Actor Other, Pawn Instigator)
 function StopSpawning()
 {
     bSpawning = false;
-    BroadcastMessage("Inside StopSpawning!");
 }
 
 // ============================================================================
 // Tick
+//
+// No BroadcastMessage here: the debug lines this used to send went to the
+// HUD every single frame, and one still being sent while the level tore
+// down its root window crashed the ending travel (ntdll access violation,
+// found 2026-09-24 surviving the tube countdown).
 // ============================================================================
 
 simulated function Tick(float TimeDelta)
 {
+    local ScriptedPawn spawned;
+
     super.Tick(TimeDelta);
 
     if (bSpawning && spawnCounter < spawnLimit)
     {
-        BroadcastMessage("InternalCounter: " $ internalCounter $ "; nextSpawn: " $ nextSpawn);
         internalCounter += TimeDelta;
 
         if (internalCounter > nextSpawn)
         {
             nextSpawn = internalCounter + spawnRate;
-            Spawn(actorType, self).SetOrders(orderName, orderTag);
+            spawned = Spawn(actorType, self);
+            if (spawned != none)
+                spawned.SetOrders(orderName, orderTag);
             spawnCounter++;
-            BroadcastMessage("Spawned actor! num: " $ spawnCounter);
         }
-    }
-    else
-    {
-        BroadcastMessage("Don't spawn anymore!");
     }
 }
 

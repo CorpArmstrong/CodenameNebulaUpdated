@@ -247,6 +247,53 @@ if (-not $pathsInjected) {
     $result += $cnnPaths
 }
 
+# ---- Kentie/Han renderer settings ----
+# Kentie's launcher runs its own D3D10 renderer and keeps that renderer's
+# settings in <Documents>\Deus Ex\System\DeusEx.ini, not in the game's
+# System\DeusEx.ini this script reads. Without the section CNN.ini falls
+# back to the renderer's defaults -- ClassicLighting and
+# simulateMultipassTexturing off -- and the maps render much darker than
+# the same player's vanilla game (reported 2026-09-24). Copy the player's
+# own sections across; failing that, write the two settings that restore
+# the original lighting.
+function Get-DocumentsPath {
+    try {
+        $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+        $raw = (Get-ItemProperty -Path $key -Name 'Personal' -ErrorAction Stop).Personal
+        return [Environment]::ExpandEnvironmentVariables($raw)
+    } catch {
+        return (Join-Path $env:USERPROFILE 'Documents')
+    }
+}
+
+$rendererSections = @('D3D10Drv.D3D10RenderDevice', 'D3D11Drv.D3D11RenderDevice')
+$presentSections = $result | Where-Object { $_ -match '^\[(.+)\]\s*$' } | ForEach-Object { $_.Trim('[', ']', ' ') }
+$kentieIni = Join-Path (Get-DocumentsPath) 'Deus Ex\System\DeusEx.ini'
+$kentieLines = if (Test-Path $kentieIni) { [System.IO.File]::ReadAllLines($kentieIni) } else { @() }
+
+foreach ($section in $rendererSections) {
+    if ($presentSections -contains $section) { continue }
+
+    $copied = @()
+    $inSection = $false
+    foreach ($line in $kentieLines) {
+        if ($line -match '^\[(.+)\]\s*$') { $inSection = ($matches[1] -eq $section); if ($inSection) { $copied += $line }; continue }
+        if ($inSection) { $copied += $line }
+    }
+
+    if ($copied.Count -gt 0) {
+        $result += ''
+        $result += $copied
+        Write-Host "    Renderer settings: copied [$section] from $kentieIni"
+    } elseif ($section -eq 'D3D10Drv.D3D10RenderDevice') {
+        $result += ''
+        $result += "[$section]"
+        $result += 'ClassicLighting=True'
+        $result += 'simulateMultipassTexturing=True'
+        Write-Host "    Renderer settings: default [$section] (original lighting)"
+    }
+}
+
 # ---- Write CNN.ini ----
 [System.IO.File]::WriteAllLines($OutputIni, $result)
 Write-Host "  Generated CNN.ini from player's DeusEx.ini"
@@ -262,15 +309,62 @@ if ($renderer) {
 Write-Host "    Resolution: ${nativeResX}x${nativeResY} (forced to native)"
 
 # ---- Generate CNNUser.ini from User.ini ----
+#
+# Keybindings are inherited verbatim, with one exception: the console.
+# Deus Ex ships Tilde= and T= deliberately blank (see DefUser.ini), so a
+# player who never bound a console key gets a CNNUser.ini with no way to
+# open one. That blocks every console-driven workflow -- CNNTestEnding,
+# EditFlags, "open <map>" -- in a mod that has no other cheat UI. Only
+# genuinely unbound keys are filled, so a player's own binding always wins.
 if ($SourceUser -ne '.' -and (Test-Path $SourceUser)) {
     $userLines = [System.IO.File]::ReadAllLines($SourceUser)
     $userResult = @()
 
+    $consoleKeys = [ordered]@{ 'Tilde' = 'Type'; 'T' = 'Talk' }
+    $filled = @()
+    $inInput = $false
+
     foreach ($line in $userLines) {
+        if ($line -match '^\[(.+)\]\s*$') {
+            # Leaving [Engine.Input]: add any console key the section never mentioned.
+            if ($inInput) {
+                foreach ($key in $consoleKeys.Keys) {
+                    if ($filled -notcontains $key) {
+                        $userResult += "$key=$($consoleKeys[$key])"
+                        $filled += $key
+                    }
+                }
+            }
+            $inInput = ($matches[1] -eq 'Engine.Input')
+            $userResult += $line
+            continue
+        }
+
         if ($line -match '^Class=') {
             $userResult += 'Class=CNN.TantalusDenton'
-        } else {
-            $userResult += $line
+            continue
+        }
+
+        if ($inInput -and ($line -match '^(\w+)=(.*)$') -and $consoleKeys.Contains($matches[1])) {
+            $key = $matches[1]
+            $filled += $key
+            if ($matches[2].Trim() -eq '') {
+                $userResult += "$key=$($consoleKeys[$key])"
+            } else {
+                $userResult += $line
+            }
+            continue
+        }
+
+        $userResult += $line
+    }
+
+    # [Engine.Input] ran to end of file.
+    if ($inInput) {
+        foreach ($key in $consoleKeys.Keys) {
+            if ($filled -notcontains $key) {
+                $userResult += "$key=$($consoleKeys[$key])"
+            }
         }
     }
 
@@ -278,7 +372,7 @@ if ($SourceUser -ne '.' -and (Test-Path $SourceUser)) {
     Write-Host "  Generated CNNUser.ini from player's User.ini"
     Write-Host "    Source:  $SourceUser"
     Write-Host "    Output:  $OutputUser"
-    Write-Host "    Player keybindings: inherited"
+    Write-Host "    Player keybindings: inherited (console keys added only if unbound)"
 } else {
     Write-Host "  Skipped CNNUser.ini generation (no User.ini found)"
 }

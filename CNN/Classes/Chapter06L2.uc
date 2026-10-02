@@ -26,6 +26,10 @@ const MAP_TRANSCEND  = "06_Transcend";
 const TUBE_BUTTON_TAG = 'CNNTubeButton';
 // Tube glass bottom below its mover origin -- see FixTubeMover().
 const TUBE_GLASS_BOTTOM = 50.0;
+// How far Magdalene may trail the player near the tube lab before she is
+// brought up behind him. Was the 800-unit conversation radius; that let
+// her walk into the lab long after the player (user, 2026-10-02).
+const MAG_CATCHUP_DIST = 300;
 
 // Set true to log every flag change to the game log. Launch with -log to
 // watch it. This is how we learn which flags the authored conversations
@@ -906,8 +910,9 @@ function CheckUploadStarted()
 // Earlier versions moved her straight into the tube once the player was
 // within 700 units of the button -- through walls, before the player had
 // even entered the lab -- so she seemed to appear there by magic (user,
-// 2026-10-02). Now she only catches up: once she is out of range and out of
-// the player's sight, she is put a few steps behind the player and keeps
+// 2026-10-02). Now she only catches up: once she is more than
+// MAG_CATCHUP_DIST away and out of the player's sight, she is put a few
+// steps behind the player and keeps
 // following, and the map's own scene takes it from there. Never after the
 // button, and never while either of them is in a conversation. If she is
 // not following -- never freed, hostile or dead -- nothing happens and the
@@ -935,7 +940,7 @@ function BringMagdaleneToTube()
         return;
 
     dist = VSize(mag.Location - Player.Location);
-    if (dist <= 800)
+    if (dist <= MAG_CATCHUP_DIST)
         return;
 
     foreach AllActors(class'Actor', a)

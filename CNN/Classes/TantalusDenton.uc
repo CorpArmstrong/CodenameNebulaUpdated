@@ -2365,6 +2365,16 @@ exec function CNNAgentRun(int seq, string rest)
         Log("CNN L2 newgame: calling ShowIntro(True) -- strStartMap=" $ strStartMap);
         ShowIntro(True);
     }
+    else if (cmd == "GIVE")
+        CNNAgentGive(arg);
+    else if (cmd == "TAKE")
+        CNNAgentTake(arg);
+    else if (cmd == "INV")
+        CNNAgentInv(arg);
+    else if (cmd == "KILL")
+        CNNAgentKill(arg);
+    else if (cmd == "BODIES")
+        CNNAgentBodies();
     else if (cmd == "RAW")
         ConsoleCommand(arg); // generic passthrough for ad hoc `set`/console commands during diagnostics, same trust level as FIRE/OPEN/CONVERSE which already reach ConsoleCommand
     else if (cmd == "WHERE")
@@ -2381,7 +2391,153 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
     else
         ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
-            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/SETFLAG/WAITFLAG/NEWGAME/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/SETFLAG/WAITFLAG/NEWGAME/GIVE/TAKE/INV/KILL/BODIES/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+}
+
+// ----------------------------------------------------------------------
+// CNNAgentGive() / CNNAgentTake() / CNNAgentInv()
+//
+// Inventory control for tests that branch on what the player carries
+// (ArmMagdalene's CheckObject events, 2026-10-05):
+//   GIVE <class>      spawns the item and gives it to the player
+//   TAKE <class>      removes every item of that class from the player
+//   INV [BindName]    logs the inventory of the player, or of a pawn
+// A bare class name is looked up in DeusEx, then in CNN.
+// ----------------------------------------------------------------------
+
+function class<Inventory> CNNAgentItemClass(string className)
+{
+    local class<Inventory> c;
+
+    if (InStr(className, ".") >= 0)
+        return class<Inventory>(DynamicLoadObject(className, class'Class', true));
+    c = class<Inventory>(DynamicLoadObject("DeusEx." $ className, class'Class', true));
+    if (c == None)
+        c = class<Inventory>(DynamicLoadObject("CNN." $ className, class'Class', true));
+    return c;
+}
+
+function CNNAgentGive(string className)
+{
+    local class<Inventory> c;
+    local Inventory item;
+
+    c = CNNAgentItemClass(className);
+    if (c == None)
+    {
+        Log("CNN agent: GIVE unknown class " $ className);
+        return;
+    }
+    item = Spawn(c,,, Location);
+    if (item == None)
+    {
+        Log("CNN agent: GIVE could not spawn " $ c);
+        return;
+    }
+    item.GiveTo(self);
+    if (Weapon(item) != None)
+        Weapon(item).GiveAmmo(self);
+    Log("CNN agent: GIVE " $ c $ " held=" $ (FindInventoryType(c) != None));
+}
+
+function CNNAgentTake(string className)
+{
+    local class<Inventory> c;
+    local Inventory item;
+    local int n;
+
+    c = CNNAgentItemClass(className);
+    if (c == None)
+    {
+        Log("CNN agent: TAKE unknown class " $ className);
+        return;
+    }
+    item = FindInventoryType(c);
+    while ((item != None) && (n < 10))
+    {
+        if (inHand == item)
+            PutInHand(None);
+        DeleteInventory(item);
+        item.Destroy();
+        n++;
+        item = FindInventoryType(c);
+    }
+    Log("CNN agent: TAKE " $ c $ " removed=" $ n);
+}
+
+function CNNAgentInv(string bindName)
+{
+    local Pawn p;
+    local ScriptedPawn sp;
+    local Inventory item;
+    local string list;
+    local int n;
+
+    p = self;
+    if (bindName != "")
+    {
+        p = None;
+        foreach AllActors(class'ScriptedPawn', sp)
+            if (sp.BindName == bindName)
+                p = sp;
+        if (p == None)
+        {
+            Log("CNN agent: INV no pawn bound as " $ bindName);
+            return;
+        }
+    }
+
+    // Capped: a single over-long log line crashed the game (Magdalene
+    // carried 99 coil guns, 2026-10-05).
+    for (item = p.Inventory; item != None; item = item.Inventory)
+    {
+        n++;
+        if (Len(list) > 600)
+            continue;
+        list = list $ " " $ item.Class.Name;
+        if ((Weapon(item) != None) && (Weapon(item).AmmoType != None))
+            list = list $ "(" $ Weapon(item).AmmoType.AmmoAmount $ ")";
+    }
+    Log("CNN agent: INV " $ p.Name $ " weapon=" $ p.Weapon $ " items=" $ n $ ":" $ list);
+}
+
+// ----------------------------------------------------------------------
+// CNNAgentKill() / CNNAgentBodies()
+//
+//   KILL <BindName>   1000 damage to that pawn, as a shot from the player;
+//                     an invincible pawn survives it (logged)
+//   BODIES            logs every carcass: class, name, mesh, scale, skins
+// ----------------------------------------------------------------------
+
+function CNNAgentKill(string bindName)
+{
+    local ScriptedPawn sp, victim;
+
+    foreach AllActors(class'ScriptedPawn', sp)
+        if (sp.BindName == bindName)
+            victim = sp;
+    if (victim == None)
+    {
+        Log("CNN agent: KILL no pawn bound as " $ bindName);
+        return;
+    }
+    victim.TakeDamage(1000, self, victim.Location + vect(0, 0, 30), vect(0, 0, 0), 'Shot');
+    Log("CNN agent: KILL " $ victim.Name $ " invincible=" $ victim.bInvincible $
+        " health=" $ victim.Health $ " state=" $ victim.GetStateName());
+}
+
+function CNNAgentBodies()
+{
+    local DeusExCarcass c;
+    local int n;
+
+    foreach AllActors(class'DeusExCarcass', c)
+    {
+        n++;
+        Log("CNN agent: BODY " $ c.Class.Name $ " '" $ c.itemName $ "' mesh=" $ c.Mesh $
+            " scale=" $ c.DrawScale $ " skins=" $ c.MultiSkins[0] $ "," $ c.MultiSkins[3] $ "," $ c.MultiSkins[6]);
+    }
+    Log("CNN agent: BODIES " $ n);
 }
 
 // ----------------------------------------------------------------------

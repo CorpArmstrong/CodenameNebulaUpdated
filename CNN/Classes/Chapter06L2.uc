@@ -100,6 +100,8 @@ var ScriptedPawn sbTrooper;
 var bool         bSocialBossFight;
 var bool         bWongHostile;
 var bool         bMephHostile;
+var bool         bSocialBossStarted;
+var bool         bSocialBossReleased;
 var localized string BridgeNotClearMessage;
 var localized string MJ12GoalText;
 var localized string MJ12StartMessage;
@@ -136,7 +138,10 @@ function PrepareFirstFrame()
     RouteTubeButton();
     RemoveStrayL1Conversations();
     DedupeConversations();
+    TrimMagdaleneCoilGuns();
     RebindHostages();
+    SetSocialBossCarcasses();
+    ProtectSocialBossCast();
     ValidateSocialBoss();
     ProtectShipsWheel();
     DisablePageAndSamantha();
@@ -1064,7 +1069,7 @@ function StartMJ12Countdown()
     }
 
     PrepareSocialBoss();
-    MoveMephistophelesOffTheWheel();
+    MoveMephistophelesNextToWong();
 
     goal = Player.AddGoal('L2_HijackBeforeMJ12', true);
     if (goal != None)
@@ -1172,6 +1177,11 @@ function bool IsAlive(ScriptedPawn p)
 
 // The hostages are the pawns already sitting in the bridge corridor; the
 // Y/Z test keeps offstage doubles (Samantha has one at Y=+3788) out.
+//
+// Each also gets its real name for the subtitles: Deus Ex shows the
+// UnfamiliarName ("Soldier", "Surgeon") of anyone the player has not
+// spoken to yet, and the player meets these three only in this scene
+// (reported 2026-10-05).
 function RebindHostages()
 {
     local ScriptedPawn p;
@@ -1183,13 +1193,106 @@ function RebindHostages()
         if (p.BindName == "CorpArmstrong")
             p.BindName = "CorpArmstrongHostage";
         else if (p.BindName == "DrJohnson")
+        {
             p.BindName = "DrJohnsonHostage";
+            DropAllConversations(p);
+        }
         else if (p.BindName == "SamanthaReed")
             p.BindName = "SamanthaReedHostage";
         else
             continue;
+        if (p.FamiliarName != "")
+            p.UnfamiliarName = p.FamiliarName;
         Log("CNN L2: social boss hostage " $ p.Name $ " -> " $ p.BindName);
     }
+}
+
+// Dr. Johnson has no conversation of his own on L2, but the mission's
+// conversation packages hand him his L1 ones, which then played when the
+// player talked to him here (reported 2026-10-05). SocialBoss is
+// Mephistopheles's and binds Johnson by name, so it is unaffected.
+function DropAllConversations(Actor a)
+{
+    local ConListItem item;
+
+    for (item = ConListItem(a.conListItems); item != None; item = item.next)
+        if (item.con != None)
+            Log("CNN L2: dropped " $ item.con.conName $ " from " $ a.Name);
+    a.conListItems = None;
+}
+
+// The map gives Magdalene InitialInventory CNNWeaponCoilGun with Count=99,
+// meant as ammo, but a weapon's Count spawns that many separate guns: she
+// carried 99 coil guns (found 2026-10-05). Keep the one she holds.
+function TrimMagdaleneCoilGuns()
+{
+    local Magdalene mag;
+    local Inventory item, next, keep;
+    local int n;
+
+    foreach AllActors(class'Magdalene', mag)
+    {
+        keep = mag.Weapon;
+        if ((keep == None) || (keep.Class != class'CNNWeaponCoilGun'))
+            keep = mag.FindInventoryType(class'CNNWeaponCoilGun');
+
+        for (item = mag.Inventory; item != None; item = next)
+        {
+            next = item.Inventory;
+            if ((item.Class == class'CNNWeaponCoilGun') && (item != keep))
+            {
+                mag.DeleteInventory(item);
+                item.Destroy();
+                n++;
+            }
+        }
+    }
+    if (n > 0)
+        Log("CNN L2: removed " $ n $ " extra coil guns from Magdalene");
+}
+
+// Mephistopheles, Wong and the hostages wear map-specific looks, but their
+// classes leave bodies in stock outfits (a plain doctor, a man in a dress
+// shirt; reported 2026-10-05). Each gets a carcass class with its own
+// mesh, skins and scale.
+function SetSocialBossCarcasses()
+{
+    SetCarcass(FindPawnByBindName("DrMephistopheles"), class'MephistophelesCarcass');
+    SetCarcass(FindPawnByBindName("MikeWong"), class'MikeWongCarcass');
+    SetCarcass(FindPawnByBindName("CorpArmstrongHostage"), class'CArmstrongDeadCarcass');
+    SetCarcass(FindPawnByBindName("SamanthaReedHostage"), class'SamanthaReedCarcass');
+}
+
+function SetCarcass(ScriptedPawn p, class<Carcass> carcassClass)
+{
+    if (p != None)
+        p.CarcassType = carcassClass;
+}
+
+// Everyone in the scene stays alive until it starts, and the executions
+// and the fight happen as written: WongExecutes() and MakeHostile() take
+// the protection off the one pawn each needs (user, 2026-10-05). Skipped
+// once the scene has started, so re-running level setup cannot make a
+// fighting Wong immortal again.
+function ProtectSocialBossCast()
+{
+    if (bSocialBossStarted)
+        return;
+
+    Protect(FindPawnByBindName("DrMephistopheles"));
+    Protect(FindPawnByBindName("MikeWong"));
+    Protect(FindPawnByBindName("CorpArmstrongHostage"));
+    Protect(FindPawnByBindName("DrJohnsonHostage"));
+    Protect(FindPawnByBindName("SamanthaReedHostage"));
+    Protect(sbTrooper);
+}
+
+function Protect(ScriptedPawn p)
+{
+    if (p == None)
+        return;
+    p.bInvincible = true;
+    Log("CNN L2: social boss -- " $ p.Name $ " (" $ p.BindName $ ") protected until the scene");
 }
 
 function Conversation FindSocialBossConversation()
@@ -1278,10 +1381,10 @@ function PrepareSocialBoss()
             trooper.InitialInventory[i].Inventory = None;
         trooper.InitializePawn();
         trooper.ChangeAlly('Player', 1, true);
-        trooper.bInvincible = false;
         trooper.SetOrders('Standing', '', true);
         sbTrooper = trooper;
     }
+    ProtectSocialBossCast();
     Log("CNN L2: social boss prepared -- Wong armed=" $ (wong != None) $ " MJ12 hostage=" $ (sbTrooper != None));
 }
 
@@ -1361,6 +1464,7 @@ function WatchConversation()
         lastSeenEvent = None;
         PatchChoiceSkills(watchedCon);
     }
+    RepairItemClasses(watchedCon);
 
     ev = Player.conPlay.currentEvent;
     if ((ev != None) && (ev != lastSeenEvent))
@@ -1368,6 +1472,42 @@ function WatchConversation()
         lastSeenEvent = ev;
         ConversationEventStarted(watchedCon, ev);
     }
+}
+
+// ArmMagdalene's assault-gun and napalm branches name item classes the
+// engine cannot find: the native bind looks each CheckObject/TransferObject
+// up as "DeusEx.<objectName>", so WeaponAssaultRifle (Deus Ex's is
+// WeaponAssaultGun) and WeaponSnowblind (a CNN class) come back None, and
+// the check fails or nothing is handed over ("Failed to load Class
+// DeusEx.WeaponAssaultRifle" in every L2 log). CNNConPlay was written to
+// fix this but is never spawned. The bind runs again whenever a
+// conversation is looked up, and an event is processed the moment it
+// becomes current, so the classes are put back every frame while a
+// conversation plays -- it walks one event list, and the item events come
+// after spoken lines that wait for audio.
+function RepairItemClasses(Conversation con)
+{
+    local ConEvent ev;
+
+    for (ev = con.eventList; ev != None; ev = ev.nextEvent)
+    {
+        if ((ConEventTransferObject(ev) != None) && (ConEventTransferObject(ev).giveObject == None))
+            ConEventTransferObject(ev).giveObject = ResolveItemClass(ConEventTransferObject(ev).objectName);
+        else if ((ConEventCheckObject(ev) != None) && (ConEventCheckObject(ev).checkObject == None))
+            ConEventCheckObject(ev).checkObject = ResolveItemClass(ConEventCheckObject(ev).objectName);
+    }
+}
+
+function class<Inventory> ResolveItemClass(string objName)
+{
+    local string key;
+
+    key = Caps(objName);
+    if (key == "WEAPONASSAULTRIFLE")
+        return class'WeaponAssaultGun';
+    if ((key == "WEAPONSNOWBLIND") || (key == "APOCALYPSEINSIDE.WEAPONSNOWBLIND"))
+        return class'WeaponSnowblind';
+    return None;
 }
 
 // SocialBoss gates "(Apologize to Wong)" and "(Manipulate Wong)" on skill
@@ -1416,6 +1556,7 @@ function ConversationEventStarted(Conversation con, ConEvent ev)
 
     if (i == 0)
     {
+        bSocialBossStarted = true;
         Player.GoalCompleted('MeetDaedalusInTheCommandCenter');
         Log("CNN L2: social boss started, MJ12 timer at " $ int(mj12SecondsLeft) $ "s");
     }
@@ -1457,6 +1598,20 @@ function bool IsSocialBossPlaying()
 function CheckSocialBossFight()
 {
     local ScriptedPawn wong, meph;
+
+    // Every way through the scene ends in the fight or in giving up, but if
+    // it is ever cut short, the two must not stay immortal: the wheel only
+    // opens over their bodies.
+    if (bSocialBossStarted && !bSocialBossReleased && !IsSocialBossPlaying())
+    {
+        bSocialBossReleased = true;
+        wong = FindPawnByBindName("MikeWong");
+        meph = FindPawnByBindName("DrMephistopheles");
+        if (wong != None)
+            wong.bInvincible = false;
+        if (meph != None)
+            meph.bInvincible = false;
+    }
 
     if (!bSocialBossFight || Player.IsInState('Conversation') || (Player.conPlay != None))
         return;
@@ -1514,31 +1669,44 @@ function NudgeToAttack(ScriptedPawn p)
 
 // Mephistopheles (Doctor7, Tag Mephistopheles) stands at (866,-4480), right
 // between the approach and the wheel at (861,-4563), so in play he blocks
-// frobbing it (reported 2026-09-24). Move him behind the wheel, onto the
-// helm platform (floor -1263 at (861,-4650), per map_probe), facing the
-// player's approach.
-function MoveMephistophelesOffTheWheel()
+// frobbing it (reported 2026-09-24). He was first moved behind the wheel;
+// the scene reads better with him beside Wong among the hostages (user,
+// 2026-10-05). Same floor as Wong (-1352 around (782,-4058), per
+// map_probe), so Wong's height works for him too; he faces the way Wong
+// does, towards the player's approach. The candidates are tried in order
+// in case something stands in the first spot.
+function MoveMephistophelesNextToWong()
 {
-    local ScriptedPawn meph;
-    local vector spot;
+    local ScriptedPawn meph, wong;
+    local vector offset[4];
     local rotator facing;
+    local int i;
 
-    spot.X = 861;
-    spot.Y = -4650;
-    spot.Z = -1215;
-    facing.Yaw = 16384;
+    wong = FindPawnByBindName("MikeWong");
+    if (wong == None)
+        return;
+
+    offset[0] = vect(63, -50, 0);
+    offset[1] = vect(90, 0, 0);
+    offset[2] = vect(0, -90, 0);
+    offset[3] = vect(-90, 0, 0);
+    facing.Yaw = wong.Rotation.Yaw;
 
     foreach AllActors(class'ScriptedPawn', meph, 'Mephistopheles')
     {
-        if (meph.SetLocation(spot))
+        for (i = 0; i < ArrayCount(offset); i++)
+            if (meph.SetLocation(wong.Location + offset[i]))
+                break;
+
+        if (i < ArrayCount(offset))
         {
             meph.SetOrders('Standing', '', true);
             meph.SetRotation(facing);
             meph.DesiredRotation = facing;   // Standing otherwise turns him back to face the screens
-            Log("CNN L2: moved Mephistopheles behind the ship's wheel");
+            Log("CNN L2: moved Mephistopheles next to Wong at " $ meph.Location);
         }
         else
-            Log("CNN L2: could not move Mephistopheles off the wheel (blocked)");
+            Log("CNN L2: could not move Mephistopheles next to Wong (blocked)");
     }
 }
 

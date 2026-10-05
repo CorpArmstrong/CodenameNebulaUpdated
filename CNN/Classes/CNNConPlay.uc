@@ -16,7 +16,8 @@
 // StartConversation override, the only place that would create it, has
 // been commented out since 2020 (ed6f49d), so every conversation plays on
 // DeusEx.ConPlay and the fixes below never ran. L2's SocialBoss needs are
-// handled by Chapter06L2.WatchConversation() instead.
+// handled by Chapter06L2.WatchConversation() instead, and ArmMagdalene's
+// item classes by Chapter06L2.RepairItemClasses() (2026-10-05).
 //=============================================================================
 class CNNConPlay extends ConPlay;
 

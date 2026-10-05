@@ -198,7 +198,7 @@ event TravelPostAccept()
 
 // Invincibility gate for the deferred-ESC cutscene cleanup. When the
 // CNNCutsceneCleanup flag is set, CNNBaseIngameCutscene has decided
-// that the player is still inside the cutscene's PlayerStart radius ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+// that the player is still inside the cutscene's PlayerStart radius ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
 // UE1 same-map URL travel would ignore the #tag and respawn at the
 // default PlayerStart (which on MoonIntro is inside the meteor
 // explosion). We keep the player alive while the IP chain carries
@@ -278,7 +278,7 @@ exec function QuickSave()
 // run on the gameplay map via CNNBaseIngameCutscene (extends MissionScript),
 // so vanilla's MissionNumber==98/99 + MissionEndgame guards don't catch
 // them. Without this branch, the menu opens while CameraPoint/Interpolation
-// chains keep running and `player.bHidden` stays true ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ when the menu
+// chains keep running and `player.bHidden` stays true ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ when the menu
 // closes the player is invisible with broken collision/eye height.
 // ----------------------------------------------------------------------
 exec function ShowMainMenu()
@@ -321,7 +321,7 @@ function ShowIntro(optional bool bStartNewGame)
 
     if (bStartNewGame)
     {
-        // CNN has no separate intro map ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ we go straight to the
+        // CNN has no separate intro map ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ we go straight to the
         // gameplay map. Vanilla DX1's "New Game" path runs an intro
         // map first, then PostIntro calls StartNewGame which does
         // the heavy cleanup (ResetPlayer destroys + recreates
@@ -2397,6 +2397,8 @@ exec function CNNAgentRun(int seq, string rest)
         CNNAgentKill(arg);
     else if (cmd == "BODIES")
         CNNAgentBodies();
+    else if (cmd == "CONLIST")
+        CNNAgentConList(arg);
     else if (cmd == "SAVE")
         CNNAgentSave(arg);
     else if (cmd == "LOAD")
@@ -2689,6 +2691,31 @@ function CNNAgentKill(string bindName)
     victim.TakeDamage(1000, self, victim.Location + vect(0, 0, 30), vect(0, 0, 0), 'Shot');
     AgentOut("KILL " $ victim.Name $ " invincible=" $ victim.bInvincible $
         " health=" $ victim.Health $ " state=" $ victim.GetStateName());
+}
+
+// CONLIST <BindName>: every conversation the actor owns, in the order the
+// engine checks them, with what decides whether a radius one may start.
+function CNNAgentConList(string bindName)
+{
+    local Actor a;
+    local ConListItem item;
+
+    foreach AllActors(class'Actor', a)
+        if (a.BindName == bindName)
+            break;
+    if (a == None)
+    {
+        AgentOut("CONLIST no actor bound as " $ bindName);
+        return;
+    }
+    AgentOut("CONLIST " $ a.Name $ " time=" $ int(Level.TimeSeconds) $ " lastConEnd=" $ int(a.LastConEndTime));
+    for (item = ConListItem(a.conListItems); item != None; item = item.next)
+        if (item.con != None)
+            AgentOut("  " $ item.con.conName $ " radius=" $ item.con.bInvokeRadius $ ":" $ item.con.radiusDistance $
+                     " frob=" $ item.con.bInvokeFrob $ " once=" $ item.con.bDisplayOnce $
+                     " lastPlayed=" $ int(item.con.lastPlayedTime) $
+                     " played=" $ FlagBase.GetBool(rootWindow.StringToName(item.con.conName $ "_Played")) $
+                     " flags:" $ FlagRefsText(item.con.flagRefList));
 }
 
 function CNNAgentBodies()

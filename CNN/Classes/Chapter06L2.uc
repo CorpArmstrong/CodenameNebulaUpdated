@@ -1247,8 +1247,8 @@ function bool IsAlive(ScriptedPawn p)
     return (p != None) && (p.Health > 0) && !p.IsInState('Dying');
 }
 
-// The hostages are the pawns already sitting in the bridge corridor; the
-// Y/Z test keeps offstage doubles (Samantha has one at Y=+3788) out.
+// The hostages are the map's CorpArmstrong0, DrJohnson0 and Female1 (Samantha
+// has an offstage double, Female2).
 //
 // Each also gets its real name for the subtitles: Deus Ex shows the
 // UnfamiliarName ("Soldier", "Surgeon") of anyone the player has not
@@ -1260,7 +1260,7 @@ function RebindHostages()
 
     foreach AllActors(class'ScriptedPawn', p)
     {
-        if ((p.Location.Y > -3500) || (p.Location.Z > -1000))
+        if ((p.Name != 'CorpArmstrong0') && (p.Name != 'DrJohnson0') && (p.Name != 'Female1'))
             continue;
         if (p.BindName == "CorpArmstrong")
             p.BindName = "CorpArmstrongHostage";
@@ -1878,6 +1878,11 @@ function Snap(TantalusDenton p)
     local string list;
     local int i, n;
 
+    if (flags == None)
+    {
+        p.AgentOut("l2.init=0 (mission script not started yet)");
+        return;
+    }
     p.AgentOut("l2.init=" $ initCount $ " mj12=" $ int(mj12SecondsLeft) $ " window=" $ (mj12Window != None));
     p.AgentOut("l2.socialboss=started:" $ bSocialBossStarted $ " fight:" $ bSocialBossFight $
                " wong:" $ bWongHostile $ " meph:" $ bMephHostile $ " released:" $ bSocialBossReleased);

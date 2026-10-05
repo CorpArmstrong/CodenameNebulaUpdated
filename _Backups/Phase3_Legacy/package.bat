@@ -24,7 +24,7 @@ cd ..
 copy ..\Music\Terrified.umx												Music\
 copy ..\Music\Ogg\f_demo_with_bass.ogg									Music\Ogg\
 copy ..\Music\Ogg\Mysterious_SciFi_Music_THE_LAST_FRONTIER.ogg			Music\Ogg\
-copy ..\Music\Ogg\win_xp_is_shit.ogg									Music\Ogg\
+copy ..\Music\Ogg\win_xp_is_life.ogg									Music\Ogg\
 copy "..\Music\Ogg\Solar_Smoke_Post_Silence _07_The_Spark.ogg"			Music\Ogg\
 copy ..\Music\Ogg\Anthem.ogg											Music\Ogg\
 copy ..\Music\Ogg\Area51_Leaving.ogg									Music\Ogg\

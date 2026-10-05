@@ -196,14 +196,8 @@ event TravelPostAccept()
     }
 }
 
-// Invincibility gate for the deferred-ESC cutscene cleanup. When the
-// CNNCutsceneCleanup flag is set, CNNBaseIngameCutscene has decided
-// that the player is still inside the cutscene's PlayerStart radius ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
-// UE1 same-map URL travel would ignore the #tag and respawn at the
-// default PlayerStart (which on MoonIntro is inside the meteor
-// explosion). We keep the player alive while the IP chain carries
-// them out of that radius. The flag is cleared in CheckIntroFlags on
-// the post-reload mission instance.
+// The player is kept alive while a skipped cutscene carries him out of
+// the meteor blast -- see CNNBaseIngameCutscene.TrySendPlayerOnceToGame.
 function TakeDamage(int Damage, Pawn instigatedBy, Vector hitlocation, Vector momentum, name damageType)
 {
     if (FlagBase != none && FlagBase.GetBool('CNNCutsceneCleanup'))
@@ -239,23 +233,18 @@ function CheckActiveConversationRadius()
     }
 }
 
-// Intentional override: disables the parent's per-frame auto-terminate
-// of conversations when actors drift too far apart. CNN's scripted
-// scenes (cutscenes, scripted movements, holocomm) need that to be a
-// no-op so conversations don't get killed mid-cutscene. Callers ignore
-// the return value (vanilla DeusExPlayer has the same pattern).
+// Conversations are not ended when the actors drift apart: CNN's scripted
+// scenes move them around.
 function bool CheckActorDistances()
 {
+    //mwahaaha! terrible hack, i know -T.
     return false;
 }
 
 // ----------------------------------------------------------------------
 // QuickSave()
 //
-// A save made during a conversation cannot be loaded: the load fails with
-// "Can't find ConCamera" and leaves the level half-travelled, its mission
-// script stopped (found 2026-10-05, save/load audit). Vanilla's checks
-// (dead, logo map, cutscene, infolink) don't cover it, so refuse here.
+// No saving during a conversation: such a save cannot be loaded.
 // ----------------------------------------------------------------------
 
 exec function QuickSave()
@@ -271,15 +260,9 @@ exec function QuickSave()
 // ----------------------------------------------------------------------
 // ShowMainMenu()
 //
-// Overrides the original so we can use our custom ApocalypseInsideMenu.
+// overrides the original so we can use our custom ApocalypseInsideMenu.
 //
-// ESC during an in-progress in-map cutscene must end the cutscene (skip
-// to the post-cutscene location), not open the main menu. CNN's cutscenes
-// run on the gameplay map via CNNBaseIngameCutscene (extends MissionScript),
-// so vanilla's MissionNumber==98/99 + MissionEndgame guards don't catch
-// them. Without this branch, the menu opens while CameraPoint/Interpolation
-// chains keep running and `player.bHidden` stays true ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ when the menu
-// closes the player is invisible with broken collision/eye height.
+// ESC during a cutscene skips it instead of opening the menu.
 // ----------------------------------------------------------------------
 exec function ShowMainMenu()
 {
@@ -317,25 +300,21 @@ function ShowIntro(optional bool bStartNewGame)
         DeusExRootWindow(rootWindow).ClearWindowStack();
     }
 
+    // Make sure all augmentations are OFF before going into the intro
     AugmentationSystem.DeactivateAll();
 
     if (bStartNewGame)
     {
-        // CNN has no separate intro map ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ we go straight to the
-        // gameplay map. Vanilla DX1's "New Game" path runs an intro
-        // map first, then PostIntro calls StartNewGame which does
-        // the heavy cleanup (ResetPlayer destroys + recreates
-        // AugmentationSystem/SkillSystem/inventory; DeleteSaveGameFiles
-        // wipes .dxs). Skipping that bridge leaves stale subsystem
-        // references and player rail-mode state in .dxs, which breaks
-        // the cutscene on replay. Run StartNewGame directly so the
-        // gameplay map gets the same fresh slate vanilla would have
-        // produced.
+        // the intro plays on the game map itself, so start the new game here,
+        // as vanilla does after its intro map
         StartNewGame(strStartMap);
     }
     else
     {
         bStartNewGameAfterIntro = bStartNewGame;
+
+        // Reset the player
+        //Level.Game.SendPlayer(Self, "AiPrologue");
         Level.Game.SendPlayer(self, strStartMap);
     }
 }

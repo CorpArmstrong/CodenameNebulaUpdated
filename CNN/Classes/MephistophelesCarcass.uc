@@ -1,9 +1,6 @@
 //=============================================================================
 // MephistophelesCarcass.
-//
-// Dr. Mephistopheles's body on L2: the map dresses a stock Doctor (Doctor7)
-// in his own skins and scale, and DoctorCarcass would leave a plain doctor.
-// Set as his CarcassType by Chapter06L2.SetSocialBossCarcasses().
+// Dr. Mephistopheles's body, in his own skins and scale.
 //=============================================================================
 class MephistophelesCarcass extends DeusExCarcass;
 

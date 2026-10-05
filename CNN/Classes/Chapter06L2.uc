@@ -1,54 +1,30 @@
 //-----------------------------------------------------------
 // Mission L2
-//
-// All L2 quest logic lives here rather than in editor-placed actor
-// properties. The QuestSystem class was designed to be configured in
-// UnrealEd (questPathList is var(QuestPaths)), but no map ever configured
-// it, and binary .dx properties cannot be diffed or reviewed in git.
-// Driving the endings from script keeps the logic in source control.
-//
-// NOTE ON Timer(): Chapter05/Chapter06 extend CNNBaseIngameCutscene, whose
-// Timer() calls DoLevelStuff() for them. This class extends MissionScript
-// directly, and base MissionScript.Timer() does NOT call DoLevelStuff() --
-// so DoLevelStuff() here was dead code until this override was added.
 //-----------------------------------------------------------
 class Chapter06L2 extends MissionScript;
 
 var(ChangeLevelOnDeath) string levelName;
 
-// Ending maps. All four already exist and ship.
+// Ending maps
 const MAP_MUTINY     = "06_Mutiny";
 const MAP_CONSPIRACY = "06_Conspiracy";
 const MAP_HIJACKING  = "06_Hijacking";
 const MAP_TRANSCEND  = "06_Transcend";
 
-// The tube button is routed through this script -- see RouteTubeButton().
+// The tube button triggers this script -- see RouteTubeButton().
 const TUBE_BUTTON_TAG = 'CNNTubeButton';
 // Tube glass bottom below its mover origin -- see FixTubeMover().
 const TUBE_GLASS_BOTTOM = 50.0;
-// How far Magdalene may trail the player near the tube lab before she is
-// brought up behind him. Was the 800-unit conversation radius; that let
-// her walk into the lab long after the player (user, 2026-10-02).
+// How far Magdalene may trail the player near the tube lab before she
+// catches up -- see BringMagdaleneToTube().
 const MAG_CATCHUP_DIST = 300;
 
-// Set true to log every flag change to the game log. Launch with -log to
-// watch it. This is how we learn which flags the authored conversations
-// actually fire, since no .con declares an ending flag.
+// Log the tracked flags whenever they change.
 var(Debug) bool bLogFlagChanges;
 
-// Flags to watch, polled once per Timer tick so we can log exactly when each
-// one fires during play.
-//
-// This is a fixed list rather than a FlagBase iterator walk on purpose.
-// FlagBase does expose CreateIterator/GetNextFlag (see FlagEditWindow), but
-// GetNextFlag needs an EFlagType out-param, and that enum lives in
-// ConPlayBase in the DeusEx package: bare `EFlagType` won't resolve from a
-// CNN class, and UE1 rejects qualified type names on locals. A fixed list
-// costs nothing here because tools/con_dump.js can read every flag any
-// conversation declares, so this list is exhaustive by construction.
-//
-// trackedValue is byte, not bool: UE1 stores bools as bitfields and rejects
-// bool arrays outright ("Bool arrays are not allowed").
+// The flags to log, polled every Timer tick. A fixed list: FlagBase's
+// iterator needs an enum the CNN package cannot name. Bytes, as UE1 has
+// no bool arrays.
 const MAX_TRACKED_FLAGS = 32;
 var(Debug) Name trackedFlag[32];
 var byte  trackedValue[32];
@@ -58,11 +34,7 @@ var bool  bTrackingPrimed;
 var bool  bEndingTriggered;
 var float levelSeconds;
 
-// Magdalene combat diagnostics. She was observed going straight into
-// run-and-shoot the instant the player arrived in the lower labs, which
-// blocks MagdaleneHijackTheStation -- a ScriptedPawn in combat will not
-// start a conversation, so the Hijacking ending is unreachable while this
-// happens. Nothing in the log said WHO she was fighting, so log it.
+// Log Magdalene's orders, enemy and alliance whenever they change.
 var(Debug) bool bLogMagdalene;
 var Magdalene watchedMagdalene;
 var name      lastMagOrders;
@@ -72,14 +44,13 @@ var bool      bSoldierFallbackDone;
 var bool      bTubeLogged;
 var float     tubeLogDelay;
 
-// MJ12 arrival countdown and the ship's wheel -- see StartMJ12Countdown().
+// MJ12 arrival countdown -- see StartMJ12Countdown().
 const MJ12_COUNTDOWN_SECONDS = 240.0;
 const MJ12_ARRIVAL_GRACE     = 3.0;
 
-// SocialBoss event indices (bridge CONEVENTS dump, 2026-10-02) -- see
-// ValidateSocialBoss(). Actions key on the SPEECH line that follows each
-// placeholder: speech waits for audio, so WatchConversation() always sees
-// it, while comments and triggers can pass within a single frame.
+// SocialBoss events acted out by this script -- see ValidateSocialBoss().
+// Each is the spoken line after the placeholder: lines wait for their
+// audio, so the per-frame watch never misses them.
 const SB_TROOPER_SHOT   = 7;    // Tantalus "Son of a bitch!" (after TRIGGER MikeExecutesMJ12Troop)
 const SB_ARMSTRONG_SHOT = 27;   // Tantalus "Armstrong!", after his groan -- a speaker
                                 // killed on his own line aborts the scene
@@ -114,8 +85,7 @@ function InitStateMachine()
 {
     super.InitStateMachine();
 
-    // The map's DeusExLevelInfo has no MapName, and the engine names a
-    // level's save file after it -- L2 was saved as "Current.dxs".
+    // The map's level info has no MapName, and saves are named after it.
     if ((dxInfo != None) && (dxInfo.mapName == ""))
     {
         dxInfo.mapName = "06_OpheliaL2";
@@ -131,18 +101,14 @@ function PrepareFirstFrame()
 {
     local Inventory anItem, nextItem;
 
-    // Dying on L1 sends the player here, healed and with nothing. Once:
-    // PlayerDied is never cleared, and this runs again on every load of
-    // an L2 save, which stripped the inventory each time (found
-    // 2026-10-05, save/load audit).
+    // Dying on L1 sends the player here, healed and with nothing -- once, as
+    // this runs again on every load.
     if (flags.GetBool('PlayerDied') && !flags.GetBool('PlayerDiedHandledOnL2'))
     {
         flags.SetBool('PlayerDiedHandledOnL2', true);
         Player.RestoreAllHealth();
 
-        // As vanilla Mission05 takes JC's gear: the NanoKeyRing and the
-        // items that are not real inventory stay. Destroying them too left
-        // references behind that crashed the next save (2026-10-05).
+        // As in Mission05: the keyring and non-inventory items stay.
         anItem = Player.Inventory;
         while (anItem != none)
         {
@@ -179,19 +145,10 @@ function PrepareFirstFrame()
 // ----------------------------------------------------------------------
 // DisablePageAndSamantha()
 //
-// The Bob Page / Samantha Reed storyline is not implemented on L2: Page's
-// elevator infolink sends the player to his daughter in the Gravity Lab,
-// and nothing there plays (MeetSamanthaReed's second speaker is an
-// offstage double, SamGivesQuest needs a flag nothing sets). Until it is
-// built, switch the whole thread off so the player is not sent after it:
-//
-//   - the DataLinkTrigger for DL_BobPageInElevator (and its TalkToPage goal);
-//   - the ConversationTrigger for MeetSamanthaReed;
-//   - Samantha's own conversations, so frobbing her does nothing.
-//
-// The Uber Alles holocomm is a separate thread and is left alone.
-// User-decided 2026-10-02. To bring the storyline back, drop this call
-// from PrepareFirstFrame().
+// The Page / Samantha Reed storyline is not built on L2: Page's infolink
+// sends the player to the Gravity Lab, where nothing plays. Switch the
+// thread off -- the infolink, the meeting trigger and her conversations.
+// The Uber Alles holocomm is not part of it.
 // ----------------------------------------------------------------------
 
 function DisablePageAndSamantha()
@@ -232,29 +189,9 @@ function DisablePageAndSamantha()
 // ----------------------------------------------------------------------
 // RemoveStrayL1Conversations()
 //
-// Two conversations authored for the Docks/L1 map are gated on the
-// OnLevel2 flag (verified with con_dump --records on
-// OpheliaDocksAndL1.con):
-//
-//     Meet1InspRoom      owner OpheliaUI   PRECOND OnLevel2
-//     ApproachingOphelia owner Magdalene   PRECOND OnLevel2
-//
-// L2 contains actors with both of those BindNames AND sets OnLevel2 from a
-// FlagTrigger a few steps from the spawn. So the moment the player walks in,
-// both L1 conversations become available on L2 and compete with the real
-// ones -- StartConversationByName walks conListItems and takes the first
-// match, so which one wins is list order, not intent.
-//
-// Observed in play: talking to Ophelia on L2 started the L1 inspection-room
-// scene, which then blocked the game because L1's scripted sequence does not
-// exist here. The Magdalene one is the more damaging of the two, since it
-// competes with MagdaleneHijackTheStation -- the only thing that sets
-// CanArmMagdalene, and therefore the only route to the Hijacking ending.
-//
-// Fixing this properly means editing preconditions in ConEdit. Unlinking the
-// entries from the owning actors' conversation lists achieves the same thing
-// for this level only, in code, and leaves the .con untouched so L1 keeps
-// working.
+// Two L1 conversations (Meet1InspRoom, ApproachingOphelia) are gated on
+// OnLevel2 and their owners exist here too, so they would play on L2 in
+// place of the real ones.
 // ----------------------------------------------------------------------
 
 function RemoveStrayL1Conversations()
@@ -266,65 +203,10 @@ function RemoveStrayL1Conversations()
 // ----------------------------------------------------------------------
 // DedupeConversations()
 //
-// Chapter06.con holds duplicate copies of most L2 conversations -- same
-// conName, same owner BindName -- and they load BEFORE OpheliaL2.con's.
-// StartConversationByName takes the first name match, so the stale copy
-// always wins. Confirmed live on this level:
-//
-//     MJ12Sergeant [0] MeetSoldiers   [1] MeetSoldiers
-//     Magdalene    [1] MagdaleneHijackTheStation  [4] (again)
-//     SamanthaReed [0] MeetSamanthaReed           [1] (again)
-//     OpheliaUI    [0] OpheliaHallway             [2] (again)
-//
-// Load order was established from OpheliaHallway: con_dump shows only
-// OpheliaL2.con's copy carries the OnLevel2 precondition, and the live dump
-// puts that one at index [2]. So the LATER duplicate is this level's real
-// one, and every earlier copy is Chapter06.con's.
-//
-// Consequence in play: MeetSoldiers ran to completion and set nothing,
-// because Chapter06.con's copy has no ReadyForBossFight SET and does not
-// fire CommCenterDispatcher -- so the comm centre battle could never start
-// no matter how the dispatcher was wired. The same mechanism sat in front
-// of MagdaleneHijackTheStation (CanArmMagdalene, the Hijacking ending) and
-// MagdaleneInsideTube (FinalGoodbyePlayed, the ending gate itself).
-//
-// Keeping the LAST duplicate keeps the level-specific copy. Deleting the
-// duplicates from Chapter06.con would be the real fix, but that needs
-// ConEdit; this achieves the same for L2 only and leaves the other maps'
-// use of Chapter06.con untouched.
-//
-// UPDATE (2026-09-23): "last wins" is only a proxy for "the real one", and
-// it is WRONG for Magdalene specifically. Confirmed live via CNNConverse:
-// after dedup, Magdalene's surviving MagdaleneHijackTheStation still had
-// "(no flags)" -- Chapter06.con's contentless stub was the one that loaded
-// last for this actor, so dedup kept the stub and threw away OpheliaL2.con's
-// real copy (the one with SET CanArmMagdalene). Playing it organically
-// completed in under a second and set nothing, which looked like a broken
-// conversation system but was actually the wrong .con surviving dedup.
-//
-// Fixed by preferring flag content over position: if ANY duplicate for a
-// given name carries real flag references (SET/CHECK -- a stub never does,
-// that's the whole reason it's a stub), keep the last FLAGGED one and drop
-// every flagless copy outright, regardless of where it sits in the list.
-// Only fall back to pure "last wins" when every duplicate is equally
-// flagless (e.g. MeetSoldiers, where the load-order assumption above still
-// holds and there's no flag content to tell copies apart by).
-//
-// UPDATE 2 (2026-09-23): flagRefList wasn't the right signal either -- live
-// testing after the first update showed Magdalene's surviving
-// MagdaleneHijackTheStation STILL had flagRefList==None (so bAnyFlagged was
-// False for this name and dedupe silently fell back to plain "last wins",
-// same stub as before), and a deeper CNNConverse diagnostic then showed WHY
-// it looks empty either way: ConPlay.StartConversation() does
-// `currentEvent = con.eventList`, and for this actor's surviving copy
-// eventList is also None -- a conversation with literally zero events,
-// which state PlayEvent's Begin: label detects and immediately
-// TerminateConversation()s, before a single line plays. That is a stronger,
-// more direct stub signal than flagRefList (whose relationship to
-// mid-conversation SET/CHECK events is unclear -- ArmMagdalene shows real
-// flags through it, but a SetFlag event buried in a conversation body
-// apparently doesn't). Switched the criterion to eventList: a conversation
-// with no events cannot possibly be the real one, full stop.
+// Chapter06.con also holds copies of most L2 conversations -- same name,
+// same owner -- and the first match is the one that plays. Some copies
+// are empty stubs that set none of L2's flags. Keep one copy per name:
+// the last one with events, else the last one.
 // ----------------------------------------------------------------------
 
 function DedupeConversations()
@@ -418,21 +300,8 @@ function DedupeOneActor(Actor a)
 // ----------------------------------------------------------------------
 // DumpConversationLists()
 //
-// Logs every conversation bound to the level's key actors, in list order,
-// with the flags each one references.
-//
-// Why: Chapter06.con holds DUPLICATE copies of most L2 conversations --
-// same conName, same owner BindName -- and those copies reference none of
-// L2's flags. StartConversationByName walks conListItems and takes the
-// FIRST name match, so if a duplicate sits ahead of the real one the scene
-// plays perfectly and sets nothing. That matches the reports exactly:
-// MeetSoldiers "ended normally" but ReadyForBossFight never set, so
-// CommCenterDispatcher never fired and the comm centre battle never
-// started.
-//
-// Order and flag content cannot be read from the .con files -- they only
-// show what exists, not what the engine linked first -- so dump it from
-// the live list before changing anything.
+// Logs the conversations of the level's key actors, in the order the
+// engine checks them, with their flags.
 // ----------------------------------------------------------------------
 
 function DumpConversationLists()
@@ -526,24 +395,16 @@ function StripConversation(name conName)
 // ----------------------------------------------------------------------
 // RouteTubeButton() / Trigger() / PutMagdaleneInTube()
 //
-// Magdalene must be inside the tube when its glass comes down (user,
-// 2026-10-02, variant A). The map's LoadingInTube scene walks her in, but
-// only if she arrives before the player presses the button, and polling for
-// the button from Timer() is up to a second late while the glass takes
-// about that long to close. So the button is routed through this script:
-// at load its Event becomes TUBE_BUTTON_TAG (this actor's Tag), and
-// Trigger() puts her at MagdalenePoint first, then fires the map's own
-// MiniGameDispatcher (glass, goodbye, upload timer, avatar spawner)
-// unchanged. FixTubeMover() keeps the glass from bouncing off her.
+// Magdalene must be inside the tube when its glass comes down. The button
+// is made to trigger this script, which puts her at MagdalenePoint and
+// then fires the map's own MiniGameDispatcher.
 // ----------------------------------------------------------------------
 
 function RouteTubeButton()
 {
     local Actor a;
 
-    // A loaded save already has the button rerouted, but a fresh mission
-    // script (every load spawns one) still needs the Tag -- without it the
-    // button did nothing after a load (found 2026-10-05, save/load audit).
+    // after a load the button is rerouted already; the Tag is still needed
     foreach AllActors(class'Actor', a)
     {
         if ((a.Event == 'MiniGameDispatcher') || ((a.Event == TUBE_BUTTON_TAG) && (a != self)))
@@ -595,23 +456,10 @@ function PutMagdaleneInTube()
 // ----------------------------------------------------------------------
 // FixTubeMover()
 //
-// The upload tube's glass (CNNMover0, tag CNNMoverTube) is mis-keyed in the
-// map. Open (key 1, where the level starts) it hangs over the tube's base
-// in line with the neighbouring Bob Page tube; MagdalenePoint, where the
-// map's LoadingInTube scene parks Magdalene, is within 4 units of its
-// centre (brush bbox minus PrePivot, measured from L2_export.t3d). But the
-// closed key is offset by (-64,-64): the glass slid diagonally off the base
-// and came down beside her instead of on her (seen in play 2026-10-02).
-// Moving BasePos under the open key makes it rise and fall vertically over
-// the base; the glass does not move at load. ME_IgnoreWhenEncroach stops it
-// bouncing back off her. She is meant to be shut inside (user, variant A).
-//
-// The closed key was also too low: the glass sank into the floor
-// and stopped at Magdalene's shoulders (seen in play 2026-10-02). So the
-// closed height is set from the floor traced under MagdalenePoint: the
-// glass bottom is TUBE_GLASS_BOTTOM below the mover origin (brush bbox
-// -64 plus PrePivot 14, from L2_export.t3d), and the open key is
-// re-expressed so the open glass stays exactly where the map put it.
+// The tube glass is mis-keyed in the map: it closes diagonally beside
+// MagdalenePoint and too low. Make it drop straight down over the base,
+// stopping on the floor traced under her, and pass through her rather
+// than bounce. The open glass stays where the map put it.
 // ----------------------------------------------------------------------
 
 function FixTubeMover()
@@ -645,8 +493,7 @@ function FixTubeMover()
     }
 }
 
-// Logs where the tube glass is a few seconds after the button, so a manual
-// run shows whether it actually closed (KeyNum 0 = down).
+// Logs where the tube glass is a few seconds after the button.
 function LogTubeAfterUpload()
 {
     local Mover tube;
@@ -667,14 +514,8 @@ function LogTubeAfterUpload()
 // ----------------------------------------------------------------------
 // CheckSoldierSoftlock()
 //
-// The only way down to the lower labs is OpenCommCenterDoors (a locked,
-// unbreakable, unfrobbable DeusExMover), fired by CommCenterDispatcher from
-// the end of MeetSoldiers. That conversation is owned by the MJ12 sergeant
-// (MJ12Commando0, BindName MJ12Sergeant), and eight avatars stand within
-// ~500 units of his squad. If he dies before the talk -- crossfire while the
-// player fights the avatars -- the conversation can never start and the
-// level is soft-locked (user, 2026-10-02). In that case do what the
-// conversation would have done.
+// Only the end of MeetSoldiers opens the way down to the lower labs. If
+// the MJ12 sergeant dies before that talk, do what it would have done.
 // ----------------------------------------------------------------------
 
 function CheckSoldierSoftlock()
@@ -707,20 +548,8 @@ function CheckSoldierSoftlock()
 // ----------------------------------------------------------------------
 // DisableStaleTubeMapExit()
 //
-// The tube button fires MiniGameDispatcher, which starts a 30s survival
-// countdown (CNNEventTimer). When it runs out it fires
-// LabEndingSuccessDispatcher, whose OutEvents(3) is MutinyMapExit -- a
-// MapExit with DestMap="transcendence". That was the GDD's "survived the
-// upload -> Benevolent Dictator" exit, but the map is now 06_Transcend, so
-// it fails. Found from play 2026-09-24: a player who reached the tube
-// without Magdalene (so the MagdaleneInsideTube goodbye never ran) got
-// "Failed to load 'transcendence'" instead of an ending.
-//
-// Retagging it leaves the dispatcher's other events (shake, tube mover,
-// lifecycle toggle) intact while the dispatcher's MutinyMapExit event finds
-// nothing. CheckEndingReached() makes the same trip on TimerExpired (set by
-// CNNEventTimer), so the ending is logged and chosen in one place like the
-// others. Only an exit pointing at the missing map is touched.
+// The end of the upload countdown fires a MapExit to "transcendence", a
+// map that no longer exists. CheckEndingReached() takes that ending.
 // ----------------------------------------------------------------------
 
 function DisableStaleTubeMapExit()
@@ -740,39 +569,15 @@ function DisableStaleTubeMapExit()
 // ----------------------------------------------------------------------
 // RepairCommCenterBattle()
 //
-// The CommCenterDispatcher fires the comm centre fight:
-//
-//     OutEvents(0)=OpenCommCenterDoors
-//     OutEvents(1)=MJ12AllianceTrigger      MJ12Troops -> Avatars  = -1.0
-//     OutEvents(2)=AvatarsAllianceTrigger   Avatars -> MJ12Troops  = -1.0
-//     OutEvents(3)=MJ12OrdersTrigger        MJ12 run to the battle
-//     OutEvents(4)=MJ12OrdersTrigger        <-- copy-paste slip
-//
-// Slot 4 repeats slot 3 instead of firing AvatarsOrdersTrigger, which sits
-// in the map at (1240,-1848,-1338) fully configured -- Orders=RunningTo,
-// ordersTag=CommCenterBattleSpawnPoint, Event=AvatarsFightGroup -- and is
-// referenced by nothing at all. Its only appearance anywhere in
-// L2_export.t3d is its own Tag= line.
-//
-// So MJ12 gets ordered into the fight and the Avatars never do. Reported
-// from play as "the avatars attacked me but the two sides ignored each
-// other".
-//
-// Rewriting the slot here rather than in UnrealEd keeps the change
-// reviewable and keeps it in source control. Only a slot that still holds
-// the duplicate is touched, so fixing the map properly later makes this a
-// no-op.
+// CommCenterDispatcher fires MJ12OrdersTrigger twice and never
+// AvatarsOrdersTrigger, so the avatars never join the comm centre fight.
 // ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
 // RestoreSavedState()
 //
-// Mission scripts are not kept in a savegame: every load spawns a fresh
-// Chapter06L2 (DeusExPlayer.TravelPostAccept -> SpawnScript), which is why
-// vanilla missions keep their state in flags. Loading a save with the MJ12
-// countdown running ended in Conspiracy at once, the clock being back at
-// zero (found 2026-10-05, save/load audit). So what must survive a load is
-// mirrored in flags and read back here, before anything acts on it.
+// Mission scripts are not saved; each load starts a new one. What must
+// survive a load is kept in flags and read back here.
 // ----------------------------------------------------------------------
 
 function RestoreSavedState()
@@ -815,9 +620,7 @@ function RepairCommCenterBattle()
         dupIndex = -1;
         bAlreadyPresent = false;
 
-        // Walk once to see what is actually there. Never assume index 4 --
-        // if the map is edited the slot may move, and blindly writing an
-        // index could clobber a legitimate event.
+        // find the duplicate rather than assume its slot
         for (i = 0; i < 8; i++)
         {
             if (disp.OutEvents[i] == 'AvatarsOrdersTrigger')
@@ -850,8 +653,7 @@ function RepairCommCenterBattle()
 // ----------------------------------------------------------------------
 // Timer()
 //
-// MissionScript.Timer() only initializes flags; it never calls
-// DoLevelStuff(). Drive it here.
+// MissionScript.Timer() does not call DoLevelStuff().
 // ----------------------------------------------------------------------
 
 function Timer()
@@ -887,14 +689,8 @@ function DoLevelStuff()
 // ----------------------------------------------------------------------
 // CheckMagdaleneArmed()
 //
-// MagdaleneHijackTheStation is linear and unavoidable on the way to the IoT
-// terminal, and always ends by setting CanArmMagdalene -- which, as its name
-// says, only unlocks ArmMagdalene ("I'll give you a weapon"). Keying
-// Hijacking on CanArmMagdalene alone made Conspiracy unreachable in play
-// (found 2026-09-24). ArmMagdalene sets no flag; its outcome is the weapon
-// it transfers to her. So Hijacking now needs her actually armed by the
-// player: one of the four weapons ArmMagdalene can hand over. Her own coil
-// gun (InitialInventory) doesn't count. User-decided 2026-09-24.
+// Notes when the player has given Magdalene one of the ArmMagdalene
+// weapons; her own coil gun does not count.
 // ----------------------------------------------------------------------
 
 function CheckMagdaleneArmed()
@@ -922,11 +718,8 @@ function CheckMagdaleneArmed()
 // ----------------------------------------------------------------------
 // CheckUploadStarted()
 //
-// The tube button (MiniGameDispatcher) is the GDD's L2_PressUploadButton:
-// it starts the upload countdown, shown by CNNEventTimer's window. Nothing
-// in the map or the conversations sets TantalusUploadStarted, so without
-// this CheckPlayerDeath() could never tell a death during the upload from
-// one before it.
+// The tube button starts the upload countdown; nothing else marks it, and
+// death during the upload must be told from death before it.
 // ----------------------------------------------------------------------
 
 function CheckUploadStarted()
@@ -951,21 +744,10 @@ function CheckUploadStarted()
 // ----------------------------------------------------------------------
 // BringMagdaleneToTube()
 //
-// The tube scenes need Magdalene close: the map's LoadingInTube walks her
-// into the tube and the button starts the MagdaleneInsideTube goodbye, both
-// only within the engine's 800-unit conversation radius. In play she falls
-// behind when she stops to fight (a bridge guard drew her off, 2026-10-02).
-//
-// Earlier versions moved her straight into the tube once the player was
-// within 700 units of the button -- through walls, before the player had
-// even entered the lab -- so she seemed to appear there by magic (user,
-// 2026-10-02). Now she only catches up: once she is more than
-// MAG_CATCHUP_DIST away and out of the player's sight, she is put a few
-// steps behind the player and keeps
-// following, and the map's own scene takes it from there. Never after the
-// button, and never while either of them is in a conversation. If she is
-// not following -- never freed, hostile or dead -- nothing happens and the
-// upload plays out without her.
+// The tube scenes need Magdalene close, and she falls behind when she
+// stops to fight. Once she is far behind and out of the player's sight,
+// she is put a few steps behind him and keeps following. Never after the
+// button, and only while she is following.
 // ----------------------------------------------------------------------
 
 function BringMagdaleneToTube()
@@ -1041,17 +823,7 @@ function CheckPlayerDeath()
 // ----------------------------------------------------------------------
 // CheckEndingReached()
 //
-// Endings are chosen from accumulated state -- flags the authored
-// conversations already set -- so no new conversation content is needed.
-// Verified with tools/con_dump.js --flagmap that every flag below is
-// SET inside L2 (ET_SetFlag), not merely checked. That matters: a flag
-// only CHECKED here would have been set in the Docks or L1 and could
-// already be true on level entry, firing an ending immediately.
-// AllObjectsDestroyed is the counter-example -- it is CHECK-only in L2
-// and deliberately not used as an ending condition.
-//
-// Order encodes priority. Death outranks everything; nothing else can
-// still be earned once the player is dead.
+// Endings follow flags set on L2 itself. Order is priority: death first.
 // ----------------------------------------------------------------------
 
 function CheckEndingReached()
@@ -1059,16 +831,8 @@ function CheckEndingReached()
     if (bEndingTriggered)
         return;
 
-    // MUTINY (worst) -- Gray Goo consumes LA. Death is judged immediately,
-    // without waiting for the level's final beat, whether it happens before
-    // the upload or during it. The GDD (L2_UploadTimerCheck) sends a death
-    // during the upload to the sad Transcendence instead, but that shares
-    // 06_Transcend and its quote with surviving the upload, so dying would
-    // have been a shortcut to the same screen. Deliberate departure,
-    // user-decided 2026-09-24.
-    // Giving up to Mephistopheles in the social boss scene ("CAUSE AN
-    // APOCALYPSE") ends the same way, once the scene is over (authors'
-    // flowchart; user, 2026-10-02).
+    // MUTINY (worst) -- Gray Goo consumes LA. Death, before or during the
+    // upload, or giving up to Mephistopheles once the scene is over.
     if (flags.GetBool('PlayerDiedOnL2') || flags.GetBool('PlayerDiedDuringUpload') ||
         (flags.GetBool('PlayerGaveUp') && !Player.IsInState('Conversation')))
     {
@@ -1076,10 +840,8 @@ function CheckEndingReached()
         return;
     }
 
-    // The three living endings are three choices after Magdalene proposes
-    // the hijack (GDD, L2_QuestImplementation.txt Phases 5-8; "variant A",
-    // user-decided 2026-09-24). Her conversation opens the bridge and starts
-    // the MJ12 arrival countdown -- see UpdateMJ12Countdown().
+    // The living endings follow Magdalene's hijack proposal, which opens the
+    // bridge and starts the MJ12 countdown.
 
     // HIJACKING (best) -- Tantalus clears the bridge and takes the ship's
     // wheel before MJ12 arrive, with Magdalene alive. See CheckShipsWheel().
@@ -1089,14 +851,8 @@ function CheckEndingReached()
         return;
     }
 
-    // TRANSCEND -- the upload in the tube. The button closes the tube, starts
-    // Magdalene's goodbye (MagdaleneInsideTube) if she is in it, a 60 s
-    // upload countdown (CNNEventTimer) and the avatar spawner; the level ends
-    // only once that minute is survived (TimerExpired). Ending on the goodbye
-    // instead cut the fight out entirely -- it played ~7 s after the button
-    // (user, 2026-10-02). Where the map's own MapExit pointed before the
-    // rename -- see DisableStaleTubeMapExit(). A conversation still playing
-    // when the timer runs out finishes first.
+    // TRANSCEND -- the upload in the tube: the minute of the countdown
+    // survived. A conversation still playing finishes first.
     if (flags.GetBool('TimerExpired') && !Player.IsInState('Conversation'))
     {
         TravelToEnding(MAP_TRANSCEND);
@@ -1112,14 +868,9 @@ function CheckEndingReached()
 // ----------------------------------------------------------------------
 // StartMJ12Countdown() / UpdateMJ12Countdown()
 //
-// The GDD's hijack window: once Magdalene proposes hijacking the station
-// (the end of MagdaleneHijackTheStation sets CanArmMagdalene), MJ12 are on
-// their way. The bridge door opens -- nothing in the map or conversations
-// ever opened BridgeDoor -- and a countdown starts. It is paused, and its
-// window handed over, once the tube upload has started: that path has its
-// own countdown, and must not fail into Conspiracy mid-upload. No voiced
-// line announces MJ12 (Page's infolink is a panic, not a warning), so the
-// countdown is shown with text only.
+// Once Magdalene proposes the hijack, MJ12 are on their way: the bridge
+// door opens and a countdown starts. It stops when the tube upload starts,
+// which has a countdown of its own.
 // ----------------------------------------------------------------------
 
 function StartMJ12Countdown()
@@ -1166,15 +917,14 @@ function UpdateMJ12Countdown()
         return;
     }
 
-    // The tube upload owns the timer window from here on (CNNEventTimer
-    // replaces ours) and the MJ12 clock stops.
+    // the upload has the timer window from here on
     if (flags.GetBool('TantalusUploadStarted'))
     {
         mj12Window = None;
         return;
     }
 
-    // Paused while the social boss scene plays (user, 2026-10-02).
+    // paused while the social boss scene plays
     if (IsSocialBossPlaying())
         return;
 
@@ -1212,24 +962,11 @@ function UpdateMJ12Countdown()
 // ----------------------------------------------------------------------
 // Social Boss (Mephistopheles and Wong at the ship's wheel)
 //
-// OpheliaL2.con's SocialBoss is written and voiced but never played: its
-// hostages are named CorpArmstrongHostage / DrJohnsonHostage /
-// SamanthaReedHostage while the pawns sitting on the bridge carry
-// CorpArmstrong / DrJohnson / SamanthaReed, and every execution and shot is
-// an ET_Comment placeholder the engine skips. This replaces the four avatar
-// guards of 2026-09-24 (plan: CNNDocs/L2_SocialBoss_Plan.md, user-approved
-// 2026-10-02):
-//
-//   - at load the bridge hostages take the conversation's names;
-//   - when the MJ12 countdown opens the bridge, Wong is armed and an MJ12
-//     trooper hostage is placed for the opening execution;
-//   - WatchConversation() follows the running conversation every frame and
-//     the placeholders are acted out on the speech line after each one, by
-//     event index -- comment text loads as garbage, so positions are the
-//     only reliable key, and ValidateSocialBoss() checks them at load;
-//   - outcomes: GiveUp -> PlayerGaveUp -> Mutiny; ATTACK, or Wong turning
-//     on the player after the Chinese branches -> a fight; the wheel opens
-//     once Mephistopheles and Wong are both dead.
+// OpheliaL2.con's SocialBoss is written and voiced, but its hostages carry
+// other names than the pawns on the bridge, and its executions and shots
+// are comments the engine skips. This script names the hostages, arms
+// Wong, follows the conversation and acts out the shots, and starts the
+// fight. The wheel opens once Mephistopheles and Wong are both dead.
 // ----------------------------------------------------------------------
 
 function ScriptedPawn FindPawnByBindName(string bindName)
@@ -1247,13 +984,8 @@ function bool IsAlive(ScriptedPawn p)
     return (p != None) && (p.Health > 0) && !p.IsInState('Dying');
 }
 
-// The hostages are the map's CorpArmstrong0, DrJohnson0 and Female1 (Samantha
-// has an offstage double, Female2).
-//
-// Each also gets its real name for the subtitles: Deus Ex shows the
-// UnfamiliarName ("Soldier", "Surgeon") of anyone the player has not
-// spoken to yet, and the player meets these three only in this scene
-// (reported 2026-10-05).
+// The hostages get the conversation's names, and their real names in place
+// of "Soldier" or "Surgeon" -- the player meets them only here.
 function RebindHostages()
 {
     local ScriptedPawn p;
@@ -1279,10 +1011,7 @@ function RebindHostages()
     }
 }
 
-// Dr. Johnson has no conversation of his own on L2, but the mission's
-// conversation packages hand him his L1 ones, which then played when the
-// player talked to him here (reported 2026-10-05). SocialBoss is
-// Mephistopheles's and binds Johnson by name, so it is unaffected.
+// Dr. Johnson has no conversation of his own on L2; drop the L1 ones.
 function DropAllConversations(Actor a)
 {
     local ConListItem item;
@@ -1293,9 +1022,8 @@ function DropAllConversations(Actor a)
     a.conListItems = None;
 }
 
-// The map gives Magdalene InitialInventory CNNWeaponCoilGun with Count=99,
-// meant as ammo, but a weapon's Count spawns that many separate guns: she
-// carried 99 coil guns (found 2026-10-05). Keep the one she holds.
+// The map gives Magdalene 99 coil guns (a weapon Count of 99, meant as
+// ammo). Keep the one she holds.
 function TrimMagdaleneCoilGuns()
 {
     local Magdalene mag;
@@ -1323,10 +1051,7 @@ function TrimMagdaleneCoilGuns()
         Log("CNN L2: removed " $ n $ " extra coil guns from Magdalene");
 }
 
-// Mephistopheles, Wong and the hostages wear map-specific looks, but their
-// classes leave bodies in stock outfits (a plain doctor, a man in a dress
-// shirt; reported 2026-10-05). Each gets a carcass class with its own
-// mesh, skins and scale.
+// Their bodies keep the looks the map gives them.
 function SetSocialBossCarcasses()
 {
     SetCarcass(FindPawnByBindName("DrMephistopheles"), class'MephistophelesCarcass');
@@ -1341,11 +1066,8 @@ function SetCarcass(ScriptedPawn p, class<Carcass> carcassClass)
         p.CarcassType = carcassClass;
 }
 
-// Everyone in the scene stays alive until it starts, and the executions
-// and the fight happen as written: WongExecutes() and MakeHostile() take
-// the protection off the one pawn each needs (user, 2026-10-05). Skipped
-// once the scene has started, so re-running level setup cannot make a
-// fighting Wong immortal again.
+// Everyone in the scene stays alive until it starts. The executions and
+// the fight lift this for the pawn concerned.
 function ProtectSocialBossCast()
 {
     if (bSocialBossStarted)
@@ -1391,9 +1113,7 @@ function ConEvent SocialBossEvent(Conversation con, int index)
     return ev;
 }
 
-// The event indices below come from the bridge's CONEVENTS dump of the
-// shipped .con (2026-10-02). If the conversation is ever re-edited they
-// shift, so say so in the log rather than act on the wrong lines.
+// The event numbers above fit the shipped .con; warn if it ever changes.
 function ValidateSocialBoss()
 {
     local Conversation con;
@@ -1424,22 +1144,21 @@ function ValidateSocialBoss()
         Log("CNN L2: WARNING social boss event layout changed -- executions may hit the wrong lines");
 }
 
-// Called by StartMJ12Countdown(): the bridge is open from here on.
+// The bridge opens: get the scene ready.
 function PrepareSocialBoss()
 {
     local ScriptedPawn wong, trooper;
     local vector spot;
     local int i;
 
-    // Normally set by Daedalus's infolink on the main deck, which a player
-    // can walk past; the scene must not depend on it.
+    // normally set by Daedalus's infolink, which can be missed
     flags.SetBool('ReadyForSocialBoss', true);
 
     wong = FindPawnByBindName("MikeWong");
     if (wong != None)
         GiveWeapon(wong, class'WeaponPistol');
 
-    // The opening execution needs an MJ12 hostage; none stands on the bridge.
+    // the opening execution needs an MJ12 hostage
     if (wong != None)
     {
         spot = wong.Location + vect(-70, 70, 0);
@@ -1470,14 +1189,8 @@ function GiveWeapon(ScriptedPawn p, class<Inventory> weaponClass)
     p.InitializeInventory();
 }
 
-// Wong shoots someone on a conversation line. The victim is first taken out
-// of the conversation, or its death aborts the whole scene twice over:
-// ScriptedPawn.Died() calls AbortConversation while bInConversation, and
-// leaving the Conversation state does too unless bConversationEndedNormally,
-// and ConPlayBase.ActorDestroyed() terminates it when the pawn is destroyed
-// for its carcass while still in ConActorsBound (all three seen in play
-// 2026-10-02). Victims are shot after their last line, so dropping them
-// from the bound lists is safe.
+// Wong shoots someone during the conversation. The victim is taken out of
+// it first; a participant's death would end the scene.
 function WongExecutes(ScriptedPawn victim)
 {
     local ScriptedPawn wong;
@@ -1504,14 +1217,11 @@ function WongExecutes(ScriptedPawn victim)
 }
 
 // ----------------------------------------------------------------------
-// WatchConversation() -- runs every frame from Tick()
+// WatchConversation()
 //
-// Conversations play on DeusEx.ConPlay: TantalusDenton's StartConversation
-// override (the only place CNN's own ConPlay subclass would be spawned) has
-// been commented out since 2020, so nothing can hook ConPlay itself. This
-// follows the player's conPlay instead: each new current event is reported
-// to ConversationEventStarted(), and each newly started conversation gets
-// its skill gates repaired before any choice is shown (PatchChoiceSkills).
+// Follows the player's conversation every frame: repairs a new
+// conversation's skill gates and item classes, and reports each event
+// as it comes up.
 // ----------------------------------------------------------------------
 
 function Tick(float deltaTime)
@@ -1547,17 +1257,9 @@ function WatchConversation()
     }
 }
 
-// ArmMagdalene's assault-gun and napalm branches name item classes the
-// engine cannot find: the native bind looks each CheckObject/TransferObject
-// up as "DeusEx.<objectName>", so WeaponAssaultRifle (Deus Ex's is
-// WeaponAssaultGun) and WeaponSnowblind (a CNN class) come back None, and
-// the check fails or nothing is handed over ("Failed to load Class
-// DeusEx.WeaponAssaultRifle" in every L2 log). CNNConPlay was written to
-// fix this but is never spawned. The bind runs again whenever a
-// conversation is looked up, and an event is processed the moment it
-// becomes current, so the classes are put back every frame while a
-// conversation plays -- it walks one event list, and the item events come
-// after spoken lines that wait for audio.
+// ArmMagdalene names WeaponAssaultRifle and WeaponSnowblind, which the
+// engine looks up in DeusEx and does not find. Put the right classes back
+// every frame, since each conversation lookup clears them again.
 function RepairItemClasses(Conversation con)
 {
     local ConEvent ev;
@@ -1583,14 +1285,9 @@ function class<Inventory> ResolveItemClass(string objName)
     return None;
 }
 
-// SocialBoss gates "(Apologize to Wong)" and "(Manipulate Wong)" on skill
-// "Chinese", but the engine resolves no class by that name (CNN's is
-// AiSkillChinese), leaves skillNeeded None and offered both to every player
-// (found 2026-10-02). ConChoice keeps no skill-name string, so the gated
-// choices are recognised by their jump labels. The .con asks for level 3
-// (Master, as in the authors' flowchart); Trained is enough, Master being
-// out of reach in one playthrough (user, 2026-10-02). Runs once the
-// conversation has started, i.e. after the engine's own bind.
+// "(Apologize to Wong)" and "(Manipulate Wong)" ask for a skill named
+// "Chinese", which does not resolve, so anyone could pick them. Gate them
+// on AiSkillChinese at Trained.
 function PatchChoiceSkills(Conversation con)
 {
     local ConEvent ev;
@@ -1612,8 +1309,7 @@ function PatchChoiceSkills(Conversation con)
     }
 }
 
-// Called by WatchConversation() for every event of a conversation as it
-// becomes current.
+// Called for every event of a conversation as it comes up.
 function ConversationEventStarted(Conversation con, ConEvent ev)
 {
     local ConEvent scan;
@@ -1646,8 +1342,7 @@ function ConversationEventStarted(Conversation con, ConEvent ev)
     else if ((i == SB_MEPH_SHOT_A) || (i == SB_MEPH_SHOT_B))
     {
         flags.SetBool('WongBetrayedMeph', true);
-        // Wong turns on the player right after; set it now in case losing
-        // the conversation's owner cuts the last lines short.
+        // Wong turns on the player right after
         SetSocialBossFight();
         WongExecutes(FindPawnByBindName("DrMephistopheles"));
     }
@@ -1666,16 +1361,13 @@ function bool IsSocialBossPlaying()
            (Player.conPlay.con.conName == 'SocialBoss');
 }
 
-// After ATTACK, or once Wong turns on the player, whoever of the two is
-// still alive fights; nudged back into Attacking while idle or fleeing
-// (both are civilians by class and would otherwise run).
+// After ATTACK, or once Wong turns, whoever of the two is alive fights.
+// Both are civilians and would run, so keep them attacking.
 function CheckSocialBossFight()
 {
     local ScriptedPawn wong, meph;
 
-    // Every way through the scene ends in the fight or in giving up, but if
-    // it is ever cut short, the two must not stay immortal: the wheel only
-    // opens over their bodies.
+    // if the scene is cut short, the two must not stay immortal
     if (bSocialBossStarted && !bSocialBossReleased && !IsSocialBossPlaying())
     {
         bSocialBossReleased = true;
@@ -1741,14 +1433,8 @@ function NudgeToAttack(ScriptedPawn p)
     }
 }
 
-// Mephistopheles (Doctor7, Tag Mephistopheles) stands at (866,-4480), right
-// between the approach and the wheel at (861,-4563), so in play he blocks
-// frobbing it (reported 2026-09-24). He was first moved behind the wheel;
-// the scene reads better with him beside Wong among the hostages (user,
-// 2026-10-05). Same floor as Wong (-1352 around (782,-4058), per
-// map_probe), so Wong's height works for him too; he faces the way Wong
-// does, towards the player's approach. The candidates are tried in order
-// in case something stands in the first spot.
+// Mephistopheles stands in front of the wheel and blocks it. Put him
+// beside Wong, facing the same way.
 function MoveMephistophelesNextToWong()
 {
     local ScriptedPawn meph, wong;
@@ -1784,9 +1470,8 @@ function MoveMephistophelesNextToWong()
     }
 }
 
-// The ship's wheel is a breakable decoration and stands right where the
-// social boss fight happens: stray pistol fire destroyed it in a test run
-// (2026-10-02), after which Hijacking could never be reached.
+// The wheel stands in the line of fire, and without it there is no
+// Hijacking.
 function ProtectShipsWheel()
 {
     local ShipsWheel wheel;
@@ -1798,8 +1483,7 @@ function ProtectShipsWheel()
     }
 }
 
-// The wheel opens once Mephistopheles and Wong are both dead -- one rule
-// for every way the scene can go (user, 2026-10-02).
+// The wheel opens once Mephistopheles and Wong are both dead.
 function bool IsBridgeClear()
 {
     return !IsAlive(FindPawnByBindName("DrMephistopheles")) && !IsAlive(FindPawnByBindName("MikeWong"));
@@ -1808,11 +1492,9 @@ function bool IsBridgeClear()
 // ----------------------------------------------------------------------
 // CheckShipsWheel()
 //
-// Taking the wheel is frobbing ShipsWheel0 on the bridge, which spins it
-// (vanilla ShipsWheel.Frob sets bSpinning for 2-7s -- long enough for this
-// 1s poll). It only counts while the MJ12 countdown runs, and only with
-// Mephistopheles and Wong dead and Magdalene alive: hijacking is her plan, and the ending
-// shows her at the wheel. Otherwise the player is told why, once per spin.
+// Spinning the wheel takes the ship, while the MJ12 countdown runs, with
+// Mephistopheles and Wong dead and Magdalene alive. Otherwise the player
+// is told why, once per spin.
 // ----------------------------------------------------------------------
 
 function CheckShipsWheel()
@@ -1846,9 +1528,7 @@ function CheckShipsWheel()
         return;
     }
 
-    // Magdalene only has to be alive, not at the wheel: she can't get up to
-    // the helm platform (found in play 2026-09-24), and it's her plan either
-    // way. User-decided.
+    // she only has to be alive; she cannot reach the helm platform
     foreach AllActors(class'Magdalene', mag)
         break;
 
@@ -1865,8 +1545,9 @@ function CheckShipsWheel()
 }
 
 // ----------------------------------------------------------------------
-// Snap() -- L2's part of the bridge's SNAP (save/load audit, 2026-10-05):
-// everything a save and a load must carry over, one line per key.
+// Snap()
+//
+// L2's part of the bridge's SNAP: what a save and a load must carry over.
 // ----------------------------------------------------------------------
 
 function Snap(TantalusDenton p)
@@ -1936,18 +1617,13 @@ function TravelToEnding(string endMapName)
 {
     local DeusExRootWindow root;
 
-    // Travelling within mission 6 saves L2 first, and that save walks the
-    // HUD. Dying during the upload countdown left an aug icon whose
-    // clientObject pointed at a freed object, and the save GPFed on it
-    // (FArchiveSaveTagExports <- IwHUDActiveAug.clientObject, 2026-09-24).
-    // L2's HUD is never shown again after an ending, so drop those
-    // references rather than chase which object went first.
+    // The level is saved on the way out, and a dead aug icon in the HUD can
+    // crash that save. The HUD is not shown again, so clear its icons.
     root = DeusExRootWindow(Player.rootWindow);
     if ((root != None) && (root.hud != None) && (IwHUDActiveItemsDisplay(root.hud.activeItems) != None))
         IwHUDActiveItemsDisplay(root.hud.activeItems).ClearAugmentationDisplay();
 
-    // The root window travels with the player; don't carry the MJ12
-    // countdown onto the ending map.
+    // don't carry the MJ12 countdown onto the ending map
     if (mj12Window != None)
     {
         mj12Window.Destroy();
@@ -1963,9 +1639,7 @@ function TravelToEnding(string endMapName)
 // ----------------------------------------------------------------------
 // LogChangedFlags()
 //
-// Logs a line the first time a flag is seen and again whenever its value
-// changes. FlagBase is native with no source, but FlagEditWindow shows the
-// iterator API: CreateIterator / GetNextFlag / DestroyIterator.
+// Logs a tracked flag the first time it is seen and whenever it changes.
 // ----------------------------------------------------------------------
 
 function LogChangedFlags()
@@ -2006,14 +1680,7 @@ function LogChangedFlags()
 // ----------------------------------------------------------------------
 // LogMagdaleneState()
 //
-// Logs Magdalene's orders / current enemy / alliance whenever any of them
-// change. Logged only on change, so a quiet level costs one line.
-//
-// The question this exists to answer: she starts shooting the moment the
-// player reaches the lower labs, and combat blocks the conversation that
-// sets CanArmMagdalene. Knowing WHO she targets separates the candidates --
-// the JC Avatar standing ~250 units away at (894,-2315,-1303), an Avatar
-// that wandered in, or the player.
+// Logs Magdalene's orders, enemy and alliance when they change.
 // ----------------------------------------------------------------------
 
 function LogMagdaleneState()
@@ -2064,9 +1731,7 @@ defaultproperties
     bLogFlagChanges=True
     bLogMagdalene=True
 
-    // Every flag OpheliaL2.con declares (via tools/con_dump.js), plus the
-    // ending flags this script owns. None of the ending flags are set by any
-    // conversation yet -- that is the gap this level's logic has to close.
+    // The flags OpheliaL2.con uses, and the ones this script sets.
     trackedFlag(0)=MikeWongExposed
     trackedFlag(1)=MetReedAndWong
     trackedFlag(2)=IsArrivalPlayed

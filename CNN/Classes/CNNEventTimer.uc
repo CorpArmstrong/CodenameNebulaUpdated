@@ -12,12 +12,7 @@ var() float startTime;          // what time do we start from?
 var() float criticalTime;       // when does the text turn red?
 var() float destroyDelay;       // after timer has expired, how long until we destroy the window
 var() string message;           // message to print on timer window
-// Transient: a window is not part of the level, and saving a reference to
-// it dragged the HUD's window tree into the savegame -- the load then
-// GPFed at the next travel (XWindow::SetVisibility during PurgeGarbage,
-// found 2026-10-05, save/load audit). bRunning is saved instead, and the
-// window is made again after a load (RestoreWindow).
-var transient TimerDisplay timerWin;
+var transient TimerDisplay timerWin;   // never saved; remade after a load
 var bool bRunning;
 var float time;
 var bool bDone;
@@ -79,10 +74,7 @@ event Tick(float deltaTime)
 //
 function Timer()
 {
-    // Clear the reference too: windows are freed on Destroy(), and a dangling
-    // one GPFs in ULevel::CleanupDestroyed on the next tick (confirmed
-    // 2026-09-24 once the level stopped travelling away at timer end).
-    // Vanilla Timer.uc has the same bug; it just never survives long enough.
+    // a destroyed window must not stay referenced
     if (timerWin != none)
     {
         timerWin.Destroy();
@@ -118,10 +110,7 @@ function Trigger(Actor Other, Pawn EventInstigator)
             time = 0;
         }
 
-        // The HUD has a single timer slot. On L2 it may already hold the MJ12
-        // arrival countdown (Chapter06L2); take that window over rather than
-        // destroying it, so the mission script is never left pointing at a
-        // freed window.
+        // the HUD has one timer slot; take over the MJ12 countdown's window
         timerWin = DeusExRootWindow(player.rootWindow).hud.timer;
         if (timerWin == none)
             timerWin = class'CNNTimerDisplay'.static.CreateIn(DeusExRootWindow(player.rootWindow).hud);
@@ -145,7 +134,9 @@ function Trigger(Actor Other, Pawn EventInstigator)
     }
 }
 
-// After a load: the countdown kept its time, only the window is new.
+//
+// bring the window back after a load
+//
 function RestoreWindow()
 {
     local DeusExPlayer player;
@@ -195,8 +186,7 @@ function TimerEvent()
 {
     local DeusExPlayer player;
 
-    // Lets the mission script treat "survived the countdown" as the level's
-    // final beat -- Chapter06L2.CheckEndingReached() reads this.
+    // the mission script ends the level on this
     player = DeusExPlayer(GetPlayerPawn());
     if ((player != none) && (player.FlagBase != none))
         player.FlagBase.SetBool('TimerExpired', true);

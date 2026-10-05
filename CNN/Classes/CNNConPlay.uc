@@ -1,23 +1,9 @@
 //=============================================================================
 // CNNConPlay
 //
-// Vanilla ConPlay plus one fix: item classes that a conversation names but
-// the engine can't resolve. The native con.BindEvents() looks up each
-// CheckObject/TransferObject class as "DeusEx.<objectName>" every time a
-// conversation starts, so a CNN class or a misspelled name comes back None
-// -- and FindInventoryType(None) / a None giveObject make the event
-// silently fail. Setting the class on the loaded conversation at level load
-// doesn't help: the bind overwrites it (confirmed 2026-09-24 on
-// ArmMagdalene, whose assault-gun and napalm branches never worked).
-// So resolve it here, at the moment the event runs, and only when the
-// engine left it empty.
-//
-// NOTE (2026-10-02): this class is not spawned. TantalusDenton's
-// StartConversation override, the only place that would create it, has
-// been commented out since 2020 (ed6f49d), so every conversation plays on
-// DeusEx.ConPlay and the fixes below never ran. L2's SocialBoss needs are
-// handled by Chapter06L2.WatchConversation() instead, and ArmMagdalene's
-// item classes by Chapter06L2.RepairItemClasses() (2026-10-05).
+// Not in use: conversations play on DeusEx.ConPlay, since the
+// StartConversation override in TantalusDenton is commented out. The item
+// class repair below is done by Chapter06L2.RepairItemClasses() instead.
 //=============================================================================
 class CNNConPlay extends ConPlay;
 
@@ -27,11 +13,9 @@ function class<Inventory> ResolveItemClass(string objName)
 
     key = Caps(objName);
 
-    // ArmMagdalene: "Take my assault gun" -- Deus Ex's class is WeaponAssaultGun.
     if (key == "WEAPONASSAULTRIFLE")
         return class'WeaponAssaultGun';
 
-    // ArmMagdalene: napalm launcher -- a CNN class, not DeusEx or ApocalypseInside.
     if ((key == "WEAPONSNOWBLIND") || (key == "APOCALYPSEINSIDE.WEAPONSNOWBLIND"))
         return class'WeaponSnowblind';
 

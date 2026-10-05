@@ -28,11 +28,6 @@ function StopSpawning()
 
 // ============================================================================
 // Tick
-//
-// No BroadcastMessage here: the debug lines this used to send went to the
-// HUD every single frame, and one still being sent while the level tore
-// down its root window crashed the ending travel (ntdll access violation,
-// found 2026-09-24 surviving the tube countdown).
 // ============================================================================
 
 simulated function Tick(float TimeDelta)

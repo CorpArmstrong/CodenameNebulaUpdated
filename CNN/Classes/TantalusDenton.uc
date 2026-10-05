@@ -28,6 +28,7 @@ var travel private int lastAgentSeq;
 // class to model against, while the `set`-via-exec-file mechanism is
 // already proven working here (cheaton.txt/cheatoff.txt in System\).
 var bool bAgentAutoStart;
+var localized string CantSaveInConversation;
 var private CNNAgentBridge agentBridge;
 var private int lastRejectedAgentSeq; // logs each rejected seq once, not every poll
 
@@ -51,6 +52,10 @@ var bool bAgentWaitPending;
 var name agentWaitFlagName;
 var bool agentWaitExpectedValue;
 var float agentWaitDeadline;
+
+// Backing state for CNNConRun()/CNNAgentConStep().
+var bool bAgentConRun;
+var string agentConPicks;
 
 //var travel AiAugmentationManager AugmentationSystem;
 
@@ -193,7 +198,7 @@ event TravelPostAccept()
 
 // Invincibility gate for the deferred-ESC cutscene cleanup. When the
 // CNNCutsceneCleanup flag is set, CNNBaseIngameCutscene has decided
-// that the player is still inside the cutscene's PlayerStart radius —
+// that the player is still inside the cutscene's PlayerStart radius ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 // UE1 same-map URL travel would ignore the #tag and respawn at the
 // default PlayerStart (which on MoonIntro is inside the meteor
 // explosion). We keep the player alive while the IP chain carries
@@ -245,6 +250,25 @@ function bool CheckActorDistances()
 }
 
 // ----------------------------------------------------------------------
+// QuickSave()
+//
+// A save made during a conversation cannot be loaded: the load fails with
+// "Can't find ConCamera" and leaves the level half-travelled, its mission
+// script stopped (found 2026-10-05, save/load audit). Vanilla's checks
+// (dead, logo map, cutscene, infolink) don't cover it, so refuse here.
+// ----------------------------------------------------------------------
+
+exec function QuickSave()
+{
+    if (IsInState('Conversation') || IsInState('FirstPersonConversation') || (conPlay != None))
+    {
+        ClientMessage(CantSaveInConversation);
+        return;
+    }
+    Super.QuickSave();
+}
+
+// ----------------------------------------------------------------------
 // ShowMainMenu()
 //
 // Overrides the original so we can use our custom ApocalypseInsideMenu.
@@ -254,7 +278,7 @@ function bool CheckActorDistances()
 // run on the gameplay map via CNNBaseIngameCutscene (extends MissionScript),
 // so vanilla's MissionNumber==98/99 + MissionEndgame guards don't catch
 // them. Without this branch, the menu opens while CameraPoint/Interpolation
-// chains keep running and `player.bHidden` stays true — when the menu
+// chains keep running and `player.bHidden` stays true ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ when the menu
 // closes the player is invisible with broken collision/eye height.
 // ----------------------------------------------------------------------
 exec function ShowMainMenu()
@@ -297,7 +321,7 @@ function ShowIntro(optional bool bStartNewGame)
 
     if (bStartNewGame)
     {
-        // CNN has no separate intro map — we go straight to the
+        // CNN has no separate intro map ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ we go straight to the
         // gameplay map. Vanilla DX1's "New Game" path runs an intro
         // map first, then PostIntro calls StartNewGame which does
         // the heavy cleanup (ResetPlayer destroys + recreates
@@ -1421,6 +1445,306 @@ exec function CNNConDump(string targetTag)
 }
 
 // ----------------------------------------------------------------------
+// Conversation driving for the agent bridge (2026-10-02)
+//
+// CNNConEvents dumps a conversation's event graph from the engine's own
+// loaded objects -- labels, jumps, choice conditions, flags, comments --
+// which tools/con_dump.js can only guess at from the binary. CNNTalk
+// starts any conversation with any actor by BindName; CNNConState reports
+// where a running conversation is and which choices are on offer;
+// CNNChoose picks one through ConPlay.PlayChoice, the same call the
+// conversation window makes on a click. Together with CNNAdvance
+// (PlayNextEvent) the bridge can walk a branching scene without input.
+// ----------------------------------------------------------------------
+
+function SplitFirstWord(string s, out string first, out string rest)
+{
+    local int i;
+
+    i = InStr(s, " ");
+    if (i < 0)
+    {
+        first = s;
+        rest = "";
+        return;
+    }
+    first = Left(s, i);
+    rest = Right(s, Len(s) - i - 1);
+}
+
+// The actor with this BindName that owns a conversation called conName
+// (L2 has offstage doubles sharing BindNames).
+function Actor FindConversationOwner(string bindName, string conName, out Conversation con)
+{
+    local Actor a;
+    local ConListItem item;
+
+    foreach AllActors(class'Actor', a)
+    {
+        if (a.BindName != bindName)
+            continue;
+        for (item = ConListItem(a.conListItems); item != None; item = item.next)
+        {
+            if ((item.con != None) && (Caps(string(item.con.conName)) == Caps(conName)))
+            {
+                con = item.con;
+                return a;
+            }
+        }
+    }
+    return None;
+}
+
+function string FlagRefsText(ConFlagRef ref)
+{
+    local string s;
+
+    while (ref != None)
+    {
+        s = s $ " " $ ref.flagName $ "=" $ ref.value;
+        ref = ref.nextFlagRef;
+    }
+    return s;
+}
+
+function string ConEventText(ConEvent ev)
+{
+    local string s;
+    local ConEventSpeech speech;
+
+    if (ev == None)
+        return "None";
+
+    speech = ConEventSpeech(ev);
+    if (speech != None)
+    {
+        s = "SPEECH " $ speech.speakerName $ " -> " $ speech.speakingToName;
+        if (speech.conSpeech != None)
+            s = s $ ": " $ Left(speech.conSpeech.speech, 90);
+    }
+    else if (ConEventChoice(ev) != None)
+        s = "CHOICE";
+    else if (ConEventSetFlag(ev) != None)
+        s = "SETFLAG" $ FlagRefsText(ConEventSetFlag(ev).flagRef);
+    else if (ConEventCheckFlag(ev) != None)
+        s = "CHECKFLAG" $ FlagRefsText(ConEventCheckFlag(ev).flagRef) $ " -> " $ ConEventCheckFlag(ev).setLabel;
+    else if (ConEventJump(ev) != None)
+        s = "JUMP -> " $ ConEventJump(ev).jumpLabel;
+    else if (ConEventTrigger(ev) != None)
+        s = "TRIGGER " $ ConEventTrigger(ev).triggerTag;
+    else if (ConEventComment(ev) != None)
+        s = "COMMENT " $ ConEventComment(ev).commentText;
+    else if (ConEventEnd(ev) != None)
+        s = "END";
+    else if (ConEventAddGoal(ev) != None)
+        s = "ADDGOAL " $ ConEventAddGoal(ev).goalName $ " completed=" $ ConEventAddGoal(ev).bGoalCompleted;
+    else if (ConEventAnimation(ev) != None)
+        s = "ANIM " $ ConEventAnimation(ev).eventOwnerName $ " " $ ConEventAnimation(ev).sequence;
+    else if (ConEventCheckPersona(ev) != None)
+        s = "CHECKPERSONA -> " $ ConEventCheckPersona(ev).jumpLabel;
+    else if (ConEventRandomLabel(ev) != None)
+        s = "RANDOM (labels are native, not readable from script)";
+    else
+        s = string(ev.Class.Name);
+
+    if (ev.label != "")
+        s = "<" $ ev.label $ "> " $ s;
+    return s;
+}
+
+function bool ChoiceAvailable(ConChoice choice)
+{
+    if (!CheckFlagRefs(choice.flagRef))
+        return false;
+    if (choice.skillNeeded == None)
+        return true;
+    return SkillSystem.IsSkilled(choice.skillNeeded, choice.skillLevelNeeded);
+}
+
+function string ChoiceText(ConChoice choice)
+{
+    local string s;
+
+    s = "\"" $ choice.choiceText $ "\" -> " $ choice.choiceLabel;
+    if (choice.skillNeeded != None)
+        s = s $ " skill=" $ choice.skillNeeded.Name $ ":" $ choice.skillLevelNeeded;
+    if (choice.flagRef != None)
+        s = s $ " flags:" $ FlagRefsText(choice.flagRef);
+    return s;
+}
+
+exec function CNNConEvents(string args)
+{
+    local string bindName, conName;
+    local Conversation con;
+    local Actor owner;
+    local ConEvent ev;
+    local ConChoice choice;
+    local int i;
+
+    SplitFirstWord(args, bindName, conName);
+    owner = FindConversationOwner(bindName, conName, con);
+    if (owner == None)
+    {
+        Log("CNN L2 conevents: no " $ conName $ " on any actor with BindName " $ bindName);
+        return;
+    }
+
+    Log("CNN L2 conevents: " $ con.conName $ " owner=" $ owner.Name $ " frob=" $ con.bInvokeFrob $
+        " radius=" $ con.bInvokeRadius $ ":" $ con.radiusDistance $ " flags:" $ FlagRefsText(con.flagRefList));
+    for (ev = con.eventList; ev != None; ev = ev.nextEvent)
+    {
+        Log("CNN L2 conevents: [" $ i $ "] " $ ConEventText(ev));
+        if (ConEventChoice(ev) != None)
+            for (choice = ConEventChoice(ev).ChoiceList; choice != None; choice = choice.nextChoice)
+                Log("CNN L2 conevents:      choice " $ ChoiceText(choice));
+        i++;
+    }
+}
+
+exec function CNNTalk(string args)
+{
+    local string bindName, conName, rest;
+    local Conversation con;
+    local Actor owner;
+    local bool bForce, bStarted;
+
+    SplitFirstWord(args, bindName, rest);
+    SplitFirstWord(rest, conName, rest);
+    bForce = (Caps(rest) == "FORCE");
+
+    owner = FindConversationOwner(bindName, conName, con);
+    if (owner == None)
+    {
+        Log("CNN L2 talk: no " $ conName $ " on any actor with BindName " $ bindName);
+        return;
+    }
+    if (conPlay != None)
+    {
+        Log("CNN L2 talk: a conversation is already running");
+        return;
+    }
+
+    bStarted = StartConversation(owner, IM_Named, con, false, bForce);
+    Log("CNN L2 talk: " $ con.conName $ " with " $ owner.Name $ " force=" $ bForce $ " started=" $ bStarted);
+}
+
+exec function CNNConState()
+{
+    local ConEvent ev;
+    local ConChoice choice;
+    local int i, n;
+
+    if ((conPlay == None) || (conPlay.con == None))
+    {
+        Log("CNN L2 constate: no conversation");
+        return;
+    }
+
+    for (ev = conPlay.con.eventList; (ev != None) && (ev != conPlay.currentEvent); ev = ev.nextEvent)
+        i++;
+
+    Log("CNN L2 constate: " $ conPlay.con.conName $ " class=" $ conPlay.Class $ " conPlay=" $ conPlay.GetStateName() $
+        " event[" $ i $ "] " $ ConEventText(conPlay.currentEvent));
+
+    if (ConEventChoice(conPlay.currentEvent) != None)
+    {
+        for (choice = ConEventChoice(conPlay.currentEvent).ChoiceList; choice != None; choice = choice.nextChoice)
+        {
+            if (ChoiceAvailable(choice))
+            {
+                n++;
+                Log("CNN L2 constate:   " $ n $ ") " $ ChoiceText(choice));
+            }
+            else
+                Log("CNN L2 constate:   -) " $ ChoiceText(choice) $ " [locked]");
+        }
+    }
+}
+
+exec function CNNChoose(int n)
+{
+    local ConChoice choice;
+    local int k;
+
+    if ((conPlay == None) || (ConEventChoice(conPlay.currentEvent) == None))
+    {
+        Log("CNN L2 choose: not at a choice");
+        return;
+    }
+    if (!conPlay.IsInState('WaitForInput'))
+    {
+        Log("CNN L2 choose: choice not on screen yet (conPlay=" $ conPlay.GetStateName() $ ")");
+        return;
+    }
+
+    for (choice = ConEventChoice(conPlay.currentEvent).ChoiceList; choice != None; choice = choice.nextChoice)
+    {
+        if (ChoiceAvailable(choice))
+        {
+            k++;
+            if (k == n)
+            {
+                Log("CNN L2 choose: " $ n $ ") " $ ChoiceText(choice));
+                conPlay.PlayChoice(choice);
+                return;
+            }
+        }
+    }
+    Log("CNN L2 choose: no available choice " $ n);
+}
+
+// CONRUN: walks a running conversation one step per bridge tick (~1s).
+// Speech is advanced (PlayNextEvent, as a click would); at each choice the
+// next number from the pick list is taken (CNNChoose). Every step is
+// logged, so the log reads back as the path the scene took. With no picks
+// left it stops at the choice and lists what is on offer.
+exec function CNNConRun(string picks)
+{
+    bAgentConRun = true;
+    agentConPicks = picks;
+    Log("CNN L2 conrun: on, picks=[" $ picks $ "]");
+}
+
+function CNNAgentConStep()
+{
+    local string pick;
+
+    if (!bAgentConRun)
+        return;
+
+    if ((conPlay == None) || (conPlay.con == None))
+    {
+        bAgentConRun = false;
+        Log("CNN L2 conrun: conversation ended");
+        return;
+    }
+
+    if (ConEventChoice(conPlay.currentEvent) != None)
+    {
+        if (!conPlay.IsInState('WaitForInput'))
+            return;
+        if (agentConPicks == "")
+        {
+            bAgentConRun = false;
+            Log("CNN L2 conrun: stopped at a choice, no picks left");
+            CNNConState();
+            return;
+        }
+        SplitFirstWord(agentConPicks, pick, agentConPicks);
+        CNNChoose(int(pick));
+        return;
+    }
+
+    if (conPlay.IsInState('WaitForInput') || conPlay.IsInState('WaitForSpeech') ||
+        conPlay.IsInState('WaitForText'))
+    {
+        Log("CNN L2 conrun: " $ ConEventText(conPlay.currentEvent));
+        conPlay.PlayNextEvent();
+    }
+}
+
+// ----------------------------------------------------------------------
 // CNNMagState()
 //
 // Diagnostic-only. Originally Magdalene-only (2026-09-23, built to poll
@@ -1555,6 +1879,8 @@ exec function CNNWaitFlag(name flagName, bool expectedValue, float timeoutSecond
 function CNNAgentCheckWait()
 {
     local bool current;
+
+    CNNAgentConStep();
 
     if (!bAgentWaitPending)
         return;
@@ -2010,6 +2336,8 @@ exec function CNNAgentRun(int seq, string rest)
     }
 
     Log("CNN agent: seq=" $ seq $ " cmd=" $ cmd $ " arg=" $ arg);
+    if (FindAgentBridge() != None)
+        FindAgentBridge().BeginOut();
 
     if (cmd == "GOTO")
         CNNGoto(arg);
@@ -2033,6 +2361,16 @@ exec function CNNAgentRun(int seq, string rest)
         CNNMagState(arg);
     else if (cmd == "CONDUMP")
         CNNConDump(arg);
+    else if (cmd == "CONEVENTS")
+        CNNConEvents(arg);
+    else if (cmd == "TALK")
+        CNNTalk(arg);
+    else if (cmd == "CONSTATE")
+        CNNConState();
+    else if (cmd == "CHOOSE")
+        CNNChoose(int(arg));
+    else if (cmd == "CONRUN")
+        CNNConRun(arg);
     else if (cmd == "SETFLAG")
         ConsoleCommand("CNNSetFlag " $ arg); // string->name needs the console's own parser, same reason as FIRE/FROB/CONVERSE
     else if (cmd == "WAITFLAG")
@@ -2049,6 +2387,26 @@ exec function CNNAgentRun(int seq, string rest)
         Log("CNN L2 newgame: calling ShowIntro(True) -- strStartMap=" $ strStartMap);
         ShowIntro(True);
     }
+    else if (cmd == "GIVE")
+        CNNAgentGive(arg);
+    else if (cmd == "TAKE")
+        CNNAgentTake(arg);
+    else if (cmd == "INV")
+        CNNAgentInv(arg);
+    else if (cmd == "KILL")
+        CNNAgentKill(arg);
+    else if (cmd == "BODIES")
+        CNNAgentBodies();
+    else if (cmd == "SAVE")
+        CNNAgentSave(arg);
+    else if (cmd == "LOAD")
+        CNNAgentLoad(int(arg));
+    else if (cmd == "QSAVE")
+        CNNAgentQuickSave();
+    else if (cmd == "QLOAD")
+        CNNAgentLoad(-1);
+    else if (cmd == "SNAP")
+        CNNAgentSnap(arg);
     else if (cmd == "RAW")
         ConsoleCommand(arg); // generic passthrough for ad hoc `set`/console commands during diagnostics, same trust level as FIRE/OPEN/CONVERSE which already reach ConsoleCommand
     else if (cmd == "WHERE")
@@ -2065,7 +2423,286 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
     else
         ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
-            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/SETFLAG/WAITFLAG/NEWGAME/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/SETFLAG/WAITFLAG/NEWGAME/GIVE/TAKE/INV/KILL/BODIES/SAVE/LOAD/QSAVE/QLOAD/SNAP/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+
+    // After the command, so out[] holds its result; travel (OPEN, LOAD)
+    // only happens at the end of the tick, so it gets here too.
+    if (FindAgentBridge() != None)
+        FindAgentBridge().Ack(seq, cmd $ " " $ arg);
+}
+
+function CNNAgentBridge FindAgentBridge()
+{
+    if (agentBridge == None)
+        foreach AllActors(class'CNNAgentBridge', agentBridge)
+            break;
+    return agentBridge;
+}
+
+// Logs a bridge result and hands it to CNNAgent.ini (see CNNAgentBridge).
+function AgentOut(string line)
+{
+    Log("CNN agent: " $ line);
+    if (FindAgentBridge() != None)
+        FindAgentBridge().Put(line);
+}
+
+// ----------------------------------------------------------------------
+// CNNAgentSave() / CNNAgentQuickSave() / CNNAgentLoad() / CNNAgentSnap()
+//
+// Save/load testing (CNNDocs/Bridge_SaveLoad_Plan.md, 2026-10-05):
+//   SAVE <slot> [description]   SaveGame into slot 900 or above, so the
+//                               player's own saves are never touched
+//   QSAVE / QLOAD               the F5/F9 path players use (QLOAD skips
+//                               the confirmation box)
+//   LOAD <slot>                 LoadGame
+//   SNAP <name>                 state dump into CNNAgent.ini, to diff a
+//                               snapshot before a save with one after the
+//                               load
+// tools/cnn_agent_send.ps1 overwrites a LOAD line with a no-op as soon as
+// it is acknowledged: the load restores the old lastAgentSeq, and the LOAD
+// would otherwise run again (the same storm OPEN once had).
+// ----------------------------------------------------------------------
+
+function CNNAgentSave(string arg)
+{
+    local int slot, sp;
+    local string desc;
+
+    sp = InStr(arg, " ");
+    if (sp < 0)
+    {
+        slot = int(arg);
+        desc = "CNN agent " $ arg;
+    }
+    else
+    {
+        slot = int(Left(arg, sp));
+        desc = Right(arg, Len(arg) - sp - 1);
+    }
+    if (slot < 900)
+    {
+        AgentOut("SAVE refused: agent saves use slots 900 and up");
+        return;
+    }
+    AgentOut("SAVE slot=" $ slot $ " desc=" $ desc $ " state=" $ GetStateName() $
+             " conPlay=" $ (conPlay != None) $ " dataLink=" $ (dataLinkPlay != None));
+    SaveGame(slot, desc);
+}
+
+function CNNAgentQuickSave()
+{
+    AgentOut("QSAVE state=" $ GetStateName() $ " conPlay=" $ (conPlay != None) $
+             " dataLink=" $ (dataLinkPlay != None));
+    QuickSave();
+}
+
+function CNNAgentLoad(int slot)
+{
+    AgentOut("LOAD slot=" $ slot);
+    LoadGame(slot);
+}
+
+function CNNAgentSnap(string snapName)
+{
+    local Inventory item;
+    local DeusExGoal goal;
+    local Augmentation aug;
+    local Chapter06L2 mission;
+    local string list;
+    local int n;
+
+    AgentOut("snap=" $ snapName);
+    AgentOut("map=" $ Level.Game.GetURLMap());
+    if (GetLevelInfo() != None)
+        AgentOut("mapName=" $ GetLevelInfo().mapName $ " mission=" $ GetLevelInfo().missionNumber);
+    AgentOut("player.loc=" $ int(Location.X) $ "," $ int(Location.Y) $ "," $ int(Location.Z));
+    AgentOut("player.state=" $ GetStateName() $ " conPlay=" $ (conPlay != None));
+    AgentOut("player.health=" $ Health $ " head=" $ HealthHead $ " torso=" $ HealthTorso $
+             " energy=" $ int(Energy) $ " skillpts=" $ SkillPointsAvail);
+
+    for (item = Inventory; item != None; item = item.Inventory)
+    {
+        n++;
+        if (Len(list) < 400)
+        {
+            list = list $ " " $ item.Class.Name;
+            if (Ammo(item) != None)
+                list = list $ "(" $ Ammo(item).AmmoAmount $ ")";
+        }
+    }
+    AgentOut("player.inv=" $ n $ ":" $ list);
+
+    list = "";
+    if (AugmentationSystem != None)
+        for (aug = AugmentationSystem.FirstAug; aug != None; aug = aug.next)
+        {
+            if (aug.bHasIt)
+                list = list $ " " $ aug.Class.Name;
+            if (aug.bHasIt && aug.bIsActive)
+                list = list $ "*";
+        }
+    AgentOut("player.augs=" $ list);
+
+    list = "";
+    for (goal = FirstGoal; goal != None; goal = goal.next)
+    {
+        if (Len(list) >= 400)
+            break;
+        list = list $ " " $ goal.goalName;
+        if (goal.bCompleted)
+            list = list $ "+";
+    }
+    AgentOut("player.goals=" $ list);
+
+    foreach AllActors(class'Chapter06L2', mission)
+        mission.Snap(self);
+}
+
+// ----------------------------------------------------------------------
+// CNNAgentGive() / CNNAgentTake() / CNNAgentInv()
+//
+// Inventory control for tests that branch on what the player carries
+// (ArmMagdalene's CheckObject events, 2026-10-05):
+//   GIVE <class>      spawns the item and gives it to the player
+//   TAKE <class>      removes every item of that class from the player
+//   INV [BindName]    logs the inventory of the player, or of a pawn
+// A bare class name is looked up in DeusEx, then in CNN.
+// ----------------------------------------------------------------------
+
+function class<Inventory> CNNAgentItemClass(string className)
+{
+    local class<Inventory> c;
+
+    if (InStr(className, ".") >= 0)
+        return class<Inventory>(DynamicLoadObject(className, class'Class', true));
+    c = class<Inventory>(DynamicLoadObject("DeusEx." $ className, class'Class', true));
+    if (c == None)
+        c = class<Inventory>(DynamicLoadObject("CNN." $ className, class'Class', true));
+    return c;
+}
+
+function CNNAgentGive(string className)
+{
+    local class<Inventory> c;
+    local Inventory item;
+
+    c = CNNAgentItemClass(className);
+    if (c == None)
+    {
+        AgentOut("GIVE unknown class " $ className);
+        return;
+    }
+    item = Spawn(c,,, Location);
+    if (item == None)
+    {
+        Log("CNN agent: GIVE could not spawn " $ c);
+        return;
+    }
+    item.GiveTo(self);
+    if (Weapon(item) != None)
+        Weapon(item).GiveAmmo(self);
+    AgentOut("GIVE " $ c $ " held=" $ (FindInventoryType(c) != None));
+}
+
+function CNNAgentTake(string className)
+{
+    local class<Inventory> c;
+    local Inventory item;
+    local int n;
+
+    c = CNNAgentItemClass(className);
+    if (c == None)
+    {
+        Log("CNN agent: TAKE unknown class " $ className);
+        return;
+    }
+    item = FindInventoryType(c);
+    while ((item != None) && (n < 10))
+    {
+        if (inHand == item)
+            PutInHand(None);
+        DeleteInventory(item);
+        item.Destroy();
+        n++;
+        item = FindInventoryType(c);
+    }
+    AgentOut("TAKE " $ c $ " removed=" $ n);
+}
+
+function CNNAgentInv(string bindName)
+{
+    local Pawn p;
+    local ScriptedPawn sp;
+    local Inventory item;
+    local string list;
+    local int n;
+
+    p = self;
+    if (bindName != "")
+    {
+        p = None;
+        foreach AllActors(class'ScriptedPawn', sp)
+            if (sp.BindName == bindName)
+                p = sp;
+        if (p == None)
+        {
+            AgentOut("INV no pawn bound as " $ bindName);
+            return;
+        }
+    }
+
+    // Capped: a single over-long log line crashed the game (Magdalene
+    // carried 99 coil guns, 2026-10-05).
+    for (item = p.Inventory; item != None; item = item.Inventory)
+    {
+        n++;
+        if (Len(list) > 600)
+            continue;
+        list = list $ " " $ item.Class.Name;
+        if ((Weapon(item) != None) && (Weapon(item).AmmoType != None))
+            list = list $ "(" $ Weapon(item).AmmoType.AmmoAmount $ ")";
+    }
+    AgentOut("INV " $ p.Name $ " weapon=" $ p.Weapon $ " items=" $ n $ ":" $ list);
+}
+
+// ----------------------------------------------------------------------
+// CNNAgentKill() / CNNAgentBodies()
+//
+//   KILL <BindName>   1000 damage to that pawn, as a shot from the player;
+//                     an invincible pawn survives it (logged)
+//   BODIES            logs every carcass: class, name, mesh, scale, skins
+// ----------------------------------------------------------------------
+
+function CNNAgentKill(string bindName)
+{
+    local ScriptedPawn sp, victim;
+
+    foreach AllActors(class'ScriptedPawn', sp)
+        if (sp.BindName == bindName)
+            victim = sp;
+    if (victim == None)
+    {
+        AgentOut("KILL no pawn bound as " $ bindName);
+        return;
+    }
+    victim.TakeDamage(1000, self, victim.Location + vect(0, 0, 30), vect(0, 0, 0), 'Shot');
+    AgentOut("KILL " $ victim.Name $ " invincible=" $ victim.bInvincible $
+        " health=" $ victim.Health $ " state=" $ victim.GetStateName());
+}
+
+function CNNAgentBodies()
+{
+    local DeusExCarcass c;
+    local int n;
+
+    foreach AllActors(class'DeusExCarcass', c)
+    {
+        n++;
+        AgentOut("BODY " $ c.Class.Name $ " '" $ c.itemName $ "' mesh=" $ c.Mesh $
+            " scale=" $ c.DrawScale $ " skins=" $ c.MultiSkins[0] $ "," $ c.MultiSkins[3] $ "," $ c.MultiSkins[6]);
+    }
+    AgentOut("BODIES " $ n);
 }
 
 // ----------------------------------------------------------------------
@@ -2147,6 +2784,7 @@ function CNNAgentGotoVec(string arg)
 
 defaultproperties
 {
+    CantSaveInConversation="You can't save during a conversation."
     bAgentAutoStart=False
     bAgentSkipSelfHeal=False
     TruePlayerName="Blake Denton"

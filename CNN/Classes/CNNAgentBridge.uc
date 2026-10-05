@@ -18,10 +18,20 @@
 // playthrough should spawn.
 //-----------------------------------------------------------------------
 
-class CNNAgentBridge extends Actor;
+class CNNAgentBridge extends Actor config(CNNAgent);
 
 var() float pollInterval;
 var TantalusDenton targetPlayer;
+
+// Acknowledgement and output channel (2026-10-05). The game log reaches
+// disk in chunks -- a command's log line could take 30s to appear -- so
+// each command's result is also written to CNNAgent.ini with SaveConfig,
+// which lands at once: ackSeq/ackCmd once the command has run, and out[]
+// with whatever it reported (SNAP's state dump among them).
+var config int    ackSeq;
+var config string ackCmd;
+var config int    outCount;
+var config string out[160];
 
 function PostBeginPlay()
 {
@@ -46,6 +56,28 @@ function Timer()
     // so a pending wait keeps progressing toward its deadline even on
     // ticks where CNNAgentCmd.txt hasn't changed. See TantalusDenton.uc.
     targetPlayer.CNNAgentCheckWait();
+}
+
+function BeginOut()
+{
+    local int i;
+
+    for (i = 0; i < outCount; i++)
+        out[i] = "";
+    outCount = 0;
+}
+
+function Put(string line)
+{
+    if (outCount < ArrayCount(out))
+        out[outCount++] = line;
+}
+
+function Ack(int seq, string cmd)
+{
+    ackSeq = seq;
+    ackCmd = cmd;
+    SaveConfig();
 }
 
 defaultproperties

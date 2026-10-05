@@ -94,7 +94,7 @@ var ConEvent     lastSeenEvent;
 
 var float        mj12SecondsLeft;
 var float        mj12ArrivedSeconds;
-var TimerDisplay mj12Window;
+var transient TimerDisplay mj12Window;   // never saved -- see CNNEventTimer.timerWin
 var bool         bWheelHintShown;
 var ScriptedPawn sbTrooper;
 var bool         bSocialBossFight;
@@ -102,6 +102,7 @@ var bool         bWongHostile;
 var bool         bMephHostile;
 var bool         bSocialBossStarted;
 var bool         bSocialBossReleased;
+var int          initCount;          // InitStateMachine runs; SNAP shows it (save/load audit)
 var localized string BridgeNotClearMessage;
 var localized string MJ12GoalText;
 var localized string MJ12StartMessage;
@@ -112,25 +113,44 @@ var localized string WheelNeedsMagdaleneMessage;
 function InitStateMachine()
 {
     super.InitStateMachine();
+    initCount++;
+    Log("CNN L2: InitStateMachine run " $ initCount $ ", PlayerTraveling=" $ flags.GetBool('PlayerTraveling'));
     FirstFrame();
     PrepareFirstFrame();
 }
 
 function PrepareFirstFrame()
 {
-    local Inventory anItem;
+    local Inventory anItem, nextItem;
 
-    if (flags.GetBool('PlayerDied'))
+    // Dying on L1 sends the player here, healed and with nothing. Once:
+    // PlayerDied is never cleared, and this runs again on every load of
+    // an L2 save, which stripped the inventory each time (found
+    // 2026-10-05, save/load audit).
+    if (flags.GetBool('PlayerDied') && !flags.GetBool('PlayerDiedHandledOnL2'))
     {
+        flags.SetBool('PlayerDiedHandledOnL2', true);
         Player.RestoreAllHealth();
 
-        while (Player.Inventory != none)
+        // As vanilla Mission05 takes JC's gear: the NanoKeyRing and the
+        // items that are not real inventory stay. Destroying them too left
+        // references behind that crashed the next save (2026-10-05).
+        anItem = Player.Inventory;
+        while (anItem != none)
         {
-            anItem = Player.Inventory;
-            Player.DeleteInventory(anItem);
-            anItem.Destroy();
+            nextItem = anItem.Inventory;
+            if (!anItem.IsA('NanoKeyRing') && anItem.bDisplayableInv)
+            {
+                if (anItem.IsA('ChargedPickup'))
+                    ChargedPickup(anItem).ChargedPickupEnd(Player);
+                Player.DeleteInventory(anItem);
+                anItem.Destroy();
+            }
+            anItem = nextItem;
         }
     }
+
+    RestoreSavedState();
 
     RepairCommCenterBattle();
     DisableStaleTubeMapExit();
@@ -513,9 +533,12 @@ function RouteTubeButton()
 {
     local Actor a;
 
+    // A loaded save already has the button rerouted, but a fresh mission
+    // script (every load spawns one) still needs the Tag -- without it the
+    // button did nothing after a load (found 2026-10-05, save/load audit).
     foreach AllActors(class'Actor', a)
     {
-        if (a.Event == 'MiniGameDispatcher')
+        if ((a.Event == 'MiniGameDispatcher') || ((a.Event == TUBE_BUTTON_TAG) && (a != self)))
         {
             a.Event = TUBE_BUTTON_TAG;
             Tag = TUBE_BUTTON_TAG;
@@ -732,6 +755,45 @@ function DisableStaleTubeMapExit()
 // the duplicate is touched, so fixing the map properly later makes this a
 // no-op.
 // ----------------------------------------------------------------------
+
+// ----------------------------------------------------------------------
+// RestoreSavedState()
+//
+// Mission scripts are not kept in a savegame: every load spawns a fresh
+// Chapter06L2 (DeusExPlayer.TravelPostAccept -> SpawnScript), which is why
+// vanilla missions keep their state in flags. Loading a save with the MJ12
+// countdown running ended in Conspiracy at once, the clock being back at
+// zero (found 2026-10-05, save/load audit). So what must survive a load is
+// mirrored in flags and read back here, before anything acts on it.
+// ----------------------------------------------------------------------
+
+function RestoreSavedState()
+{
+    local ScriptedPawn p;
+
+    if (flags.GetBool('MJ12TimerStarted') && !flags.GetBool('MJ12Arrived'))
+    {
+        mj12SecondsLeft = flags.GetInt('MJ12SecondsLeft');
+        if (mj12SecondsLeft <= 0)
+            mj12SecondsLeft = MJ12_COUNTDOWN_SECONDS;   // a save from before the flag existed
+    }
+
+    bSocialBossStarted = flags.GetBool('SocialBossStarted');
+    bSocialBossFight   = flags.GetBool('SocialBossFight');
+
+    foreach AllActors(class'ScriptedPawn', p, 'SocialBossTrooper')
+        sbTrooper = p;
+
+    if (flags.GetBool('MJ12TimerStarted'))
+        Log("CNN L2: restored -- MJ12 " $ int(mj12SecondsLeft) $ "s, social boss started=" $
+            bSocialBossStarted $ " fight=" $ bSocialBossFight $ " trooper=" $ (sbTrooper != None));
+}
+
+function SetSocialBossFight()
+{
+    bSocialBossFight = true;
+    flags.SetBool('SocialBossFight', true);
+}
 
 function RepairCommCenterBattle()
 {
@@ -1059,6 +1121,7 @@ function StartMJ12Countdown()
 
     flags.SetBool('MJ12TimerStarted', true);
     mj12SecondsLeft = MJ12_COUNTDOWN_SECONDS;
+    flags.SetInt('MJ12SecondsLeft', int(mj12SecondsLeft));
 
     foreach AllActors(class'DeusExMover', door, 'BridgeDoor')
     {
@@ -1108,6 +1171,7 @@ function UpdateMJ12Countdown()
         return;
 
     mj12SecondsLeft -= checkTime;
+    flags.SetInt('MJ12SecondsLeft', int(mj12SecondsLeft));
 
     if (mj12Window == None)
     {
@@ -1382,6 +1446,7 @@ function PrepareSocialBoss()
         trooper.InitializePawn();
         trooper.ChangeAlly('Player', 1, true);
         trooper.SetOrders('Standing', '', true);
+        trooper.Tag = 'SocialBossTrooper';   // found again after a load (RestoreSavedState)
         sbTrooper = trooper;
     }
     ProtectSocialBossCast();
@@ -1557,6 +1622,7 @@ function ConversationEventStarted(Conversation con, ConEvent ev)
     if (i == 0)
     {
         bSocialBossStarted = true;
+        flags.SetBool('SocialBossStarted', true);
         Player.GoalCompleted('MeetDaedalusInTheCommandCenter');
         Log("CNN L2: social boss started, MJ12 timer at " $ int(mj12SecondsLeft) $ "s");
     }
@@ -1574,14 +1640,14 @@ function ConversationEventStarted(Conversation con, ConEvent ev)
         flags.SetBool('WongBetrayedMeph', true);
         // Wong turns on the player right after; set it now in case losing
         // the conversation's owner cuts the last lines short.
-        bSocialBossFight = true;
+        SetSocialBossFight();
         WongExecutes(FindPawnByBindName("DrMephistopheles"));
     }
     else if ((i == SB_WONG_TURNS_A) || (i == SB_WONG_TURNS_B))
-        bSocialBossFight = true;
+        SetSocialBossFight();
 
     if (ev.label == "AttackMeph")
-        bSocialBossFight = true;
+        SetSocialBossFight();
     else if (ev.label == "GiveUp")
         flags.SetBool('PlayerGaveUp', true);
 }
@@ -1790,6 +1856,69 @@ function CheckShipsWheel()
     }
 }
 
+// ----------------------------------------------------------------------
+// Snap() -- L2's part of the bridge's SNAP (save/load audit, 2026-10-05):
+// everything a save and a load must carry over, one line per key.
+// ----------------------------------------------------------------------
+
+function Snap(TantalusDenton p)
+{
+    local MJ12Troop troop;
+    local DeusExCarcass carc;
+    local Mover tube;
+    local ShipsWheel wheel;
+    local string list;
+    local int i, n;
+
+    p.AgentOut("l2.init=" $ initCount $ " mj12=" $ int(mj12SecondsLeft) $ " window=" $ (mj12Window != None));
+    p.AgentOut("l2.socialboss=started:" $ bSocialBossStarted $ " fight:" $ bSocialBossFight $
+               " wong:" $ bWongHostile $ " meph:" $ bMephHostile $ " released:" $ bSocialBossReleased);
+
+    for (i = 0; i < ArrayCount(trackedFlag); i++)
+        if ((trackedFlag[i] != '') && flags.GetBool(trackedFlag[i]))
+            list = list $ " " $ trackedFlag[i];
+    p.AgentOut("l2.flags=" $ list);
+
+    SnapPawn(p, FindPawnByBindName("Magdalene"));
+    SnapPawn(p, FindPawnByBindName("DrMephistopheles"));
+    SnapPawn(p, FindPawnByBindName("MikeWong"));
+    SnapPawn(p, FindPawnByBindName("CorpArmstrongHostage"));
+    SnapPawn(p, FindPawnByBindName("DrJohnsonHostage"));
+    SnapPawn(p, FindPawnByBindName("SamanthaReedHostage"));
+    SnapPawn(p, FindPawnByBindName("MJ12Sergeant"));
+    SnapPawn(p, sbTrooper);
+
+    n = 0;
+    foreach AllActors(class'MJ12Troop', troop)
+        n++;
+    p.AgentOut("l2.count mj12troop=" $ n);
+    n = 0;
+    foreach AllActors(class'DeusExCarcass', carc)
+        n++;
+    p.AgentOut("l2.count carcasses=" $ n);
+
+    foreach AllActors(class'Mover', tube, 'CNNMoverTube')
+        p.AgentOut("l2.tube keyNum=" $ tube.KeyNum $ " z=" $ int(tube.Location.Z) $ " base=" $ int(tube.BasePos.Z));
+    foreach AllActors(class'ShipsWheel', wheel)
+        p.AgentOut("l2.wheel invincible=" $ wheel.bInvincible);
+}
+
+function SnapPawn(TantalusDenton p, ScriptedPawn sp)
+{
+    local Inventory item;
+    local int n;
+
+    if (sp == None)
+        return;
+    for (item = sp.Inventory; item != None; item = item.Inventory)
+        n++;
+    p.AgentOut("pawn." $ sp.BindName $ "=" $ sp.Name $ " alive=" $ IsAlive(sp) $ " health=" $ sp.Health $
+               " state=" $ sp.GetStateName() $ " orders=" $ sp.Orders $ " invincible=" $ sp.bInvincible $
+               " weapon=" $ sp.Weapon $ " items=" $ n $ " carcass=" $ sp.CarcassType $
+               " name=" $ sp.UnfamiliarName $ " cons=" $ (sp.conListItems != None) $
+               " loc=" $ int(sp.Location.X) $ "," $ int(sp.Location.Y));
+}
+
 function TravelToEnding(string endMapName)
 {
     local DeusExRootWindow root;
@@ -1952,6 +2081,8 @@ defaultproperties
     trackedFlag(24)=MJ12Arrived
     trackedFlag(25)=PlayerGaveUp
     trackedFlag(26)=WongBetrayedMeph
+    trackedFlag(27)=SocialBossStarted
+    trackedFlag(28)=SocialBossFight
     MJ12GoalText="Hijack the station: clear Page's avatars off the bridge and take the ship's wheel with Magdalene before MJ12 arrive. Or upload yourselves in the Avatar Lab tube."
     BridgeNotClearMessage="Mephistopheles and Wong still hold the bridge."
     MJ12StartMessage="MJ12 are on their way. The bridge is open."

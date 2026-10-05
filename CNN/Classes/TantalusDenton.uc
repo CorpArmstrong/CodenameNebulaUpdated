@@ -28,6 +28,7 @@ var travel private int lastAgentSeq;
 // class to model against, while the `set`-via-exec-file mechanism is
 // already proven working here (cheaton.txt/cheatoff.txt in System\).
 var bool bAgentAutoStart;
+var localized string CantSaveInConversation;
 var private CNNAgentBridge agentBridge;
 var private int lastRejectedAgentSeq; // logs each rejected seq once, not every poll
 
@@ -197,7 +198,7 @@ event TravelPostAccept()
 
 // Invincibility gate for the deferred-ESC cutscene cleanup. When the
 // CNNCutsceneCleanup flag is set, CNNBaseIngameCutscene has decided
-// that the player is still inside the cutscene's PlayerStart radius —
+// that the player is still inside the cutscene's PlayerStart radius ÃÂ¢ÃÂÃÂ
 // UE1 same-map URL travel would ignore the #tag and respawn at the
 // default PlayerStart (which on MoonIntro is inside the meteor
 // explosion). We keep the player alive while the IP chain carries
@@ -249,6 +250,25 @@ function bool CheckActorDistances()
 }
 
 // ----------------------------------------------------------------------
+// QuickSave()
+//
+// A save made during a conversation cannot be loaded: the load fails with
+// "Can't find ConCamera" and leaves the level half-travelled, its mission
+// script stopped (found 2026-10-05, save/load audit). Vanilla's checks
+// (dead, logo map, cutscene, infolink) don't cover it, so refuse here.
+// ----------------------------------------------------------------------
+
+exec function QuickSave()
+{
+    if (IsInState('Conversation') || IsInState('FirstPersonConversation') || (conPlay != None))
+    {
+        ClientMessage(CantSaveInConversation);
+        return;
+    }
+    Super.QuickSave();
+}
+
+// ----------------------------------------------------------------------
 // ShowMainMenu()
 //
 // Overrides the original so we can use our custom ApocalypseInsideMenu.
@@ -258,7 +278,7 @@ function bool CheckActorDistances()
 // run on the gameplay map via CNNBaseIngameCutscene (extends MissionScript),
 // so vanilla's MissionNumber==98/99 + MissionEndgame guards don't catch
 // them. Without this branch, the menu opens while CameraPoint/Interpolation
-// chains keep running and `player.bHidden` stays true — when the menu
+// chains keep running and `player.bHidden` stays true ÃÂ¢ÃÂÃÂ when the menu
 // closes the player is invisible with broken collision/eye height.
 // ----------------------------------------------------------------------
 exec function ShowMainMenu()
@@ -301,7 +321,7 @@ function ShowIntro(optional bool bStartNewGame)
 
     if (bStartNewGame)
     {
-        // CNN has no separate intro map — we go straight to the
+        // CNN has no separate intro map ÃÂ¢ÃÂÃÂ we go straight to the
         // gameplay map. Vanilla DX1's "New Game" path runs an intro
         // map first, then PostIntro calls StartNewGame which does
         // the heavy cleanup (ResetPlayer destroys + recreates
@@ -2316,6 +2336,8 @@ exec function CNNAgentRun(int seq, string rest)
     }
 
     Log("CNN agent: seq=" $ seq $ " cmd=" $ cmd $ " arg=" $ arg);
+    if (FindAgentBridge() != None)
+        FindAgentBridge().BeginOut();
 
     if (cmd == "GOTO")
         CNNGoto(arg);
@@ -2375,6 +2397,16 @@ exec function CNNAgentRun(int seq, string rest)
         CNNAgentKill(arg);
     else if (cmd == "BODIES")
         CNNAgentBodies();
+    else if (cmd == "SAVE")
+        CNNAgentSave(arg);
+    else if (cmd == "LOAD")
+        CNNAgentLoad(int(arg));
+    else if (cmd == "QSAVE")
+        CNNAgentQuickSave();
+    else if (cmd == "QLOAD")
+        CNNAgentLoad(-1);
+    else if (cmd == "SNAP")
+        CNNAgentSnap(arg);
     else if (cmd == "RAW")
         ConsoleCommand(arg); // generic passthrough for ad hoc `set`/console commands during diagnostics, same trust level as FIRE/OPEN/CONVERSE which already reach ConsoleCommand
     else if (cmd == "WHERE")
@@ -2391,7 +2423,138 @@ exec function CNNAgentRun(int seq, string rest)
         ConsoleCommand("exit"); // graceful shutdown -- a killed process trips the engine's dirty-shutdown Recovery Mode dialog on next launch, which needs a human click to clear
     else
         ClientMessage("CNNAgentRun: unknown cmd " $ cmd $
-            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/SETFLAG/WAITFLAG/NEWGAME/GIVE/TAKE/INV/KILL/BODIES/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/SETFLAG/WAITFLAG/NEWGAME/GIVE/TAKE/INV/KILL/BODIES/SAVE/LOAD/QSAVE/QLOAD/SNAP/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+
+    // After the command, so out[] holds its result; travel (OPEN, LOAD)
+    // only happens at the end of the tick, so it gets here too.
+    if (FindAgentBridge() != None)
+        FindAgentBridge().Ack(seq, cmd $ " " $ arg);
+}
+
+function CNNAgentBridge FindAgentBridge()
+{
+    if (agentBridge == None)
+        foreach AllActors(class'CNNAgentBridge', agentBridge)
+            break;
+    return agentBridge;
+}
+
+// Logs a bridge result and hands it to CNNAgent.ini (see CNNAgentBridge).
+function AgentOut(string line)
+{
+    Log("CNN agent: " $ line);
+    if (FindAgentBridge() != None)
+        FindAgentBridge().Put(line);
+}
+
+// ----------------------------------------------------------------------
+// CNNAgentSave() / CNNAgentQuickSave() / CNNAgentLoad() / CNNAgentSnap()
+//
+// Save/load testing (CNNDocs/Bridge_SaveLoad_Plan.md, 2026-10-05):
+//   SAVE <slot> [description]   SaveGame into slot 900 or above, so the
+//                               player's own saves are never touched
+//   QSAVE / QLOAD               the F5/F9 path players use (QLOAD skips
+//                               the confirmation box)
+//   LOAD <slot>                 LoadGame
+//   SNAP <name>                 state dump into CNNAgent.ini, to diff a
+//                               snapshot before a save with one after the
+//                               load
+// tools/cnn_agent_send.ps1 overwrites a LOAD line with a no-op as soon as
+// it is acknowledged: the load restores the old lastAgentSeq, and the LOAD
+// would otherwise run again (the same storm OPEN once had).
+// ----------------------------------------------------------------------
+
+function CNNAgentSave(string arg)
+{
+    local int slot, sp;
+    local string desc;
+
+    sp = InStr(arg, " ");
+    if (sp < 0)
+    {
+        slot = int(arg);
+        desc = "CNN agent " $ arg;
+    }
+    else
+    {
+        slot = int(Left(arg, sp));
+        desc = Right(arg, Len(arg) - sp - 1);
+    }
+    if (slot < 900)
+    {
+        AgentOut("SAVE refused: agent saves use slots 900 and up");
+        return;
+    }
+    AgentOut("SAVE slot=" $ slot $ " desc=" $ desc $ " state=" $ GetStateName() $
+             " conPlay=" $ (conPlay != None) $ " dataLink=" $ (dataLinkPlay != None));
+    SaveGame(slot, desc);
+}
+
+function CNNAgentQuickSave()
+{
+    AgentOut("QSAVE state=" $ GetStateName() $ " conPlay=" $ (conPlay != None) $
+             " dataLink=" $ (dataLinkPlay != None));
+    QuickSave();
+}
+
+function CNNAgentLoad(int slot)
+{
+    AgentOut("LOAD slot=" $ slot);
+    LoadGame(slot);
+}
+
+function CNNAgentSnap(string snapName)
+{
+    local Inventory item;
+    local DeusExGoal goal;
+    local Augmentation aug;
+    local Chapter06L2 mission;
+    local string list;
+    local int n;
+
+    AgentOut("snap=" $ snapName);
+    AgentOut("map=" $ Level.Game.GetURLMap());
+    AgentOut("player.loc=" $ int(Location.X) $ "," $ int(Location.Y) $ "," $ int(Location.Z));
+    AgentOut("player.state=" $ GetStateName() $ " conPlay=" $ (conPlay != None));
+    AgentOut("player.health=" $ Health $ " head=" $ HealthHead $ " torso=" $ HealthTorso $
+             " energy=" $ int(Energy) $ " skillpts=" $ SkillPointsAvail);
+
+    for (item = Inventory; item != None; item = item.Inventory)
+    {
+        n++;
+        if (Len(list) < 400)
+        {
+            list = list $ " " $ item.Class.Name;
+            if (Ammo(item) != None)
+                list = list $ "(" $ Ammo(item).AmmoAmount $ ")";
+        }
+    }
+    AgentOut("player.inv=" $ n $ ":" $ list);
+
+    list = "";
+    if (AugmentationSystem != None)
+        for (aug = AugmentationSystem.FirstAug; aug != None; aug = aug.next)
+        {
+            if (aug.bHasIt)
+                list = list $ " " $ aug.Class.Name;
+            if (aug.bHasIt && aug.bIsActive)
+                list = list $ "*";
+        }
+    AgentOut("player.augs=" $ list);
+
+    list = "";
+    for (goal = FirstGoal; goal != None; goal = goal.next)
+    {
+        if (Len(list) >= 400)
+            break;
+        list = list $ " " $ goal.goalName;
+        if (goal.bCompleted)
+            list = list $ "+";
+    }
+    AgentOut("player.goals=" $ list);
+
+    foreach AllActors(class'Chapter06L2', mission)
+        mission.Snap(self);
 }
 
 // ----------------------------------------------------------------------
@@ -2425,7 +2588,7 @@ function CNNAgentGive(string className)
     c = CNNAgentItemClass(className);
     if (c == None)
     {
-        Log("CNN agent: GIVE unknown class " $ className);
+        AgentOut("GIVE unknown class " $ className);
         return;
     }
     item = Spawn(c,,, Location);
@@ -2437,7 +2600,7 @@ function CNNAgentGive(string className)
     item.GiveTo(self);
     if (Weapon(item) != None)
         Weapon(item).GiveAmmo(self);
-    Log("CNN agent: GIVE " $ c $ " held=" $ (FindInventoryType(c) != None));
+    AgentOut("GIVE " $ c $ " held=" $ (FindInventoryType(c) != None));
 }
 
 function CNNAgentTake(string className)
@@ -2462,7 +2625,7 @@ function CNNAgentTake(string className)
         n++;
         item = FindInventoryType(c);
     }
-    Log("CNN agent: TAKE " $ c $ " removed=" $ n);
+    AgentOut("TAKE " $ c $ " removed=" $ n);
 }
 
 function CNNAgentInv(string bindName)
@@ -2482,7 +2645,7 @@ function CNNAgentInv(string bindName)
                 p = sp;
         if (p == None)
         {
-            Log("CNN agent: INV no pawn bound as " $ bindName);
+            AgentOut("INV no pawn bound as " $ bindName);
             return;
         }
     }
@@ -2498,7 +2661,7 @@ function CNNAgentInv(string bindName)
         if ((Weapon(item) != None) && (Weapon(item).AmmoType != None))
             list = list $ "(" $ Weapon(item).AmmoType.AmmoAmount $ ")";
     }
-    Log("CNN agent: INV " $ p.Name $ " weapon=" $ p.Weapon $ " items=" $ n $ ":" $ list);
+    AgentOut("INV " $ p.Name $ " weapon=" $ p.Weapon $ " items=" $ n $ ":" $ list);
 }
 
 // ----------------------------------------------------------------------
@@ -2518,11 +2681,11 @@ function CNNAgentKill(string bindName)
             victim = sp;
     if (victim == None)
     {
-        Log("CNN agent: KILL no pawn bound as " $ bindName);
+        AgentOut("KILL no pawn bound as " $ bindName);
         return;
     }
     victim.TakeDamage(1000, self, victim.Location + vect(0, 0, 30), vect(0, 0, 0), 'Shot');
-    Log("CNN agent: KILL " $ victim.Name $ " invincible=" $ victim.bInvincible $
+    AgentOut("KILL " $ victim.Name $ " invincible=" $ victim.bInvincible $
         " health=" $ victim.Health $ " state=" $ victim.GetStateName());
 }
 
@@ -2534,10 +2697,10 @@ function CNNAgentBodies()
     foreach AllActors(class'DeusExCarcass', c)
     {
         n++;
-        Log("CNN agent: BODY " $ c.Class.Name $ " '" $ c.itemName $ "' mesh=" $ c.Mesh $
+        AgentOut("BODY " $ c.Class.Name $ " '" $ c.itemName $ "' mesh=" $ c.Mesh $
             " scale=" $ c.DrawScale $ " skins=" $ c.MultiSkins[0] $ "," $ c.MultiSkins[3] $ "," $ c.MultiSkins[6]);
     }
-    Log("CNN agent: BODIES " $ n);
+    AgentOut("BODIES " $ n);
 }
 
 // ----------------------------------------------------------------------
@@ -2619,6 +2782,7 @@ function CNNAgentGotoVec(string arg)
 
 defaultproperties
 {
+    CantSaveInConversation="You can't save during a conversation."
     bAgentAutoStart=False
     bAgentSkipSelfHeal=False
     TruePlayerName="Blake Denton"

@@ -12,7 +12,13 @@ var() float startTime;          // what time do we start from?
 var() float criticalTime;       // when does the text turn red?
 var() float destroyDelay;       // after timer has expired, how long until we destroy the window
 var() string message;           // message to print on timer window
-var TimerDisplay timerWin;
+// Transient: a window is not part of the level, and saving a reference to
+// it dragged the HUD's window tree into the savegame -- the load then
+// GPFed at the next travel (XWindow::SetVisibility during PurgeGarbage,
+// found 2026-10-05, save/load audit). bRunning is saved instead, and the
+// window is made again after a load (RestoreWindow).
+var transient TimerDisplay timerWin;
+var bool bRunning;
 var float time;
 var bool bDone;
 
@@ -23,6 +29,9 @@ var Dispatcher disp;
 //
 event Tick(float deltaTime)
 {
+    if (bRunning && (timerWin == none))
+        RestoreWindow();
+
     if (timerWin != none)
     {
         if (!bDone && timerWin.time == 0)
@@ -123,6 +132,7 @@ function Trigger(Actor Other, Pawn EventInstigator)
         timerWin.bCritical = False;
         timerWin.message = message;
         bDone = False;
+        bRunning = True;
         PlaySound(sound'Beep3', SLOT_Misc);
         player.ClientMessage(timerStarted);
     }
@@ -133,6 +143,32 @@ function Trigger(Actor Other, Pawn EventInstigator)
         PlaySound(sound'Beep3', SLOT_Misc);
         player.ClientMessage(timerStopped);
     }
+}
+
+// After a load: the countdown kept its time, only the window is new.
+function RestoreWindow()
+{
+    local DeusExPlayer player;
+    local DeusExRootWindow root;
+
+    player = DeusExPlayer(GetPlayerPawn());
+    if (player == none)
+        return;
+    root = DeusExRootWindow(player.rootWindow);
+    if ((root == none) || (root.hud == none))
+        return;
+
+    timerWin = root.hud.timer;
+    if (timerWin == none)
+        timerWin = class'CNNTimerDisplay'.static.CreateIn(root.hud);
+    if (timerWin == none)
+        return;
+    timerWin.bFlash = False;
+    timerWin.time = time;
+    timerWin.bCritical = (bCountDown && (time <= criticalTime));
+    timerWin.message = message;
+    if (disp == none)
+        FindAndSetDispatcher();
 }
 
 function FindAndSetDispatcher()
@@ -149,6 +185,7 @@ function StopTimer()
 {
     timerWin.bFlash = true;
     bDone = true;
+    bRunning = false;
     SetTimer(destroyDelay, false);
     PlaySound(sound'Beep3', SLOT_Misc);
     BroadcastMessage(timerStopped);

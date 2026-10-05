@@ -1,39 +1,47 @@
-//=============================================================================
-// CNNConPlay
-//
-// Not in use: conversations play on DeusEx.ConPlay, since the
-// StartConversation override in TantalusDenton is commented out. The item
-// class repair below is done by Chapter06L2.RepairItemClasses() instead.
-//=============================================================================
+//-----------------------------------------------------------
+// CNNConPlay.
+//-----------------------------------------------------------
 class CNNConPlay extends ConPlay;
 
-function class<Inventory> ResolveItemClass(string objName)
+// ----------------------------------------------------------------------
+// state ConPlayAnim
+//
+// Plays an animation and then runs the next event.
+// Optionally will wait for the animation to finish
+// ----------------------------------------------------------------------
+
+state ConPlayAnim
 {
-    local string key;
+Begin:
+    CNNConEventAnimation(currentEvent).bLoopAnim =
+        (CNNConEventAnimation(currentEvent).playMode == 0);
 
-    key = Caps(objName);
+    // Check to see if we need to just play this animation once or loop it.
+    if (CNNConEventAnimation(currentEvent).bLoopAnim)
+    {
+        CNNConEventAnimation(currentEvent).eventOwner
+            .LoopAnim(CNNConEventAnimation(currentEvent).sequence);
+    }
+    else
+    {
+        CNNConEventAnimation(currentEvent).eventOwner
+            .PlayAnim(CNNConEventAnimation(currentEvent).sequence);
+    }
 
-    if (key == "WEAPONASSAULTRIFLE")
-        return class'WeaponAssaultGun';
+    // If we're not looping the animation and we need to wait for this one to
+    // finish, then do so.
+    if ((CNNConEventAnimation(currentEvent).playLength > 0))
+    {
+        Sleep(CNNConEventAnimation(currentEvent).playLength);
+    }
 
-    if ((key == "WEAPONSNOWBLIND") || (key == "APOCALYPSEINSIDE.WEAPONSNOWBLIND"))
-        return class'WeaponSnowblind';
+    if ((!CNNConEventAnimation(currentEvent).bLoopAnim) &&
+        (CNNConEventAnimation(currentEvent).bFinishAnim)
+    )
+    {
+        CNNConEventAnimation(currentEvent).eventOwner.FinishAnim();
+	}
 
-    return None;
-}
-
-function EEventAction SetupEventCheckObject(ConEventCheckObject event, out String nextLabel)
-{
-    if (event.checkObject == None)
-        event.checkObject = ResolveItemClass(event.objectName);
-
-    return Super.SetupEventCheckObject(event, nextLabel);
-}
-
-function EEventAction SetupEventTransferObject(ConEventTransferObject event, out String nextLabel)
-{
-    if (event.giveObject == None)
-        event.giveObject = ResolveItemClass(event.objectName);
-
-    return Super.SetupEventTransferObject(event, nextLabel);
+    currentEvent = currentEvent.nextEvent;
+    GotoState('PlayEvent');
 }

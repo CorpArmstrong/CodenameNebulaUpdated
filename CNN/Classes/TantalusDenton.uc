@@ -720,7 +720,7 @@ function bool StartConversation(
         // Found an active conversation, so start it
         // CorpArmstrong: Inject our class here:
         //conPlay = Spawn(class'CASConPlay');	UNCOMMENT!
-		conPlay = Spawn(class'CNNConPlay'); // vanilla ConPlay + item-class fix, see CNNConPlay.uc
+		conPlay = Spawn(class'ConPlay');
         conPlay.SetStartActor(invokeActor);
         conPlay.SetConversation(con);
         conPlay.SetForcePlay(bForcePlay);

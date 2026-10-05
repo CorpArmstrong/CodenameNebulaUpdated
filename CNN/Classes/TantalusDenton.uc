@@ -198,7 +198,7 @@ event TravelPostAccept()
 
 // Invincibility gate for the deferred-ESC cutscene cleanup. When the
 // CNNCutsceneCleanup flag is set, CNNBaseIngameCutscene has decided
-// that the player is still inside the cutscene's PlayerStart radius ÃÂ¢ÃÂÃÂ
+// that the player is still inside the cutscene's PlayerStart radius ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 // UE1 same-map URL travel would ignore the #tag and respawn at the
 // default PlayerStart (which on MoonIntro is inside the meteor
 // explosion). We keep the player alive while the IP chain carries
@@ -278,7 +278,7 @@ exec function QuickSave()
 // run on the gameplay map via CNNBaseIngameCutscene (extends MissionScript),
 // so vanilla's MissionNumber==98/99 + MissionEndgame guards don't catch
 // them. Without this branch, the menu opens while CameraPoint/Interpolation
-// chains keep running and `player.bHidden` stays true ÃÂ¢ÃÂÃÂ when the menu
+// chains keep running and `player.bHidden` stays true ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ when the menu
 // closes the player is invisible with broken collision/eye height.
 // ----------------------------------------------------------------------
 exec function ShowMainMenu()
@@ -321,7 +321,7 @@ function ShowIntro(optional bool bStartNewGame)
 
     if (bStartNewGame)
     {
-        // CNN has no separate intro map ÃÂ¢ÃÂÃÂ we go straight to the
+        // CNN has no separate intro map ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ we go straight to the
         // gameplay map. Vanilla DX1's "New Game" path runs an intro
         // map first, then PostIntro calls StartNewGame which does
         // the heavy cleanup (ResetPlayer destroys + recreates
@@ -2514,6 +2514,8 @@ function CNNAgentSnap(string snapName)
 
     AgentOut("snap=" $ snapName);
     AgentOut("map=" $ Level.Game.GetURLMap());
+    if (GetLevelInfo() != None)
+        AgentOut("mapName=" $ GetLevelInfo().mapName $ " mission=" $ GetLevelInfo().missionNumber);
     AgentOut("player.loc=" $ int(Location.X) $ "," $ int(Location.Y) $ "," $ int(Location.Z));
     AgentOut("player.state=" $ GetStateName() $ " conPlay=" $ (conPlay != None));
     AgentOut("player.health=" $ Health $ " head=" $ HealthHead $ " torso=" $ HealthTorso $

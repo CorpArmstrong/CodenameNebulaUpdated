@@ -113,6 +113,14 @@ var localized string WheelNeedsMagdaleneMessage;
 function InitStateMachine()
 {
     super.InitStateMachine();
+
+    // The map's DeusExLevelInfo has no MapName, and the engine names a
+    // level's save file after it -- L2 was saved as "Current.dxs".
+    if ((dxInfo != None) && (dxInfo.mapName == ""))
+    {
+        dxInfo.mapName = "06_OpheliaL2";
+        localURL = Caps(dxInfo.mapName);
+    }
     initCount++;
     Log("CNN L2: InitStateMachine run " $ initCount $ ", PlayerTraveling=" $ flags.GetBool('PlayerTraveling'));
     FirstFrame();

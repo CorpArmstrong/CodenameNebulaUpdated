@@ -42,14 +42,14 @@ defaultproperties
      PickupViewMesh=LodMesh'DeusExDeco.Flowers'
      ThirdPersonMesh=LodMesh'DeusExDeco.Flowers'
      LandSound=Sound'DeusExSounds.Generic.MetalHit1'
-     Icon=Texture'ApocalypseInside.Icons.BeltIconNoodleCup'
-     largeIcon=Texture'ApocalypseInside.Icons.LargeIconNoodleCup'
+     Icon=Texture'CNN.Icons.BeltIconNoodleCup'
+     largeIcon=Texture'CNN.Icons.LargeIconNoodleCup'
      largeIconWidth=42
      largeIconHeight=46
      Description="A cup of noodles. The noodle is a type of staple food made from some type of unleavened dough which is rolled flat and cut into one of a variety of shapes, commonly to long thin strips."
      beltDescription="NOODLES"
      Mesh=LodMesh'DeusExDeco.Flowers'
-     MultiSkins(0)=Texture'ApocalypseInside.Skins.NoodleCupTex0'
+     MultiSkins(0)=Texture'CNN.Skins.NoodleCupTex0'
      CollisionRadius=11.880000
      CollisionHeight=9.630000
      Mass=20.000000

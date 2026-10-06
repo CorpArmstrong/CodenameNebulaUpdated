@@ -40,8 +40,8 @@ defaultproperties
      PlayerViewMesh=LodMesh'ApocalypseInside.Burger01'
      PickupViewMesh=LodMesh'ApocalypseInside.Burger01'
      ThirdPersonMesh=LodMesh'ApocalypseInside.Burger01'
-     Icon=Texture'ApocalypseInside.Icons.BeltIconBurger'
-     largeIcon=Texture'ApocalypseInside.Icons.LargeIconBurger'
+     Icon=Texture'CNN.Icons.BeltIconBurger'
+     largeIcon=Texture'CNN.Icons.LargeIconBurger'
      largeIconWidth=42
      largeIconHeight=46
      Description="A hamburger (also called a burger) is a sandwich consisting of a cooked patty of ground meat usually placed inside a sliced bread roll."

@@ -24,7 +24,7 @@ defaultproperties
 {
      DrawType=DT_Mesh
      bStatic=False
-     Texture=Texture'ApocalypseInside.Skins.bassein'
+     Texture=Texture'CNN.Skins.basseinTex1'
      Mesh=Mesh'CNN.bassein'
      DrawScale=0.5
      CollisionRadius=25.639999

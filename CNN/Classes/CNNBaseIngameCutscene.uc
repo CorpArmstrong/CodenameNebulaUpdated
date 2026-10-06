@@ -161,9 +161,10 @@ function TurnDownSoundVolume()
     player.SetInstantSoundVolume(SoundVolume);
 }
 
+// Called after Super.PreTravel(), which clears flags.
 function RestoreSoundVolume()
 {
-    if (flags.GetBool(convNamePlayed) && !IsArrivalCompleted)
+    if ((flags != none) && flags.GetBool(convNamePlayed) && !IsArrivalCompleted)
     {
         //SoundVolume = savedSoundVolume;
         player.SetInstantSoundVolume(SoundVolume);

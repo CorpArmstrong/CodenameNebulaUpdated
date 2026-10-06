@@ -30,7 +30,26 @@ var float waitDeadline;
 var bool bConRun;
 var string conPicks;
 
+// AUTOCON: every conversation that starts is walked through, with the
+// picks PICKS set for it
+var bool   bAutoCon;
+var string pickCon[32];
+var string pickList[32];
+var int    pickCount;
+var ConEvent autoConStop;       // the choice an auto run stopped at
+
 var bool bSkipSelfHeal;     // CONVERSE leaves a stuck bark alone
+
+// WALK: the goals in order, and where the player is headed now
+var vector walkGoal[32];
+var int    walkCount;
+var int    walkIndex;
+var vector walkPoint;
+var bool   bWalking;
+var vector walkLastLoc;
+var int    walkStuck;
+var float  walkGoalTime;
+var string walkResult;
 
 // L2 watch (WatchL2): the flags to log as they change. A fixed list, as
 // FlagBase's iterator needs an enum the CNN package cannot name; bytes, as
@@ -64,8 +83,10 @@ function Timer()
         return;
 
     Player.ConsoleCommand("exec CNNAgentCmd.txt");
+    CheckAutoCon();
     ConStep();
     CheckWait();
+    CheckWalk();
     if (bWatchL2)
         WatchL2();
 }
@@ -88,6 +109,12 @@ function Run(string command, optional int seq)
 
     if (cmd == "GOTO")
         GotoLandmark(arg);
+    else if (cmd == "WALK")
+        Walk(arg);
+    else if (cmd == "WALKSTOP")
+        FinishWalk("stopped");
+    else if (cmd == "ACTORS")
+        DumpActors(arg);
     else if (cmd == "GOTOVEC")
         GotoVec(arg);
     else if (cmd == "FIRE")
@@ -118,6 +145,10 @@ function Run(string command, optional int seq)
         Choose(int(arg));
     else if (cmd == "CONRUN")
         ConRun(arg);
+    else if (cmd == "AUTOCON")
+        AutoCon(arg);
+    else if (cmd == "PICKS")
+        SetPicks(arg);
     else if (cmd == "SETFLAG")
         SetFlag(arg);
     else if (cmd == "WAITFLAG")
@@ -166,7 +197,8 @@ function Run(string command, optional int seq)
         Player.ConsoleCommand("exit");  // a killed process leaves Recovery Mode for the next launch
     else
         Player.ClientMessage("unknown command " $ cmd $
-            " -- use GOTO/GOTOVEC/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/SETFLAG/WAITFLAG/NEWGAME/GIVE/TAKE/INV/KILL/BODIES/SAVE/LOAD/QSAVE/QLOAD/SNAP/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            " -- use GOTO/GOTOVEC/WALK/WALKSTOP/ACTORS/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/AUTOCON/PICKS/" $
+            "SETFLAG/WAITFLAG/NEWGAME/GIVE/TAKE/INV/KILL/BODIES/CONLIST/SAVE/LOAD/QSAVE/QLOAD/SNAP/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
 
     // a travel (OPEN, LOAD) happens at the end of the tick, after this
     if (seq > 0)
@@ -825,6 +857,68 @@ function ConRun(string picks)
     Log("CNN L2 conrun: on, picks=[" $ picks $ "]");
 }
 
+// AUTOCON on|off
+function AutoCon(string onOff)
+{
+    bAutoCon = (Caps(onOff) != "OFF");
+    autoConStop = none;
+    Report("AUTOCON " $ bAutoCon $ ", " $ pickCount $ " pick list(s)");
+}
+
+// PICKS <conName> <n> <n>...: the choices AUTOCON makes in that conversation
+function SetPicks(string args)
+{
+    local string conName, picks;
+    local int i;
+
+    SplitFirstWord(args, conName, picks);
+    for (i = 0; i < pickCount; i++)
+        if (Caps(pickCon[i]) == Caps(conName))
+            break;
+    if (i == pickCount)
+    {
+        if (pickCount >= ArrayCount(pickCon))
+        {
+            Report("PICKS table full");
+            return;
+        }
+        pickCount++;
+    }
+    pickCon[i] = conName;
+    pickList[i] = picks;
+    Report("PICKS " $ conName $ " [" $ picks $ "]");
+}
+
+// Starts a CONRUN for a conversation that began on its own.
+function CheckAutoCon()
+{
+    local ConPlay conPlay;
+    local int i;
+
+    if (!bAutoCon || bConRun)
+        return;
+    conPlay = Player.conPlay;
+    if ((conPlay == none) || (conPlay.con == none) || (conPlay.currentEvent == autoConStop))
+        return;
+
+    for (i = 0; i < pickCount; i++)
+        if (Caps(pickCon[i]) == Caps(string(conPlay.con.conName)))
+            break;
+    Log("CNN L2 conrun: auto " $ conPlay.con.conName);
+    if (i < pickCount)
+        ConRun(pickList[i]);
+    else
+        ConRun("");
+}
+
+function string ConStatus()
+{
+    if ((Player.conPlay == none) || (Player.conPlay.con == none))
+        return "none";
+    return Player.conPlay.con.conName $ " " $ Player.conPlay.GetStateName() $ " " $
+           ConEventText(Player.conPlay.currentEvent);
+}
+
 function ConStep()
 {
     local ConPlay conPlay;
@@ -848,6 +942,7 @@ function ConStep()
         if (conPicks == "")
         {
             bConRun = false;
+            autoConStop = conPlay.currentEvent;
             Log("CNN L2 conrun: stopped at a choice, no picks left");
             ConState();
             return;
@@ -1054,14 +1149,10 @@ function Where()
 // CNNDocs/L2_WalkthroughMap.md) or to "x y z".
 // ----------------------------------------------------------------------
 
-function GotoLandmark(string where)
+// The L2 spots GOTO and WALK know by name.
+function bool LandmarkLocation(string where, out vector dest)
 {
-    local vector dest;
-    local DeusExLevelInfo info;
-    local bool bKnown;
-
     where = Caps(where);
-    bKnown = true;
 
     if      (where == "START")     dest = vect(-1044, -1900,   891);  // arrival
     else if (where == "SAM")       dest = vect(  841, -2031,     8);  // MeetSamanthaReed trigger
@@ -1077,9 +1168,18 @@ function GotoLandmark(string where)
     else if (where == "WALL")      dest = vect(  918, -5686,    15);  // reported invisible wall / render artifact spot
     else if (where == "TUBE")      dest = vect(  843, -6084,     8);  // LoadingInTube trigger
     else if (where == "FINAL")     dest = vect( 1487, -6294,     4);  // tube area (medbot) -- the trigger itself is outside walkable space; use FIRE MiniGameDispatcher
-    else bKnown = false;
+    else return false;
+    return true;
+}
 
-    if (!bKnown)
+function GotoLandmark(string where)
+{
+    local vector dest;
+    local DeusExLevelInfo info;
+
+    where = Caps(where);
+
+    if (!LandmarkLocation(where, dest))
     {
         Player.ClientMessage("GOTO: start sam samantha magdalene maglab soldiers battle iot wong meph jc tube final wall");
         return;
@@ -1184,6 +1284,291 @@ function BringFollowers(vector playerLoc)
 }
 
 // ----------------------------------------------------------------------
+// Walk()
+//
+// WALK <goal>[; <goal>...]: the player walks there for real, through
+// TantalusDenton's CNNAgentWalking. A goal is "x y z", an L2 landmark, or
+// the Tag or BindName of an actor. Each step goes straight when the way
+// is open, else along the map's path network. A conversation on the way
+// pauses the walk; it carries on afterwards. A door in the way is frobbed.
+// SNAP's walk= line tells how it went.
+// ----------------------------------------------------------------------
+
+function Walk(string args)
+{
+    local string goal, rest;
+    local vector dest;
+
+    if (Player.conPlay != none)
+    {
+        Report("WALK refused: in a conversation");
+        return;
+    }
+
+    walkCount = 0;
+    rest = args;
+    while ((rest != "") && (walkCount < ArrayCount(walkGoal)))
+    {
+        SplitAt(rest, ";", goal, rest);
+        goal = Trim(goal);
+        if (goal == "")
+            continue;
+        if (!ResolveGoal(goal, dest))
+        {
+            Report("WALK unknown goal " $ goal);
+            return;
+        }
+        walkGoal[walkCount++] = dest;
+    }
+    if (walkCount == 0)
+    {
+        Report("WALK <x y z | landmark | Tag | BindName>[; ...]");
+        return;
+    }
+
+    walkIndex = 0;
+    walkStuck = 0;
+    walkLastLoc = Player.Location;
+    walkGoalTime = 0;
+    walkResult = "walking";
+    bWalking = true;
+    Player.GotoState('CNNAgentWalking');
+    Report("WALK start, " $ walkCount $ " goal(s), first " $ VecText(walkGoal[0]));
+}
+
+function bool ResolveGoal(string goal, out vector dest)
+{
+    local string x, y, z;
+    local Actor a, best;
+
+    SplitAt(goal, " ", x, y);
+    if (y != "")
+    {
+        SplitAt(y, " ", y, z);
+        dest.X = float(x);
+        dest.Y = float(y);
+        dest.Z = float(z);
+        return true;
+    }
+
+    if (LandmarkLocation(goal, dest))
+        return true;
+
+    foreach AllActors(class'Actor', a)
+    {
+        if ((a == Player) || ((string(a.Tag) != goal) && (a.BindName != goal)))
+            continue;
+        if ((best == none) || (VSize(a.Location - Player.Location) < VSize(best.Location - Player.Location)))
+            best = a;
+    }
+    if (best == none)
+        return false;
+    dest = best.Location;
+    return true;
+}
+
+// Called by CNNAgentWalking before each move: false ends the walk.
+function bool NextWalkPoint()
+{
+    local Actor node;
+
+    if (!bWalking)
+        return false;
+
+    while ((walkIndex < walkCount) && Reached(walkGoal[walkIndex]))
+    {
+        Log("CNN agent: WALK reached goal " $ walkIndex $ " " $ VecText(walkGoal[walkIndex]));
+        walkIndex++;
+        walkGoalTime = 0;
+    }
+    if (walkIndex >= walkCount)
+    {
+        FinishWalk("done");
+        return false;
+    }
+
+    walkPoint = walkGoal[walkIndex];
+    if (!Player.PointReachable(walkPoint))
+    {
+        node = Player.FindPathTo(walkPoint);
+        if (node != none)
+            walkPoint = node.Location;
+    }
+    return true;
+}
+
+function bool Reached(vector goal)
+{
+    local vector d;
+
+    d = goal - Player.Location;
+    return (Abs(d.Z) < 100) && (Sqrt(d.X * d.X + d.Y * d.Y) < 48);
+}
+
+// Once a tick of the bridge: picks a walk up again after a conversation,
+// opens a door in the way, and gives up when the player stops moving.
+function CheckWalk()
+{
+    if (!bWalking)
+        return;
+
+    if (Player.IsInState('Dying') || (Player.Health <= 0))
+    {
+        FinishWalk("died");
+        return;
+    }
+    if ((Player.conPlay != none) || Player.IsInState('Conversation') || Player.IsInState('Interpolating'))
+    {
+        walkLastLoc = Player.Location;
+        return;
+    }
+    if (!Player.IsInState('CNNAgentWalking'))
+    {
+        Log("CNN agent: WALK resumed in state " $ Player.GetStateName());
+        Player.GotoState('CNNAgentWalking');
+        walkLastLoc = Player.Location;
+        return;
+    }
+
+    walkGoalTime += pollInterval;
+    if (VSize(Player.Location - walkLastLoc) < 20)
+        walkStuck++;
+    else
+        walkStuck = 0;
+    walkLastLoc = Player.Location;
+
+    if ((walkStuck == 2) || (walkStuck == 4))
+        OpenWayAhead();
+    if ((walkStuck >= 6) || (walkGoalTime > 180))
+    {
+        Player.GotoState('PlayerWalking');
+        FinishWalk("stuck at " $ VecText(Player.Location) $ " heading for " $ VecText(walkPoint) $
+                   ", goal " $ walkIndex $ " " $ VecText(walkGoal[walkIndex]));
+    }
+}
+
+// Frobs a mover between the player and the next point, as the frob key
+// would open a door.
+function OpenWayAhead()
+{
+    local vector dir, hitLoc, hitNorm;
+    local Actor hit;
+
+    dir = walkPoint - Player.Location;
+    dir.Z = 0;
+    hit = Player.Trace(hitLoc, hitNorm, Player.Location + 160 * Normal(dir), Player.Location, true);
+    if (Mover(hit) != none)
+    {
+        Log("CNN agent: WALK frobs " $ hit.Name $ " in the way");
+        hit.Frob(Player, none);
+    }
+    else
+        Log("CNN agent: WALK blocked by " $ hit $ " near " $ VecText(Player.Location));
+}
+
+function FinishWalk(string result)
+{
+    if (bWalking && (result == "stopped") && Player.IsInState('CNNAgentWalking'))
+        Player.GotoState('PlayerWalking');
+    bWalking = false;
+    walkResult = result;
+    Log("CNN agent: WALK " $ result);
+}
+
+function string WalkStatus()
+{
+    if (!bWalking)
+        return walkResult;
+    return "walking goal " $ walkIndex $ "/" $ walkCount $ " dist=" $
+           int(VSize(walkGoal[walkIndex] - Player.Location)) $ " stuck=" $ walkStuck;
+}
+
+function string VecText(vector v)
+{
+    return int(v.X) $ "," $ int(v.Y) $ "," $ int(v.Z);
+}
+
+function SplitAt(string s, string sep, out string first, out string rest)
+{
+    local int i;
+
+    i = InStr(s, sep);
+    if (i < 0)
+    {
+        first = s;
+        rest = "";
+        return;
+    }
+    first = Left(s, i);
+    rest = Right(s, Len(s) - i - Len(sep));
+}
+
+function string Trim(string s)
+{
+    while (Left(s, 1) == " ")
+        s = Right(s, Len(s) - 1);
+    while (Right(s, 1) == " ")
+        s = Left(s, Len(s) - 1);
+    return s;
+}
+
+// ----------------------------------------------------------------------
+// DumpActors()
+//
+// ACTORS [class]: the level's working parts into the log -- triggers,
+// exits, doors, keypads, computers, people, items -- with what a route
+// needs to know about each. A class name narrows it down.
+// ----------------------------------------------------------------------
+
+function DumpActors(string className)
+{
+    local Actor a;
+    local name filter;
+    local string extra;
+    local int n;
+
+    if (className != "")
+        filter = Player.rootWindow.StringToName(className);
+
+    foreach AllActors(class'Actor', a)
+    {
+        if (filter != '')
+        {
+            if (!a.IsA(filter))
+                continue;
+        }
+        else if (!(a.IsA('Triggers') || a.IsA('NavigationPoint') && !a.IsA('PathNode') ||
+                   a.IsA('Mover') || a.IsA('Keypad') || a.IsA('Computers') || a.IsA('ScriptedPawn') ||
+                   a.IsA('Inventory') && (a.Owner == none) || a.IsA('Dispatcher') || a.IsA('MissionScript')))
+            continue;
+
+        extra = "";
+        if (MapExit(a) != none)
+            extra = " dest=" $ MapExit(a).DestMap;
+        else if (Teleporter(a) != none)
+            extra = " url=" $ Teleporter(a).URL;
+        else if (DeusExMover(a) != none)
+            extra = " keyNum=" $ Mover(a).KeyNum $ " locked=" $ DeusExMover(a).bLocked $
+                    " frob=" $ DeusExMover(a).bFrobbable $ " door=" $ DeusExMover(a).bIsDoor $
+                    " key=" $ DeusExMover(a).KeyIDNeeded;
+        else if (Keypad(a) != none)
+            extra = " code=" $ Keypad(a).validCode;
+        else if (ConversationTrigger(a) != none)
+            extra = " con=" $ ConversationTrigger(a).conversationTag $ " radius=" $ a.CollisionRadius;
+        else if (Trigger(a) != none)
+            extra = " radius=" $ a.CollisionRadius $ " once=" $ Trigger(a).bTriggerOnceOnly;
+        else if (ScriptedPawn(a) != none)
+            extra = " orders=" $ ScriptedPawn(a).Orders $ " alliance=" $ ScriptedPawn(a).Alliance $
+                    " health=" $ ScriptedPawn(a).Health;
+
+        Log("CNN actors: " $ a.Class.Name $ " " $ a.Name $ " tag=" $ a.Tag $ " event=" $ a.Event $
+            " bind=" $ a.BindName $ " loc=" $ VecText(a.Location) $ extra);
+        n++;
+    }
+    Report("ACTORS " $ n $ " logged on " $ Level.Game.GetURLMap());
+}
+
+// ----------------------------------------------------------------------
 // Save / load
 //
 //   SAVE <slot> [description]   slots 900 and up, never the player's own
@@ -1240,6 +1625,8 @@ function Snap(string snapName)
         Report("mapName=" $ info.mapName $ " mission=" $ info.missionNumber);
     Report("player.loc=" $ int(Player.Location.X) $ "," $ int(Player.Location.Y) $ "," $ int(Player.Location.Z));
     Report("player.state=" $ Player.GetStateName() $ " conPlay=" $ (Player.conPlay != none));
+    Report("walk=" $ WalkStatus());
+    Report("con=" $ ConStatus());
     Report("player.health=" $ Player.Health $ " head=" $ Player.HealthHead $ " torso=" $ Player.HealthTorso $
            " energy=" $ int(Player.Energy) $ " skillpts=" $ Player.SkillPointsAvail);
 
@@ -1668,6 +2055,7 @@ defaultproperties
 {
     pollInterval=1.0
     bWatchL2=true
+    walkResult="idle"
 
     // the flags OpheliaL2.con uses, and the ones Chapter06L2 sets
     trackedFlag(0)=MikeWongExposed

@@ -65,7 +65,10 @@ function Timer()
 {
     Super.Timer();
     TrySendPlayerOnceToGame();
-    DoLevelStuff();
+
+    // a send-off travels, and PreTravel() clears flags
+    if (flags != none)
+        DoLevelStuff();
 }
 
 // ----------------------------------------------------------------------

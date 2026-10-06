@@ -852,6 +852,39 @@ function CNNAgentBridge FindAgentBridge()
     return agentBridge;
 }
 
+// ----------------------------------------------------------------------
+// state CNNAgentWalking
+//
+// The bridge's WALK: the engine's MoveTo walks the player as it walks
+// NPCs, so triggers on the way fire as they do for a real player. The
+// keyboard is ignored meanwhile; the bridge picks each point.
+// ----------------------------------------------------------------------
+
+state CNNAgentWalking extends PlayerWalking
+{
+    function PlayerMove(float deltaTime)
+    {
+        local rotator facing;
+
+        if (VSize(Acceleration) > 0)
+        {
+            facing = rotator(Acceleration);
+            facing.Pitch = 0;
+            facing.Roll = 0;
+            ViewRotation = facing;
+            SetRotation(facing);
+        }
+    }
+
+Begin:
+    if ((agentBridge == none) || !agentBridge.NextWalkPoint())
+        Goto('Done');
+    MoveTo(agentBridge.walkPoint);
+    Goto('Begin');
+Done:
+    GotoState('PlayerWalking');
+}
+
 defaultproperties
 {
     CantSaveInConversation="You can't save during a conversation."

@@ -7,13 +7,17 @@
 // With --keep <rev>, also checks that every comment line the file had at
 // <rev> is still there word for word (the original authors' comments stay).
 //
-// Usage: node tools/uc_codecmp.js [--rev HEAD] [--keep 1faa297] file.uc ...
+// With --nocase, code outside literals is compared case-insensitively, as
+// the compiler reads it (None/none, True/true).
+//
+// Usage: node tools/uc_codecmp.js [--rev HEAD] [--keep 1faa297] [--nocase] file.uc ...
 const { execSync } = require('child_process');
 const fs = require('fs');
 
 const args = process.argv.slice(2);
-let rev = 'HEAD', keep = null;
+let rev = 'HEAD', keep = null, nocase = false;
 while (args[0] && args[0].startsWith('--')) {
+  if (args[0] === '--nocase') { nocase = true; args.shift(); continue; }
   if (args[0] === '--rev') rev = args[1];
   if (args[0] === '--keep') keep = args[1];
   args.splice(0, 2);
@@ -42,7 +46,7 @@ function strip(src) {
       i += 2;
       while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) i++;
       i += 2;
-    } else { out += c; i++; }
+    } else { out += nocase ? c.toLowerCase() : c; i++; }
   }
   return out.replace(/\s+/g, '');
 }

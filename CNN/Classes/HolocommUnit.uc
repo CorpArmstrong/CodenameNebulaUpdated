@@ -39,14 +39,14 @@ var bool bCheckForConvoEnd;
 
 function bool ResolvePlayer()
 {
-    if (player == None)
+    if (player == none)
     {
         player = TantalusDenton(GetPlayerPawn());
-        if (player == None)
+        if (player == none)
             return false;
     }
 
-    return (player.flagBase != None);
+    return (player.flagBase != none);
 }
 
 function PostBeginPlay()
@@ -168,7 +168,7 @@ simulated function Tick(float TimeDelta)
         return;
 
     // the hologram failed to spawn
-    if (contacts[contactIndex].contactActor == None)
+    if (contacts[contactIndex].contactActor == none)
     {
         bCheckForConvoEnd = false;
         return;

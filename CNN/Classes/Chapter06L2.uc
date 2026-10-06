@@ -86,7 +86,7 @@ function InitStateMachine()
     super.InitStateMachine();
 
     // The map's level info has no MapName, and saves are named after it.
-    if ((dxInfo != None) && (dxInfo.mapName == ""))
+    if ((dxInfo != none) && (dxInfo.mapName == ""))
     {
         dxInfo.mapName = "06_OpheliaL2";
         localURL = Caps(dxInfo.mapName);
@@ -182,7 +182,7 @@ function DisablePageAndSamantha()
     StripConversation('FindMeganReed');
 
     goal = Player.FindGoal('TalkToPage');
-    if (goal != None)
+    if (goal != none)
         Player.DeleteGoal(goal);
 }
 
@@ -215,7 +215,7 @@ function DedupeConversations()
 
     foreach AllActors(class'Actor', a)
     {
-        if (a.conListItems != None)
+        if (a.conListItems != none)
             DedupeOneActor(a);
     }
 }
@@ -225,9 +225,9 @@ function bool ConNameHasNonEmptyCopy(Actor a, Name conName)
     local ConListItem scan;
 
     scan = ConListItem(a.conListItems);
-    while (scan != None)
+    while (scan != none)
     {
-        if ((scan.con != None) && (scan.con.conName == conName) && (scan.con.eventList != None))
+        if ((scan.con != none) && (scan.con.conName == conName) && (scan.con.eventList != none))
             return true;
         scan = scan.next;
     }
@@ -239,10 +239,10 @@ function bool IsLastOccurrence(ConListItem item, bool bNonEmptyOnly)
     local ConListItem scan;
 
     scan = item.next;
-    while (scan != None)
+    while (scan != none)
     {
-        if ((scan.con != None) && (scan.con.conName == item.con.conName) &&
-            (!bNonEmptyOnly || (scan.con.eventList != None)))
+        if ((scan.con != none) && (scan.con.conName == item.con.conName) &&
+            (!bNonEmptyOnly || (scan.con.eventList != none)))
         {
             return false;
         }
@@ -256,20 +256,20 @@ function DedupeOneActor(Actor a)
     local ConListItem item, prev, next;
     local bool bKeep, bThisNonEmpty, bAnyNonEmpty;
 
-    prev = None;
+    prev = none;
     item = ConListItem(a.conListItems);
 
-    while (item != None)
+    while (item != none)
     {
         next = item.next;
 
-        if (item.con == None)
+        if (item.con == none)
         {
             bKeep = true;
         }
         else
         {
-            bThisNonEmpty = (item.con.eventList != None);
+            bThisNonEmpty = (item.con.eventList != none);
             bAnyNonEmpty = ConNameHasNonEmptyCopy(a, item.con.conName);
 
             if (bAnyNonEmpty)
@@ -280,7 +280,7 @@ function DedupeOneActor(Actor a)
 
         if (!bKeep)
         {
-            if (prev == None)
+            if (prev == none)
                 a.conListItems = next;
             else
                 prev.next = next;
@@ -310,7 +310,7 @@ function DumpConversationLists()
 
     foreach AllActors(class'Actor', a)
     {
-        if ((a.conListItems == None) || (a.BindName == ""))
+        if ((a.conListItems == none) || (a.BindName == ""))
             continue;
 
         if ((a.BindName == "MJ12Sergeant") || (a.BindName == "Magdalene") ||
@@ -331,14 +331,14 @@ function DumpOneActorsConversations(Actor a)
 
     item = ConListItem(a.conListItems);
 
-    while (item != None)
+    while (item != none)
     {
-        if (item.con != None)
+        if (item.con != none)
         {
             flagList = "";
             flagRef  = item.con.flagRefList;
 
-            while (flagRef != None)
+            while (flagRef != none)
             {
                 flagList = flagList $ " " $ string(flagRef.flagName);
                 flagRef  = flagRef.nextFlagRef;
@@ -363,18 +363,18 @@ function StripConversation(name conName)
 
     foreach AllActors(class'Actor', a)
     {
-        if (a.conListItems == None)
+        if (a.conListItems == none)
             continue;
 
-        prev = None;
+        prev = none;
         item = ConListItem(a.conListItems);
 
-        while (item != None)
+        while (item != none)
         {
-            if ((item.con != None) && (item.con.conName == conName))
+            if ((item.con != none) && (item.con.conName == conName))
             {
                 // Unlink, keeping the rest of the actor's list intact.
-                if (prev == None)
+                if (prev == none)
                     a.conListItems = item.next;
                 else
                     prev.next = item.next;
@@ -433,13 +433,13 @@ function PutMagdaleneInTube()
 
     foreach AllActors(class'Magdalene', mag)
         break;
-    if ((mag == None) || (mag.Health <= 0) || mag.IsInState('Dying'))
+    if ((mag == none) || (mag.Health <= 0) || mag.IsInState('Dying'))
         return;
 
     // MagdalenePoint is the tube's centre -- see FixTubeMover().
     foreach AllActors(class'Actor', point, 'MagdalenePoint')
         break;
-    if (point == None)
+    if (point == none)
         return;
 
     if (VSize(mag.Location - point.Location) > 16)
@@ -479,9 +479,9 @@ function FixTubeMover()
         tube.BasePos.X = openPos.X;
         tube.BasePos.Y = openPos.Y;
 
-        if ((point != None) &&
+        if ((point != none) &&
             (Trace(hitLocation, hitNormal, point.Location - vect(0,0,300),
-                   point.Location + vect(0,0,40), true) != None))
+                   point.Location + vect(0,0,40), true) != none))
         {
             tube.BasePos.Z = hitLocation.Z + TUBE_GLASS_BOTTOM;
         }
@@ -535,7 +535,7 @@ function CheckSoldierSoftlock()
         }
     }
 
-    if ((sergeant != None) && (sergeant.Health > 0) && !sergeant.IsInState('Dying'))
+    if ((sergeant != none) && (sergeant.Health > 0) && !sergeant.IsInState('Dying'))
         return;
 
     bSoldierFallbackDone = true;
@@ -599,7 +599,7 @@ function RestoreSavedState()
 
     if (flags.GetBool('MJ12TimerStarted'))
         Log("CNN L2: restored -- MJ12 " $ int(mj12SecondsLeft) $ "s, social boss started=" $
-            bSocialBossStarted $ " fight=" $ bSocialBossFight $ " trooper=" $ (sbTrooper != None));
+            bSocialBossStarted $ " fight=" $ bSocialBossFight $ " trooper=" $ (sbTrooper != none));
 }
 
 function SetSocialBossFight()
@@ -664,7 +664,7 @@ function Timer()
 
 function DoLevelStuff()
 {
-    if ((flags == None) || (Player == None))
+    if ((flags == none) || (Player == none))
         return;
 
     levelSeconds += checkTime;
@@ -702,14 +702,14 @@ function CheckMagdaleneArmed()
 
     foreach AllActors(class'Magdalene', mag)
         break;
-    if (mag == None)
+    if (mag == none)
         return;
 
-    if ((mag.FindInventoryType(class'WeaponPlasmaRifle') != None) ||
-        (mag.FindInventoryType(class'WeaponAssaultGun') != None) ||
-        (mag.FindInventoryType(class'WeaponSnowblind') != None) ||
-        (mag.FindInventoryType(class'WeaponMiniCrossbow') != None) ||
-        (mag.FindInventoryType(class'WeaponCrowbar') != None))  // the "mini-crossbow" line actually hands over WeaponCrowbar
+    if ((mag.FindInventoryType(class'WeaponPlasmaRifle') != none) ||
+        (mag.FindInventoryType(class'WeaponAssaultGun') != none) ||
+        (mag.FindInventoryType(class'WeaponSnowblind') != none) ||
+        (mag.FindInventoryType(class'WeaponMiniCrossbow') != none) ||
+        (mag.FindInventoryType(class'WeaponCrowbar') != none))  // the "mini-crossbow" line actually hands over WeaponCrowbar
     {
         flags.SetBool('MagdaleneArmed', true);
     }
@@ -730,7 +730,7 @@ function CheckUploadStarted()
     {
         foreach AllActors(class'CNNEventTimer', uploadTimer)
         {
-            if (uploadTimer.timerWin != None)
+            if (uploadTimer.timerWin != none)
             {
                 flags.SetBool('TantalusUploadStarted', true);
                 break;
@@ -766,7 +766,7 @@ function BringMagdaleneToTube()
     foreach AllActors(class'Magdalene', mag)
         break;
 
-    if ((mag == None) || (mag.Health <= 0) || mag.IsInState('Dying') ||
+    if ((mag == none) || (mag.Health <= 0) || mag.IsInState('Dying') ||
         mag.IsInState('Conversation') || (mag.Orders != 'Following'))
         return;
 
@@ -782,7 +782,7 @@ function BringMagdaleneToTube()
             break;
         }
     }
-    if ((button == None) || (VSize(Player.Location - button.Location) > 1500))
+    if ((button == none) || (VSize(Player.Location - button.Location) > 1500))
         return;
 
     // Out of sight only, so nobody watches her appear.
@@ -894,7 +894,7 @@ function StartMJ12Countdown()
     MoveMephistophelesNextToWong();
 
     goal = Player.AddGoal('L2_HijackBeforeMJ12', true);
-    if (goal != None)
+    if (goal != none)
         goal.SetText(MJ12GoalText);
     Player.ClientMessage(MJ12StartMessage);
     Log("CNN L2: MJ12 countdown started (" $ int(MJ12_COUNTDOWN_SECONDS) $ "s), bridge door opened");
@@ -920,7 +920,7 @@ function UpdateMJ12Countdown()
     // the upload has the timer window from here on
     if (flags.GetBool('TantalusUploadStarted'))
     {
-        mj12Window = None;
+        mj12Window = none;
         return;
     }
 
@@ -931,15 +931,15 @@ function UpdateMJ12Countdown()
     mj12SecondsLeft -= checkTime;
     flags.SetInt('MJ12SecondsLeft', int(mj12SecondsLeft));
 
-    if (mj12Window == None)
+    if (mj12Window == none)
     {
         root = DeusExRootWindow(Player.rootWindow);
-        if ((root != None) && (root.hud != None))
+        if ((root != none) && (root.hud != none))
             mj12Window = class'CNNTimerDisplay'.static.CreateIn(root.hud);
-        if (mj12Window != None)
+        if (mj12Window != none)
             mj12Window.message = MJ12TimerLabel;
     }
-    if (mj12Window != None)
+    if (mj12Window != none)
     {
         mj12Window.time = FMax(mj12SecondsLeft, 0);
         mj12Window.bCritical = (mj12SecondsLeft <= 30);
@@ -948,11 +948,11 @@ function UpdateMJ12Countdown()
     if (mj12SecondsLeft <= 0)
     {
         flags.SetBool('MJ12Arrived', true);
-        if (mj12Window != None)
+        if (mj12Window != none)
         {
             mj12Window.bFlash = true;
             mj12Window.Destroy();
-            mj12Window = None;
+            mj12Window = none;
         }
         Player.ClientMessage(MJ12ArrivedMessage);
         Log("CNN L2: MJ12 countdown ran out");
@@ -976,12 +976,12 @@ function ScriptedPawn FindPawnByBindName(string bindName)
     foreach AllActors(class'ScriptedPawn', p)
         if (p.BindName == bindName)
             return p;
-    return None;
+    return none;
 }
 
 function bool IsAlive(ScriptedPawn p)
 {
-    return (p != None) && (p.Health > 0) && !p.IsInState('Dying');
+    return (p != none) && (p.Health > 0) && !p.IsInState('Dying');
 }
 
 // The hostages get the conversation's names, and their real names in place
@@ -1016,10 +1016,10 @@ function DropAllConversations(Actor a)
 {
     local ConListItem item;
 
-    for (item = ConListItem(a.conListItems); item != None; item = item.next)
-        if (item.con != None)
+    for (item = ConListItem(a.conListItems); item != none; item = item.next)
+        if (item.con != none)
             Log("CNN L2: dropped " $ item.con.conName $ " from " $ a.Name);
-    a.conListItems = None;
+    a.conListItems = none;
 }
 
 // The map gives Magdalene 99 coil guns (a weapon Count of 99, meant as
@@ -1033,10 +1033,10 @@ function TrimMagdaleneCoilGuns()
     foreach AllActors(class'Magdalene', mag)
     {
         keep = mag.Weapon;
-        if ((keep == None) || (keep.Class != class'CNNWeaponCoilGun'))
+        if ((keep == none) || (keep.Class != class'CNNWeaponCoilGun'))
             keep = mag.FindInventoryType(class'CNNWeaponCoilGun');
 
-        for (item = mag.Inventory; item != None; item = next)
+        for (item = mag.Inventory; item != none; item = next)
         {
             next = item.Inventory;
             if ((item.Class == class'CNNWeaponCoilGun') && (item != keep))
@@ -1062,7 +1062,7 @@ function SetSocialBossCarcasses()
 
 function SetCarcass(ScriptedPawn p, class<Carcass> carcassClass)
 {
-    if (p != None)
+    if (p != none)
         p.CarcassType = carcassClass;
 }
 
@@ -1083,7 +1083,7 @@ function ProtectSocialBossCast()
 
 function Protect(ScriptedPawn p)
 {
-    if (p == None)
+    if (p == none)
         return;
     p.bInvincible = true;
     Log("CNN L2: social boss -- " $ p.Name $ " (" $ p.BindName $ ") protected until the scene");
@@ -1095,12 +1095,12 @@ function Conversation FindSocialBossConversation()
     local ConListItem item;
 
     meph = FindPawnByBindName("DrMephistopheles");
-    if (meph == None)
-        return None;
-    for (item = ConListItem(meph.conListItems); item != None; item = item.next)
-        if ((item.con != None) && (item.con.conName == 'SocialBoss'))
+    if (meph == none)
+        return none;
+    for (item = ConListItem(meph.conListItems); item != none; item = item.next)
+        if ((item.con != none) && (item.con.conName == 'SocialBoss'))
             return item.con;
-    return None;
+    return none;
 }
 
 function ConEvent SocialBossEvent(Conversation con, int index)
@@ -1108,7 +1108,7 @@ function ConEvent SocialBossEvent(Conversation con, int index)
     local ConEvent ev;
     local int i;
 
-    for (ev = con.eventList; (ev != None) && (i < index); ev = ev.nextEvent)
+    for (ev = con.eventList; (ev != none) && (i < index); ev = ev.nextEvent)
         i++;
     return ev;
 }
@@ -1120,21 +1120,21 @@ function ValidateSocialBoss()
     local bool bOk;
 
     con = FindSocialBossConversation();
-    if (con == None)
+    if (con == none)
     {
         Log("CNN L2: social boss conversation not found");
         return;
     }
 
-    bOk = (ConEventTrigger(SocialBossEvent(con, SB_TROOPER_SHOT - 1)) != None) &&
-          (ConEventSpeech(SocialBossEvent(con, SB_TROOPER_SHOT)) != None) &&
-          (ConEventSpeech(SocialBossEvent(con, SB_ARMSTRONG_SHOT)) != None) &&
-          (ConEventSpeech(SocialBossEvent(con, SB_JOHNSON_SHOT)) != None) &&
-          (ConEventSpeech(SocialBossEvent(con, SB_SAMANTHA_SHOT)) != None) &&
-          (ConEventSpeech(SocialBossEvent(con, SB_MEPH_SHOT_A)) != None) &&
-          (ConEventSpeech(SocialBossEvent(con, SB_MEPH_SHOT_B)) != None) &&
-          (ConEventSpeech(SocialBossEvent(con, SB_WONG_TURNS_A)) != None) &&
-          (ConEventSpeech(SocialBossEvent(con, SB_WONG_TURNS_B)) != None) &&
+    bOk = (ConEventTrigger(SocialBossEvent(con, SB_TROOPER_SHOT - 1)) != none) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_TROOPER_SHOT)) != none) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_ARMSTRONG_SHOT)) != none) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_JOHNSON_SHOT)) != none) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_SAMANTHA_SHOT)) != none) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_MEPH_SHOT_A)) != none) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_MEPH_SHOT_B)) != none) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_WONG_TURNS_A)) != none) &&
+          (ConEventSpeech(SocialBossEvent(con, SB_WONG_TURNS_B)) != none) &&
           (SocialBossEvent(con, 56).label == "AttackMeph") &&
           (SocialBossEvent(con, 58).label == "GiveUp");
 
@@ -1155,21 +1155,21 @@ function PrepareSocialBoss()
     flags.SetBool('ReadyForSocialBoss', true);
 
     wong = FindPawnByBindName("MikeWong");
-    if (wong != None)
+    if (wong != none)
         GiveWeapon(wong, class'WeaponPistol');
 
     // the opening execution needs an MJ12 hostage
-    if (wong != None)
+    if (wong != none)
     {
         spot = wong.Location + vect(-70, 70, 0);
         trooper = Spawn(class'MJ12Troop',,, spot, wong.Rotation);
-        if (trooper == None)
+        if (trooper == none)
             trooper = Spawn(class'MJ12Troop',,, wong.Location + vect(70, 70, 0), wong.Rotation);
     }
-    if (trooper != None)
+    if (trooper != none)
     {
         for (i = 0; i < ArrayCount(trooper.InitialInventory); i++)
-            trooper.InitialInventory[i].Inventory = None;
+            trooper.InitialInventory[i].Inventory = none;
         trooper.InitializePawn();
         trooper.ChangeAlly('Player', 1, true);
         trooper.SetOrders('Standing', '', true);
@@ -1177,12 +1177,12 @@ function PrepareSocialBoss()
         sbTrooper = trooper;
     }
     ProtectSocialBossCast();
-    Log("CNN L2: social boss prepared -- Wong armed=" $ (wong != None) $ " MJ12 hostage=" $ (sbTrooper != None));
+    Log("CNN L2: social boss prepared -- Wong armed=" $ (wong != none) $ " MJ12 hostage=" $ (sbTrooper != none));
 }
 
 function GiveWeapon(ScriptedPawn p, class<Inventory> weaponClass)
 {
-    if (p.FindInventoryType(weaponClass) != None)
+    if (p.FindInventoryType(weaponClass) != none)
         return;
     p.InitialInventory[0].Inventory = weaponClass;
     p.InitialInventory[0].Count = 1;
@@ -1202,15 +1202,15 @@ function WongExecutes(ScriptedPawn victim)
     wong = FindPawnByBindName("MikeWong");
     victim.bInConversation = false;
     victim.bConversationEndedNormally = true;
-    if (Player.conPlay != None)
+    if (Player.conPlay != none)
     {
         for (k = 0; k < ArrayCount(Player.conPlay.ConActorsBound); k++)
             if (Player.conPlay.ConActorsBound[k] == victim)
-                Player.conPlay.ConActorsBound[k] = None;
+                Player.conPlay.ConActorsBound[k] = none;
         Player.conPlay.IsConActorInList(victim, true);
     }
     victim.bInvincible = false;
-    if (wong != None)
+    if (wong != none)
         wong.PlaySound(Sound'DeusExSounds.Weapons.PistolFire', SLOT_None, 2.0);
     victim.TakeDamage(1000, wong, victim.Location + vect(0, 0, 30), vect(0, 0, 0), 'Shot');
     Log("CNN L2: social boss -- Wong shot " $ victim.Name);
@@ -1234,23 +1234,23 @@ function WatchConversation()
 {
     local ConEvent ev;
 
-    if ((Player == None) || (Player.conPlay == None) || (Player.conPlay.con == None))
+    if ((Player == none) || (Player.conPlay == none) || (Player.conPlay.con == none))
     {
-        watchedCon = None;
-        lastSeenEvent = None;
+        watchedCon = none;
+        lastSeenEvent = none;
         return;
     }
 
     if (Player.conPlay.con != watchedCon)
     {
         watchedCon = Player.conPlay.con;
-        lastSeenEvent = None;
+        lastSeenEvent = none;
         PatchChoiceSkills(watchedCon);
     }
     RepairItemClasses(watchedCon);
 
     ev = Player.conPlay.currentEvent;
-    if ((ev != None) && (ev != lastSeenEvent))
+    if ((ev != none) && (ev != lastSeenEvent))
     {
         lastSeenEvent = ev;
         ConversationEventStarted(watchedCon, ev);
@@ -1264,11 +1264,11 @@ function RepairItemClasses(Conversation con)
 {
     local ConEvent ev;
 
-    for (ev = con.eventList; ev != None; ev = ev.nextEvent)
+    for (ev = con.eventList; ev != none; ev = ev.nextEvent)
     {
-        if ((ConEventTransferObject(ev) != None) && (ConEventTransferObject(ev).giveObject == None))
+        if ((ConEventTransferObject(ev) != none) && (ConEventTransferObject(ev).giveObject == none))
             ConEventTransferObject(ev).giveObject = ResolveItemClass(ConEventTransferObject(ev).objectName);
-        else if ((ConEventCheckObject(ev) != None) && (ConEventCheckObject(ev).checkObject == None))
+        else if ((ConEventCheckObject(ev) != none) && (ConEventCheckObject(ev).checkObject == none))
             ConEventCheckObject(ev).checkObject = ResolveItemClass(ConEventCheckObject(ev).objectName);
     }
 }
@@ -1282,7 +1282,7 @@ function class<Inventory> ResolveItemClass(string objName)
         return class'WeaponAssaultGun';
     if ((key == "WEAPONSNOWBLIND") || (key == "APOCALYPSEINSIDE.WEAPONSNOWBLIND"))
         return class'WeaponSnowblind';
-    return None;
+    return none;
 }
 
 // "(Apologize to Wong)" and "(Manipulate Wong)" ask for a skill named
@@ -1293,13 +1293,13 @@ function PatchChoiceSkills(Conversation con)
     local ConEvent ev;
     local ConChoice choice;
 
-    for (ev = con.eventList; ev != None; ev = ev.nextEvent)
+    for (ev = con.eventList; ev != none; ev = ev.nextEvent)
     {
-        if (ConEventChoice(ev) == None)
+        if (ConEventChoice(ev) == none)
             continue;
-        for (choice = ConEventChoice(ev).ChoiceList; choice != None; choice = choice.nextChoice)
+        for (choice = ConEventChoice(ev).ChoiceList; choice != none; choice = choice.nextChoice)
         {
-            if ((choice.skillNeeded == None) &&
+            if ((choice.skillNeeded == none) &&
                 ((choice.choiceLabel == "ApologizetoWong") || (choice.choiceLabel == "ManipulateWong")))
             {
                 choice.skillNeeded = class'AiSkillChinese';
@@ -1315,12 +1315,12 @@ function ConversationEventStarted(Conversation con, ConEvent ev)
     local ConEvent scan;
     local int i;
 
-    if ((con == None) || (con.conName != 'SocialBoss'))
+    if ((con == none) || (con.conName != 'SocialBoss'))
         return;
 
-    for (scan = con.eventList; (scan != None) && (scan != ev); scan = scan.nextEvent)
+    for (scan = con.eventList; (scan != none) && (scan != ev); scan = scan.nextEvent)
         i++;
-    if (scan == None)
+    if (scan == none)
         return;
 
     if (i == 0)
@@ -1357,7 +1357,7 @@ function ConversationEventStarted(Conversation con, ConEvent ev)
 
 function bool IsSocialBossPlaying()
 {
-    return (Player.conPlay != None) && (Player.conPlay.con != None) &&
+    return (Player.conPlay != none) && (Player.conPlay.con != none) &&
            (Player.conPlay.con.conName == 'SocialBoss');
 }
 
@@ -1373,13 +1373,13 @@ function CheckSocialBossFight()
         bSocialBossReleased = true;
         wong = FindPawnByBindName("MikeWong");
         meph = FindPawnByBindName("DrMephistopheles");
-        if (wong != None)
+        if (wong != none)
             wong.bInvincible = false;
-        if (meph != None)
+        if (meph != none)
             meph.bInvincible = false;
     }
 
-    if (!bSocialBossFight || Player.IsInState('Conversation') || (Player.conPlay != None))
+    if (!bSocialBossFight || Player.IsInState('Conversation') || (Player.conPlay != none))
         return;
 
     wong = FindPawnByBindName("MikeWong");
@@ -1443,7 +1443,7 @@ function MoveMephistophelesNextToWong()
     local int i;
 
     wong = FindPawnByBindName("MikeWong");
-    if (wong == None)
+    if (wong == none)
         return;
 
     offset[0] = vect(63, -50, 0);
@@ -1508,7 +1508,7 @@ function CheckShipsWheel()
 
     foreach AllActors(class'ShipsWheel', wheel)
         break;
-    if (wheel == None)
+    if (wheel == none)
         return;
 
     if (!wheel.bSpinning)
@@ -1532,7 +1532,7 @@ function CheckShipsWheel()
     foreach AllActors(class'Magdalene', mag)
         break;
 
-    if ((mag != None) && (mag.Health > 0) && !mag.IsInState('Dying'))
+    if ((mag != none) && (mag.Health > 0) && !mag.IsInState('Dying'))
     {
         flags.SetBool('TookSteeringWheel', true);
         Log("CNN L2: took the ship's wheel, bridge cleared, Magdalene alive");
@@ -1559,12 +1559,12 @@ function Snap(TantalusDenton p)
     local string list;
     local int i, n;
 
-    if (flags == None)
+    if (flags == none)
     {
         p.AgentOut("l2.init=0 (mission script not started yet)");
         return;
     }
-    p.AgentOut("l2.init=" $ initCount $ " mj12=" $ int(mj12SecondsLeft) $ " window=" $ (mj12Window != None));
+    p.AgentOut("l2.init=" $ initCount $ " mj12=" $ int(mj12SecondsLeft) $ " window=" $ (mj12Window != none));
     p.AgentOut("l2.socialboss=started:" $ bSocialBossStarted $ " fight:" $ bSocialBossFight $
                " wong:" $ bWongHostile $ " meph:" $ bMephHostile $ " released:" $ bSocialBossReleased);
 
@@ -1602,14 +1602,14 @@ function SnapPawn(TantalusDenton p, ScriptedPawn sp)
     local Inventory item;
     local int n;
 
-    if (sp == None)
+    if (sp == none)
         return;
-    for (item = sp.Inventory; item != None; item = item.Inventory)
+    for (item = sp.Inventory; item != none; item = item.Inventory)
         n++;
     p.AgentOut("pawn." $ sp.BindName $ "=" $ sp.Name $ " alive=" $ IsAlive(sp) $ " health=" $ sp.Health $
                " state=" $ sp.GetStateName() $ " orders=" $ sp.Orders $ " invincible=" $ sp.bInvincible $
                " weapon=" $ sp.Weapon $ " items=" $ n $ " carcass=" $ sp.CarcassType $
-               " name=" $ sp.UnfamiliarName $ " cons=" $ (sp.conListItems != None) $
+               " name=" $ sp.UnfamiliarName $ " cons=" $ (sp.conListItems != none) $
                " loc=" $ int(sp.Location.X) $ "," $ int(sp.Location.Y));
 }
 
@@ -1620,14 +1620,14 @@ function TravelToEnding(string endMapName)
     // The level is saved on the way out, and a dead aug icon in the HUD can
     // crash that save. The HUD is not shown again, so clear its icons.
     root = DeusExRootWindow(Player.rootWindow);
-    if ((root != None) && (root.hud != None) && (IwHUDActiveItemsDisplay(root.hud.activeItems) != None))
+    if ((root != none) && (root.hud != none) && (IwHUDActiveItemsDisplay(root.hud.activeItems) != none))
         IwHUDActiveItemsDisplay(root.hud.activeItems).ClearAugmentationDisplay();
 
     // don't carry the MJ12 countdown onto the ending map
-    if (mj12Window != None)
+    if (mj12Window != none)
     {
         mj12Window.Destroy();
-        mj12Window = None;
+        mj12Window = none;
     }
 
     bEndingTriggered = true;
@@ -1697,17 +1697,17 @@ function LogMagdaleneState()
             break;
         }
 
-        if (watchedMagdalene == None)
+        if (watchedMagdalene == none)
         {
             Log("CNN L2 magdalene: no Magdalene actor in this level");
             return;
         }
     }
 
-    if (watchedMagdalene == None)
+    if (watchedMagdalene == none)
         return;
 
-    if (watchedMagdalene.Enemy != None)
+    if (watchedMagdalene.Enemy != none)
         enemyName = string(watchedMagdalene.Enemy.Name) $ " [" $
                     string(watchedMagdalene.Enemy.Class.Name) $ "]";
     else

@@ -22,13 +22,13 @@ function CalcTrace(float deltaTime)
 	{
 		foreach TraceTexture(class'Actor', target, texName, texGroup, texFlags, HitLocation, HitNormal, EndTrace, StartTrace)
 		{
-			// Unlike vanilla LaserEmitter: pass through triggers rather than
-			// hidden actors, and let movers interrupt the beam like any actor.
-			if ((target.DrawType == DT_None) || target.IsA('Triggers'))
+//			if ((target.DrawType == DT_None) || target.bHidden)         // JJ change here
+			if ((target.DrawType == DT_None) || target.IsA('Triggers')) // JJ change here
 			{
 				// do nothing - keep on tracing
 			}
-			else if (target == Level)
+//			else if ((target == Level) || target.IsA('Mover'))   // JJ change here
+			else if (target == Level)                            // JJ change here
 			{
 				break;
 			}
@@ -100,7 +100,7 @@ function CalcTrace(float deltaTime)
 function PostBeginPlay()
 {
 	Super.PostBeginPlay();
-	if ((proxy != none) && (SkinTex != none))
+	if ((proxy != None) && (SkinTex != None))
 		proxy.Skin = SkinTex;
 }
 

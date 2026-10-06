@@ -35,7 +35,7 @@ var config string out[160];
 
 function PostBeginPlay()
 {
-    SetTimer(pollInterval, True);
+    SetTimer(pollInterval, true);
     super.PostBeginPlay();
 }
 
@@ -46,7 +46,7 @@ function SetTarget(TantalusDenton p)
 
 function Timer()
 {
-    if (targetPlayer == None)
+    if (targetPlayer == none)
         return;
 
     targetPlayer.ConsoleCommand("exec CNNAgentCmd.txt");

@@ -30,7 +30,7 @@ function Timer()
         // and the level info is corrected to match.
         mapName = Caps(Level.Game.GetURLMap());
 
-        if (dxInfo != None)
+        if (dxInfo != none)
             dxInfo.mapName = mapName;
 
         if (InStr(mapName, "HIJACK") != -1)
@@ -72,15 +72,15 @@ function PrintHijackQuote()
     local int i;
     local DeusExRootWindow root;
 
-    bQuotePrinted = True;
-    flags.SetBool('EndgameExplosions', False);
+    bQuotePrinted = true;
+    flags.SetBool('EndgameExplosions', false);
 
     root = DeusExRootWindow(Player.rootWindow);
-    if (root == None)
+    if (root == none)
         return;
 
-    quoteDisplay = HUDMissionStartTextDisplay(root.NewChild(Class'HUDMissionStartTextDisplay', True));
-    if (quoteDisplay == None)
+    quoteDisplay = HUDMissionStartTextDisplay(root.NewChild(Class'HUDMissionStartTextDisplay', true));
+    if (quoteDisplay == none)
         return;
 
     quoteDisplay.displayTime = hijackDelay;

@@ -116,12 +116,12 @@ function Trigger(Actor Other, Pawn EventInstigator)
             timerWin = class'CNNTimerDisplay'.static.CreateIn(DeusExRootWindow(player.rootWindow).hud);
         if (timerWin == none)
             return;
-        timerWin.bFlash = False;
+        timerWin.bFlash = false;
         timerWin.time = time;
         timerWin.bCritical = False;
         timerWin.message = message;
         bDone = False;
-        bRunning = True;
+        bRunning = true;
         PlaySound(sound'Beep3', SLOT_Misc);
         player.ClientMessage(timerStarted);
     }
@@ -154,7 +154,7 @@ function RestoreWindow()
         timerWin = class'CNNTimerDisplay'.static.CreateIn(root.hud);
     if (timerWin == none)
         return;
-    timerWin.bFlash = False;
+    timerWin.bFlash = false;
     timerWin.time = time;
     timerWin.bCritical = (bCountDown && (time <= criticalTime));
     timerWin.message = message;

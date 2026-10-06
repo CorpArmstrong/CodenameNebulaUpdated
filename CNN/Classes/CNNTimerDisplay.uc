@@ -9,11 +9,11 @@ class CNNTimerDisplay extends TimerDisplay;
 // is taken.
 static function TimerDisplay CreateIn(DeusExHUD hud)
 {
-    if ((hud == None) || (hud.timer != None))
-        return None;
+    if ((hud == none) || (hud.timer != none))
+        return none;
 
     hud.timer = TimerDisplay(hud.NewChild(class'CNNTimerDisplay'));
-    if (hud.timer != None)
+    if (hud.timer != none)
         hud.timer.AskParentForReconfigure();
     return hud.timer;
 }
@@ -25,7 +25,7 @@ event DrawWindow(GC gc)
 
     gc.SetFont(Font'FontComputer8x20_B');
     gc.SetAlignments(HALIGN_Center, VALIGN_Bottom);
-    gc.EnableWordWrap(False);
+    gc.EnableWordWrap(false);
 
     if (bCritical)
         gc.SetTextColor(colCritical);

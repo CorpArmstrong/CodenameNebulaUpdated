@@ -90,7 +90,7 @@ function PostBeginPlay()
     // durable backing store: rehydrate bAgentAutoStart from it here, before
     // any command can arrive. CNNAgentRun persists into FlagBase the first
     // time the gate succeeds -- see its own comment.
-    if ((FlagBase != None) && FlagBase.GetBool('CNNAgentAutoStart'))
+    if ((FlagBase != none) && FlagBase.GetBool('CNNAgentAutoStart'))
         bAgentAutoStart = True;
 
     // Always spawns CNNAgentBridge (cheap -- it just execs a possibly-empty
@@ -249,7 +249,7 @@ function bool CheckActorDistances()
 
 exec function QuickSave()
 {
-    if (IsInState('Conversation') || IsInState('FirstPersonConversation') || (conPlay != None))
+    if (IsInState('Conversation') || IsInState('FirstPersonConversation') || (conPlay != none))
     {
         ClientMessage(CantSaveInConversation);
         return;
@@ -273,7 +273,7 @@ exec function ShowMainMenu()
     {
         if (!cs.IsArrivalCompleted)
         {
-            if (conPlay != None)
+            if (conPlay != none)
                 conPlay.TerminateConversation();
             cs.SendPlayerOnce();
             return;
@@ -876,21 +876,21 @@ exec function CNNTestEnding(string which)
     // ("variant A", 2026-09-24): wheel, upload, MJ12 arrival, death.
     if (which == "MUTINY")
     {
-        FlagBase.SetBool('PlayerDiedOnL2', true);
+        FlagBase.SetBool('PlayerDiedOnL2', True);
     }
     else if (which == "HIJACK")
     {
-        FlagBase.SetBool('TookSteeringWheel', true);
+        FlagBase.SetBool('TookSteeringWheel', True);
     }
     else if (which == "TRANSCEND")
     {
         // The upload countdown survived (CNNEventTimer sets this).
-        FlagBase.SetBool('TimerExpired', true);
+        FlagBase.SetBool('TimerExpired', True);
     }
     else if (which == "CONSPIRACY")
     {
         // Chapter06L2 waits MJ12_ARRIVAL_GRACE seconds after this before travelling.
-        FlagBase.SetBool('MJ12Arrived', true);
+        FlagBase.SetBool('MJ12Arrived', True);
     }
     else
     {
@@ -933,11 +933,11 @@ exec function CNNProbe()
     endPoint = start + (dir * 500.0);
 
     // Zero-extent ray: exact surface and normal.
-    rayHit = Trace(hitLoc, hitNorm, endPoint, start, true);
+    rayHit = Trace(hitLoc, hitNorm, endPoint, start, True);
     ReportProbeHit("ray", rayHit, hitLoc, hitNorm, start);
 
     // Box trace approximating the player cylinder: what blocks movement.
-    boxHit = Trace(hitLoc, hitNorm, endPoint, start, true, vect(20, 20, 40));
+    boxHit = Trace(hitLoc, hitNorm, endPoint, start, True, vect(20, 20, 40));
     ReportProbeHit("box", boxHit, hitLoc, hitNorm, start);
 }
 
@@ -947,7 +947,7 @@ function ReportProbeHit(string label, Actor hit, vector hitLoc, vector hitNorm,
     local string what;
     local int dist;
 
-    if (hit == None)
+    if (hit == none)
     {
         ClientMessage("CNNProbe " $ label $ ": nothing within 500");
         Log("CNN L2 probe: " $ label $ " -> nothing within 500");
@@ -1052,15 +1052,15 @@ exec function CNNFrob(name targetTag)
         if ((a.Tag != targetTag) && (a.BindName != string(targetTag)))
             continue;
         count++;
-        if ((best == None) || (VSize(Location - a.Location) < VSize(Location - best.Location)))
+        if ((best == none) || (VSize(Location - a.Location) < VSize(Location - best.Location)))
             best = a;
     }
 
-    if (best != None)
+    if (best != none)
     {
         Log("CNN L2 frob: frobbed " $ string(best.Class.Name) $ " " $ string(targetTag) $
             " dist=" $ int(VSize(Location - best.Location)));
-        best.Frob(self, None);
+        best.Frob(self, none);
     }
 
     ClientMessage("CNNFrob: " $ string(targetTag) $ " -> " $ count $ " actor(s)");
@@ -1168,7 +1168,7 @@ exec function CNNConverse(name conName)
         break;
     }
 
-    if (mag == None)
+    if (mag == none)
     {
         ClientMessage("CNNConverse: no Magdalene on this map");
         Log("CNN L2 converse: " $ conName $ " -- no Magdalene found");
@@ -1200,7 +1200,7 @@ exec function CNNConverse(name conName)
     // unclosed greeting leaves behind). The engine self-cleans this same
     // way, but only *after* those earlier refusal checks -- do it
     // proactively first so we never hit them.
-    if (conPlay != None)
+    if (conPlay != none)
     {
         conPlay.InterruptConversation();
         conPlay.TerminateConversation();
@@ -1210,7 +1210,7 @@ exec function CNNConverse(name conName)
         // stale bark, a third-person conversation) -- so the leftover
         // object alone keeps blocking every future attempt regardless of
         // its internal state. Null it explicitly.
-        conPlay = None;
+        conPlay = none;
         Log("CNN L2 converse: player conPlay was stale -- interrupted+terminated+cleared");
     }
 
@@ -1219,11 +1219,11 @@ exec function CNNConverse(name conName)
     // non-None with con.bFirstPerson != True, and TerminateConversation()
     // alone does NOT null the reference out, which is what made this take
     // three iterations to find. Left in as a cheap sanity check.
-    if (conPlay == None)
+    if (conPlay == none)
     {
         Log("CNN L2 converse: conPlay is None after cleanup (good)");
     }
-    else if (conPlay.con == None)
+    else if (conPlay.con == none)
     {
         Log("CNN L2 converse: conPlay still non-None after cleanup -- CanInterrupt=" $
             conPlay.CanInterrupt() $ " conPlay.con is None");
@@ -1243,7 +1243,7 @@ exec function CNNConverse(name conName)
     // (GotoState('Conversation') on the player, conPlay.StartConversation()
     // deferred to that state's Begin: label) playback path.
     conListItem = ConListItem(mag.conListItems);
-    while (conListItem != None)
+    while (conListItem != none)
     {
         if (conListItem.con.conName == conName)
         {
@@ -1253,7 +1253,7 @@ exec function CNNConverse(name conName)
         conListItem = conListItem.next;
     }
 
-    if (con == None)
+    if (con == none)
     {
         Log("CNN L2 converse: " $ conName $ " not found in Magdalene's conListItems");
     }
@@ -1275,7 +1275,7 @@ exec function CNNConverse(name conName)
         " dist=" $ int(VSize(Location - mag.Location)) $
         " playerCanStartConv=" $ CanStartConversation() $
         " playerState=" $ GetStateName() $
-        " playerConPlayNone=" $ (conPlay == None));
+        " playerConPlayNone=" $ (conPlay == none));
 
     // Diagnostic (2026-09-23): the conversation terminates and returns
     // conPlay to None within a single CNNAgentBridge poll (~1s) even after
@@ -1283,9 +1283,9 @@ exec function CNNConverse(name conName)
     // it. Log the first event queued up so we can tell whether it's really
     // one long ET_Speech (WaitForSpeech auto-advancing on missing/instant
     // audio) versus something branching straight to ET_End.
-    if (conPlay != None)
+    if (conPlay != none)
     {
-        if (conPlay.currentEvent != None)
+        if (conPlay.currentEvent != none)
         {
             Log("CNN L2 converse: currentEvent.EventType=" $ conPlay.currentEvent.EventType);
         }
@@ -1313,7 +1313,7 @@ exec function CNNConverse(name conName)
 
 exec function CNNAdvance()
 {
-    if (conPlay == None)
+    if (conPlay == none)
     {
         ClientMessage("CNNAdvance: no active conversation");
         Log("CNN L2 advance: no active conPlay");
@@ -1341,13 +1341,13 @@ exec function CNNStatus()
 {
     local bool bConPlayHasCon;
 
-    if (conPlay != None)
+    if (conPlay != none)
     {
-        bConPlayHasCon = (conPlay.con != None);
+        bConPlayHasCon = (conPlay.con != none);
     }
 
     Log("CNN L2 status: playerState=" $ GetStateName() $
-        " conPlayNone=" $ (conPlay == None) $
+        " conPlayNone=" $ (conPlay == none) $
         " conPlayHasCon=" $ bConPlayHasCon $
         " nextState=" $ NextState $
         " physics=" $ Physics);
@@ -1392,16 +1392,16 @@ exec function CNNConDump(string targetTag)
         count++;
         frobCon = GetActiveConversation(a, IM_Frob);
         frobName = "None";
-        if (frobCon != None)
+        if (frobCon != none)
             frobName = string(frobCon.conName);
         Log("CNN L2 condump: " $ targetTag $ " actor=" $ a.Name $
             " loc=" $ a.Location $ " dist=" $ int(VSize(Location - a.Location)) $
             " frobPicks=" $ frobName);
 
         item = ConListItem(a.conListItems);
-        while (item != None)
+        while (item != none)
         {
-            if (item.con != None)
+            if (item.con != none)
             {
                 Log("CNN L2 condump: " $ targetTag $ " con=" $ item.con.conName $
                     " bFirstPerson=" $ item.con.bFirstPerson $
@@ -1462,23 +1462,23 @@ function Actor FindConversationOwner(string bindName, string conName, out Conver
     {
         if (a.BindName != bindName)
             continue;
-        for (item = ConListItem(a.conListItems); item != None; item = item.next)
+        for (item = ConListItem(a.conListItems); item != none; item = item.next)
         {
-            if ((item.con != None) && (Caps(string(item.con.conName)) == Caps(conName)))
+            if ((item.con != none) && (Caps(string(item.con.conName)) == Caps(conName)))
             {
                 con = item.con;
                 return a;
             }
         }
     }
-    return None;
+    return none;
 }
 
 function string FlagRefsText(ConFlagRef ref)
 {
     local string s;
 
-    while (ref != None)
+    while (ref != none)
     {
         s = s $ " " $ ref.flagName $ "=" $ ref.value;
         ref = ref.nextFlagRef;
@@ -1491,37 +1491,37 @@ function string ConEventText(ConEvent ev)
     local string s;
     local ConEventSpeech speech;
 
-    if (ev == None)
+    if (ev == none)
         return "None";
 
     speech = ConEventSpeech(ev);
-    if (speech != None)
+    if (speech != none)
     {
         s = "SPEECH " $ speech.speakerName $ " -> " $ speech.speakingToName;
-        if (speech.conSpeech != None)
+        if (speech.conSpeech != none)
             s = s $ ": " $ Left(speech.conSpeech.speech, 90);
     }
-    else if (ConEventChoice(ev) != None)
+    else if (ConEventChoice(ev) != none)
         s = "CHOICE";
-    else if (ConEventSetFlag(ev) != None)
+    else if (ConEventSetFlag(ev) != none)
         s = "SETFLAG" $ FlagRefsText(ConEventSetFlag(ev).flagRef);
-    else if (ConEventCheckFlag(ev) != None)
+    else if (ConEventCheckFlag(ev) != none)
         s = "CHECKFLAG" $ FlagRefsText(ConEventCheckFlag(ev).flagRef) $ " -> " $ ConEventCheckFlag(ev).setLabel;
-    else if (ConEventJump(ev) != None)
+    else if (ConEventJump(ev) != none)
         s = "JUMP -> " $ ConEventJump(ev).jumpLabel;
-    else if (ConEventTrigger(ev) != None)
+    else if (ConEventTrigger(ev) != none)
         s = "TRIGGER " $ ConEventTrigger(ev).triggerTag;
-    else if (ConEventComment(ev) != None)
+    else if (ConEventComment(ev) != none)
         s = "COMMENT " $ ConEventComment(ev).commentText;
-    else if (ConEventEnd(ev) != None)
+    else if (ConEventEnd(ev) != none)
         s = "END";
-    else if (ConEventAddGoal(ev) != None)
+    else if (ConEventAddGoal(ev) != none)
         s = "ADDGOAL " $ ConEventAddGoal(ev).goalName $ " completed=" $ ConEventAddGoal(ev).bGoalCompleted;
-    else if (ConEventAnimation(ev) != None)
+    else if (ConEventAnimation(ev) != none)
         s = "ANIM " $ ConEventAnimation(ev).eventOwnerName $ " " $ ConEventAnimation(ev).sequence;
-    else if (ConEventCheckPersona(ev) != None)
+    else if (ConEventCheckPersona(ev) != none)
         s = "CHECKPERSONA -> " $ ConEventCheckPersona(ev).jumpLabel;
-    else if (ConEventRandomLabel(ev) != None)
+    else if (ConEventRandomLabel(ev) != none)
         s = "RANDOM (labels are native, not readable from script)";
     else
         s = string(ev.Class.Name);
@@ -1535,8 +1535,8 @@ function bool ChoiceAvailable(ConChoice choice)
 {
     if (!CheckFlagRefs(choice.flagRef))
         return false;
-    if (choice.skillNeeded == None)
-        return true;
+    if (choice.skillNeeded == none)
+        return True;
     return SkillSystem.IsSkilled(choice.skillNeeded, choice.skillLevelNeeded);
 }
 
@@ -1545,9 +1545,9 @@ function string ChoiceText(ConChoice choice)
     local string s;
 
     s = "\"" $ choice.choiceText $ "\" -> " $ choice.choiceLabel;
-    if (choice.skillNeeded != None)
+    if (choice.skillNeeded != none)
         s = s $ " skill=" $ choice.skillNeeded.Name $ ":" $ choice.skillLevelNeeded;
-    if (choice.flagRef != None)
+    if (choice.flagRef != none)
         s = s $ " flags:" $ FlagRefsText(choice.flagRef);
     return s;
 }
@@ -1563,7 +1563,7 @@ exec function CNNConEvents(string args)
 
     SplitFirstWord(args, bindName, conName);
     owner = FindConversationOwner(bindName, conName, con);
-    if (owner == None)
+    if (owner == none)
     {
         Log("CNN L2 conevents: no " $ conName $ " on any actor with BindName " $ bindName);
         return;
@@ -1571,11 +1571,11 @@ exec function CNNConEvents(string args)
 
     Log("CNN L2 conevents: " $ con.conName $ " owner=" $ owner.Name $ " frob=" $ con.bInvokeFrob $
         " radius=" $ con.bInvokeRadius $ ":" $ con.radiusDistance $ " flags:" $ FlagRefsText(con.flagRefList));
-    for (ev = con.eventList; ev != None; ev = ev.nextEvent)
+    for (ev = con.eventList; ev != none; ev = ev.nextEvent)
     {
         Log("CNN L2 conevents: [" $ i $ "] " $ ConEventText(ev));
-        if (ConEventChoice(ev) != None)
-            for (choice = ConEventChoice(ev).ChoiceList; choice != None; choice = choice.nextChoice)
+        if (ConEventChoice(ev) != none)
+            for (choice = ConEventChoice(ev).ChoiceList; choice != none; choice = choice.nextChoice)
                 Log("CNN L2 conevents:      choice " $ ChoiceText(choice));
         i++;
     }
@@ -1593,12 +1593,12 @@ exec function CNNTalk(string args)
     bForce = (Caps(rest) == "FORCE");
 
     owner = FindConversationOwner(bindName, conName, con);
-    if (owner == None)
+    if (owner == none)
     {
         Log("CNN L2 talk: no " $ conName $ " on any actor with BindName " $ bindName);
         return;
     }
-    if (conPlay != None)
+    if (conPlay != none)
     {
         Log("CNN L2 talk: a conversation is already running");
         return;
@@ -1614,21 +1614,21 @@ exec function CNNConState()
     local ConChoice choice;
     local int i, n;
 
-    if ((conPlay == None) || (conPlay.con == None))
+    if ((conPlay == none) || (conPlay.con == none))
     {
         Log("CNN L2 constate: no conversation");
         return;
     }
 
-    for (ev = conPlay.con.eventList; (ev != None) && (ev != conPlay.currentEvent); ev = ev.nextEvent)
+    for (ev = conPlay.con.eventList; (ev != none) && (ev != conPlay.currentEvent); ev = ev.nextEvent)
         i++;
 
     Log("CNN L2 constate: " $ conPlay.con.conName $ " class=" $ conPlay.Class $ " conPlay=" $ conPlay.GetStateName() $
         " event[" $ i $ "] " $ ConEventText(conPlay.currentEvent));
 
-    if (ConEventChoice(conPlay.currentEvent) != None)
+    if (ConEventChoice(conPlay.currentEvent) != none)
     {
-        for (choice = ConEventChoice(conPlay.currentEvent).ChoiceList; choice != None; choice = choice.nextChoice)
+        for (choice = ConEventChoice(conPlay.currentEvent).ChoiceList; choice != none; choice = choice.nextChoice)
         {
             if (ChoiceAvailable(choice))
             {
@@ -1646,7 +1646,7 @@ exec function CNNChoose(int n)
     local ConChoice choice;
     local int k;
 
-    if ((conPlay == None) || (ConEventChoice(conPlay.currentEvent) == None))
+    if ((conPlay == none) || (ConEventChoice(conPlay.currentEvent) == none))
     {
         Log("CNN L2 choose: not at a choice");
         return;
@@ -1657,7 +1657,7 @@ exec function CNNChoose(int n)
         return;
     }
 
-    for (choice = ConEventChoice(conPlay.currentEvent).ChoiceList; choice != None; choice = choice.nextChoice)
+    for (choice = ConEventChoice(conPlay.currentEvent).ChoiceList; choice != none; choice = choice.nextChoice)
     {
         if (ChoiceAvailable(choice))
         {
@@ -1680,7 +1680,7 @@ exec function CNNChoose(int n)
 // left it stops at the choice and lists what is on offer.
 exec function CNNConRun(string picks)
 {
-    bAgentConRun = true;
+    bAgentConRun = True;
     agentConPicks = picks;
     Log("CNN L2 conrun: on, picks=[" $ picks $ "]");
 }
@@ -1692,14 +1692,14 @@ function CNNAgentConStep()
     if (!bAgentConRun)
         return;
 
-    if ((conPlay == None) || (conPlay.con == None))
+    if ((conPlay == none) || (conPlay.con == none))
     {
         bAgentConRun = false;
         Log("CNN L2 conrun: conversation ended");
         return;
     }
 
-    if (ConEventChoice(conPlay.currentEvent) != None)
+    if (ConEventChoice(conPlay.currentEvent) != none)
     {
         if (!conPlay.IsInState('WaitForInput'))
             return;
@@ -1752,7 +1752,7 @@ exec function CNNMagState(string targetTag)
             break;
     }
 
-    if (a == None)
+    if (a == none)
     {
         Log("CNN L2 magstate: no actor with BindName " $ targetTag);
         return;
@@ -1760,7 +1760,7 @@ exec function CNNMagState(string targetTag)
 
     sp = ScriptedPawn(a);
 
-    if (sp != None)
+    if (sp != none)
     {
         Log("CNN L2 magstate: " $ targetTag $ " state=" $ sp.GetStateName() $
             " orders=" $ sp.Orders $
@@ -1868,7 +1868,7 @@ function CNNAgentCheckWait()
 
     if (current == agentWaitExpectedValue)
     {
-        bAgentWaitPending = False;
+        bAgentWaitPending = false;
         Log("CNN L2 wait: OK -- " $ agentWaitFlagName $ " reached " $ agentWaitExpectedValue $
             ", " $ (agentWaitDeadline - Level.TimeSeconds) $ "s of timeout left unused");
         return;
@@ -1876,7 +1876,7 @@ function CNNAgentCheckWait()
 
     if (Level.TimeSeconds >= agentWaitDeadline)
     {
-        bAgentWaitPending = False;
+        bAgentWaitPending = false;
         Log("CNN L2 wait: TIMEOUT -- " $ agentWaitFlagName $ " still " $ current $
             ", wanted " $ agentWaitExpectedValue);
     }
@@ -1986,13 +1986,13 @@ exec function CNNWhere()
     local DeusExLevelInfo info;
     local string mapName;
 
-    if (Region.Zone != None)
+    if (Region.Zone != none)
         zoneName = string(Region.Zone.Name);
     else
         zoneName = "none";
 
     info = GetLevelInfo();
-    if (info != None)
+    if (info != none)
         mapName = info.mapName;
     else
         mapName = "unknown";
@@ -2030,7 +2030,7 @@ exec function CNNGoto(string where)
     local bool bKnown;
 
     where = Caps(where);
-    bKnown = true;
+    bKnown = True;
 
     if      (where == "START")     dest = vect(-1044, -1900,   891);  // arrival
     else if (where == "SAM")       dest = vect(  841, -2031,     8);  // MeetSamanthaReed trigger
@@ -2067,7 +2067,7 @@ exec function CNNGoto(string where)
     // and refused CNNGoto final on the correct level. Treat an empty name as
     // "unknown, carry on" rather than as a mismatch.
     info = GetLevelInfo();
-    if ((info != None) && (info.mapName != "") &&
+    if ((info != none) && (info.mapName != "") &&
         (Caps(info.mapName) != "06_OPHELIAL2"))
     {
         ClientMessage("CNNGoto: these are 06_OpheliaL2 landmarks -- you are on " $ info.mapName);
@@ -2121,7 +2121,7 @@ function bool TryLandNear(vector dest, string label)
             ClientMessage("CNNGoto: " $ label $ " " $ tryLoc);
             Log("CNN L2 goto: " $ label $ " -> " $ tryLoc);
             BringFollowers(tryLoc);
-            return true;
+            return True;
         }
     }
 
@@ -2215,7 +2215,7 @@ exec function CNNAgentStart()
     local CNNAgentBridge b;
     local int liveCount;
 
-    if (agentBridge != None)
+    if (agentBridge != none)
         return; // already running -- PostBeginPlay always calls this now
 
     // Diagnostic (2026-09-23), kept permanently -- cheap and useful if this
@@ -2257,7 +2257,7 @@ exec function CNNAgentRun(int seq, string rest)
     // the -EXEC file has long since run.
     // Rehydrate here too, not only in PostBeginPlay: after a real travel the
     // player's FlagBase can arrive after PostBeginPlay has already run.
-    if (!bAgentAutoStart && (FlagBase != None) && FlagBase.GetBool('CNNAgentAutoStart'))
+    if (!bAgentAutoStart && (FlagBase != none) && FlagBase.GetBool('CNNAgentAutoStart'))
         bAgentAutoStart = True;
 
     if (!bAgentAutoStart)
@@ -2268,8 +2268,8 @@ exec function CNNAgentRun(int seq, string rest)
         {
             lastRejectedAgentSeq = seq;
             Log("CNN agent: seq=" $ seq $ " rejected -- bAgentAutoStart=False (default=" $
-                default.bAgentAutoStart $ " flagBase=" $ (FlagBase != None) $ ")");
-            if (FlagBase != None)
+                default.bAgentAutoStart $ " flagBase=" $ (FlagBase != none) $ ")");
+            if (FlagBase != none)
                 Log("CNN agent:   CNNAgentAutoStart flag=" $ FlagBase.GetBool('CNNAgentAutoStart'));
         }
         return;
@@ -2278,7 +2278,7 @@ exec function CNNAgentRun(int seq, string rest)
     // Persist to FlagBase the first time the gate succeeds, so a LATER
     // respawn that resets the instance var can rehydrate it in
     // PostBeginPlay -- see that comment for the full incident this fixes.
-    if ((FlagBase != None) && !FlagBase.GetBool('CNNAgentAutoStart'))
+    if ((FlagBase != none) && !FlagBase.GetBool('CNNAgentAutoStart'))
         FlagBase.SetBool('CNNAgentAutoStart', True);
 
     // The flag alone is not enough: every ending map's mission script
@@ -2315,7 +2315,7 @@ exec function CNNAgentRun(int seq, string rest)
     }
 
     Log("CNN agent: seq=" $ seq $ " cmd=" $ cmd $ " arg=" $ arg);
-    if (FindAgentBridge() != None)
+    if (FindAgentBridge() != none)
         FindAgentBridge().BeginOut();
 
     if (cmd == "GOTO")
@@ -2408,13 +2408,13 @@ exec function CNNAgentRun(int seq, string rest)
 
     // After the command, so out[] holds its result; travel (OPEN, LOAD)
     // only happens at the end of the tick, so it gets here too.
-    if (FindAgentBridge() != None)
+    if (FindAgentBridge() != none)
         FindAgentBridge().Ack(seq, cmd $ " " $ arg);
 }
 
 function CNNAgentBridge FindAgentBridge()
 {
-    if (agentBridge == None)
+    if (agentBridge == none)
         foreach AllActors(class'CNNAgentBridge', agentBridge)
             break;
     return agentBridge;
@@ -2424,7 +2424,7 @@ function CNNAgentBridge FindAgentBridge()
 function AgentOut(string line)
 {
     Log("CNN agent: " $ line);
-    if (FindAgentBridge() != None)
+    if (FindAgentBridge() != none)
         FindAgentBridge().Put(line);
 }
 
@@ -2467,14 +2467,14 @@ function CNNAgentSave(string arg)
         return;
     }
     AgentOut("SAVE slot=" $ slot $ " desc=" $ desc $ " state=" $ GetStateName() $
-             " conPlay=" $ (conPlay != None) $ " dataLink=" $ (dataLinkPlay != None));
+             " conPlay=" $ (conPlay != none) $ " dataLink=" $ (dataLinkPlay != none));
     SaveGame(slot, desc);
 }
 
 function CNNAgentQuickSave()
 {
-    AgentOut("QSAVE state=" $ GetStateName() $ " conPlay=" $ (conPlay != None) $
-             " dataLink=" $ (dataLinkPlay != None));
+    AgentOut("QSAVE state=" $ GetStateName() $ " conPlay=" $ (conPlay != none) $
+             " dataLink=" $ (dataLinkPlay != none));
     QuickSave();
 }
 
@@ -2495,28 +2495,28 @@ function CNNAgentSnap(string snapName)
 
     AgentOut("snap=" $ snapName);
     AgentOut("map=" $ Level.Game.GetURLMap());
-    if (GetLevelInfo() != None)
+    if (GetLevelInfo() != none)
         AgentOut("mapName=" $ GetLevelInfo().mapName $ " mission=" $ GetLevelInfo().missionNumber);
     AgentOut("player.loc=" $ int(Location.X) $ "," $ int(Location.Y) $ "," $ int(Location.Z));
-    AgentOut("player.state=" $ GetStateName() $ " conPlay=" $ (conPlay != None));
+    AgentOut("player.state=" $ GetStateName() $ " conPlay=" $ (conPlay != none));
     AgentOut("player.health=" $ Health $ " head=" $ HealthHead $ " torso=" $ HealthTorso $
              " energy=" $ int(Energy) $ " skillpts=" $ SkillPointsAvail);
 
-    for (item = Inventory; item != None; item = item.Inventory)
+    for (item = Inventory; item != none; item = item.Inventory)
     {
         n++;
         if (Len(list) < 400)
         {
             list = list $ " " $ item.Class.Name;
-            if (Ammo(item) != None)
+            if (Ammo(item) != none)
                 list = list $ "(" $ Ammo(item).AmmoAmount $ ")";
         }
     }
     AgentOut("player.inv=" $ n $ ":" $ list);
 
     list = "";
-    if (AugmentationSystem != None)
-        for (aug = AugmentationSystem.FirstAug; aug != None; aug = aug.next)
+    if (AugmentationSystem != none)
+        for (aug = AugmentationSystem.FirstAug; aug != none; aug = aug.next)
         {
             if (aug.bHasIt)
                 list = list $ " " $ aug.Class.Name;
@@ -2526,7 +2526,7 @@ function CNNAgentSnap(string snapName)
     AgentOut("player.augs=" $ list);
 
     list = "";
-    for (goal = FirstGoal; goal != None; goal = goal.next)
+    for (goal = FirstGoal; goal != none; goal = goal.next)
     {
         if (Len(list) >= 400)
             break;
@@ -2556,10 +2556,10 @@ function class<Inventory> CNNAgentItemClass(string className)
     local class<Inventory> c;
 
     if (InStr(className, ".") >= 0)
-        return class<Inventory>(DynamicLoadObject(className, class'Class', true));
-    c = class<Inventory>(DynamicLoadObject("DeusEx." $ className, class'Class', true));
-    if (c == None)
-        c = class<Inventory>(DynamicLoadObject("CNN." $ className, class'Class', true));
+        return class<Inventory>(DynamicLoadObject(className, class'Class', True));
+    c = class<Inventory>(DynamicLoadObject("DeusEx." $ className, class'Class', True));
+    if (c == none)
+        c = class<Inventory>(DynamicLoadObject("CNN." $ className, class'Class', True));
     return c;
 }
 
@@ -2569,21 +2569,21 @@ function CNNAgentGive(string className)
     local Inventory item;
 
     c = CNNAgentItemClass(className);
-    if (c == None)
+    if (c == none)
     {
         AgentOut("GIVE unknown class " $ className);
         return;
     }
     item = Spawn(c,,, Location);
-    if (item == None)
+    if (item == none)
     {
         Log("CNN agent: GIVE could not spawn " $ c);
         return;
     }
     item.GiveTo(self);
-    if (Weapon(item) != None)
+    if (Weapon(item) != none)
         Weapon(item).GiveAmmo(self);
-    AgentOut("GIVE " $ c $ " held=" $ (FindInventoryType(c) != None));
+    AgentOut("GIVE " $ c $ " held=" $ (FindInventoryType(c) != none));
 }
 
 function CNNAgentTake(string className)
@@ -2593,16 +2593,16 @@ function CNNAgentTake(string className)
     local int n;
 
     c = CNNAgentItemClass(className);
-    if (c == None)
+    if (c == none)
     {
         Log("CNN agent: TAKE unknown class " $ className);
         return;
     }
     item = FindInventoryType(c);
-    while ((item != None) && (n < 10))
+    while ((item != none) && (n < 10))
     {
         if (inHand == item)
-            PutInHand(None);
+            PutInHand(none);
         DeleteInventory(item);
         item.Destroy();
         n++;
@@ -2622,11 +2622,11 @@ function CNNAgentInv(string bindName)
     p = self;
     if (bindName != "")
     {
-        p = None;
+        p = none;
         foreach AllActors(class'ScriptedPawn', sp)
             if (sp.BindName == bindName)
                 p = sp;
-        if (p == None)
+        if (p == none)
         {
             AgentOut("INV no pawn bound as " $ bindName);
             return;
@@ -2635,13 +2635,13 @@ function CNNAgentInv(string bindName)
 
     // Capped: a single over-long log line crashed the game (Magdalene
     // carried 99 coil guns, 2026-10-05).
-    for (item = p.Inventory; item != None; item = item.Inventory)
+    for (item = p.Inventory; item != none; item = item.Inventory)
     {
         n++;
         if (Len(list) > 600)
             continue;
         list = list $ " " $ item.Class.Name;
-        if ((Weapon(item) != None) && (Weapon(item).AmmoType != None))
+        if ((Weapon(item) != none) && (Weapon(item).AmmoType != none))
             list = list $ "(" $ Weapon(item).AmmoType.AmmoAmount $ ")";
     }
     AgentOut("INV " $ p.Name $ " weapon=" $ p.Weapon $ " items=" $ n $ ":" $ list);
@@ -2662,7 +2662,7 @@ function CNNAgentKill(string bindName)
     foreach AllActors(class'ScriptedPawn', sp)
         if (sp.BindName == bindName)
             victim = sp;
-    if (victim == None)
+    if (victim == none)
     {
         AgentOut("KILL no pawn bound as " $ bindName);
         return;
@@ -2682,14 +2682,14 @@ function CNNAgentConList(string bindName)
     foreach AllActors(class'Actor', a)
         if (a.BindName == bindName)
             break;
-    if (a == None)
+    if (a == none)
     {
         AgentOut("CONLIST no actor bound as " $ bindName);
         return;
     }
     AgentOut("CONLIST " $ a.Name $ " time=" $ int(Level.TimeSeconds) $ " lastConEnd=" $ int(a.LastConEndTime));
-    for (item = ConListItem(a.conListItems); item != None; item = item.next)
-        if (item.con != None)
+    for (item = ConListItem(a.conListItems); item != none; item = item.next)
+        if (item.con != none)
             AgentOut("  " $ item.con.conName $ " radius=" $ item.con.bInvokeRadius $ ":" $ item.con.radiusDistance $
                      " frob=" $ item.con.bInvokeFrob $ " once=" $ item.con.bDisplayOnce $
                      " lastPlayed=" $ int(item.con.lastPlayedTime) $

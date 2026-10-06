@@ -313,7 +313,7 @@ Write-Host "    Resolution: ${nativeResX}x${nativeResY} (forced to native)"
 # Keybindings are inherited verbatim, with one exception: the console.
 # Deus Ex ships Tilde= and T= deliberately blank (see DefUser.ini), so a
 # player who never bound a console key gets a CNNUser.ini with no way to
-# open one. That blocks every console-driven workflow -- CNNTestEnding,
+# open one. That blocks every console-driven workflow -- CNNDev,
 # EditFlags, "open <map>" -- in a mod that has no other cheat UI. Only
 # genuinely unbound keys are filled, so a player's own binding always wins.
 if ($SourceUser -ne '.' -and (Test-Path $SourceUser)) {

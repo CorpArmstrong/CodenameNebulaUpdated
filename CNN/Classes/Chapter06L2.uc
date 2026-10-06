@@ -1550,7 +1550,7 @@ function CheckShipsWheel()
 // L2's part of the bridge's SNAP: what a save and a load must carry over.
 // ----------------------------------------------------------------------
 
-function Snap(TantalusDenton p)
+function Snap(CNNAgentBridge bridge)
 {
     local MJ12Troop troop;
     local DeusExCarcass carc;
@@ -1561,43 +1561,43 @@ function Snap(TantalusDenton p)
 
     if (flags == none)
     {
-        p.AgentOut("l2.init=0 (mission script not started yet)");
+        bridge.Report("l2.init=0 (mission script not started yet)");
         return;
     }
-    p.AgentOut("l2.init=" $ initCount $ " mj12=" $ int(mj12SecondsLeft) $ " window=" $ (mj12Window != none));
-    p.AgentOut("l2.socialboss=started:" $ bSocialBossStarted $ " fight:" $ bSocialBossFight $
-               " wong:" $ bWongHostile $ " meph:" $ bMephHostile $ " released:" $ bSocialBossReleased);
+    bridge.Report("l2.init=" $ initCount $ " mj12=" $ int(mj12SecondsLeft) $ " window=" $ (mj12Window != none));
+    bridge.Report("l2.socialboss=started:" $ bSocialBossStarted $ " fight:" $ bSocialBossFight $
+                  " wong:" $ bWongHostile $ " meph:" $ bMephHostile $ " released:" $ bSocialBossReleased);
 
     for (i = 0; i < ArrayCount(trackedFlag); i++)
         if ((trackedFlag[i] != '') && flags.GetBool(trackedFlag[i]))
             list = list $ " " $ trackedFlag[i];
-    p.AgentOut("l2.flags=" $ list);
+    bridge.Report("l2.flags=" $ list);
 
-    SnapPawn(p, FindPawnByBindName("Magdalene"));
-    SnapPawn(p, FindPawnByBindName("DrMephistopheles"));
-    SnapPawn(p, FindPawnByBindName("MikeWong"));
-    SnapPawn(p, FindPawnByBindName("CorpArmstrongHostage"));
-    SnapPawn(p, FindPawnByBindName("DrJohnsonHostage"));
-    SnapPawn(p, FindPawnByBindName("SamanthaReedHostage"));
-    SnapPawn(p, FindPawnByBindName("MJ12Sergeant"));
-    SnapPawn(p, sbTrooper);
+    SnapPawn(bridge, FindPawnByBindName("Magdalene"));
+    SnapPawn(bridge, FindPawnByBindName("DrMephistopheles"));
+    SnapPawn(bridge, FindPawnByBindName("MikeWong"));
+    SnapPawn(bridge, FindPawnByBindName("CorpArmstrongHostage"));
+    SnapPawn(bridge, FindPawnByBindName("DrJohnsonHostage"));
+    SnapPawn(bridge, FindPawnByBindName("SamanthaReedHostage"));
+    SnapPawn(bridge, FindPawnByBindName("MJ12Sergeant"));
+    SnapPawn(bridge, sbTrooper);
 
     n = 0;
     foreach AllActors(class'MJ12Troop', troop)
         n++;
-    p.AgentOut("l2.count mj12troop=" $ n);
+    bridge.Report("l2.count mj12troop=" $ n);
     n = 0;
     foreach AllActors(class'DeusExCarcass', carc)
         n++;
-    p.AgentOut("l2.count carcasses=" $ n);
+    bridge.Report("l2.count carcasses=" $ n);
 
     foreach AllActors(class'Mover', tube, 'CNNMoverTube')
-        p.AgentOut("l2.tube keyNum=" $ tube.KeyNum $ " z=" $ int(tube.Location.Z) $ " base=" $ int(tube.BasePos.Z));
+        bridge.Report("l2.tube keyNum=" $ tube.KeyNum $ " z=" $ int(tube.Location.Z) $ " base=" $ int(tube.BasePos.Z));
     foreach AllActors(class'ShipsWheel', wheel)
-        p.AgentOut("l2.wheel invincible=" $ wheel.bInvincible);
+        bridge.Report("l2.wheel invincible=" $ wheel.bInvincible);
 }
 
-function SnapPawn(TantalusDenton p, ScriptedPawn sp)
+function SnapPawn(CNNAgentBridge bridge, ScriptedPawn sp)
 {
     local Inventory item;
     local int n;
@@ -1606,11 +1606,11 @@ function SnapPawn(TantalusDenton p, ScriptedPawn sp)
         return;
     for (item = sp.Inventory; item != none; item = item.Inventory)
         n++;
-    p.AgentOut("pawn." $ sp.BindName $ "=" $ sp.Name $ " alive=" $ IsAlive(sp) $ " health=" $ sp.Health $
-               " state=" $ sp.GetStateName() $ " orders=" $ sp.Orders $ " invincible=" $ sp.bInvincible $
-               " weapon=" $ sp.Weapon $ " items=" $ n $ " carcass=" $ sp.CarcassType $
-               " name=" $ sp.UnfamiliarName $ " cons=" $ (sp.conListItems != none) $
-               " loc=" $ int(sp.Location.X) $ "," $ int(sp.Location.Y));
+    bridge.Report("pawn." $ sp.BindName $ "=" $ sp.Name $ " alive=" $ IsAlive(sp) $ " health=" $ sp.Health $
+                  " state=" $ sp.GetStateName() $ " orders=" $ sp.Orders $ " invincible=" $ sp.bInvincible $
+                  " weapon=" $ sp.Weapon $ " items=" $ n $ " carcass=" $ sp.CarcassType $
+                  " name=" $ sp.UnfamiliarName $ " cons=" $ (sp.conListItems != none) $
+                  " loc=" $ int(sp.Location.X) $ "," $ int(sp.Location.Y));
 }
 
 function TravelToEnding(string endMapName)

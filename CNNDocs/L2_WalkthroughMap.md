@@ -22,7 +22,7 @@ decision. Nothing here is recalled or inferred from play.
 > here. Coordinates are exact; the path between them is UNK. If you need the route, fly it
 > once with `ghost` and write it down — do not guess from the numbers.
 >
-> **You usually don't need the route.** `CNNGoto <landmark>` (section 1) teleports straight
+> **You usually don't need the route.** `CNNDev GOTO <landmark>` (section 1) teleports straight
 > to any node in this document, which is what makes the coordinates useful without the
 > paths. The route only matters when you are testing the level *as a player would walk it*.
 
@@ -45,16 +45,16 @@ class must be named explicitly:
 set cnn.tantalusdenton bcheatsenabled true
 ```
 
-Without that, `EditFlags` and `Legend` return early and do nothing. `CNNTestEnding` is an
-exec function and needs no cheats. Useful once cheats are on: `ghost`, `allammo`,
+Without that, `EditFlags` and `Legend` return early and do nothing. `CNNDev TESTENDING` needs
+no cheats. Useful once cheats are on: `ghost`, `allammo`,
 `EditFlags` (read/write any flag live).
 
-**Getting around — `CNNGoto`.** An exec on `TantalusDenton`, no cheats needed. Teleports to
+**Getting around — `CNNDev GOTO`.** A command of the developer bridge (`CNNAgentBridge`), no cheats needed. Teleports to
 any landmark in this document, which is how the coordinates here become usable without
 knowing the routes:
 
 ```
-CNNGoto magdalene
+CNNDev GOTO magdalene
 ```
 
 `start` `sam` `samantha` `magdalene` `maglab` `soldiers` `battle` `iot` `wong` `meph` `jc`
@@ -63,16 +63,16 @@ run it with no argument to print the list. The landmarks are actor origins, so i
 you clear of the floor before placing you; if every offset is refused it means you are not
 on 06_OpheliaL2. Each jump is logged.
 
-`CNNGoto` also brings Magdalene with you when she is `Following` — vanilla
+`CNNDev GOTO` also brings Magdalene with you when she is `Following` — vanilla
 `StartConversationByName` refuses outright beyond **800 units** from the conversation's
 owner (`if ((dist <= 800) || (bForcePlay))`), so leaving her behind silently kills every
 scene she owns.
 
-**Firing scripted beats — `CNNFire <tag>`.** Triggers any tagged actor the way a Dispatcher
+**Firing scripted beats — `CNNDev FIRE <tag>`.** Triggers any tagged actor the way a Dispatcher
 would. Several L2 beats are dispatcher-fired rather than walked into:
 
 ```
-CNNFire MiniGameDispatcher
+CNNDev FIRE MiniGameDispatcher
 ```
 
 | Tag | Effect |
@@ -82,13 +82,13 @@ CNNFire MiniGameDispatcher
 | `OpenLabs` | lab clearance; also teleports Magdalene up |
 | `LabEndingSuccessDispatcher` | `ShakeTriggerS` + `CNNMoverTube` |
 
-**Diagnosing a spot — `CNNWhere` / `CNNProbe`.** `CNNWhere` logs exact position, yaw and
-zone. `CNNProbe` traces forward and reports whether what is in front of you is an **Actor**
+**Diagnosing a spot — `CNNDev WHERE` / `CNNDev PROBE`.** `CNNDev WHERE` logs exact position, yaw and
+zone. `CNNDev PROBE` traces forward and reports whether what is in front of you is an **Actor**
 (fixable from script) or **world BSP** (needs UnrealEd), with hit location and surface
 normal. It fires both a zero-extent ray and a player-sized box, because they disagree
 usefully — see §7b.
 
-**Diagnosing geometry offline — `tools/map_probe.js`.** `CNNProbe` answers "what is in
+**Diagnosing geometry offline — `tools/map_probe.js`.** `CNNDev PROBE` answers "what is in
 front of me right now"; it cannot answer "how tall is that gap" or "can the player get
 there at all", and guessing at those from bounding boxes already produced one wrong
 diagnosis (§7b). `map_probe.js` re-runs the map's CSG from `L2_export.t3d` and answers them
@@ -106,12 +106,12 @@ result is a hint to confirm with `clear`, a positive one is reliable.
 **It is a model, not a measurement.** It got L2 badly wrong once by ignoring `PrePivot`
 (§7b) and the answer was wrong in a way that looked entirely self-consistent. Before acting
 on anything it says about a specific spot, confirm the same spot with a `Trace` in the
-running game — `CNNProbe`, or a one-off `Trace` logged from `Chapter06L2`. A model that
+running game — `CNNDev PROBE`, or a one-off `Trace` logged from `Chapter06L2`. A model that
 agrees with the engine at the point in question is evidence; one that has not been checked
 is a hypothesis.
 
 **Reading flags during a run.** `Chapter06L2` polls 22 flags every second and logs each
-change (`bLogFlagChanges`, on by default). `CNNGoto`, `CNNFire`, `CNNWhere` and `CNNProbe`
+change (`bLogFlagChanges`, on by default). `CNNDev GOTO`, `CNNDev FIRE`, `CNNDev WHERE` and `CNNDev PROBE`
 all log too, so the run reads back as a session transcript:
 
 ```
@@ -124,7 +124,7 @@ does, which is why the teleports are logged separately from what you see on the 
 
 **Toggling cheats.** `exec cheaton` / `exec cheatoff` (files in the game `System\` dir,
 not tracked in the repo). The extension is arbitrary — `cheaton` and `cheaton.txt` both
-work. Needed for `Legend`, `EditFlags` and `ghost`; not for `CNNGoto` or `CNNTestEnding`.
+work. Needed for `Legend`, `EditFlags` and `ghost`; not for `CNNDev GOTO` or `CNNDev TESTENDING`.
 
 ---
 
@@ -213,7 +213,7 @@ flowchart TD
 | 4 | `MandatoryMovementTriger` | `(260, -1547, 8)` | Moves **the player** to `MovePlayer (-547,-1874,52)` | OK |
 | 5 | MJ12 group | `(853..923, -1587..-1653, ~22)` | `MeetSoldiers`; `GestureRight` **SETS `ReadyForBossFight`** so avatars turn hostile | OK |
 | 6 | `LoadingInTube` | `(843, -6084, 8)` | Starts upload scene; fires `WalkIntoATube` | OK |
-| 7 | `MagdaleneInsideTube` | `(1801, -6412, 8)` r=40 | **SETS `FinalGoodbyePlayed`** — the ending gate. **Dispatcher-fired**, not walked into: `MiniGameDispatcher (1801,-6353,8)` triggers it. Its coordinates are OUTSIDE walkable space — teleporting there puts you in the void; use `CNNFire MiniGameDispatcher`. Independently confirmed: `map_probe.js L2_export.t3d at 1801 -6412 8` reports `SOLID <- world (never subtracted)`. | OK |
+| 7 | `MagdaleneInsideTube` | `(1801, -6412, 8)` r=40 | **SETS `FinalGoodbyePlayed`** — the ending gate. **Dispatcher-fired**, not walked into: `MiniGameDispatcher (1801,-6353,8)` triggers it. Its coordinates are OUTSIDE walkable space — teleporting there puts you in the void; use `CNNDev FIRE MiniGameDispatcher`. Independently confirmed: `map_probe.js L2_export.t3d at 1801 -6412 8` reports `SOLID <- world (never subtracted)`. | OK |
 
 Node 2 sits ~145 units from the spawn with a 150 radius, so `OnLevel2` is set on your
 first steps. `FlagTrigger` defaults (`bSetFlag=True`, `flagValue=True`, `flagExpiration=-1`,
@@ -627,13 +627,13 @@ lined up against the geometry. Run `CNNWhere` *before* `CNNProbe` next time.
 - Movers — `CNNProbe` returns the LevelInfo, not a mover, at every probe.
 - Warp zones — nearest is >2000 units away.
 
-Reproduce with `CNNGoto wall` (`918, -5686, 15`), walk north at X ≈ 1140.
+Reproduce with `CNNDev GOTO wall` (`918, -5686, 15`), walk north at X ≈ 1140.
 
 ---
 
 ## 8. Fast path for testing
 
-`CNNTestEnding hijack | transcend | conspiracy | mutiny` — an exec on `TantalusDenton`, no
+`CNNDev TESTENDING hijack | transcend | conspiracy | mutiny` — a command of the developer bridge, no
 cheats needed. It sets the accumulated-state flags for one ending; `CheckEndingReached()`
 travels on the next tick (~1s).
 
@@ -671,7 +671,7 @@ triggers.
 ## 9. Manual QA test plan — reaching each ending by hand
 
 For a human tester playing normally (no console). All four share the same opening: arrive
-on L2 (from L1, or `CNNGoto start` for a dev build), walk forward a few steps — `OnLevel2`
+on L2 (from L1, or `CNNDev GOTO start` for a dev build), walk forward a few steps — `OnLevel2`
 sets itself automatically (trigger radius 150, right at spawn). Everything below happens
 after that.
 

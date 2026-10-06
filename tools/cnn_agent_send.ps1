@@ -10,9 +10,6 @@
 # poll must be safe, and sequence-gating (see CNNAgentRun) is what makes it
 # safe.
 #
-# Prerequisites (once per game session): type `CNNAgentStart` at the in-game
-# console. Nothing consumes the file before that.
-#
 # Usage:
 #   cnn_agent_send.ps1 -SystemDir <dir> -Cmd GOTO -Arg TUBE
 #   cnn_agent_send.ps1 -SystemDir <dir> -Cmd FIRE -Arg MiniGameDispatcher

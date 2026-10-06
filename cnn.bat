@@ -489,6 +489,16 @@ if exist "%REPO_ROOT%\tools\steam_launch.ps1" (
     echo   tools\steam_launch.ps1
 )
 
+:: Copy the renderer repair for players whose CNN.ini picked a dead renderer
+if exist "%REPO_ROOT%\CodenameNebula\FixRenderer.bat" (
+    copy /y "%REPO_ROOT%\CodenameNebula\FixRenderer.bat" "%DIST_DIR%\" >nul
+    echo   FixRenderer.bat
+)
+if exist "%REPO_ROOT%\tools\fix_renderer.ps1" (
+    copy /y "%REPO_ROOT%\tools\fix_renderer.ps1" "%DIST_DIR%\tools\" >nul
+    echo   tools\fix_renderer.ps1
+)
+
 :: Build CNNInstallUtil (try MSBuild first, then dotnet CLI)
 set "INSTALLUTIL_BUILT=0"
 where msbuild >nul 2>&1
@@ -599,6 +609,8 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo Name: "{userdesktop}\Play Codename Nebula Steam"; Filename: "{app}\PlayCNNSteam.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
     echo Name: "{group}\Play Codename Nebula"; Filename: "{app}\PlayCodenameNebula.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
     echo Name: "{group}\Play Codename Nebula Steam"; Filename: "{app}\PlayCNNSteam.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
+    echo Name: "{group}\Fix Renderer"; Filename: "{app}\FixRenderer.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
+    echo Name: "{group}\Fix Renderer (windowed)"; Filename: "{app}\FixRenderer.bat"; Parameters: "windowed"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
     echo.
     echo [Run]
     echo Filename: "{app}\CNNInstallUtil.EXE"; WorkingDir: "{app}"; Description: "Configure mod"; Flags: waituntilterminated

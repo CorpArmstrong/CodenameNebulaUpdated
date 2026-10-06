@@ -53,8 +53,8 @@ against Mephistopheles, and the scene ends in a fight — or in surrender.
   editor).
 - The in-game "Rendering Device" menu still lists the old 1999 "Direct3D support" renderer,
   which gives a black screen on Windows 10/11. Pick "Direct3D9 support" instead. If the game
-  no longer starts, set `GameRenderDevice=D3D9Drv.D3D9RenderDevice` in
-  `CodenameNebula\System\CNN.ini`.
+  no longer starts, run **Fix Renderer** from the Codename Nebula Start menu folder; if the
+  monitor stays black while the game is running, run **Fix Renderer (windowed)**.
 - Steam play time comes with the "Play Codename Nebula Steam" shortcut; the Steam overlay works
   only with the OpenGL or Direct3D 7 renderer.
 

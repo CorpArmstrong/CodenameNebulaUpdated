@@ -66,7 +66,9 @@ Actor (DeusEx/Engine root)
 | [Chapter06](CNN/Classes/Chapter06.uc) | CNNBaseIngameCutscene | Chapter 6 OpheliaDocks handler | REACHABLE-CODE |
 | [CNNChapter06](CNN/Classes/CNNChapter06.uc) | MissionScript | Alternative Chapter 6 handler | REACHABLE-CODE |
 | [Chapter06L1](CNN/Classes/Chapter06L1.uc) | MissionScript | Chapter 6 Level 1 handler | REACHABLE-CODE |
-| [Chapter06L2](CNN/Classes/Chapter06L2.uc) | MissionScript | Chapter 6 Level 2 handler | REACHABLE-CODE |
+| [Chapter06L2](CNN/Classes/Chapter06L2.uc) | MissionScript | Chapter 6 Level 2 handler: endings, MJ12 countdown, tube, map repairs | REACHABLE-CODE |
+| [CNNSocialBoss](CNN/Classes/CNNSocialBoss.uc) | Info | L2 Social Boss scene (hostages, executions, fight); spawned by Chapter06L2, saved with the level | REACHABLE-CODE |
+| [CNNAgentBridge](CNN/Classes/CNNAgentBridge.uc) | Actor | Developer test bridge (CNNAgentRun/CNNDev commands, L2 flag log); spawned by TantalusDenton | REACHABLE-CODE |
 | [CNNMisson01](CNN/Classes/CNNMisson01.uc) | CNNBaseIngameCutscene | Mission 1 variant (note: typo "Misson") | REACHABLE-CODE |
 | [CNNMissionEndgame](CNN/Classes/CNNMissionEndgame.uc) | MissionEndgame | Endgame orchestration | REACHABLE-CODE |
 | [MissionDocks](CNN/Classes/MissionDocks.uc) | MissionScript | Docks mission | REACHABLE-CODE |

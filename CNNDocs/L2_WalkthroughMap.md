@@ -110,8 +110,8 @@ running game — `CNNDev PROBE`, or a one-off `Trace` logged from `Chapter06L2`.
 agrees with the engine at the point in question is evidence; one that has not been checked
 is a hypothesis.
 
-**Reading flags during a run.** `Chapter06L2` polls 22 flags every second and logs each
-change (`bLogFlagChanges`, on by default). `CNNDev GOTO`, `CNNDev FIRE`, `CNNDev WHERE` and `CNNDev PROBE`
+**Reading flags during a run.** On L2 `CNNAgentBridge` polls 27 flags every second and logs each
+change (`bWatchL2`, on by default). `CNNDev GOTO`, `CNNDev FIRE`, `CNNDev WHERE` and `CNNDev PROBE`
 all log too, so the run reads back as a session transcript:
 
 ```

@@ -7,7 +7,8 @@
 // there Run(). By hand: "CNNDev <command>" at the console.
 //
 // Results go to the log and to CNNAgent.ini, which reaches disk at once.
-// GOTO landmarks are 06_OpheliaL2's.
+// GOTO landmarks are 06_OpheliaL2's. On that map it also logs, in any
+// game, what the endings depend on (WatchL2).
 //-----------------------------------------------------------------------
 class CNNAgentBridge extends Actor config(CNNAgent);
 
@@ -31,6 +32,21 @@ var string conPicks;
 
 var bool bSkipSelfHeal;     // CONVERSE leaves a stuck bark alone
 
+// L2 watch (WatchL2): the flags to log as they change. A fixed list, as
+// FlagBase's iterator needs an enum the CNN package cannot name; bytes, as
+// UE1 has no bool arrays.
+var() bool bWatchL2;
+var() name trackedFlag[32];
+var byte   trackedValue[32];
+var int    trackedCount;
+var bool   bTrackingPrimed;
+var bool   bL2Primed;
+var float  l2Seconds;
+var name   lastMagOrders;
+var string lastMagEnemy;
+var bool   bTubeLogged;
+var float  tubeLogDelay;
+
 function PostBeginPlay()
 {
     SetTimer(pollInterval, true);
@@ -50,6 +66,8 @@ function Timer()
     Player.ConsoleCommand("exec CNNAgentCmd.txt");
     ConStep();
     CheckWait();
+    if (bWatchL2)
+        WatchL2();
 }
 
 // ----------------------------------------------------------------------
@@ -1260,7 +1278,228 @@ function Snap(string snapName)
     Report("player.goals=" $ list);
 
     foreach AllActors(class'Chapter06L2', mission)
-        mission.Snap(self);
+        SnapL2(mission);
+}
+
+// L2's part of SNAP: what a save and a load must carry over.
+function SnapL2(Chapter06L2 mission)
+{
+    local CNNSocialBoss sb;
+    local MJ12Troop troop;
+    local DeusExCarcass carc;
+    local Mover tube;
+    local ShipsWheel wheel;
+    local string list;
+    local int i, n;
+
+    if (mission.flags == none)
+    {
+        Report("l2.init=0 (mission script not started yet)");
+        return;
+    }
+    Report("l2.init=1 mj12=" $ int(mission.mj12SecondsLeft) $ " window=" $ (mission.mj12Window != none));
+    sb = mission.socialBoss;
+    if (sb != none)
+        Report("l2.socialboss=started:" $ sb.bStarted $ " fight:" $ sb.bFight $
+               " wong:" $ sb.bWongHostile $ " meph:" $ sb.bMephHostile $ " released:" $ sb.bReleased);
+
+    for (i = 0; i < ArrayCount(trackedFlag); i++)
+        if ((trackedFlag[i] != '') && mission.flags.GetBool(trackedFlag[i]))
+            list = list $ " " $ trackedFlag[i];
+    Report("l2.flags=" $ list);
+
+    SnapPawn(FindPawn("Magdalene"));
+    SnapPawn(FindPawn("DrMephistopheles"));
+    SnapPawn(FindPawn("MikeWong"));
+    SnapPawn(FindPawn("CorpArmstrongHostage"));
+    SnapPawn(FindPawn("DrJohnsonHostage"));
+    SnapPawn(FindPawn("SamanthaReedHostage"));
+    SnapPawn(FindPawn("MJ12Sergeant"));
+    if (sb != none)
+        SnapPawn(sb.trooper);
+
+    foreach AllActors(class'MJ12Troop', troop)
+        n++;
+    Report("l2.count mj12troop=" $ n);
+    n = 0;
+    foreach AllActors(class'DeusExCarcass', carc)
+        n++;
+    Report("l2.count carcasses=" $ n);
+
+    foreach AllActors(class'Mover', tube, 'CNNMoverTube')
+        Report("l2.tube keyNum=" $ tube.KeyNum $ " z=" $ int(tube.Location.Z) $ " base=" $ int(tube.BasePos.Z));
+    foreach AllActors(class'ShipsWheel', wheel)
+        Report("l2.wheel invincible=" $ wheel.bInvincible);
+}
+
+function SnapPawn(ScriptedPawn sp)
+{
+    local Inventory item;
+    local int n;
+
+    if (sp == none)
+        return;
+    for (item = sp.Inventory; item != none; item = item.Inventory)
+        n++;
+    Report("pawn." $ sp.BindName $ "=" $ sp.Name $ " alive=" $ IsAlive(sp) $ " health=" $ sp.Health $
+           " state=" $ sp.GetStateName() $ " orders=" $ sp.Orders $ " invincible=" $ sp.bInvincible $
+           " weapon=" $ sp.Weapon $ " items=" $ n $ " carcass=" $ sp.CarcassType $
+           " name=" $ sp.UnfamiliarName $ " cons=" $ (sp.conListItems != none) $
+           " loc=" $ int(sp.Location.X) $ "," $ int(sp.Location.Y));
+}
+
+function ScriptedPawn FindPawn(string bindName)
+{
+    local ScriptedPawn p;
+
+    foreach AllActors(class'ScriptedPawn', p)
+        if (p.BindName == bindName)
+            return p;
+    return none;
+}
+
+function bool IsAlive(ScriptedPawn p)
+{
+    return (p != none) && (p.Health > 0) && !p.IsInState('Dying');
+}
+
+// ----------------------------------------------------------------------
+// WatchL2()
+//
+// On 06_OpheliaL2, logs what the endings depend on as it changes: the
+// tracked flags, Magdalene's orders and enemy, and where the tube glass
+// stands after the button. On arrival it lists the key actors'
+// conversations in the order the engine checks them.
+// ----------------------------------------------------------------------
+
+function WatchL2()
+{
+    local Chapter06L2 mission;
+
+    foreach AllActors(class'Chapter06L2', mission)
+        break;
+    if ((mission == none) || (mission.flags == none))
+        return;
+
+    l2Seconds += pollInterval;
+    if (!bL2Primed)
+    {
+        bL2Primed = true;
+        DumpConversationLists();
+    }
+    LogChangedFlags(mission.flags);
+    LogMagdalene();
+    LogTube(mission.flags);
+}
+
+function LogChangedFlags(FlagBase flags)
+{
+    local int i;
+    local bool flagValue;
+    local byte packedValue;
+
+    if (!bTrackingPrimed)
+    {
+        bTrackingPrimed = true;
+        for (i = 0; i < ArrayCount(trackedFlag); i++)
+        {
+            if (trackedFlag[i] == '')
+                break;
+            trackedCount = i + 1;
+            trackedValue[i] = 255;      // forces a first-seen log
+        }
+        Log("CNN L2: watching " $ trackedCount $ " flags");
+    }
+
+    for (i = 0; i < trackedCount; i++)
+    {
+        flagValue   = flags.GetBool(trackedFlag[i]);
+        packedValue = 0;
+        if (flagValue)
+            packedValue = 1;
+
+        if (trackedValue[i] != packedValue)
+        {
+            trackedValue[i] = packedValue;
+            Log("CNN L2 flag @" $ int(l2Seconds) $ "s: " $ trackedFlag[i] $ " = " $ flagValue);
+        }
+    }
+}
+
+function LogMagdalene()
+{
+    local Magdalene mag;
+    local string enemyName;
+
+    foreach AllActors(class'Magdalene', mag)
+        break;
+    if (mag == none)
+        return;
+
+    if (mag.Enemy != none)
+        enemyName = string(mag.Enemy.Name) $ " [" $ string(mag.Enemy.Class.Name) $ "]";
+    else
+        enemyName = "none";
+
+    if ((mag.Orders != lastMagOrders) || (enemyName != lastMagEnemy))
+    {
+        lastMagOrders = mag.Orders;
+        lastMagEnemy  = enemyName;
+
+        Log("CNN L2 magdalene @" $ int(l2Seconds) $ "s: orders=" $
+            string(mag.Orders) $ " enemy=" $ enemyName $
+            " alliance=" $ string(mag.Alliance) $
+            " health=" $ mag.Health);
+    }
+}
+
+function LogTube(FlagBase flags)
+{
+    local Mover tube;
+
+    if (bTubeLogged || !flags.GetBool('TantalusUploadStarted'))
+        return;
+
+    tubeLogDelay += pollInterval;
+    if (tubeLogDelay < 4.0)
+        return;
+
+    bTubeLogged = true;
+    foreach AllActors(class'Mover', tube, 'CNNMoverTube')
+        Log("CNN L2: tube after button: KeyNum=" $ tube.KeyNum $ " state=" $ tube.GetStateName() $
+            " opening=" $ tube.bOpening $ " loc=" $ tube.Location);
+}
+
+function DumpConversationLists()
+{
+    local Actor a;
+    local ConListItem item;
+    local string flagList;
+    local int index;
+
+    foreach AllActors(class'Actor', a)
+    {
+        if ((a.conListItems == none) || (a.BindName == ""))
+            continue;
+        if ((a.BindName != "MJ12Sergeant") && (a.BindName != "Magdalene") &&
+            (a.BindName != "SamanthaReed") && (a.BindName != "OpheliaUI") &&
+            (a.BindName != "MikeWong")     && (a.BindName != "DrMephistopheles"))
+            continue;
+
+        index = 0;
+        for (item = ConListItem(a.conListItems); item != none; item = item.next)
+        {
+            if (item.con != none)
+            {
+                flagList = FlagRefsText(item.con.flagRefList);
+                if (flagList == "")
+                    flagList = " (no flags)";
+                Log("CNN L2 cons: " $ a.BindName $ " [" $ index $ "] " $
+                    string(item.con.conName) $ " flags:" $ flagList);
+            }
+            index++;
+        }
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -1428,6 +1667,36 @@ function ConList(string bindName)
 defaultproperties
 {
     pollInterval=1.0
+    bWatchL2=true
+
+    // the flags OpheliaL2.con uses, and the ones Chapter06L2 sets
+    trackedFlag(0)=MikeWongExposed
+    trackedFlag(1)=MetReedAndWong
+    trackedFlag(2)=IsArrivalPlayed
+    trackedFlag(3)=OnLevel2
+    trackedFlag(4)=CanArmMagdalene
+    trackedFlag(5)=ReadyForBossFight
+    trackedFlag(6)=ReadyForSocialBoss
+    trackedFlag(7)=FinalGoodbyePlayed
+    trackedFlag(8)=AllObjectsDestroyed
+    trackedFlag(9)=SeedsOfDoubtPlanted
+    trackedFlag(10)=WongParanoid
+    trackedFlag(11)=SamUnfriendly
+    trackedFlag(12)=PlayerDied
+    trackedFlag(13)=PlayerDiedOnL2
+    trackedFlag(14)=PlayerDiedDuringUpload
+    trackedFlag(15)=TantalusUploadStarted
+    trackedFlag(16)=TantalusUploaded
+    trackedFlag(17)=UndockedL2
+    trackedFlag(18)=StartedBlueFusion
+    trackedFlag(19)=TookSteeringWheel
+    trackedFlag(20)=TimerExpired
+    trackedFlag(21)=IsGameCompleted
+    trackedFlag(22)=MagdaleneArmed
+    trackedFlag(23)=MJ12TimerStarted
+    trackedFlag(24)=MJ12Arrived
+    trackedFlag(25)=PlayerGaveUp
+    trackedFlag(26)=WongBetrayedMeph
     bHidden=true
     RemoteRole=ROLE_None
 }

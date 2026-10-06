@@ -45,6 +45,14 @@ These can be fixed by simple text find/replace in the actor classes:
 
 **Action:** simple textual find/replace `'ApocalypseInside.X'` → `'CNN.X'` in the listed actor files.
 
+> **Status 2026-10-06.** Section C was wrong: all 13 textures were already imported into `CNN.u`
+> (`Burger.uc`, `Fries.uc`, `NoodleCup.uc`, `DecoCoffeeMachine.uc`, `CNNTextures.uc`, `Bassein.uc`) and only the
+> references still named `ApocalypseInside`; they now point at `CNN.*` (commit 99c6ed7). Section B cannot be done:
+> `burger01_a/_d.3d` exist in `CNN/Models/` but without their textures, `fries01` has no source anywhere, and the only
+> public release (ModDB, *Apocalypse Inside with PATCH 2*, v0.2) ships no `ApocalypseInside.u`. Burger and Fries are
+> placed on no map and spawned by no code, so the two dangling mesh references are never loaded.
+
+
 #### B. Mesh missing — must be extracted from `ApocalypseInside.u` (2 unique meshes)
 
 | External ref | Used by | Status |

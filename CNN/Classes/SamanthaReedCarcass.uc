@@ -1,9 +1,6 @@
 //=============================================================================
 // SamanthaReedCarcass.
-//
-// Samantha Reed's body on L2: the map dresses a stock Female2 in her own
-// skins, and Female2Carcass would leave a stock secretary. Set as her
-// CarcassType by Chapter06L2.SetSocialBossCarcasses().
+// Samantha Reed's body, in her own skins.
 //=============================================================================
 class SamanthaReedCarcass extends DeusExCarcass;
 

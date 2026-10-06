@@ -91,7 +91,7 @@ defaultproperties
      UserList(0)=(userName="tester",Password="qwerty")
      ItemName="Internet of Things Terminal"
      Physics=PHYS_None
-	 MultiSkins(0)=Texture'ApocalypseInside.mea2'
+	 MultiSkins(0)=Texture'CNN.DecoTex.mea2'
      Mesh=LodMesh'DeusExDeco.ComputerSecurity'
      SoundRadius=8
      SoundVolume=255

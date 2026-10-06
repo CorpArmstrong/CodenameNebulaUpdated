@@ -34,9 +34,7 @@ function PostBeginPlay()
         isSecurityActive = flags.GetBool('laserSecurityWorks');
         bMeet1InspRoomPlayed = flags.GetBool('Meet1InspRoom_Played');
     }
-    // else flags stays None and bMeet1InspRoomPlayed stays false (default).
-    // We still call TurnOffLasers below: lasers must be off until the
-    // scripted sequence has fired, even if we couldn't read the flag.
+    // lasers stay off until the scripted sequence has played
 
     if (!bMeet1InspRoomPlayed)
     {

@@ -1,55 +1,47 @@
-//=============================================================================
-// CNNConPlay
-//
-// Vanilla ConPlay plus one fix: item classes that a conversation names but
-// the engine can't resolve. The native con.BindEvents() looks up each
-// CheckObject/TransferObject class as "DeusEx.<objectName>" every time a
-// conversation starts, so a CNN class or a misspelled name comes back None
-// -- and FindInventoryType(None) / a None giveObject make the event
-// silently fail. Setting the class on the loaded conversation at level load
-// doesn't help: the bind overwrites it (confirmed 2026-09-24 on
-// ArmMagdalene, whose assault-gun and napalm branches never worked).
-// So resolve it here, at the moment the event runs, and only when the
-// engine left it empty.
-//
-// NOTE (2026-10-02): this class is not spawned. TantalusDenton's
-// StartConversation override, the only place that would create it, has
-// been commented out since 2020 (ed6f49d), so every conversation plays on
-// DeusEx.ConPlay and the fixes below never ran. L2's SocialBoss needs are
-// handled by Chapter06L2.WatchConversation() instead, and ArmMagdalene's
-// item classes by Chapter06L2.RepairItemClasses() (2026-10-05).
-//=============================================================================
+//-----------------------------------------------------------
+// CNNConPlay.
+//-----------------------------------------------------------
 class CNNConPlay extends ConPlay;
 
-function class<Inventory> ResolveItemClass(string objName)
+// ----------------------------------------------------------------------
+// state ConPlayAnim
+//
+// Plays an animation and then runs the next event.
+// Optionally will wait for the animation to finish
+// ----------------------------------------------------------------------
+
+state ConPlayAnim
 {
-    local string key;
+Begin:
+    CNNConEventAnimation(currentEvent).bLoopAnim =
+        (CNNConEventAnimation(currentEvent).playMode == 0);
 
-    key = Caps(objName);
+    // Check to see if we need to just play this animation once or loop it.
+    if (CNNConEventAnimation(currentEvent).bLoopAnim)
+    {
+        CNNConEventAnimation(currentEvent).eventOwner
+            .LoopAnim(CNNConEventAnimation(currentEvent).sequence);
+    }
+    else
+    {
+        CNNConEventAnimation(currentEvent).eventOwner
+            .PlayAnim(CNNConEventAnimation(currentEvent).sequence);
+    }
 
-    // ArmMagdalene: "Take my assault gun" -- Deus Ex's class is WeaponAssaultGun.
-    if (key == "WEAPONASSAULTRIFLE")
-        return class'WeaponAssaultGun';
+    // If we're not looping the animation and we need to wait for this one to
+    // finish, then do so.
+    if ((CNNConEventAnimation(currentEvent).playLength > 0))
+    {
+        Sleep(CNNConEventAnimation(currentEvent).playLength);
+    }
 
-    // ArmMagdalene: napalm launcher -- a CNN class, not DeusEx or ApocalypseInside.
-    if ((key == "WEAPONSNOWBLIND") || (key == "APOCALYPSEINSIDE.WEAPONSNOWBLIND"))
-        return class'WeaponSnowblind';
+    if ((!CNNConEventAnimation(currentEvent).bLoopAnim) &&
+        (CNNConEventAnimation(currentEvent).bFinishAnim)
+    )
+    {
+        CNNConEventAnimation(currentEvent).eventOwner.FinishAnim();
+	}
 
-    return None;
-}
-
-function EEventAction SetupEventCheckObject(ConEventCheckObject event, out String nextLabel)
-{
-    if (event.checkObject == None)
-        event.checkObject = ResolveItemClass(event.objectName);
-
-    return Super.SetupEventCheckObject(event, nextLabel);
-}
-
-function EEventAction SetupEventTransferObject(ConEventTransferObject event, out String nextLabel)
-{
-    if (event.giveObject == None)
-        event.giveObject = ResolveItemClass(event.objectName);
-
-    return Super.SetupEventTransferObject(event, nextLabel);
+    currentEvent = currentEvent.nextEvent;
+    GotoState('PlayEvent');
 }

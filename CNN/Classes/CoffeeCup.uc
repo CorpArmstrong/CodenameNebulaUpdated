@@ -70,8 +70,8 @@ defaultproperties
      PickupViewMesh=LodMesh'CNN.CoffeeCup'
      ThirdPersonMesh=LodMesh'CNN.CoffeeCup'
      LandSound=Sound'DeusExSounds.Generic.PlasticHit2'
-     Icon=Texture'ApocalypseInside.Icons.BeltIconCoffeeCup'
-     largeIcon=Texture'ApocalypseInside.Icons.LargeIconCoffeeCup'
+     Icon=Texture'CNN.Icons.BeltIconCoffeeCup'
+     largeIcon=Texture'CNN.Icons.LargeIconCoffeeCup'
      largeIconWidth=24
      largeIconHeight=38
      Description="A tumbler filled with black coffee without sugar.|n|n<UNATCO OPS FILE NOTE JR289-VIOLET> The cafe�n seems to possess certain stimulating power on the nano-entities. Several tests are in progress on this subject. -- Jaime Reyes <END NOTE>"

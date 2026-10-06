@@ -10,9 +10,6 @@
 # poll must be safe, and sequence-gating (see CNNAgentRun) is what makes it
 # safe.
 #
-# Prerequisites (once per game session): type `CNNAgentStart` at the in-game
-# console. Nothing consumes the file before that.
-#
 # Usage:
 #   cnn_agent_send.ps1 -SystemDir <dir> -Cmd GOTO -Arg TUBE
 #   cnn_agent_send.ps1 -SystemDir <dir> -Cmd FIRE -Arg MiniGameDispatcher
@@ -25,7 +22,7 @@
 param(
     [Parameter(Mandatory=$true)][string]$SystemDir,
     [Parameter(Mandatory=$true)]
-    [ValidateSet('GOTO','GOTOVEC','FIRE','FROB','DAMAGE','OPEN','CONVERSE','ADVANCE','STATUS','MAGSTATE','CONDUMP','CONEVENTS','TALK','CONSTATE','CHOOSE','CONRUN','SETFLAG','WAITFLAG','NEWGAME','GIVE','TAKE','INV','KILL','BODIES','SAVE','LOAD','QSAVE','QLOAD','SNAP','RAW','WHERE','FLAGS','PROBE','TESTENDING','SHOT','QUIT')]
+    [ValidateSet('GOTO','GOTOVEC','WALK','WALKSTOP','ACTORS','FIRE','FROB','DAMAGE','OPEN','CONVERSE','ADVANCE','STATUS','MAGSTATE','CONDUMP','CONEVENTS','TALK','CONSTATE','CHOOSE','CONRUN','AUTOCON','PICKS','SETFLAG','WAITFLAG','NEWGAME','GIVE','TAKE','INV','KILL','BODIES','CONLIST','SAVE','LOAD','QSAVE','QLOAD','SNAP','RAW','WHERE','FLAGS','PROBE','TESTENDING','SHOT','QUIT')]
     [string]$Cmd,
     [string]$Arg = ""
 )

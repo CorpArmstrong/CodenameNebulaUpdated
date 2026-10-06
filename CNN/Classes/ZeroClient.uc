@@ -12,5 +12,5 @@ function bool Facelift(bool bOn)
 defaultproperties
 {
 	ItemName="MEA Desktop Zero Client"
-    MultiSkins(0)=Texture'ApocalypseInside.mea3'
+    MultiSkins(0)=Texture'CNN.DecoTex.mea3'
 }

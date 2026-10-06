@@ -3,15 +3,7 @@
 //=============================================================================
 class CNNMissionEndgame extends MissionEndgame;
 
-// MissionEndgame declares endgameQuote[6] and endgameDelays[3] -- room for
-// exactly three quote pairs, because vanilla has three endings. CNN has four,
-// so Hijacking previously fell through to Conspiracy's quote: the triumphant
-// escape ending printed the doom-laden one.
-//
-// UnrealScript 1 has no way to widen an inherited array (redeclaring an
-// inherited name is an error), so the fourth pair lives here. The inherited
-// table is deliberately left alone rather than being restated locally, so the
-// existing three quotes keep their single definition.
+// The inherited quote table holds three endings; Hijacking is the fourth.
 var localized string hijackQuote[2];
 var float hijackDelay;
 
@@ -33,38 +25,14 @@ function Timer()
 
     if (!bQuotePrinted)
     {
-        // Select quote per ending. Vanilla MissionEndgame keys this on
-        // Endgame1_Played/2_Played/3_Played flags; CNN's QuestSystem
-        // doesn't set those, so we key on the ending map filename.
-        //
-        // Why GetURLMap() and not dxInfo.mapName: 06_Conspiracy/Hijacking/
-        // Transcend all share dxInfo.mapName="MUTINY" (the per-map
-        // DeusExLevelInfo.MapName property was copy-pasted by the original
-        // author and never updated). GetURLMap returns the actual loaded
-        // map filename (e.g. "06_Conspiracy"), which IS distinct.
-        //
-        // Earlier this was hardcoded PrintEndgameQuote(0) which made all
-        // four endings print the same "30 Seconds to Mars / Oblivion"
-        // quote.
-        // PrintEndgameQuote(n) takes a PAIR index (0/1/2), not a raw
-        // endgameQuote[] index — internally it reads endgameQuote[2*n]
-        // (line) and endgameQuote[2*n+1] (author).
+        // The quote follows the ending map. The ending maps all carry
+        // MapName "MUTINY", so the loaded map's file name is used instead,
+        // and the level info is corrected to match.
         mapName = Caps(Level.Game.GetURLMap());
 
-        // Self-heal DeusExLevelInfo.mapName from the same value computed
-        // above, at runtime, no UnrealEd needed -- see CODE_REVIEW.md M5.
-        // `dxInfo` (declared on MissionScript) IS the actual placed
-        // DeusExLevelInfo actor for whichever map this mission script is
-        // running on (found via foreach AllActors in InitStateMachine), so
-        // this only touches the current map's own instance, not the class
-        // default. Runs once (guarded by bQuotePrinted, same as the quote
-        // selection above), so CNNWhere/CNNGoto and anything else that
-        // reads dxInfo.mapName see the correct value from here on for
-        // this session.
-        if (dxInfo != None)
+        if (dxInfo != none)
             dxInfo.mapName = mapName;
 
-        // Hijacking has no slot in the inherited table -- see hijackQuote.
         if (InStr(mapName, "HIJACK") != -1)
         {
             PrintHijackQuote();
@@ -95,8 +63,8 @@ function Timer()
 // ----------------------------------------------------------------------
 // PrintHijackQuote()
 //
-// Mirrors MissionEndgame.PrintEndgameQuote(), which can only index the
-// inherited three-pair table. Same display path, CNN's own text.
+// Same as PrintEndgameQuote(), for the quote that has no slot in the
+// inherited table.
 // ----------------------------------------------------------------------
 
 function PrintHijackQuote()
@@ -104,15 +72,15 @@ function PrintHijackQuote()
     local int i;
     local DeusExRootWindow root;
 
-    bQuotePrinted = True;
-    flags.SetBool('EndgameExplosions', False);
+    bQuotePrinted = true;
+    flags.SetBool('EndgameExplosions', false);
 
     root = DeusExRootWindow(Player.rootWindow);
-    if (root == None)
+    if (root == none)
         return;
 
-    quoteDisplay = HUDMissionStartTextDisplay(root.NewChild(Class'HUDMissionStartTextDisplay', True));
-    if (quoteDisplay == None)
+    quoteDisplay = HUDMissionStartTextDisplay(root.NewChild(Class'HUDMissionStartTextDisplay', true));
+    if (quoteDisplay == none)
         return;
 
     quoteDisplay.displayTime = hijackDelay;
@@ -126,9 +94,6 @@ function PrintHijackQuote()
 
 defaultproperties
 {
-    // Hijacking: the triumphant escape. Tennyson's "Ulysses" (1842, public
-    // domain) -- survivors setting out rather than the impending-doom tone the
-    // other three endings share.
     hijackQuote(0)="TO STRIVE, TO SEEK, TO FIND, AND NOT TO YIELD."
     hijackQuote(1)="    -- ULYSSES, ALFRED, LORD TENNYSON"
     hijackDelay=13.000000

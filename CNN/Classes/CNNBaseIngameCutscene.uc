@@ -12,18 +12,12 @@ var name conversationName;
 var name convNamePlayed;
 var name actorTag;
 
-// Cached at FirstFrame. Used by TrySendPlayerOnceToGame to detect when
-// the IP chain has carried the player out of the default PlayerStart's
-// radius — see that function for the engine-level reasoning.
-var vector unsafeStartLoc;
+var vector unsafeStartLoc;      // the default PlayerStart, see TrySendPlayerOnceToGame
 var bool unsafeStartCached;
 
-// Opt-in: defer SendPlayer until the IP chain moves the player out of
-// the default PlayerStart's radius. Only needed when the PlayerStart
-// is inside a damage zone (MoonIntro's meteor explosion). Docks and
-// other cutscenes have safe PlayerStarts, so deferring there just
-// strands the player invincible at a position the URL #tag never
-// reaches. Default false; Chapter05 opts in.
+// Hold the send-off until the camera path has carried the player away from
+// the default PlayerStart. Only for maps whose PlayerStart is in a damage
+// zone (MoonIntro); Chapter05 sets it.
 var bool bDeferOnEarlyEsc;
 
 // ----------------------------------------------------------------------
@@ -71,7 +65,10 @@ function Timer()
 {
     Super.Timer();
     TrySendPlayerOnceToGame();
-    DoLevelStuff();
+
+    // a send-off travels, and PreTravel() clears flags
+    if (flags != none)
+        DoLevelStuff();
 }
 
 // ----------------------------------------------------------------------
@@ -86,28 +83,15 @@ function DoLevelStuff()
 
 function CheckIntroFlags()
 {
-    // Fresh New Game: TantalusDenton.ShowIntro sets bStartNewGameAfterIntro
-    // before SendPlayer; PlayerPawn declares it as `var travel`, so it
-    // survives the URL travel to this map. Without this branch, the .dxs
-    // saved at the end of the previous playthrough's cutscene keeps
-    // convNamePlayed=true and the intro is skipped on every subsequent
-    // New Game — player spawns at the explosion zone with no cutscene.
-    // Consume the flag so the cutscene's own SendPlayer (post-ESC URL
-    // travel) doesn't re-trigger this branch.
+    // A new game replays the intro even though the map, saved at the end of
+    // the last one, says it was played.
     if (player != none && player.bStartNewGameAfterIntro)
     {
         flags.SetBool(convNamePlayed, false);
         flags.SetBool('CNNCutsceneCleanup', false);
         player.bStartNewGameAfterIntro = false;
 
-        // Clear rail-mode state captured in .dxs from the previous
-        // run. Vanilla DX1's New Game runs StartNewGame between intro
-        // and gameplay (ResetPlayer + DeleteSaveGameFiles) which
-        // implicitly clears this via different-map travel; CNN skips
-        // that bridge so PHYS_Interpolating + Target=<IP> survives the
-        // same-map travel. Without reset, the player loads still
-        // walking the previous IP chain and StartConversationByName
-        // never starts the new cutscene.
+        // the saved map still has the player on the camera rails
         player.bInterpolating = false;
         player.Target = none;
         if (player.Physics == PHYS_Interpolating)
@@ -123,17 +107,10 @@ function CheckIntroFlags()
         // Make sure player is not hidden after interpolation state.
         player.bHidden = false;
 
-        // We're back on the post-cutscene mission instance — the
-        // deferred-ESC invincibility gate has done its job. Clear it
-        // so the player is mortal again. See TrySendPlayerOnceToGame.
+        // the player is mortal again (see TrySendPlayerOnceToGame)
         flags.SetBool('CNNCutsceneCleanup', false);
 
-        // Defensive reset: SendPlayer already clears these before URL
-        // travel, but console `open <map>` while already on the same
-        // map bypasses that path and respawns at PlayerStart with the
-        // .dxs rail state intact. Without this the camera interpolates
-        // from the saved end-of-chain position back to PlayerStart on
-        // every reopen.
+        // reopening the same map with console `open` keeps the rail state
         player.bInterpolating = false;
         player.Target = none;
         if (player.Physics == PHYS_Interpolating)
@@ -187,27 +164,21 @@ function TurnDownSoundVolume()
     player.SetInstantSoundVolume(SoundVolume);
 }
 
+// Called after Super.PreTravel(), which clears flags.
 function RestoreSoundVolume()
 {
-    if (flags.GetBool(convNamePlayed) && !IsArrivalCompleted)
+    if ((flags != none) && flags.GetBool(convNamePlayed) && !IsArrivalCompleted)
     {
         //SoundVolume = savedSoundVolume;
         player.SetInstantSoundVolume(SoundVolume);
     }
 }
 
-// UE1's same-map URL travel (Level.Game.SendPlayer with #tag) writes a
-// save at the current player.Location, reloads the map, and respawns
-// the player at the default PlayerStart — IGNORING the URL #tag. On
-// MoonIntro that drops the player back inside the meteor explosion
-// zone and they die → L2. Workaround: when ESC fires early (player is
-// still near the default PlayerStart), defer the URL travel. Set the
-// CNNCutsceneCleanup flag to gate TantalusDenton.TakeDamage so the
-// player survives the damage zone, and speed up the IP chain so they
-// reach a safe save-position quickly. Once they're far enough away,
-// SendPlayerOnce fires and UE1 honors #tag like it does for natural
-// cutscene completion. See the table at the top of memory file
-// project_moonintro_esc_pending.md for the position/routing matrix.
+// Travel to the same map ignores the #tag and respawns the player at the
+// default PlayerStart -- on MoonIntro, inside the meteor blast. So when the
+// cutscene is skipped early, the send-off waits until the camera path has
+// carried the player clear, sped up, with the player kept alive meanwhile
+// (CNNCutsceneCleanup, see TantalusDenton.TakeDamage).
 function TrySendPlayerOnceToGame()
 {
     if (flags.GetBool(convNamePlayed) && !isArrivalCompleted)
@@ -249,10 +220,7 @@ function bool IsPlayerNearUnsafeStart()
 {
     if (player == none || !unsafeStartCached)
         return false;
-    // Picked empirically from the position/routing matrix: mid-cutscene
-    // at ~1800 units from PlayerStart1 already gets #tag honored, so
-    // 1024 leaves some margin. Smaller would risk firing too early;
-    // larger delays UX without payoff.
+    // the #tag is honoured from about 1800 units away
     return VSize(player.Location - unsafeStartLoc) < 1024.0;
 }
 
@@ -260,36 +228,25 @@ function AccelerateCutscene()
 {
     local InterpolationPoint iPoint;
 
-    // 8x cinematic playback. Without this, the deferred phase can last
-    // many seconds while IPs creep along their original speed. The
-    // dialog has already been aborted by ConWindowActive, so audio
-    // pitch isn't a concern; only the camera path is still playing.
+    // the dialogue is already gone; only the camera path still runs
     foreach player.AllActors(class 'InterpolationPoint', iPoint)
     {
         iPoint.GameSpeedModifier = 8.0;
     }
 }
 
-// Single, idempotent entry point for cutscene cleanup. Callers: the Timer
-// (via TrySendPlayerOnceToGame), TantalusDenton.EndConversation (fires when
-// ESC during a bForcePlay convo aborts the dialog), and TantalusDenton.
-// ShowMainMenu (fires when ESC reaches the root window directly). The
-// bSendPlayerFired guard prevents re-entry while the level travel is pending.
+// Ends the cutscene once, whoever notices the skip first: the Timer,
+// TantalusDenton.EndConversation or TantalusDenton.ShowMainMenu.
 function SendPlayerOnce()
 {
     if (bSendPlayerFired || IsArrivalCompleted)
         return;
-    // player can be None briefly post-reload before InitStateMachine
-    // populates it; FinishCinematic dereferences player.AllActors, so
-    // bail until the next Timer tick rather than Accessed-None'ing.
+    // the player can be missing for a moment after the reload
     if (player == none || flags == none)
         return;
     bSendPlayerFired = true;
 
-    // Permanent flag (no expiration). The earlier (true, 0) form set
-    // bExpiringFlag=true with expiration=0, which DeleteExpiredFlags wipes
-    // on the post-reload mission instance — making the cutscene restart
-    // instead of staying ended.
+    // no expiration, or the reloaded map would replay the cutscene
     flags.SetBool(convNamePlayed, true);
     FinishCinematic();
     SendPlayer();
@@ -303,18 +260,11 @@ function FinishCinematic()
 {
     local InterpolationPoint iPoint;
 
-    // Reset the IP speed multiplier our defer-ESC accelerator pushed to
-    // 8x. This is a non-destructive write because 1.0 IS the default —
-    // .dxs will capture the default value and the cutscene replays from
-    // a New Game at normal speed.
-    //
-    // Intentionally NOT touching CameraPoint.nextPoint here: that loop
-    // (inherited from MissionScript) sets nextPoint=none on every CP to
-    // halt the cinematic chain, but the modification is captured in the
-    // same-map URL travel's .dxs and PERSISTS forever. On replay the
-    // camera chain is broken (cutscene text plays, camera frozen at the
-    // first CP). SendPlayer already resets player.ViewTarget=none which
-    // detaches the camera; the chain itself doesn't need destroying.
+    // The camera chain is left whole: the map is saved on the way out,
+    // and a broken chain would stay broken.
+
+    // Loop through all the InterpolationPoints and set the "GameSpeedModifier"
+    // to 1 so game time scale will be normal.
     foreach player.AllActors(class 'InterpolationPoint', iPoint)
     {
         iPoint.GameSpeedModifier = 1;
@@ -333,19 +283,10 @@ function SendPlayer()
     // DEUS_EX STM - added AI invisibility
     Player.bDetectable = true;
 
-    // Reset camera state the cutscene hijacked. Without this, ViewTarget
-    // stays pointing at a stale CameraPoint across the same-map #tag travel,
-    // leaving the player with no visible model and the cinematic eye height.
-    // Different-map travel resets this implicitly; #tag travel does not.
+    // Travel to the same map keeps camera and rail state, so clear it.
     Player.ViewTarget = none;
     Player.bBehindView = false;
 
-    // Clear rail-mode fields too. ESC during a cutscene fires this
-    // function while the player is still PHYS_Interpolating with
-    // Target=<current IP>; without resetting, .dxs captures that state
-    // and any subsequent same-map reload (URL #tag travel, console
-    // `open`) restores it, causing the engine to interpolate the
-    // camera/player back along the rails on entry.
     Player.bInterpolating = false;
     Player.Target = none;
     if (Player.Physics == PHYS_Interpolating)
@@ -356,11 +297,6 @@ function SendPlayer()
 
 defaultproperties
 {
-    // Faster than parent MissionScript's 1-second Timer. ESC during a
-    // bForcePlay cutscene is eaten by ConWindowActive.AbortCinematicConvo,
-    // which terminates the dialog (setting convNamePlayed) but doesn't
-    // know about CNNBaseIngameCutscene. Polling at 50ms lets our Timer
-    // pick up that flag and fire SendPlayerOnce within ~50ms — no
-    // perceptible double-press required.
+    // a skipped cutscene is noticed within 50ms
     checkTime=0.050000
 }

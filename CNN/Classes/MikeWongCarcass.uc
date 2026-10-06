@@ -1,9 +1,6 @@
 //=============================================================================
 // MikeWongCarcass.
-//
-// Michael Wong's body on L2: the map dresses a stock Male2 in a jumpsuit
-// with his own skins and scale, and Male2Carcass would leave a man in a
-// dress shirt. Set as his CarcassType by Chapter06L2.SetSocialBossCarcasses().
+// Michael Wong's body, in his jumpsuit, skins and scale.
 //=============================================================================
 class MikeWongCarcass extends DeusExCarcass;
 

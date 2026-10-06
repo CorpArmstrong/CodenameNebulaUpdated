@@ -40,10 +40,7 @@ function TakeDamage(int Damage, Pawn EventInstigator, vector HitLocation, vector
     }
 }
 
-// Burns once, for Flammability seconds. The Timer used to re-ignite every
-// Flammability-5 seconds while isBurning, so every corpse burned forever
-// with 8-16 overlapping Fire actors; a fight with the L2 avatars left a
-// floor of them and the frame rate sank (2026-10-02).
+// Burns once, for Flammability seconds
 function StartFire()
 {
     isBurning = true;

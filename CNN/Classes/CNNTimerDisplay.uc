@@ -1,22 +1,19 @@
 //=============================================================================
 // CNNTimerDisplay
 //
-// Vanilla TimerDisplay draws the seconds from a float local, so a countdown
-// reads "3:39.00000" (seen on L2's MJ12 and upload timers, 2026-09-24).
-// Same window, same background, fonts and colours, but whole seconds:
-// "03:39". Create it with CreateIn() in place of DeusExHUD.CreateTimerWindow.
+// TimerDisplay that shows whole seconds ("03:39" instead of "3:39.00000").
 //=============================================================================
 class CNNTimerDisplay extends TimerDisplay;
 
-// Mirrors DeusExHUD.CreateTimerWindow: the HUD has one timer slot, and it
-// hands back None when that slot is taken.
+// Like DeusExHUD.CreateTimerWindow: returns None when the HUD's timer slot
+// is taken.
 static function TimerDisplay CreateIn(DeusExHUD hud)
 {
-    if ((hud == None) || (hud.timer != None))
-        return None;
+    if ((hud == none) || (hud.timer != none))
+        return none;
 
     hud.timer = TimerDisplay(hud.NewChild(class'CNNTimerDisplay'));
-    if (hud.timer != None)
+    if (hud.timer != none)
         hud.timer.AskParentForReconfigure();
     return hud.timer;
 }
@@ -26,18 +23,16 @@ event DrawWindow(GC gc)
     local string str;
     local int total, mins, secs;
 
-    // Window.DrawWindow draws nothing; the background is set in InitWindow.
-
     gc.SetFont(Font'FontComputer8x20_B');
     gc.SetAlignments(HALIGN_Center, VALIGN_Bottom);
-    gc.EnableWordWrap(False);
+    gc.EnableWordWrap(false);
 
     if (bCritical)
         gc.SetTextColor(colCritical);
     else
         gc.SetTextColor(colNormal);
 
-    // Round up, so the display reaches 00:00 exactly as the time runs out.
+    // round up, so 00:00 shows exactly when the time runs out
     total = int(time);
     if (float(total) < time)
         total++;

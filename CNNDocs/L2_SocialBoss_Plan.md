@@ -92,13 +92,16 @@ JoinedMutiny без расстрела; таймер MJ12 стоит на вре
 | «(Compromise with Dr. Mephistopheles)» | — | [41–45]: «Now I am become death…», Вонг «We will crap all over the world!» | назад к Выбору 3 |
 | «(Accuse Wong of hypocricy)» | `SeedsOfDoubtPlanted` | [47–54]: «start with yourself!»; **флаг `WongParanoid`**; Саманта «(Screams)», Тантал «Samantha, your mother transcended…», Вонг «You are NEXT» | **Вонг расстреливает Саманту (на [54])** → назад к Выбору 3 |
 | «(Apologize to Wong)» | **китайский Trained** | [60–67]: извинение по-китайски, «I need your help, Mike. Now!», «So mote it be.», Вонг «Your Chinese sucks heck.» | **Вонг убивает Мефистофеля (на [66]), затем нападает на игрока** → бой |
-| «(Manipulate Wong)» | **китайский Trained** + `WongParanoid` | [71–78]: «I've seen the video…», «you are an avatar… Wake up, Mike. Now!», Мефистофель «Time's up…», «So mote it be.», Вонг «You still Dontgivafucker!» | **Вонг убивает Мефистофеля (на [77]), затем нападает на игрока** → бой |
+| «(Manipulate Wong)» | **китайский Trained** + (`WongParanoid` или `PlayerSawWongVideo`) | [71–78]: «I've seen the video…», «you are an avatar… Wake up, Mike. Now!», Мефистофель «Time's up…», «So mote it be.», Вонг «You still Dontgivafucker!» | **Вонг убивает Мефистофеля (на [77]), затем нападает на игрока** → бой |
 | «(ATTACK)» | — | [56] «I have no time for this!» | **Вонг и Мефистофель нападают** → бой |
 | «(CAUSE AN APOCALYPSE)» | — | [58] «Wait! I'll do it. Let's finish off the conspirators! God help us...» | **флаг `PlayerGaveUp`** → после разговора **Mutiny** |
 
 Без китайского игроку доступны: компромисс (петля), обвинение Вонга (после «посеять
-сомнения»), атака, сдача. Видеозапись Вонга упоминается в реплике «Manipulate», но в игре её
-нет (компьютер в недостроенной комнате) — оставлено так (решение 02.10.2026).
+сомнения»), атака, сдача. Видеозапись Вонга, о которой говорит реплика «Manipulate», — это
+архивные камеры компьютера в каюте доктора Рид (шахта гравитационной лаборатории, портал, код
+011235; см. `CNNDocs/L2_WalkthroughMap.md`, раздел 6e). Вход в компьютер ставит
+`PlayerSawWongVideo`; `CNNSocialBoss.PatchVideoFlag()` тогда открывает Manipulate без обвинения
+(решение 08.10.2026: «видео ИЛИ обвинение»).
 
 ### После разговора
 

@@ -58,7 +58,7 @@ CNNDev GOTO magdalene
 ```
 
 `start` `sam` `samantha` `magdalene` `maglab` `soldiers` `battle` `iot` `wong` `meph` `jc`
-`tube` `final` `wall` —
+`tube` `final` `wall` `reed` —
 run it with no argument to print the list. The landmarks are actor origins, so it lifts
 you clear of the floor before placing you; if every offset is refused it means you are not
 on 06_OpheliaL2. Each jump is logged.
@@ -141,6 +141,11 @@ The level runs roughly **north to south** (Y decreasing) across three vertical b
 Anything at **positive Y** (e.g. `MikeWong1` at `(962, 3863, 268)`, `SamanthaReed` #2 at
 `(944, 3788, 256)`, `BobPage2` at `(5835, -2160, 80)`) is an **offstage set** — holo and
 cutscene doubles, not places the player walks. INF
+
+Some rooms sit outside these bands and are joined to them by **WarpZone portals**, not by
+geometry: Dr Reed's stateroom (Z ~1505..1890, see section 6e) at the top of the Gravity Lab
+shaft, the captain's and crew quarters below and above the deck. A search by position alone
+calls them unreachable; follow the `WarpZoneInfo` pairs (`ThisTag` / `OtherSideURL`).
 
 ---
 
@@ -436,6 +441,40 @@ implemented on L2 (Page's elevator infolink sends the player to Samantha in the 
 trigger, the `MeetSamanthaReed` trigger and Samantha's conversations. The Uber Alles holocomm is a
 separate thread and stays. Daedalus's `MeetDaedalusInTheCommandCenter` goal is neutralised by
 `Chapter06L2.DropDeadGoals()`; his voice lines still play. User-decided 2026-10-02.
+
+---
+
+## 6e. Dr Reed's stateroom and Wong's archive recordings (2026-10-08)
+
+The room Samantha describes in `SamGivesQuest` ("just outside of Hawking's gravity lab, up the
+ladder, the code's 011235") is in the map and reachable; an earlier note called it an
+unreachable island because it only looked for teleporters.
+
+**Route, verified with the bridge:** the Gravity Lab shaft at `(912, -230)` crosses the
+main-deck corridor at Z ~0 and runs from Z -960 to 1282. Below the deck `ZoneInfo15` pushes
+up (`ZoneGravity Z=+200`), above it `ZoneInfo16` is near-weightless: step into the hole and
+the lift carries the player up (~180 u/s). At the top the portal `WZ1 (920, -236, 1258)` leads
+to `WZ2 (2050, 608, 1578)`, the vestibule of the stateroom; walking back into it returns the
+player to the shaft, who falls to the deck unharmed. `CNNDev GOTO reed` lands in the vestibule.
+
+**Door:** `door_lab1` (rotating, not frobbable) opens from `Keypad4` outside and `Keypad6`
+inside, both on code 011235. Inside, the open door leaf closes off a pocket south of the
+doorway; leave along the north side of the room.
+
+**The recordings:** `ComputerSecurity2` (login SECURITY / SECURITY, case-sensitive) shows three
+cameras: the stateroom itself, "Archive - Sol 243" (`ReedRecord`, a sealed set at X ~5900 with
+the double `MichaelWong`) and "Archive - Sol 242" (`ReedRecord2`, a set at X ~7200 with two
+"Surgeon" doubles). Logging in sets `PlayerSawWongVideo`, which opens "(Manipulate Wong)" in
+the Social Boss scene without accusing him first (see `CNNDocs/L2_SocialBoss_Plan.md`).
+
+`Chapter06L2.SetupReedStateroom()` fixes what the map got wrong: the keypads' code was 8946 and
+the inside one kept the default `bToggleLock` (it only toggled the lock), the light switch by
+the door opened it without a code, two voice tapes played a placeholder ("Test speech") and a
+conversation that does not exist, and Wong's double stood at the edge of his camera's view.
+
+Still in the room as built: six invisible (`PinkMaskTex`) carcasses at two spots, which the
+"Recording..." camera shows as pale shapes. The quarters behind the other portals keep their
+keypads on `door_lab1` (code 8946) -- copy-paste from the map, harmless.
 
 ---
 

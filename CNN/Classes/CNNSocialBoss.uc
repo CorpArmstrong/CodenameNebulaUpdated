@@ -377,8 +377,30 @@ function PatchChoiceSkills(Conversation con)
                 choice.skillNeeded = class'AiSkillChinese';
                 choice.skillLevelNeeded = 1;
             }
+            if (choice.choiceLabel == "ManipulateWong")
+                PatchVideoFlag(choice.flagRef);
         }
     }
+}
+
+// "(Manipulate Wong)" needs WongParanoid, from accusing him; having seen
+// his archive recordings in Dr Reed's stateroom does as well. The
+// conversation outlives a load, so the flag is set either way.
+function PatchVideoFlag(ConFlagRef ref)
+{
+    while (ref != none)
+    {
+        if ((ref.flagName == 'WongParanoid') || (ref.flagName == 'PlayerSawWongVideo'))
+        {
+            if (Player.flagBase.GetBool('PlayerSawWongVideo'))
+                ref.flagName = 'PlayerSawWongVideo';
+            else
+                ref.flagName = 'WongParanoid';
+            return;
+        }
+        ref = ref.nextFlagRef;
+    }
+    Log("CNN L2: ManipulateWong has no WongParanoid flag to patch");
 }
 
 function EventStarted(Conversation con, ConEvent ev)

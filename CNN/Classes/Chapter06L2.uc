@@ -18,6 +18,9 @@ const TUBE_GLASS_BOTTOM = 50.0;
 // How far Magdalene may trail the player near the tube lab before she
 // catches up -- see BringMagdaleneToTube().
 const MAG_CATCHUP_DIST = 300;
+// Dr Reed's stateroom door -- see SetupReedStateroom().
+const REED_DOOR_TAG  = 'door_lab1';
+const REED_DOOR_CODE = "011235";   // the code Samantha gives
 
 var bool  bEndingTriggered;
 var bool  bSoldierFallbackDone;
@@ -91,6 +94,7 @@ function PrepareFirstFrame()
     StartSocialBoss();
     ProtectShipsWheel();
     DisablePageAndSamantha();
+    SetupReedStateroom();
 }
 
 // The scene keeps its own state and is saved with the level; after a load
@@ -146,6 +150,89 @@ function DisablePageAndSamantha()
     goal = Player.FindGoal('TalkToPage');
     if (goal != none)
         Player.DeleteGoal(goal);
+}
+
+// ----------------------------------------------------------------------
+// SetupReedStateroom()
+//
+// Dr Reed's stateroom, up the Gravity Lab shaft, holds the archive
+// recordings of Wong. Its door takes the code Samantha gives and opens
+// from inside too, not from the light switch by it. The two placeholder
+// voice tapes go, and the archive's Wong stands where its camera sees him.
+// ----------------------------------------------------------------------
+
+function SetupReedStateroom()
+{
+    local DeusExMover door;
+    local Keypad pad;
+    local LightSwitch lightSwitch;
+    local VoiceTape tape;
+    local SecurityCamera cam;
+    local ScriptedPawn p, wong;
+    local vector loc;
+
+    foreach AllActors(class'DeusExMover', door, REED_DOOR_TAG)
+        break;
+    if (door == none)
+        return;
+
+    // the crew quarters have a keypad on the same event, far away
+    foreach AllActors(class'Keypad', pad)
+    {
+        if (VSize(pad.Location - door.Location) > 400)
+            continue;
+        pad.Event = REED_DOOR_TAG;
+        pad.validCode = REED_DOOR_CODE;
+        pad.bToggleLock = false;   // the inside one kept the default: it only toggled the lock
+    }
+
+    foreach AllActors(class'LightSwitch', lightSwitch)
+        if (lightSwitch.Event == REED_DOOR_TAG)
+            lightSwitch.Event = '';
+
+    foreach AllActors(class'VoiceTape', tape)
+        if ((tape.conversationName == "DL_MeganReedsRoom") || (tape.conversationName == "DL_CaptainTalksWithWong"))
+            tape.Destroy();
+
+    // the camera looks straight down; he stood at the edge of its view
+    foreach AllActors(class'SecurityCamera', cam, 'ReedRecord')
+        break;
+    foreach AllActors(class'ScriptedPawn', p)
+        if (p.BindName == "MichaelWong")
+            wong = p;
+    if ((cam != none) && (wong != none))
+    {
+        loc = cam.Location;
+        loc.X += 45;
+        loc.Z = wong.Location.Z;
+        wong.SetLocation(loc);
+    }
+}
+
+// ----------------------------------------------------------------------
+// CheckWongVideo()
+//
+// Logging in to the stateroom's security computer shows the archive
+// recordings that "(Manipulate Wong)" in the Social Boss scene speaks of
+// -- see CNNSocialBoss.PatchVideoFlag().
+// ----------------------------------------------------------------------
+
+function CheckWongVideo()
+{
+    local ComputerSecurity comp;
+
+    if (flags.GetBool('PlayerSawWongVideo'))
+        return;
+
+    foreach AllActors(class'ComputerSecurity', comp)
+    {
+        if ((comp.Views[1].cameraTag == 'ReedRecord') && (comp.termwindow != none) &&
+            (ComputerScreenSecurity(comp.termwindow.winComputer) != none))
+        {
+            flags.SetBool('PlayerSawWongVideo', true);
+            Log("CNN L2: player saw Wong's archive recordings");
+        }
+    }
 }
 
 // ----------------------------------------------------------------------
@@ -540,6 +627,7 @@ function DoLevelStuff()
     UpdateMJ12Countdown();
     CheckShipsWheel();
     CheckSoldierSoftlock();
+    CheckWongVideo();
     CheckPlayerDeath();
     CheckEndingReached();
 }

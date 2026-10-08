@@ -24,6 +24,12 @@ Samantha Reed as hostages. The fully voiced confrontation plays out on the bridg
 executes hostages as it goes on, Tantalus's Chinese lets him apologise to Wong or turn him
 against Mephistopheles, and the scene ends in a fight — or in surrender.
 
+## Dr. Reed's stateroom
+
+Up the Gravity Lab shaft, behind the door with the code Samantha would give you (011235),
+Dr. Reed's security computer keeps archive recordings of Michael Wong. Having seen them lets
+Tantalus manipulate Wong on the bridge without accusing him first (Chinese still needed).
+
 ## Fixes
 
 - Saved games on Ring 2 now keep everything that matters: the MJ12 countdown, the state of the

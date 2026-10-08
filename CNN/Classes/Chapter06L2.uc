@@ -93,7 +93,7 @@ function PrepareFirstFrame()
     TrimMagdaleneCoilGuns();
     StartSocialBoss();
     ProtectShipsWheel();
-    DisablePageAndSamantha();
+    StartGravityLab();
     SetupReedStateroom();
 }
 
@@ -108,48 +108,17 @@ function StartSocialBoss()
     socialBoss.LevelStart(Player);
 }
 
-// ----------------------------------------------------------------------
-// DisablePageAndSamantha()
-//
-// The Page / Samantha Reed storyline is not built on L2: Page's infolink
-// sends the player to the Gravity Lab, where nothing plays. Switch the
-// thread off -- the infolink, the meeting trigger and her conversations.
-// The Uber Alles holocomm is not part of it.
-// ----------------------------------------------------------------------
-
-function DisablePageAndSamantha()
+// The Gravity Lab meeting with Samantha Reed and Wong keeps its own state
+// and is saved with the level; after a load it is found again.
+function StartGravityLab()
 {
-    local DataLinkTrigger dlTrigger;
-    local ConversationTrigger conTrigger;
-    local DeusExGoal goal;
+    local CNNGravityLab lab;
 
-    foreach AllActors(class'DataLinkTrigger', dlTrigger)
-    {
-        if (dlTrigger.datalinkTag == 'DL_BobPageInElevator')
-        {
-            dlTrigger.SetCollision(false, false, false);
-            dlTrigger.datalinkTag = '';
-            Log("CNN L2: disabled Bob Page infolink trigger " $ dlTrigger.Name);
-        }
-    }
-
-    foreach AllActors(class'ConversationTrigger', conTrigger)
-    {
-        if (conTrigger.conversationTag == 'MeetSamanthaReed')
-        {
-            conTrigger.SetCollision(false, false, false);
-            conTrigger.conversationTag = '';
-            Log("CNN L2: disabled Samantha Reed trigger " $ conTrigger.Name);
-        }
-    }
-
-    StripConversation('MeetSamanthaReed');
-    StripConversation('SamGivesQuest');
-    StripConversation('FindMeganReed');
-
-    goal = Player.FindGoal('TalkToPage');
-    if (goal != none)
-        Player.DeleteGoal(goal);
+    foreach AllActors(class'CNNGravityLab', lab)
+        break;
+    if (lab == none)
+        lab = Spawn(class'CNNGravityLab');
+    lab.LevelStart(Player);
 }
 
 // ----------------------------------------------------------------------

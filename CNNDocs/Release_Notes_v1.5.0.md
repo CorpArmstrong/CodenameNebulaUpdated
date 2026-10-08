@@ -24,11 +24,14 @@ Samantha Reed as hostages. The fully voiced confrontation plays out on the bridg
 executes hostages as it goes on, Tantalus's Chinese lets him apologise to Wong or turn him
 against Mephistopheles, and the scene ends in a fight — or in surrender.
 
-## Dr. Reed's stateroom
+## Samantha Reed and Dr. Reed's stateroom
 
-Up the Gravity Lab shaft, behind the door with the code Samantha would give you (011235),
-Dr. Reed's security computer keeps archive recordings of Michael Wong. Having seen them lets
-Tantalus manipulate Wong on the bridge without accusing him first (Chinese still needed).
+Bob Page and President Mead ask Tantalus to check on Page's daughter, Professor Samantha
+Reed, in Hawking's gravity lab. He finds her arguing with a "scientist" who is not what he
+says. Side with Samantha and she asks for help finding her mother, and gives the code to
+their stateroom, up the gravity lab shaft. Dr. Reed's security computer there keeps archive
+recordings of Michael Wong; having seen them lets Tantalus manipulate Wong on the bridge
+without accusing him first (Chinese still needed).
 
 ## Fixes
 
@@ -43,8 +46,8 @@ Tantalus manipulate Wong on the bridge without accusing him first (Chinese still
   dead end).
 - The avatars now join the comm centre battle.
 - Conversations from Ring 1 and from the docks no longer play on Ring 2 in place of Ring 2's own.
-- The unfinished Bob Page / Samantha Reed side story is switched off instead of leaving goals
-  that could not be completed.
+- The goals from Bob Page's infolink and President Mead's holocomm message ("check up on his
+  daughter in the Gravity lab") can now be completed.
 - The hostages show their real names and leave their own bodies.
 - Bodies set on fire burn once instead of forever.
 - Crashes fixed: travelling after using a holocomm unit; travelling to an ending after the

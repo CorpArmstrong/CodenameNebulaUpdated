@@ -1168,6 +1168,7 @@ function bool LandmarkLocation(string where, out vector dest)
     else if (where == "WALL")      dest = vect(  918, -5686,    15);  // reported invisible wall / render artifact spot
     else if (where == "TUBE")      dest = vect(  843, -6084,     8);  // LoadingInTube trigger
     else if (where == "FINAL")     dest = vect( 1487, -6294,     4);  // tube area (medbot) -- the trigger itself is outside walkable space; use FIRE MiniGameDispatcher
+    else if (where == "REED")      dest = vect( 1990,   608,  1535);  // Dr Reed's stateroom, outside its door (WarpZone from the Gravity Lab shaft)
     else return false;
     return true;
 }
@@ -1181,7 +1182,7 @@ function GotoLandmark(string where)
 
     if (!LandmarkLocation(where, dest))
     {
-        Player.ClientMessage("GOTO: start sam samantha magdalene maglab soldiers battle iot wong meph jc tube final wall");
+        Player.ClientMessage("GOTO: start sam samantha magdalene maglab soldiers battle iot wong meph jc tube final wall reed");
         return;
     }
 

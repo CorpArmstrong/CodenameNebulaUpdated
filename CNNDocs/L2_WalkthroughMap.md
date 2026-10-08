@@ -435,6 +435,9 @@ and frobbing him: OK
 | `SocialBoss` (radius 500 around Mephistopheles) | Speakers `CorpArmstrongHostage`, `DrJohnsonHostage`, `SamanthaReedHostage` were never placed. Standing at Mephistopheles with `ReadyForSocialBoss` set started nothing. |
 | `MeetDrMephistopheles` (frob/bump on Mephistopheles) | Stray L1 initiation scene; needs Isaac, who is not on L2. Frobbing him started nothing. |
 
+> **Update 2026-10-08:** the Samantha Reed thread is switched back on -- see section 6f. The
+> paragraph below is history.
+
 So `Chapter06L2.RepairSamanthaReedTrigger()` was removed. The Page/Samantha storyline is not
 implemented on L2 (Page's elevator infolink sends the player to Samantha in the Gravity Lab), so
 `Chapter06L2.DisablePageAndSamantha()` switches it off at load: the `DL_BobPageInElevator`
@@ -475,6 +478,37 @@ conversation that does not exist, and Wong's double stood at the edge of his cam
 Still in the room as built: six invisible (`PinkMaskTex`) carcasses at two spots, which the
 "Recording..." camera shows as pale shapes. The quarters behind the other portals keep their
 keypads on `door_lab1` (code 8946) -- copy-paste from the map, harmless.
+
+---
+
+## 6f. The Samantha Reed thread (2026-10-08)
+
+Bob Page's daughter, Professor Samantha Reed, in Hawking's gravity lab: the octagonal room
+around the gravity shaft on the main deck (X ~575..1250, Y ~-550..50, floor Z -32), north of
+the comm centre. Run by `CNNGravityLab` (a saved `Info`, spawned by `Chapter06L2`).
+
+| Step | Content | State |
+|---|---|---|
+| Page's infolink in the elevator below the comm centre | `DL_BobPageInElevator` (`DataLinkTrigger2`, `(884,-1869,-249)`): "my only daughter ... check up on her in the Gravity Lab", goal `TalkToPage` | plays |
+| President Mead on the holocomm (`MeadButton`) | `PhilipMeadHolo`: "Bob Page's daughter is in the Hawking gravity lab", goals `BobPageEnding`, `MeetDrReed` | plays; ends `TalkToPage` |
+| The meeting | `MeetSamanthaReed` (radius 200 / frob on Samantha): choice `[Support Samantha]` exposes Wong (`MikeWongExposed`), `[Support Wong]` sends both to the Command Center; sets `MetReedAndWong` | plays; ends `MeetDrReed` |
+| After it | Wong walks to the lab's south doorway; Samantha too unless the player sided with her. Each is gone once the player does not see them (out of sight, or not within ~60 degrees of where he looks). | `CNNGravityLab` |
+| Her request | `SamGivesQuest` (frob, needs `MetReedAndWong`): goal `FindMeganReed`, the stateroom code 011235 | only if she stayed |
+| Daedalus | `DL_DaedalusSuggestsMeetHimAtCommCenter` (`DataLinkTrigger4`, comm centre) needs `MetReedAndWong` | plays after the meeting |
+| The stateroom | section 6e; the archive recordings end `FindMeganReed` | plays |
+| MJ12 on their way | whoever is still in the lab is taken to the bridge as a hostage (removed out of sight) | `CNNGravityLab` |
+
+The two in the lab are doubles: `Female2` (`SamanthaReed`) and `Male0` (`MikeWong1`), which
+stood in a sealed room at Y ~3800. The bridge hostages are other pawns (`Female1`, renamed
+`SamanthaReedHostage` by `CNNSocialBoss`; `Male2`, `MikeWong`). Fixed in the conversation at
+load: the meeting's closing `TRIGGER MagdaleneMandatoryMovementTriger` (it would move
+Magdalene) points at an unused tag instead -- **not** at the spawned actor's own `Tag`, which is
+`None`: a trigger on `None` fires every actor in the level (it ran the tube sequence and a
+MapExit, reloading L2). The choice "[Support Wang]" reads Wong. The meeting is dropped from
+Samantha's list once over, or frob and radius would replay it. The lab and its corridor have no
+path nodes, so `GoingTo` gets them only as far as a spawned `CNNWaypoint` in the doorway at
+`(900,-500)`. `DL_BobPagePanicking` and `DL_MeganReedsRoom` (placeholder) are still unused; the
+old `MeetSamanthaReed` trigger by the comm centre is switched off.
 
 ---
 

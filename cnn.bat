@@ -310,28 +310,19 @@ for %%f in (%CNN_PACKAGES%) do (
 echo Compiling...
 cd /d "%SYSTEM_DIR%"
 
-:: ucc.exe (32-bit, pre-2000) intermittently GPFs during CONVERSATION/AUDIO
-:: IMPORT on large .con files -- heap fragmentation in the compiler itself,
-:: not a real source problem (see memory/feedback_ucc_gpf.md: ~25-30% of
-:: clean compiles hit this, and the exact same input compiles fine on
-:: retry). No source-level fix exists: the import count that stresses the
-:: allocator (472 audio paths in OpheliaDocksAndL1.Con) is baked into that
-:: .con binary itself, not the #exec directives in ImportConversations.uc/
-:: ImportSounds.uc, so it can't be reduced without ConEdit; an LAA patch on
-:: ucc.exe only reduces the rate (~25-30% -> ~10%), it doesn't eliminate it.
-:: Detect the GPF signature and retry up to 8x before treating it as a real
-:: failure -- at the WORST measured per-run rate (30%), 8 retries gives
-:: 1 - 0.3^8 =~ 99.9994% cumulative success (about 1 in 150,000 to still
-:: fail); at the typical ~25% rate it's better still. Each extra retry only
-:: costs a few seconds beyond a normal compile, and only in the unlucky
-:: case -- a successful compile still takes exactly 1 attempt.
+:: ucc runs with the Windows debug heap: the stock ConSys.dll writes 8 bytes
+:: past every ConEventAnimation it imports, which crashed about a quarter of
+:: compiles (GPF in FArray::Realloc during CONVERSATION IMPORT). The debug
+:: heap's padding absorbs the stray bytes -- see tools\ucc_safeheap.ps1.
+:: A GPF is no longer expected; the retry below only guards against
+:: something new, and says so if it ever fires.
 set "COMPILE_LOG=!TEMP!\cnn_compile_output.log"
 set "COMPILE_ATTEMPT=0"
-set "COMPILE_MAX_ATTEMPTS=8"
+set "COMPILE_MAX_ATTEMPTS=3"
 
 :compile_attempt
 set /a "COMPILE_ATTEMPT+=1"
-"%SYSTEM_DIR%\ucc.exe" make > "!COMPILE_LOG!" 2>&1
+powershell -NoProfile -ExecutionPolicy Bypass -File "%REPO_ROOT%\tools\ucc_safeheap.ps1" -SystemDir "%SYSTEM_DIR%" make > "!COMPILE_LOG!" 2>&1
 set "UCC_EXITCODE=!errorlevel!"
 type "!COMPILE_LOG!"
 
@@ -344,13 +335,13 @@ goto :compile_succeeded
 :compile_gpf_hit
 if !COMPILE_ATTEMPT! GEQ !COMPILE_MAX_ATTEMPTS! goto :compile_gpf_exhausted
 echo.
-echo GPF on attempt !COMPILE_ATTEMPT!/!COMPILE_MAX_ATTEMPTS! -- known intermittent ucc.exe issue ^(memory/feedback_ucc_gpf.md^), not a real error. Retrying...
+echo GPF on attempt !COMPILE_ATTEMPT!/!COMPILE_MAX_ATTEMPTS! -- UNEXPECTED with the debug heap ^(see tools\ucc_safeheap.ps1^); check the log above. Retrying...
 echo.
 goto :compile_attempt
 
 :compile_gpf_exhausted
 echo.
-echo COMPILE FAILED -- GPF persisted across !COMPILE_MAX_ATTEMPTS! attempts ^(extremely unusual; normally clears within 1-2^)
+echo COMPILE FAILED -- GPF on all !COMPILE_MAX_ATTEMPTS! attempts; this is not the ConEventAnimation overflow, look at the log
 goto :eof
 
 :compile_succeeded

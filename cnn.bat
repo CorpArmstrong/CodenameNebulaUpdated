@@ -167,10 +167,9 @@ echo.
 :: Create junctions
 echo [1/4] Creating directory junctions...
 set "JUNCTIONS_OK=1"
-for %%j in (CodenameNebulaUpdated CNN CNNText CNNMaps ApocalypseInside) do (
+for %%j in (CodenameNebulaUpdated CNN CNNMaps ApocalypseInside) do (
     if "%%j"=="CodenameNebulaUpdated" set "JUNCTION_SRC=%REPO_ROOT%"
     if "%%j"=="CNN" set "JUNCTION_SRC=%REPO_ROOT%\CNN"
-    if "%%j"=="CNNText" set "JUNCTION_SRC=%REPO_ROOT%\CNNText"
     if "%%j"=="CNNMaps" set "JUNCTION_SRC=%REPO_ROOT%\Maps"
     if "%%j"=="ApocalypseInside" set "JUNCTION_SRC=%REPO_ROOT%\ApocalypseInside"
     if exist "%DEUSEX_ROOT%\%%j" (
@@ -295,7 +294,6 @@ echo.
 
 :: Verify junctions exist
 if not exist "%DEUSEX_ROOT%\CNN\Classes" echo ERROR: Junction CNN not found. Run: mklink /J "%DEUSEX_ROOT%\CNN" "%REPO_ROOT%\CNN" && goto :eof
-if not exist "%DEUSEX_ROOT%\CNNText\Classes" echo ERROR: Junction CNNText not found. Run: mklink /J "%DEUSEX_ROOT%\CNNText" "%REPO_ROOT%\CNNText" && goto :eof
 if not exist "%DEUSEX_ROOT%\ApocalypseInside\Classes" echo ERROR: Junction ApocalypseInside not found. Run: mklink /J "%DEUSEX_ROOT%\ApocalypseInside" "%REPO_ROOT%\ApocalypseInside" && goto :eof
 
 :: Remove old compiled packages so ucc recompiles from source

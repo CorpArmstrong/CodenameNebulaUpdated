@@ -55,13 +55,11 @@ Clone the repo to any location, then create **directory junctions** from the Deu
 ```cmd
 mklink /J "<DeusExRoot>\CodenameNebulaUpdated" "<path-to-this-repo>"
 mklink /J "<DeusExRoot>\CNN" "<path-to-this-repo>\CNN"
-mklink /J "<DeusExRoot>\CNNText" "<path-to-this-repo>\CNNText"
 mklink /J "<DeusExRoot>\CNNMaps" "<path-to-this-repo>\Maps"
 ```
 
 - `CodenameNebulaUpdated` — main repo access for the engine
 - `CNN` — required for `ucc make` to find UnrealScript source files
-- `CNNText` — required for `ucc make` to compile conversation/text package
 - `CNNMaps` — short path for the editor (avoids path length truncation in UnrealEd 1.x)
 
 ### Step 5: Copy Runtime Dependencies to `<DeusExRoot>\System\`
@@ -201,7 +199,8 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 - **UnrealEd 2.2 (UED22)** is incompatible with CNN maps — its stripped `.u` packages from UT 469e are missing Deus Ex functions. Engine versions are binary-incompatible; swapping `.u` files doesn't work.
 - **Original SDK editor** freezes on large maps (OpheliaL1, MoonIntro) and crashes when clicking empty space with properties window open (`HitSize==0` assertion in `UnCamera.cpp`).
 - **Path length limit** — UnrealEd 1.x truncates long file paths. Use the `CNNMaps` junction (short path) instead of the full `CodenameNebulaUpdated\Maps\` path.
-- **`CNNText.u`** is a build artifact not in source control. It must be compiled via `ucc make` from `CNNText/Classes/` which imports `.con` conversation files.
+- **`CNNText.u`** is a build artifact not in source control: the conversation package that `#exec CONVERSATION IMPORT` in `CNN/Classes/ImportConversations.uc` writes next to `CNN.u` (`<Package>Text.u`). There is no `CNNText` source package — `ucc make` would skip one anyway, because the file already exists by the time it gets there.
+- **In-game text** (datacubes, books, bulletins, credits) lives in `CNN/Text/<folder>/*.txt` and goes into `CNN.u` through `#exec ALLDEUSEXTEXT IMPORT` (`CNN/Classes/ApocalypseInsideText.uc`), so maps and `CNNCreditsWindow` use `TextPackage="CNN"`. ALLDEUSEXTEXT only reads files one folder deep (`Text\<folder>\*.txt`); a `.txt` placed directly in `CNN/Text/` is silently ignored.
 - **Kentie's D3D10 renderer** causes `HitSize==0` crashes in the original editor on startup.
 
 ## Repository Structure
@@ -210,8 +209,7 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 |-----------|----------|
 | `CNN/Classes/` | All UnrealScript source files (game logic, NPCs, weapons, UI, quests) |
 | `CNN/Conversations/` | Binary conversation data files (.con) created by ConEdit |
-| `CNNText/Text/` | In-game text content (datacubes, books, bulletins) by chapter — imported into `CNNText.u` via `#exec DEUSEXTEXT IMPORT` in [CNNText/Classes/CNNTextImport.uc](CNNText/Classes/CNNTextImport.uc) |
-| `CNNText/Classes/` | UnrealScript source for conversation/text package (imports .con and .txt files) |
+| `CNN/Text/` | In-game text (datacubes, books, bulletins, credits) by folder — imported into `CNN.u` by `#exec ALLDEUSEXTEXT IMPORT` in [CNN/Classes/ApocalypseInsideText.uc](CNN/Classes/ApocalypseInsideText.uc) |
 | `CNN/Audio/` | Dialogue audio organized by chapter/character |
 | `CNN/Models/` | 3D model files |
 | `CNN/Sounds/` | Sound effect archives (.uax) |

@@ -2,7 +2,7 @@
 
 Проведён 09.10.2026 по сборке `Build/CodenameNebula_v1.5.0.exe` (198,3 МБ, master `3b83afc`).
 Это не юридическое заключение, а опись: что лежит в установщике, откуда оно, указано ли в
-титрах (`CNNText/Text/credits/CNNCredits.txt`) и что сделать до публикации.
+титрах (`CNN/Text/credits/CNNCredits.txt`) и что сделать до публикации.
 
 **Контекст лицензии.** Мод распространяется под CC BY-NC-SA 3.0 (`CNNInstaller/InfoLicense.txt`).
 Чужие ресурсы этой лицензией не покрываются: на каждый нужен либо явный разрешающий статус
@@ -49,7 +49,7 @@
 | `System/DXOgg.dll`, `DXOgg.u` | все карты (музыка) | «DXOgg Ogg Extension for Deus Ex», © 2005–2009, автор не указан в файле | **нет** | Найти автора/readme, добавить в титры |
 | `System/D3D9Drv.dll` | рендерер по умолчанию | Вероятно, D3D9-рендерер **Chris Dohnal** (cwdohnal.com: только «Copyright 2002-2010 Chris Dohnal», условий нет) | **нет** | Проверить readme/исходники в его архиве; добавить в титры |
 | `CNN/System/RenderExt.dll` | расширение рендера | Вероятно, Render Extension от **Han** (подтвердить) | **нет** | Подтвердить автора, добавить в титры |
-| HUD: `UBHUD_*`, `NewHUDHitDisplay_*` (в `CNN.u`) | весь HUD | Неизвестно — **возможно, это и есть «DX UI»**, на который автор дал разрешение в комментарии на ModDB | **нет** | Сохранить ссылку на комментарий с разрешением; добавить автора в титры |
+| HUD: `UBHUD_*`, `NewHUDHitDisplay_*` (в `CNN.u`) | весь HUD | **Nihilum HUD** из Deus Ex: Nihilum SDK (**FastGamerr**); `UBHUD_` = UNATCO Born, откуда его взял Nihilum. Разрешение — см. ниже | **нет** | Добавить в титры и README строку про Nihilum |
 | Модель истребителя: `SFighter`, `SciFi_Fighter_AK5-diffuse`, `SFShipHigh`, `ObserX` | `CNN.u` | Похоже на модель с CGTrader / TurboSquid | **нет** | Найти источник и лицензию (у стоковых моделей часто запрещено перераспространение «как файла», в игре — обычно можно) |
 | Sci-fi текстуры Milosh-Andrich (deviantart, Sci-fi pack 01 / 03) | вероятно `Ophelia.utx` | Milosh-Andrich | да | Проверить условия на странице паков |
 | Музыка: «The Spark» (Solar Smoke), «The Last Frontier» (Luke West) | `06_Mutiny`, меню; доки | указаны | да | Проверить лицензии (обычно «бесплатно с указанием автора») |
@@ -61,6 +61,21 @@
 | Аплодисменты (Yannick Lemieux, CC BY 3.0) | — | указаны | да | В порядке |
 | HDTP, New Vision (в титрах как «Mods used») | — | **не поставляются**: `TantalusDenton` грузит HDTP через `DynamicLoadObject`, только если он установлен | да | В порядке; формулировку в титрах можно уточнить («поддерживается, если установлен») |
 | Precipitation mod (в титрах) | — | в коде CNN не найден | да | Проверить, остался ли он на картах; если нет — убрать из титров |
+
+### Deus Ex: Nihilum (DXN)
+
+Из комментариев на странице мода (moddb.com/mods/codename-nebula, 13–15.08.2017): Tantalus_Denton
+пишет, что Apocalypse Inside / CNN использует из Nihilum SDK **HUD, карту Белого дома, несколько
+моделей и Gauss gun** «под CC-лицензией, как описано в README Nihilum». FastGamerr (автор DXN)
+подтвердил и предложил формулировку для README:
+
+> Assets from Deus Ex: Nihilum are used in accordance with the Creative Commons license.
+
+Он же согласился, что под CC попадает только взятое из Nihilum, а не собственная музыка команды.
+Статья «Codename Nebula is 3 years old!» (30.03.2017) тоже называет Nihilum SDK «released under
+creative commons». Точный вариант CC (BY / BY-NC-SA) — в README самого SDK; в репозитории его нет.
+Сам Nihilum содержит материалы UNATCO Born (с разрешения fender2k1) и Revision 2011 — это стоит
+упомянуть в той же строке. Gauss gun, вероятно, пришёл через Nihilum SDK (исходный автор — Bowen Wong).
 
 ## 4. Свои ресурсы (риска нет)
 
@@ -75,6 +90,6 @@
 
 1. Заменить X-Files, крик Честера, звук двери DOOM; удалить неиспользуемую музыку и пакеты.
 2. Выяснить происхождение GenFX, TITAN, STALKER-текстур; при необходимости заменить в UnrealEd.
-3. Написать авторам (Bowen Wong, yukichigai, Deadalus08, Prototype, автор HUD/«DX UI»,
+3. Написать авторам (Bowen Wong, yukichigai, Deadalus08, Prototype,
    Chris Dohnal, Han, автор DXOgg) — или найти их readme с условиями.
 4. Дополнить титры и README разделом «Third-party content» со ссылками и лицензиями.

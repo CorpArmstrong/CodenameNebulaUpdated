@@ -3,7 +3,7 @@
 Total conversion mod for Deus Ex (GOTY/UE1) featuring a Moon → Ophelia campaign with branching dialogue and custom weapon/augmentation/skill systems. Build pipeline:
 
 ```
-source (CNN/Classes, CNN/Conversations, CNN/Audio, CNNText/Text, Maps, Textures, Music)
+source (CNN/Classes, CNN/Conversations, CNN/Audio, CNN/Text, Maps, Textures, Music)
   → ucc.exe make → System/*.u
   → cnn.bat package → CodenameNebula/ (distribution staging)
   → Inno Setup → Build/CodenameNebula_v<version>.exe
@@ -15,7 +15,7 @@ Sister docs: [CLAUDE.md](CLAUDE.md) (project guide), [SetupCNN.md](SetupCNN.md) 
 
 | Category | Locations | Tracked? |
 |---|---|---|
-| Source | [CNN/Classes/](CNN/Classes/), [CNN/Conversations/](CNN/Conversations/), [CNN/Audio/](CNN/Audio/), [CNNText/Classes/](CNNText/Classes/), [CNNText/Text/](CNNText/Text/), [Maps/](Maps/), [Textures/](Textures/), [Music/](Music/) | yes |
+| Source | [CNN/Classes/](CNN/Classes/), [CNN/Conversations/](CNN/Conversations/), [CNN/Audio/](CNN/Audio/), [CNN/Text/](CNN/Text/), [Maps/](Maps/), [Textures/](Textures/), [Music/](Music/) | yes |
 | Build tooling | [cnn.bat](cnn.bat), [tools/](tools/), [CNNInstallUtil/](CNNInstallUtil/), [CNNInstaller/](CNNInstaller/), [Converter/](Converter/), [ConAnimSys/](ConAnimSys/) | yes |
 | Distribution staging | [CodenameNebula/](CodenameNebula/) | partial (placeholders + a few source files only) |
 | Build output | `System/*.u`, [Build/](Build/) | no (gitignored) |
@@ -23,13 +23,13 @@ Sister docs: [CLAUDE.md](CLAUDE.md) (project guide), [SetupCNN.md](SetupCNN.md) 
 | Engine runtime support | `System/*.dll`, [CodenameNebula/RootSystemFiles/](CodenameNebula/RootSystemFiles/) | partial |
 | Quarantine (cleanup archive) | [_Backups/](_Backups/) | yes |
 
-**Counts (post-Phase 7):** 267 UC in CNN/Classes + 1 UC in CNNText/Classes • 6 `.con` conversations • 398 `.wav` audio files • 25 text files in CNNText/Text • 11 `.dx` maps (10 shipped + 1 experimental `Entryv2.dx`) • 10 `.utx` texture packages • 22 `.ogg` music tracks + 1 `.umx` • Version `1.3.9`.
+**Counts (post-Phase 7):** 267 UC in CNN/Classes • 6 `.con` conversations • 398 `.wav` audio files • 25 text files in CNN/Text • 11 `.dx` maps (10 shipped + 1 experimental `Entryv2.dx`) • 10 `.utx` texture packages • 22 `.ogg` music tracks + 1 `.umx` • Version `1.3.9`.
 
 ---
 
 ## 1. Source
 
-### UnrealScript — `CNN/Classes/` (267 files) + `CNNText/Classes/` (1 file)
+### UnrealScript — `CNN/Classes/` (267 files)
 
 Compiled into `CNN.u` and `CNNText.u` by `ucc.exe make`. Picked up via `EditPackages=CNN` and `EditPackages=CNNText` lines in the SDK's `<DeusExRoot>\System\DeusEx.ini` (not in this repo).
 
@@ -49,9 +49,9 @@ Organized by `ChapterXX/<character>/` subdirectories. Two reachability paths:
 
 Compiled into `CNNAudioCNN.u`, `CNNAudioChapter05.u`, `CNNAudioChapter06.u`.
 
-### Text content — `CNNText/Text/` (25 files)
+### Text content — `CNN/Text/` (25 files)
 
-Plain `.txt` files (datacubes, books, bulletins, profiles, credits) organized by `missionXX/`. Imported via `#exec DEUSEXTEXT IMPORT FILE=text\...` directives in [CNNText/Classes/CNNTextImport.uc](CNNText/Classes/CNNTextImport.uc). Compiled into `CNNText.u`.
+Plain `.txt` files (datacubes, books, bulletins, profiles, credits) organized by `missionXX/`. Imported into `CNN.u` by `#exec ALLDEUSEXTEXT IMPORT` in [CNN/Classes/ApocalypseInsideText.uc](CNN/Classes/ApocalypseInsideText.uc), which reads `Text\<folder>\*.txt` only (2026-10-09; the old `CNNText` source package was never compiled, see CODE_REVIEW H5).
 
 ### Maps — `Maps/` (11 `.dx` files)
 
@@ -142,7 +142,7 @@ Mostly build output. **Tracked source files** (regenerating these by hand requir
 ### Compiled packages — `System/`
 `ucc.exe make` writes here, then `cnn package` copies into `CodenameNebula/System/`:
 - `CNN.u` — main script package (~35 MB)
-- `CNNText.u` — text content (after Phase 7, **no longer** holds duplicate conversations)
+- `CNNText.u` — conversations, written by the `CONVERSATION IMPORT` in `CNN` (no text content)
 - `CNNAudioCNN.u`, `CNNAudioChapter05.u`, `CNNAudioChapter06.u` — audio packages
 - Dependencies copied during setup: `GaussGun.u`, `PFAD.u`, `DXRVNewVehicles.u`, `DXOgg.u`, `DXOgg.dll`, `D3D9Drv.dll`, `RenderExt.dll`
 
@@ -211,7 +211,7 @@ Cleanup archive. Files here are **not** referenced by any build step or runtime 
 | Conversation imports | [CNN/Classes/ImportConversations.uc](CNN/Classes/ImportConversations.uc) (canonical after Phase 7) |
 | Sound imports | [CNN/Classes/ImportSounds.uc](CNN/Classes/ImportSounds.uc) |
 | Forced asset embedding | [CNN/Classes/AllCnnResources.uc](CNN/Classes/AllCnnResources.uc) (`#forceexec MESH IMPORT`, `#forceexec TEXTURE IMPORT`) |
-| Text imports | [CNNText/Classes/CNNTextImport.uc](CNNText/Classes/CNNTextImport.uc) |
+| Text imports | [CNN/Classes/ApocalypseInsideText.uc](CNN/Classes/ApocalypseInsideText.uc) |
 | Active runtime config | `System/CNN.ini` (Phase 3C made this canonical) |
 
 ---
@@ -223,7 +223,7 @@ Each `cnn.bat` subcommand and what it reads/writes:
 | Subcommand | Reads | Writes |
 |---|---|---|
 | `setup` | Registry (Deus Ex root), repo files | Junctions in `<DeusExRoot>`, copied DLLs, edited `.ini` files |
-| `compile` | `CNN/Classes/*.uc`, `CNN/Conversations/*.con`, `CNN/Audio/*.wav`, `CNNText/Classes/*.uc`, `CNNText/Text/*.txt`, SDK `ucc.exe` | `System/*.u` (CNN.u, CNNText.u, CNNAudio*.u) |
+| `compile` | `CNN/Classes/*.uc`, `CNN/Conversations/*.con`, `CNN/Audio/*.wav`, `CNN/Text/*/*.txt`, SDK `ucc.exe` | `System/*.u` (CNN.u, CNNText.u, CNNAudio*.u) |
 | `package` | `System/*.u`, `Maps/*.dx`, `Textures/*.utx`, `Music/*`, `tools/*.ps1`, `CNNInstallUtil.sln` | [CodenameNebula/](CodenameNebula/) staging — generated launcher, packaged `CNNInstallUtil.exe`, copied assets |
 | `installer` | `CodenameNebula/`, `CNNInstaller/CNNSetup.iss`, `version.txt` | `Build/CodenameNebula_v<version>.exe`, `Build/CNNSetup.generated.iss` |
 | `install` | `CodenameNebula/`, player's `DeusEx.ini`, `tools/generate_cnn_ini.ps1` | `<DeusExRoot>/CodenameNebula/` (mod copy), generated `CNN.ini`/`CNNUser.ini` |
@@ -260,7 +260,7 @@ Each `cnn.bat` subcommand and what it reads/writes:
 3. `cnn compile && cnn package && cnn install`
 
 ### Adding a new UnrealScript class
-1. Create `CNN/Classes/X.uc` (or `CNNText/Classes/X.uc`) — filename must match class name exactly
+1. Create `CNN/Classes/X.uc` — filename must match class name exactly
 2. Auto-picked up by `EditPackages=CNN`/`EditPackages=CNNText` in the SDK's DeusEx.ini
 3. `cnn compile`
 

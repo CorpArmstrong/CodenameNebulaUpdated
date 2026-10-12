@@ -19,7 +19,7 @@
 | `CNN/Sounds/XFilesTheme.wav` (в `CNN.u`, звук `XFilesTheme`) | L1 (`06_OpheliaL1.dx`) | да | Тема «Секретных материалов» (Mark Snow / 20th Century Fox) | Заменить своим или свободным звуком; разрешение получить нереально |
 | `Music/Ogg/X_FilesThemePianoStringsVersion(HD).ogg` | — | **нет** | Кавер той же темы | Удалить из установщика |
 | `CNN/Sounds/ChesterScream.wav` (звук `ChesterScream`) | интро на Луне (`05_MoonIntro.dx`) | да | Судя по имени — крик Честера Беннингтона из записи Linkin Park (Warner) | Заменить; если это запись не из альбома, а записанная командой — уточнить и оставить |
-| `CNN/Sounds/dsdoropn.wav` (звук `DoorOpen1`) | `CNN.u` | да | Коммит `1fa100e`: «Added DOOM 1 door sound» (id Software / ZeniMax) | Заменить звуком двери из Deus Ex (`MoverSFX`) |
+| ~~`CNN/Sounds/dsdoropn.wav` (звук `DoorOpen1`)~~ | ~~`CNN.u`~~ | **удалён** | Коммит `1fa100e`: «Added DOOM 1 door sound» (id Software / ZeniMax) | **Сделано** (`62d7418`): двери L1 и Docks звучат `MoverSFX.door.Pneumatic1Open`/`Pneumatic1Close`, файл и импорт удалены, ссылок в картах и `CNN.u` нет |
 | `Textures/GenFX.utx` | L1 | да | Имя стокового пакета Unreal / UT (Epic); в Deus Ex его нет. Проверить содержимое | Если это пакет Epic — заменить текстуры на L1 стоковыми DX (в UnrealEd) |
 | Текстуры «STALKERProject files by Lurker» (в титрах) | — | см. п. 3 | Если это текстуры из самой игры S.T.A.L.K.E.R. (GSC), это рип ассетов игры | Уточнить, что именно и где; рип чужой игры не лицензируется |
 
@@ -88,7 +88,7 @@ creative commons». Точный вариант CC (BY / BY-NC-SA) — в README
 
 ## 5. Порядок действий
 
-1. Заменить X-Files, крик Честера, звук двери DOOM; удалить неиспользуемую музыку и пакеты.
+1. Заменить X-Files, крик Честера (звук двери DOOM уже заменён); удалить неиспользуемую музыку и пакеты.
 2. Выяснить происхождение GenFX, TITAN, STALKER-текстур; при необходимости заменить в UnrealEd.
 3. Написать авторам (Bowen Wong, yukichigai, Deadalus08, Prototype,
    Chris Dohnal, Han, автор DXOgg) — или найти их readme с условиями.

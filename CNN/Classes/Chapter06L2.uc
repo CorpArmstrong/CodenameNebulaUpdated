@@ -87,6 +87,7 @@ function PrepareFirstFrame()
     RepairCommCenterBattle();
     DisableStaleTubeMapExit();
     FixTubeMover();
+    class'CNNEntryDoorMesh'.static.ReplaceDoors(self, 'Entry_Doors_Double');
     RouteTubeButton();
     RemoveStrayL1Conversations();
     DedupeConversations();

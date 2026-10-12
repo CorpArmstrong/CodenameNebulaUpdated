@@ -7,6 +7,12 @@ class CNNMissionEndgame extends MissionEndgame;
 var localized string hijackQuote[2];
 var float hijackDelay;
 
+function InitStateMachine()
+{
+    super.InitStateMachine();
+    class'CNNEntryDoorMesh'.static.ReplaceDoors(self, 'Entry_Doors_Double');
+}
+
 // Do nothing!
 function ExplosionEffects() {}
 

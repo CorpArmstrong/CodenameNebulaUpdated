@@ -215,8 +215,8 @@ function CheckWongVideo()
 
 function RemoveStrayL1Conversations()
 {
-    StripConversation('Meet1InspRoom');
-    StripConversation('ApproachingOphelia');
+    StripConversation(self, 'Meet1InspRoom');
+    StripConversation(self, 'ApproachingOphelia');
 }
 
 // ----------------------------------------------------------------------
@@ -316,12 +316,13 @@ function DedupeOneActor(Actor a)
     }
 }
 
-function StripConversation(name conName)
+// Static: Chapter06L1 strips a stray L2 conversation too.
+static function StripConversation(Actor context, name conName)
 {
     local Actor a;
     local ConListItem item, prev;
 
-    foreach AllActors(class'Actor', a)
+    foreach context.AllActors(class'Actor', a)
     {
         if (a.conListItems == none)
             continue;
@@ -339,7 +340,7 @@ function StripConversation(name conName)
                 else
                     prev.next = item.next;
 
-                Log("CNN L2: removed conversation '" $ conName $
+                Log("CNN: removed conversation '" $ conName $
                     "' from " $ a.BindName);
             }
             else

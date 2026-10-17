@@ -10,12 +10,16 @@
 // a mesh, lit per vertex, behind a row of CNNDoorBlocker cylinders.
 //
 // Built from the brushes by tools/brush_to_mesh.js: vertices are in world
-// axes around the middle of the leaf, so this actor keeps Rotation 0 and
-// stands there. Its Location must stay in the doorway: an actor whose
-// Location is out of the drawn part of the level (behind a player walking
-// up to the door, say) is not drawn at all.
+// axes around the middle of the leaf, so this actor keeps Rotation 0.
+//
+// The engine draws an actor only while its Location is in view, however
+// much of the mesh is: up close, turning a little made a whole leaf vanish.
+// So Tick keeps the Location on the part of the leaf the player looks at,
+// just in front of it, and PrePivot (the mesh is drawn at Location +
+// PrePivot) holds the mesh in place.
 //=============================================================================
 class CNNEntryDoorMesh extends Actor;
+
 #exec MESH IMPORT MESH=EntryDoorA ANIVFILE=Models\EntryDoorA_a.3d DATAFILE=Models\EntryDoorA_d.3d ZEROTEX=1
 #exec MESH ORIGIN MESH=EntryDoorA X=0 Y=0 Z=0
 #exec MESH LODPARAMS MESH=EntryDoorA STRENGTH=0.0
@@ -33,6 +37,38 @@ class CNNEntryDoorMesh extends Actor;
 #exec MESHMAP SCALE MESHMAP=EntryDoorB X=0.015625 Y=0.015625 Z=0.015625
 
 var Mover door;
+var vector middle;       // the leaf's middle, where the mesh is drawn
+var float halfWidth;     // the leaf spans X
+var float halfHeight;
+
+function Tick(float deltaTime)
+{
+    local PlayerPawn p;
+    local vector eye, dir, aim;
+
+    p = GetPlayerPawn();
+    if ((p == none) || (halfWidth == 0))
+        return;
+
+    // where the view meets the door plane (the leaf faces -Y), or else the
+    // point of the plane in front of the eye
+    eye = p.Location;
+    eye.Z += p.EyeHeight;
+    dir = vector(p.ViewRotation);
+    aim = eye;
+    if (dir.Y > 0.01)
+        aim += dir * ((middle.Y - eye.Y) / dir.Y);
+
+    aim.X = FClamp(aim.X, middle.X - halfWidth, middle.X + halfWidth);
+    aim.Z = FClamp(aim.Z, middle.Z - halfHeight, middle.Z + halfHeight);
+    aim.Y = middle.Y - 12;
+
+    if (aim != Location)
+    {
+        SetLocation(aim);
+        PrePivot = middle - aim;
+    }
+}
 
 // ----------------------------------------------------------------------
 // ReplaceDoors()
@@ -74,6 +110,9 @@ static function ReplaceDoors(Actor context, name doorTag)
 
         shown = context.Spawn(class'CNNEntryDoorMesh',,, middle, rot(0,0,0));
         shown.door = m;
+        shown.middle = middle;
+        shown.halfWidth = halfWidth;
+        shown.halfHeight = 79;
         if (m.Name == 'DeusExMover36')
             shown.Mesh = LodMesh'CNN.EntryDoorB';
 

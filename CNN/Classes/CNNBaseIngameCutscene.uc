@@ -96,6 +96,9 @@ function CheckIntroFlags()
         player.Target = none;
         if (player.Physics == PHYS_Interpolating)
             player.SetPhysics(PHYS_Walking);
+
+        // and its camera path may have been stopped by a skip
+        RestartCameraPath();
     }
 
     if (flags.GetBool(convNamePlayed))
@@ -117,6 +120,7 @@ function CheckIntroFlags()
             player.SetPhysics(PHYS_Walking);
         player.ViewTarget = none;
         player.bBehindView = false;
+        StopCameraPath();
     }
 
     if (!IsArrivalCompleted)
@@ -292,7 +296,41 @@ function SendPlayer()
     if (Player.Physics == PHYS_Interpolating)
         Player.SetPhysics(PHYS_Walking);
 
+    StopCameraPath();
     Level.Game.SendPlayer(player, sendToLocation);
+}
+
+// ----------------------------------------------------------------------
+// StopCameraPath()
+//
+// The cutscene camera is a CameraPoint chain that moves the player itself:
+// each point waits timeWaitPost, then wakes the next. A skip saves the map
+// with a point still waiting, and a few seconds after the reload it dragged
+// the player on along the path. Idle.Wait is a point's own resting place;
+// nextPoint is left alone (see FinishCinematic).
+// ----------------------------------------------------------------------
+
+function StopCameraPath()
+{
+    local CameraPoint cPoint;
+
+    foreach AllActors(class'CameraPoint', cPoint)
+        cPoint.GotoState('Idle', 'Wait');
+}
+
+// A map saved after a skip has its path stopped: start it as a fresh map
+// does, from point 0 -- unless it is running already.
+function RestartCameraPath()
+{
+    local CameraPoint cPoint;
+
+    foreach AllActors(class'CameraPoint', cPoint)
+        if (cPoint.IsInState('Running'))
+            return;
+
+    foreach AllActors(class'CameraPoint', cPoint)
+        if (cPoint.sequenceNum == 0)
+            cPoint.GotoState('Idle', 'Begin');
 }
 
 defaultproperties

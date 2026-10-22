@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Codename Nebula launcher: one window instead of .bat shortcuts; also sets
+       the mod up (the installer runs it with the setup switch) and repairs it. .NET Framework
+       4.7.2 is part of Windows 10 (1803+) and 11, so nothing is bundled. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>CNNLauncher</RootNamespace>
+    <AssemblyName>CNNLauncher</AssemblyName>
+    <ApplicationIcon>..\CodenameNebula\cnnico.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Product>Codename Nebula</Product>
+    <AssemblyTitle>Codename Nebula Launcher</AssemblyTitle>
+    <Company>ApostleMod</Company>
+    <Version>1.5.0</Version>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="background.jpg" LogicalName="CNNLauncher.background.jpg" />
+  </ItemGroup>
+</Project>

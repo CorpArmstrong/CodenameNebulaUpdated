@@ -443,7 +443,7 @@ if exist "%REPO_ROOT%\System\D3D9Drv.int" (
     copy /y "%REPO_ROOT%\System\D3D9Drv.int" "%DIST_DIR%\System\" >nul
     echo   D3D9Drv.int
 )
-:: Package RenderExt from CNN/System/ — CNNInstallUtil copies these into the
+:: Package RenderExt from CNN/System/ — the launcher's setup copies these into the
 :: game's System folder at install time so UE1 can LoadLibrary them.
 for %%f in (RenderExt.dll RenderExt.int) do (
     if exist "%REPO_ROOT%\CNN\System\%%f" (
@@ -452,76 +452,19 @@ for %%f in (RenderExt.dll RenderExt.int) do (
     )
 )
 
-:: Create PlayCodenameNebula.bat launcher
-:: Uses DeusEx.exe directly with INI= params (same as GMDX/TNM)
-:: Preserves Steam overlay on Steam installs, works on GOG and vanilla too
-echo Creating launcher bat...
-> "%DIST_DIR%\PlayCodenameNebula.bat" (
-    echo @echo off
-    echo cd /d "%%~dp0..\System"
-    echo :: Launch CNN using DeusEx.exe with custom INI files
-    echo :: Steam overlay and play time tracking work because we use the original exe
-    echo if exist "%%~dp0..\System\DeusEx.exe" ^(
-    echo     "%%~dp0..\System\DeusEx.exe" INI="%%~dp0System\CNN.ini" USERINI="%%~dp0System\CNNUser.ini"
-    echo ^) else ^(
-    echo     echo ERROR: DeusEx.exe not found. Please verify your Deus Ex installation.
-    echo     pause
-    echo ^)
+:: The launcher: one window to play, configure and repair the mod; the
+:: installer runs it with --setup. .NET Framework 4.7.2 ships with Windows.
+echo Building CNNLauncher...
+dotnet build "%REPO_ROOT%\CNNLauncher\CNNLauncher.csproj" -c Release -v q -p:Version=%CNN_VERSION% >nul 2>&1
+if not exist "%REPO_ROOT%\CNNLauncher\bin\Release\net472\CNNLauncher.exe" (
+    echo ERROR: CNNLauncher build failed - run: dotnet build CNNLauncher\CNNLauncher.csproj
+    goto :eof
 )
-echo   PlayCodenameNebula.bat
-
-:: Copy Steam launcher and helper script
-if exist "%REPO_ROOT%\CodenameNebula\PlayCNNSteam.bat" (
-    copy /y "%REPO_ROOT%\CodenameNebula\PlayCNNSteam.bat" "%DIST_DIR%\" >nul
-    echo   PlayCNNSteam.bat
-)
-if not exist "%DIST_DIR%\tools" mkdir "%DIST_DIR%\tools"
-if exist "%REPO_ROOT%\tools\steam_launch.ps1" (
-    copy /y "%REPO_ROOT%\tools\steam_launch.ps1" "%DIST_DIR%\tools\" >nul
-    echo   tools\steam_launch.ps1
-)
-
-:: Copy the renderer repair for players whose CNN.ini picked a dead renderer
-if exist "%REPO_ROOT%\CodenameNebula\FixRenderer.bat" (
-    copy /y "%REPO_ROOT%\CodenameNebula\FixRenderer.bat" "%DIST_DIR%\" >nul
-    echo   FixRenderer.bat
-)
-if exist "%REPO_ROOT%\tools\fix_renderer.ps1" (
-    copy /y "%REPO_ROOT%\tools\fix_renderer.ps1" "%DIST_DIR%\tools\" >nul
-    echo   tools\fix_renderer.ps1
-)
-
-:: Build CNNInstallUtil (try MSBuild first, then dotnet CLI)
-set "INSTALLUTIL_BUILT=0"
-where msbuild >nul 2>&1
-if not errorlevel 1 (
-    echo Building CNNInstallUtil via MSBuild...
-    msbuild "%REPO_ROOT%\CNNInstallUtil\CNNInstallUtil.sln" /p:Configuration=Release /v:minimal
-    if exist "%REPO_ROOT%\CNNInstallUtil\CNNInstallUtil\bin\Release\CNNInstallUtil.exe" (
-        copy /y "%REPO_ROOT%\CNNInstallUtil\CNNInstallUtil\bin\Release\CNNInstallUtil.exe" "%DIST_DIR%\" >nul
-        echo   CNNInstallUtil.exe
-        set "INSTALLUTIL_BUILT=1"
-    )
-)
-if "!INSTALLUTIL_BUILT!"=="0" (
-    where dotnet >nul 2>&1
-    if not errorlevel 1 (
-        echo Building CNNInstallUtil via dotnet publish ^(single-file^)...
-        :: Clean publish dir first so stale loose DLLs don't ship alongside the single-file exe
-        if exist "%REPO_ROOT%\CNNInstallUtil\publish" rd /s /q "%REPO_ROOT%\CNNInstallUtil\publish"
-        dotnet publish "%REPO_ROOT%\CNNInstallUtil\CNNInstallUtil\CNNInstallUtil.csproj" -c Release -r win-x86 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o "%REPO_ROOT%\CNNInstallUtil\publish" >nul 2>&1
-        if exist "%REPO_ROOT%\CNNInstallUtil\publish\CNNInstallUtil.exe" (
-            copy /y "%REPO_ROOT%\CNNInstallUtil\publish\CNNInstallUtil.exe" "%DIST_DIR%\" >nul
-            echo   CNNInstallUtil.exe
-            set "INSTALLUTIL_BUILT=1"
-        )
-    )
-)
-if "!INSTALLUTIL_BUILT!"=="0" (
-    echo WARNING: Neither MSBuild nor dotnet found, skipping CNNInstallUtil build.
-    if exist "%DIST_DIR%\CNNInstallUtil.exe" echo   Using existing CNNInstallUtil.exe
-)
-
+copy /y "%REPO_ROOT%\CNNLauncher\bin\Release\net472\CNNLauncher.exe" "%DIST_DIR%\" >nul
+copy /y "%REPO_ROOT%\CNNLauncher\bin\Release\net472\CNNLauncher.exe.config" "%DIST_DIR%\" >nul
+echo   CNNLauncher.exe
+:: the launcher replaced the helper scripts that lived here
+if exist "%DIST_DIR%\tools" rd "%DIST_DIR%\tools" 2>nul
 echo.
 echo PACKAGE SUCCEEDED
 echo Output: %DIST_DIR%
@@ -572,7 +515,11 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo AppPublisherURL={#MyAppURL}
     echo AppSupportURL={#MyAppURL}
     echo AppUpdatesURL={#MyAppURL}
-    echo DefaultDirName={sd}\Games\DeusEx\CodenameNebula
+    echo ;; The setup finds the game and installs into ^<game^>\CodenameNebula ^(CNNSetupCode.iss^)
+    echo DefaultDirName={code:DefaultModDir}
+    echo AppendDefaultDirName=no
+    echo AppMutex=CodenameNebulaLauncher
+    echo DirExistsWarning=no
     echo DefaultGroupName={#MyAppName}
     echo LicenseFile=%REPO_ROOT%\CNNInstaller\InfoLicense.txt
     echo InfoBeforeFile=%REPO_ROOT%\CNNInstaller\InfoBeforeInstall.txt
@@ -583,7 +530,6 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo WizardSmallImageFile=%REPO_ROOT%\CNNInstaller\WizardSmallImage.bmp
     echo Compression=lzma
     echo SolidCompression=yes
-    echo ;; Always let the user pick the install path, even on upgrade.
     echo UsePreviousAppDir=no
     echo.
     echo [Languages]
@@ -596,68 +542,18 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo Source: "%DIST_DIR%\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
     echo.
     echo [Icons]
-    echo Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\cnnico.ico";
-    echo Name: "{userdesktop}\Play Codename Nebula"; Filename: "{app}\PlayCodenameNebula.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
-    echo Name: "{userdesktop}\Play Codename Nebula Steam"; Filename: "{app}\PlayCNNSteam.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
-    echo Name: "{group}\Play Codename Nebula"; Filename: "{app}\PlayCodenameNebula.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
-    echo Name: "{group}\Play Codename Nebula Steam"; Filename: "{app}\PlayCNNSteam.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
-    echo Name: "{group}\Fix Renderer"; Filename: "{app}\FixRenderer.bat"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
-    echo Name: "{group}\Fix Renderer (windowed)"; Filename: "{app}\FixRenderer.bat"; Parameters: "windowed"; WorkingDir: "{app}"; IconFilename: "{app}\cnnico.ico";
+    echo Name: "{group}\{#MyAppName}"; Filename: "{app}\CNNLauncher.exe"; WorkingDir: "{app}"
+    echo Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\cnnico.ico"
+    echo Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\CNNLauncher.exe"; WorkingDir: "{app}"
     echo.
     echo [Run]
-    echo Filename: "{app}\CNNInstallUtil.EXE"; WorkingDir: "{app}"; Description: "Configure mod"; Flags: waituntilterminated
+    echo Filename: "{app}\CNNLauncher.exe"; Parameters: "--setup"; StatusMsg: "Setting up Codename Nebula..."; Flags: runhidden waituntilterminated
+    echo Filename: "{app}\CNNLauncher.exe"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: postinstall nowait skipifsilent runasoriginaluser
     echo.
     echo [UninstallDelete]
     echo Type: filesandordirs; Name: "{app}"
     echo.
-    echo [Code]
-    echo procedure CurUninstallStepChanged^(CurUninstallStep: TUninstallStep^);
-    echo var
-    echo   DesktopFile: String;
-    echo   StartMenuDir: String;
-    echo   SystemDir: String;
-    echo   Added: TArrayOfString;
-    echo   I: Integer;
-    echo   L, F: String;
-    echo begin
-    echo   // What CNNInstallUtil added to the game's own folders ^(System DLLs, Music\Ogg^):
-    echo   // a file line is removed only while the file still holds what CNN put there,
-    echo   // a dir line only when empty -- nothing a player or another mod owns goes
-    echo   if CurUninstallStep = usUninstall then
-    echo     if LoadStringsFromFile^(ExpandConstant^('{app}\System\CNNGameFiles.txt'^), Added^) then
-    echo       for I := 0 to GetArrayLength^(Added^) - 1 do
-    echo       begin
-    echo         L := Added[I];
-    echo         F := Copy^(L, 47, Length^(L^)^);
-    echo         if Copy^(L, 1, 4^) = 'dir ' then
-    echo           RemoveDir^(Copy^(L, 5, Length^(L^)^)^)
-    echo         else if ^(Copy^(L, 1, 5^) = 'file '^) and FileExists^(F^) then
-    echo           if CompareText^(GetSHA1OfFile^(F^), Copy^(L, 6, 40^)^) = 0 then
-    echo             DeleteFile^(F^);
-    echo       end;
-    echo   if CurUninstallStep = usPostUninstall then
-    echo   begin
-    echo     DesktopFile := ExpandConstant^('{userdesktop}\Codename Nebula.lnk'^);
-    echo     if FileExists^(DesktopFile^) then
-    echo       DeleteFile^(DesktopFile^);
-    echo     DesktopFile := ExpandConstant^('{userdesktop}\Play Codename Nebula.lnk'^);
-    echo     if FileExists^(DesktopFile^) then
-    echo       DeleteFile^(DesktopFile^);
-    echo     DesktopFile := ExpandConstant^('{userdesktop}\Play Codename Nebula Steam.lnk'^);
-    echo     if FileExists^(DesktopFile^) then
-    echo       DeleteFile^(DesktopFile^);
-    echo     DesktopFile := ExpandConstant^('{userdesktop}\Play Codename Nebula.bat'^);
-    echo     if FileExists^(DesktopFile^) then
-    echo       DeleteFile^(DesktopFile^);
-    echo     StartMenuDir := ExpandConstant^('{userprograms}\Codename Nebula'^);
-    echo     if DirExists^(StartMenuDir^) then
-    echo       DelTree^(StartMenuDir, True, True, True^);
-    echo     // Remove CodenameNebula.exe from parent System folder if it exists ^(CD version only^)
-    echo     SystemDir := ExpandConstant^('{app}\..\System\CodenameNebula.exe'^);
-    echo     if FileExists^(SystemDir^) then
-    echo       DeleteFile^(SystemDir^);
-    echo   end;
-    echo end;
+    echo #include "%REPO_ROOT%\CNNInstaller\CNNSetupCode.iss"
 )
 :: An upgrade removes what earlier versions shipped and this one does not
 >> "%ISS_FILE%" echo.

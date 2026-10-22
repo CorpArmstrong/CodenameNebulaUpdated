@@ -19,3 +19,10 @@ Music\Ogg\Stellardrone_I_Dont_Belong_Here.ogg
 Music\Ogg\The_Intangible_Lost_In_Andromeda.ogg
 Music\Ogg\X_FilesThemePianoStringsVersion(HD).ogg
 RootSystemFiles\*
+; Replaced by CNNLauncher.exe (2026-10-22): the installer util and the .bat/.ps1 launchers
+CNNInstallUtil.exe
+PlayCodenameNebula.bat
+PlayCNNSteam.bat
+FixRenderer.bat
+tools\steam_launch.ps1
+tools\fix_renderer.ps1

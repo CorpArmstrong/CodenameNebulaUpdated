@@ -92,7 +92,7 @@ namespace CNNLauncher
                     g.FillRectangle(shade, panel);
                 }
 
-                DrawEmblem(g, new PointF(S(72), S(78)), S(30));
+                IconArt.Draw(g, new PointF(S(68), S(80)), S(84));
                 using (var codename = new Font("Segoe UI", 15 * scale, FontStyle.Regular, GraphicsUnit.Pixel))
                 using (var nebula = new Font("Segoe UI Semibold", 34 * scale, FontStyle.Bold, GraphicsUnit.Pixel))
                 using (var sub = new Font("Segoe UI", 12 * scale, GraphicsUnit.Pixel))
@@ -109,28 +109,6 @@ namespace CNNLauncher
                 }
             }
             return bmp;
-        }
-
-        // Rings and a red crosshair, after the mod's icon
-        private static void DrawEmblem(Graphics g, PointF c, float r)
-        {
-            foreach (float k in new[] { 0.38f, 0.66f, 0.95f })
-            {
-                float rr = r * k;
-                using (var glow = new Pen(Color.FromArgb(55, 80, 140, 255), r * 0.16f))
-                    g.DrawEllipse(glow, c.X - rr, c.Y - rr, rr * 2, rr * 2);
-                using (var ring = new Pen(Color.FromArgb(230, 110, 170, 255), Math.Max(1.2f, r * 0.05f)))
-                    g.DrawEllipse(ring, c.X - rr, c.Y - rr, rr * 2, rr * 2);
-            }
-            using (var cross = new Pen(Color.FromArgb(220, 230, 60, 70), Math.Max(1.2f, r * 0.06f)))
-            {
-                g.DrawLine(cross, c.X - r * 1.15f, c.Y, c.X - r * 0.45f, c.Y);
-                g.DrawLine(cross, c.X + r * 0.45f, c.Y, c.X + r * 1.15f, c.Y);
-                g.DrawLine(cross, c.X, c.Y - r * 1.15f, c.X, c.Y - r * 0.45f);
-                g.DrawLine(cross, c.X, c.Y + r * 0.45f, c.X, c.Y + r * 1.15f);
-            }
-            using (var core = new SolidBrush(Color.FromArgb(255, 200, 225, 255)))
-                g.FillEllipse(core, c.X - r * 0.12f, c.Y - r * 0.12f, r * 0.24f, r * 0.24f);
         }
 
         private Button MakeButton(string text, bool primary)

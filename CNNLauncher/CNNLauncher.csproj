@@ -18,7 +18,4 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="background.jpg" LogicalName="CNNLauncher.background.jpg" />
-  </ItemGroup>
 </Project>

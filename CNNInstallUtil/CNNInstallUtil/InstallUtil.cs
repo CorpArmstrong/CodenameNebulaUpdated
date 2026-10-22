@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -44,6 +45,17 @@ namespace CNNInstallUtil
         // True for Steam's DRM-wrapped DeusEx.exe: the game must be started
         // by Steam, so PlayCodenameNebula.bat launches through steam://.
         private bool isSteamStub = false;
+
+        // What this tool adds to the game's own folders (System DLLs, Music\Ogg
+        // tracks), written to {app}\System\CNNGameFiles.txt for the uninstaller,
+        // which otherwise only removes {app}. Only what wasn't there before is
+        // listed, so a player's own D3D9Drv.dll or DXOgg stays; entries from an
+        // earlier install are kept. Each file carries the SHA1 of what we put
+        // there: the uninstaller leaves a file something else has replaced since.
+        private const string GameFilesList = "CNNGameFiles.txt";
+        private readonly Dictionary<string, string> addedFiles =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly List<string> addedDirs = new List<string>();
 
         // Minimum viewport CNN is designed for. The vanilla Default.ini ships
         // 640x480 @ 16-bit, which modern GPUs no longer expose as a fullscreen
@@ -127,12 +139,14 @@ namespace CNNInstallUtil
                 return;
             }
 
+            LoadGameFiles(pathToModSystem);
             CreateCNNIni(pathToSystem, pathToModSystem);
             CreateCNNUserIni(pathToSystem, pathToModSystem);
             CopyMusicFiles(pathToSystem, pathToModSystem);
             CopyRenderExt(pathToSystem, pathToModSystem);
             DetectAndPrepareLauncher(pathToSystem);
             CreateShortcuts(pathToSystem, pathToModSystem);
+            SaveGameFiles(pathToModSystem);
 
             Console.WriteLine("\nInstallation complete! You can launch Codename Nebula from the desktop shortcuts.");
             Console.WriteLine("  - Play Codename Nebula       (direct launch)");
@@ -220,7 +234,7 @@ namespace CNNInstallUtil
                 string renamedExe = Path.Combine(pathToSystem, "CodenameNebula.exe");
                 try
                 {
-                    File.Copy(deusExExe, renamedExe, true);
+                    CopyIntoGame(deusExExe, renamedExe, true);
                     launcherExeName = "CodenameNebula.exe";
                     isCdRenamed = true;
                     Console.WriteLine("  Created CodenameNebula.exe (bypasses CD check if present).");
@@ -673,6 +687,58 @@ namespace CNNInstallUtil
         // at startup — they must live alongside DeusEx.exe, not in the mod's
         // System folder, because LoadLibrary uses the exe directory, not UE1
         // Paths=.
+        // Copies into the game's folders, noting what was not there before
+        private void CopyIntoGame(string src, string dest, bool overwrite)
+        {
+            bool existed = File.Exists(dest);
+            File.Copy(src, dest, overwrite);
+            if (!existed || addedFiles.ContainsKey(dest))
+                addedFiles[dest] = Sha1(dest);
+        }
+
+        private static string Sha1(string file)
+        {
+            using (var sha = System.Security.Cryptography.SHA1.Create())
+            using (var stream = File.OpenRead(file))
+                return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+        }
+
+        private void CreateGameDirectory(string dir)
+        {
+            if (Directory.Exists(dir))
+                return;
+            Directory.CreateDirectory(dir);
+            addedDirs.Add(dir);
+        }
+
+        private void LoadGameFiles(string pathToModSystem)
+        {
+            string list = Path.Combine(pathToModSystem, GameFilesList);
+            if (!File.Exists(list))
+                return;
+            foreach (string line in File.ReadAllLines(list))
+            {
+                if (line.StartsWith("dir "))
+                    addedDirs.Add(line.Substring(4));
+                else if (line.StartsWith("file ") && line.Length > 46)
+                    addedFiles[line.Substring(46)] = line.Substring(5, 40);
+            }
+        }
+
+        // "file <sha1> <path>" lines, then "dir <path>" (deepest first) -- the
+        // uninstaller removes a folder only once it is empty
+        private void SaveGameFiles(string pathToModSystem)
+        {
+            var lines = new List<string>();
+            foreach (var f in addedFiles)
+                lines.Add("file " + f.Value + " " + f.Key);
+            addedDirs.Sort((a, b) => b.Length.CompareTo(a.Length));
+            foreach (string d in addedDirs)
+                lines.Add("dir " + d);
+            File.WriteAllLines(Path.Combine(pathToModSystem, GameFilesList), lines.ToArray());
+            Console.WriteLine("Noted {0} files and {1} folders added to the game for the uninstaller.", addedFiles.Count, addedDirs.Count);
+        }
+
         private void CopyRenderExt(string pathToSystem, string pathToModSystem)
         {
             foreach (string f in new[] { "RenderExt.dll", "RenderExt.int" })
@@ -680,7 +746,7 @@ namespace CNNInstallUtil
                 string src = Path.Combine(pathToModSystem, f);
                 if (File.Exists(src))
                 {
-                    File.Copy(src, Path.Combine(pathToSystem, f), true);
+                    CopyIntoGame(src, Path.Combine(pathToSystem, f), true);
                     Console.WriteLine("Copied {0} to System.", f);
                 }
                 else
@@ -696,20 +762,19 @@ namespace CNNInstallUtil
             string pathToOggMusic = Path.Combine(pathToMusic, "Ogg");
             string pathToModOggMusic = Path.Combine(currentPath, "Music", "Ogg");
 
-            if (!Directory.Exists(pathToMusic))
-                Directory.CreateDirectory(pathToMusic);
+            CreateGameDirectory(pathToMusic);
+            CreateGameDirectory(pathToOggMusic);
 
-            if (!Directory.Exists(pathToOggMusic))
-                Directory.CreateDirectory(pathToOggMusic);
-
-            // Copy D3D9 renderer as fallback (in case player has no modern renderer)
-            foreach (string d3d9File in new[] { "D3D9Drv.dll", "D3D9Drv.int" })
+            // Copy D3D9 renderer as fallback (in case player has no modern renderer).
+            // The .dll and .int go as a pair: a player's own D3D9 stays whole.
+            bool playerHasD3D9 = File.Exists(Path.Combine(pathToSystem, "D3D9Drv.dll"));
+            foreach (string d3d9File in playerHasD3D9 ? new string[0] : new[] { "D3D9Drv.dll", "D3D9Drv.int" })
             {
                 string src = Path.Combine(pathToModSystem, d3d9File);
                 string dest = Path.Combine(pathToSystem, d3d9File);
                 if (File.Exists(src) && !File.Exists(dest))
                 {
-                    File.Copy(src, dest, false);
+                    CopyIntoGame(src, dest, false);
                     Console.WriteLine("Installed {0} to System (D3D9 fallback renderer).", d3d9File);
                 }
             }
@@ -718,7 +783,7 @@ namespace CNNInstallUtil
             string dxOggDll = Path.Combine(pathToModSystem, "DXOgg.dll");
             if (File.Exists(dxOggDll))
             {
-                File.Copy(dxOggDll, Path.Combine(pathToSystem, "DXOgg.dll"), true);
+                CopyIntoGame(dxOggDll, Path.Combine(pathToSystem, "DXOgg.dll"), true);
                 Console.WriteLine("Copied DXOgg.dll to System.");
             }
 
@@ -726,7 +791,7 @@ namespace CNNInstallUtil
             string dxOggU = Path.Combine(pathToModSystem, "DXOgg.u");
             if (File.Exists(dxOggU))
             {
-                File.Copy(dxOggU, Path.Combine(pathToSystem, "DXOgg.u"), true);
+                CopyIntoGame(dxOggU, Path.Combine(pathToSystem, "DXOgg.u"), true);
                 Console.WriteLine("Copied DXOgg.u to System.");
             }
 
@@ -736,7 +801,7 @@ namespace CNNInstallUtil
                 foreach (FileInfo oggFile in new DirectoryInfo(pathToModOggMusic).GetFiles())
                 {
                     Console.WriteLine("Copying music: {0}", oggFile.Name);
-                    File.Copy(oggFile.FullName, Path.Combine(pathToOggMusic, oggFile.Name), true);
+                    CopyIntoGame(oggFile.FullName, Path.Combine(pathToOggMusic, oggFile.Name), true);
                 }
                 Console.WriteLine("Done copying OGG music.");
             }

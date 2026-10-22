@@ -616,7 +616,25 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo   DesktopFile: String;
     echo   StartMenuDir: String;
     echo   SystemDir: String;
+    echo   Added: TArrayOfString;
+    echo   I: Integer;
+    echo   L, F: String;
     echo begin
+    echo   // What CNNInstallUtil added to the game's own folders ^(System DLLs, Music\Ogg^):
+    echo   // a file line is removed only while the file still holds what CNN put there,
+    echo   // a dir line only when empty -- nothing a player or another mod owns goes
+    echo   if CurUninstallStep = usUninstall then
+    echo     if LoadStringsFromFile^(ExpandConstant^('{app}\System\CNNGameFiles.txt'^), Added^) then
+    echo       for I := 0 to GetArrayLength^(Added^) - 1 do
+    echo       begin
+    echo         L := Added[I];
+    echo         F := Copy^(L, 47, Length^(L^)^);
+    echo         if Copy^(L, 1, 4^) = 'dir ' then
+    echo           RemoveDir^(Copy^(L, 5, Length^(L^)^)^)
+    echo         else if ^(Copy^(L, 1, 5^) = 'file '^) and FileExists^(F^) then
+    echo           if CompareText^(GetSHA1OfFile^(F^), Copy^(L, 6, 40^)^) = 0 then
+    echo             DeleteFile^(F^);
+    echo       end;
     echo   if CurUninstallStep = usPostUninstall then
     echo   begin
     echo     DesktopFile := ExpandConstant^('{userdesktop}\Codename Nebula.lnk'^);

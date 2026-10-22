@@ -15,7 +15,9 @@
 # Run it once on a known-good install, then after removing files with
 # -Baseline <first OutDir>: only what is new is a regression.
 #
-# The game must already run with the bridge (cnn_launch_kentie.ps1).
+# The game must already run with the bridge (cnn_launch_kentie.ps1). For another
+# install pass -SystemDir, -AgentIni (CNNAgent.ini next to its user ini), -Log
+# and -Process (exe name without .exe).
 # Usage:
 #   cnn_assetcheck.ps1 -OutDir $env:TEMP\check_before
 #   cnn_assetcheck.ps1 -OutDir $env:TEMP\check_after -Baseline $env:TEMP\check_before
@@ -30,6 +32,9 @@ param(
     [string]$OutDir = (Join-Path $env:TEMP 'cnn_assetcheck'),
     [string]$Baseline,
     [string]$Log = (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Deus Ex\System\deusex.log'),
+    [string]$SystemDir = 'D:\Program Files (x86)\Steam\steamapps\common\Deus Ex\System',
+    [string]$AgentIni = (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Deus Ex\System\CNNAgent.ini'),
+    [string]$Process = 'DeusEx',
     [int]$Settle = 4,
     [switch]$NoQuit,
     [switch]$ParseOnly
@@ -41,14 +46,14 @@ $saved = Join-Path $OutDir 'deusex.log'
 
 if (-not $ParseOnly) {
     foreach ($m in $Maps) {
-        & $bridge -Timeout 90 "OPEN $m"
+        & $bridge -SystemDir $SystemDir -Ini $AgentIni -Timeout 90 "OPEN $m"
         Start-Sleep -Seconds $Settle
-        & $bridge -Timeout 120 'ASSETCHECK'
+        & $bridge -SystemDir $SystemDir -Ini $AgentIni -Timeout 120 'ASSETCHECK'
         Start-Sleep -Seconds 2      # DXOgg's own log lines
     }
     if ($NoQuit) { return }
-    & $bridge -Quiet 'QUIT'
-    for ($i = 0; $i -lt 60 -and (Get-Process DeusEx -ErrorAction SilentlyContinue); $i++) { Start-Sleep 1 }
+    & $bridge -SystemDir $SystemDir -Ini $AgentIni -Quiet 'QUIT'
+    for ($i = 0; $i -lt 60 -and (Get-Process $Process -ErrorAction SilentlyContinue); $i++) { Start-Sleep 1 }
     Copy-Item $Log $saved -Force
 }
 

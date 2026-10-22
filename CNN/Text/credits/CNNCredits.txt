@@ -69,20 +69,34 @@
 <P>
 <P>12/2015 Sci-fi textures by Milosh-Andrich milosh-andrich.deviantart.com/art/Sci-fi-pack-01-335182027
 <P>milosh-andrich.deviantart.com/art/Sci-fi-pack-03-335294667
-<P>STALKERProject files by Lurker
 <P>
 <P>
 <P>
-<P>Mods used:
+<P>Third-party content:
 <P>
-<P>Prototype candybars
-<P>Precipitation mod
-<P>New vehicles by Deadalus08
-<P>New Vision
-<P>HDTP
+<P>Assets from Deus Ex: Nihilum (HUD, Gauss gun, models) by FastGamerr,
+<P>used in accordance with the Creative Commons license.
+<P>Nihilum includes material from UNATCO Born (fender2k1) and Deus Ex: Revision (2011).
 <P>
+<P>Gauss Gun by Bowen Wong, modifications by Y|yukichigai
+<P>
+<P>Weapon code partly based on Shifter by Y|yukichigai
+<P>
+<P>Custom consumables (PFAD) by Prototype
+<P>
+<P>New Vehicles by Deadalus08
+<P>
+<P>DXOgg Ogg Extension by Jim (The Nameless Mod)
+<P>
+<P>Direct3D 9 renderer by Chris Dohnal
+<P>
+<P>Render Extension (RenderExt)
 <P>
 <P>Small Crowd Applause sound (Recorded by Yannick Lemieux) used under Attribution 3.0 license.
+<P>
+<P>Supported if installed: HDTP, New Vision
+<P>
+<P>
 <P>
 <P>Soundtrack:
 <P>
@@ -90,14 +104,16 @@
 <P>
 <P>Mysterious_SciFi_Music_THE_LAST_FRONTIER by Luke West
 <P>
-<P>Win XP is shit by CorpArmstrong
+<P>Win XP is life by CorpArmstrong
 <P>
 <P>Finger F**k by CorpArmstrong
 <P>
-<P>Original Apocalypse Inside soundtrack composed by Project X-3
+<P>Original Apocalypse Inside soundtrack composed by Tantalus X-3 Project
 <P>https://soundcloud.com/project_x-3/sets/deus-ex-apocalypse-inside-soundtrack
 <P>
-<P>Magdalene And Tantalus by Project X-3
+<P>Magdalene And Tantalus, Anthem, Magdalene Theme (Battle), Who Am I,
+<P>Hijacking The Space Station, Area 51 Leaving, Ambient 2 for Deus Ex
+<P>by Tantalus X-3 Project
 <P>
 <P>
 <P>

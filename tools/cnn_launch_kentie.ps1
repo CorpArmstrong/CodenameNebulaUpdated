@@ -7,12 +7,13 @@
 # bridge answers (cnn_bridge.ps1 WHERE). The bridge's gate is armed by
 # cnn_agent_send.ps1 with every command, so no startup exec file is needed.
 #
-# Usage: cnn_launch_kentie.ps1 [-Root <Deus Ex root>]
+# Usage: cnn_launch_kentie.ps1 [-Root <Deus Ex root>] [-Ini <name in CodenameNebula\System>]
 # ---------------------------------------------------------------------------
-param([string]$Root = 'D:\Program Files (x86)\Steam\steamapps\common\Deus Ex')
+param([string]$Root = 'D:\Program Files (x86)\Steam\steamapps\common\Deus Ex',
+      [string]$Ini = 'CNN.ini')
 
 $sys = Join-Path $Root 'System'
-$ini = Join-Path $Root 'CodenameNebula\System\CNN.ini'
+$ini = Join-Path $Root "CodenameNebula\System\$Ini"
 $user = Join-Path $Root 'CodenameNebula\System\CNNUser.ini'
 Start-Process -FilePath (Join-Path $sys 'DeusEx.exe') -WorkingDirectory $sys `
     -ArgumentList "INI=`"$ini`"", "USERINI=`"$user`"", '-log'

@@ -182,7 +182,7 @@ function Run(string command, optional int seq)
     else if (cmd == "SNAP")
         Snap(arg);
     else if (cmd == "RAW")
-        Player.ConsoleCommand(arg);
+        LogRaw(Player.ConsoleCommand(arg));
     else if (cmd == "WHERE")
         Where();
     else if (cmd == "FLAGS")
@@ -223,6 +223,21 @@ function Report(string line)
     Log("CNN agent: " $ line);
     if (outCount < ArrayCount(out))
         out[outCount++] = line;
+}
+
+// A console command's output comes back as one string without line breaks
+// (FStringOutputDevice), too long for one log line; logged in pieces that
+// tools/cnn_objdump.ps1 joins back
+function LogRaw(string s)
+{
+    local int i;
+
+    if (s == "")
+        return;
+    Log("CNN raw: begin " $ Len(s));
+    for (i = 0; i < Len(s); i += 1000)
+        Log("CNN raw|" $ Mid(s, i, 1000) $ "|");
+    Log("CNN raw: end");
 }
 
 function Ack(int seq, string cmd)

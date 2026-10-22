@@ -40,6 +40,10 @@ class Reader {
     const n = this.ci(); const s = this.b.toString('latin1', this.p, this.p + Math.max(0, n - 1));
     this.p += n; return s;
   }
+  zstr() {
+    const e = this.b.indexOf(0, this.p); const s = this.b.toString('latin1', this.p, e);
+    this.p = e + 1; return s;
+  }
 }
 
 function load(path) {
@@ -51,7 +55,8 @@ function load(path) {
         impCount = r.u32(), impOff = r.u32();
   const names = [];
   r.p = nameOff;
-  for (let i = 0; i < nameCount; i++) { names.push(r.str()); r.u32(); }
+  // before version 64 (Unreal 1 packages such as GenFX.utx) names are plain zero-terminated strings
+  for (let i = 0; i < nameCount; i++) { names.push(ver < 64 ? r.zstr() : r.str()); r.u32(); }
   const imports = [];
   r.p = impOff;
   for (let i = 0; i < impCount; i++)

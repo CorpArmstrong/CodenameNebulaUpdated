@@ -37,7 +37,13 @@
 
 ## Открыто
 
-1. Автор RenderExt.
+1. Автор RenderExt: подписи нет ни в DLL, ни в справке Revision; поставляется с TNM2 и Revision вместе с DXOgg — в титрах «from The Nameless Mod and Deus Ex: Revision».
 2. Фото Честера в титрах (`chester_credits`) — фотограф.
 3. В титры не попадает, но решить до релиза: TITAN.utx и GenFX.utx (Unreal/Epic) — заменить;
    LosAngelesTex — источники фото; модели `Ship1`, `SciFiFighter`.
+
+Примечание о RenderExtended (moddb.com/mods/renderextended, автор LoadLineCalibration, вышел 15.05.2026): это
+другой модуль — `RenderExtended.dll`, класс `RenderExtended.RenderExtended`. У CNN `RenderExt.dll`
+(`RenderExt.RenderExt`), в репозитории с 2020 года (`1e17e4d`), то есть он старше и к RenderExtended
+отношения не имеет. RenderExtended мог бы стать заменой (чинит пропадающие меши, поднимает лимиты), но это
+отдельное решение и отдельная проверка.

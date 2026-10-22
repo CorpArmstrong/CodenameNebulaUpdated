@@ -68,7 +68,7 @@ $map = '(startup)'
 $seen = @()     # maps this run opened; the baseline is compared on these only
 foreach ($l in $lines) {
     if ($l -match 'CNN agent: seq=\d+ cmd=OPEN arg=(\S+)') { $map = $Matches[1]; $seen += $map; continue }
-    if ($l -match 'CNN raw') { continue }
+    if ($l -match 'CNN raw|CNNAgentCmd') { continue }     # the bridge's own output and command file
     $kind = $null; $what = $null
     if ($l -match 'CNN agent: (ASSETCHECK (\S+):.*)') {
         $summary.Add($Matches[1])

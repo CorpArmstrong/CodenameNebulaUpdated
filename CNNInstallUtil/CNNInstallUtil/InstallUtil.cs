@@ -21,8 +21,14 @@ namespace CNNInstallUtil
         //                     protection on CD and is a no-op on 1112fm.
         //   <= WrapperSize  : Community Update wrapper (~126 KB). Don't
         //                     rename — CU has its own launch mechanism.
-        private const long LauncherSize = 300_000;
-        private const long WrapperSize  = 200_000;
+        //   <  SteamStubSize: Steam's own DeusEx.exe since its 2025-09 build
+        //                     (64,000 bytes, Steam DRM wrapper). Started
+        //                     directly it only shows "Failed to find Steam";
+        //                     it runs when Steam launches it, INI= included,
+        //                     so the launcher goes through steam://rungameid.
+        private const long LauncherSize  = 300_000;
+        private const long WrapperSize   = 200_000;
+        private const long SteamStubSize = 100_000;
 
         private readonly string currentPath = Directory.GetCurrentDirectory();
 
@@ -34,6 +40,10 @@ namespace CNNInstallUtil
         // True when we renamed the exe (CD version only). Informs whether the
         // Steam shortcut is useful (Steam launch only applies to Steam installs).
         private bool isCdRenamed = false;
+
+        // True for Steam's DRM-wrapped DeusEx.exe: the game must be started
+        // by Steam, so PlayCodenameNebula.bat launches through steam://.
+        private bool isSteamStub = false;
 
         // Minimum viewport CNN is designed for. The vanilla Default.ini ships
         // 640x480 @ 16-bit, which modern GPUs no longer expose as a fullscreen
@@ -193,6 +203,12 @@ namespace CNNInstallUtil
                 Console.WriteLine("Detected DeusEx.exe: third-party launcher (Kentie/Han).");
                 Console.WriteLine("  Using DeusEx.exe directly to preserve launcher settings.");
             }
+            else if (size < SteamStubSize)
+            {
+                Console.WriteLine("Detected DeusEx.exe: Steam build (starts only when Steam launches it).");
+                Console.WriteLine("  Launching through Steam (steam://rungameid/6910).");
+                isSteamStub = true;
+            }
             else if (size <= WrapperSize)
             {
                 Console.WriteLine("Detected DeusEx.exe: Community Update wrapper.");
@@ -224,17 +240,30 @@ namespace CNNInstallUtil
             // CodenameNebula.exe on unpatched CD installs) with INI= parameters.
             // Works on Steam (with overlay), GOG, vanilla, and CD installs.
             string batPath = Path.Combine(currentPath, "PlayCodenameNebula.bat");
-            File.WriteAllText(batPath, string.Format(
-                "@echo off\r\n" +
-                "cd /d \"{0}\"\r\n" +
-                ":: Launch Codename Nebula via {4} with custom INI files\r\n" +
-                "\"{1}\" INI=\"{2}\" USERINI=\"{3}\"\r\n",
-                pathToSystem,
-                Path.Combine(pathToSystem, launcherExeName),
-                Path.Combine(pathToModSystem, "CNN.ini"),
-                Path.Combine(pathToModSystem, "CNNUser.ini"),
-                launcherExeName));
-            Console.WriteLine("Created PlayCodenameNebula.bat launcher (uses {0}).", launcherExeName);
+            if (isSteamStub)
+            {
+                // Same as PlayCNNSteam.bat: Steam starts its DeusEx.exe with our INI= arguments
+                File.WriteAllText(batPath,
+                    "@echo off\r\n" +
+                    ":: Steam's DeusEx.exe only runs when Steam starts it, so launch through Steam\r\n" +
+                    "powershell -ExecutionPolicy Bypass -File \"%~dp0tools\\steam_launch.ps1\" " +
+                    "-CnnIniPath \"%~dp0System\\CNN.ini\" -CnnUserIniPath \"%~dp0System\\CNNUser.ini\"\r\n");
+                Console.WriteLine("Created PlayCodenameNebula.bat launcher (through Steam).");
+            }
+            else
+            {
+                File.WriteAllText(batPath, string.Format(
+                    "@echo off\r\n" +
+                    "cd /d \"{0}\"\r\n" +
+                    ":: Launch Codename Nebula via {4} with custom INI files\r\n" +
+                    "\"{1}\" INI=\"{2}\" USERINI=\"{3}\"\r\n",
+                    pathToSystem,
+                    Path.Combine(pathToSystem, launcherExeName),
+                    Path.Combine(pathToModSystem, "CNN.ini"),
+                    Path.Combine(pathToModSystem, "CNNUser.ini"),
+                    launcherExeName));
+                Console.WriteLine("Created PlayCodenameNebula.bat launcher (uses {0}).", launcherExeName);
+            }
 
             // Create .lnk shortcuts on Desktop and Start Menu via PowerShell
             // (handles OneDrive/Cyrillic/Unicode paths that .NET trimmed builds can't)

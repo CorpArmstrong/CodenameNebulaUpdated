@@ -166,7 +166,8 @@ cnn test
 
 This auto-detects the best available game executable and creates `CodenameNebula.exe`:
 - **Kentie/Han launcher** (>300KB) — used as-is, player gets D3D10/D3D11 and advanced features
-- **Original 1112fm exe** (~254KB) — vanilla Steam or GOG, works with all renderers
+- **Original 1112fm exe** (~254KB) — GOG, patched retail/CD, works with all renderers
+- **Steam DRM exe** (64,000 bytes, Steam build of 2025-09-27) — runs only when Steam starts it; started directly it shows "Failed to find Steam". `CNNInstallUtil` makes `PlayCodenameNebula.bat` launch through `steam://rungameid/6910//INI=…` for it (verified 2026-10-22)
 - **CU backup** (`DeusEx 1112fm (Original EXE).exe`) — when Community Update replaced the exe
 
 The `cnn install` command generates `CNN.ini` from the player's `DeusEx.ini`, inheriting their renderer, resolution, and graphics settings. Only CNN-specific values are patched (player class, game mode, asset paths).
@@ -190,7 +191,7 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 
 ### Known Issues & Pitfalls
 
-- **Steam intercepts `DeusEx.exe`** — always use `CodenameNebula.exe` (a renamed copy) to launch the mod. The `cnn test` and `cnn install` commands handle this automatically with smart exe detection. Players who want Steam overlay can add `CodenameNebula.exe` as a non-Steam game.
+- **Steam's own `DeusEx.exe` can't be started directly** — since the 2025-09-27 Steam build it is a 64 KB DRM wrapper ("Failed to find Steam" outside Steam). Launch through `steam://rungameid/6910//INI=%22…%22 USERINI=%22…%22` (`tools/steam_launch.ps1`); Steam starts it and the INI= arguments reach the engine. Dev installs with Kentie/Han or the CU backup exe don't hit this, which is why it went unnoticed until the clean-install test. A clean stock copy for testing comes from the Steam console: `download_depot 6910 6911 8456979172979270170`.
 - **Launcher-agnostic INI generation** — `CNN.ini` is generated from the player's `DeusEx.ini` at install time, inheriting their renderer, resolution, and settings. The static `CNN.ini` in the repo is only a fallback. Kentie's launcher, Han's launcher, Community Update, and vanilla Steam are all supported.
 - **`Failed resetting mode` / `HandleBigChange <- UD3DRenderDevice::Lock`** — the player's INI selected the legacy 1999 Direct3D device (`D3DDrv.D3DRenderDevice`) and/or 16-bit colour. Windows 10/11 can't set those modes, so *vanilla Deus Ex crashes the same way* — it is not a mod or CD-version problem. A never-configured retail/CD install inherits `GlideDrv` + 640x480 @ 16-bit from the game's `Default.ini`. Both INI generators now rewrite legacy renderers to `D3D9Drv.D3D9RenderDevice` and force 32-bit colour; to fix an already-installed copy, edit `GameRenderDevice`/`RenderDevice`/`WindowedRenderDevice` and the `*ColorBits` values in `CodenameNebula/System/CNN.ini`.
 - **In-game "Rendering Device..." can select a dead renderer** — the button runs `RELAUNCH -changevideo`, and that engine dialog lists every class declared `MetaClass=Engine.RenderDevice` by a `.int` in the game `System/`. `D3DDrv.int` offers "Direct3D support" (the 1999 device) right beside "Direct3D9 support"; picking it writes `D3DDrv` into `CNN.ini` and gives a **black screen** or `Failed resetting mode`. The entry is deliberately left in place (removing base-game `.int` files was considered and rejected); recover with `tools/fix_renderer.ps1` (players get it as `FixRenderer.bat` and the Start-menu shortcuts "Fix Renderer" / "Fix Renderer (windowed)", packaged by `cnn package`). Glide/MeTaL self-hide via `Autodetect=Glide2X.dll`/`Metal.dll`, and `SGLDrv.int` is commented out upstream, so `D3DDrv` is the only dead entry the dialog offers.

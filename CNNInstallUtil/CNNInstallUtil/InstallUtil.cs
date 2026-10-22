@@ -46,8 +46,8 @@ namespace CNNInstallUtil
         // by Steam, so PlayCodenameNebula.bat launches through steam://.
         private bool isSteamStub = false;
 
-        // What this tool adds to the game's own folders (System DLLs, Music\Ogg
-        // tracks), written to {app}\System\CNNGameFiles.txt for the uninstaller,
+        // What this tool adds to the game's own folders (native DLLs in System;
+        // older versions also Music\Ogg), written to {app}\System\CNNGameFiles.txt for the uninstaller,
         // which otherwise only removes {app}. Only what wasn't there before is
         // listed, so a player's own D3D9Drv.dll or DXOgg stays; entries from an
         // earlier install are kept. Each file carries the SHA1 of what we put
@@ -142,8 +142,8 @@ namespace CNNInstallUtil
             LoadGameFiles(pathToModSystem);
             CreateCNNIni(pathToSystem, pathToModSystem);
             CreateCNNUserIni(pathToSystem, pathToModSystem);
-            CopyMusicFiles(pathToSystem, pathToModSystem);
-            CopyRenderExt(pathToSystem, pathToModSystem);
+            CopyNativeFiles(pathToSystem, pathToModSystem);
+            RemoveOldMusicCopies();
             DetectAndPrepareLauncher(pathToSystem);
             CreateShortcuts(pathToSystem, pathToModSystem);
             SaveGameFiles(pathToModSystem);
@@ -383,6 +383,9 @@ namespace CNNInstallUtil
             using (var writer = new StreamWriter(Path.Combine(pathToModSystem, "CNN.ini")))
             {
                 string templateFile = new System.Text.StringBuilder()
+                    .AppendLine("[FirstRun]")
+                    .AppendLine("FirstRun=1100")
+                    .AppendLine()
                     .AppendLine("[URL]")
                     .AppendLine("Class=CNN.TantalusDenton")
                     .AppendLine()
@@ -409,6 +412,7 @@ namespace CNNInstallUtil
                     .AppendLine("Paths=" + Path.Combine(currentPath, "System\\*.u"))
                     .AppendLine("Paths=" + Path.Combine(currentPath, "Textures\\*.utx"))
                     .AppendLine("Paths=" + Path.Combine(currentPath, "Music\\*.umx"))
+                    .AppendLine("OggPath=" + Path.Combine(currentPath, "Music\\Ogg\\"))
                     .ToString();
 
                 writer.Write(templateFile);
@@ -455,6 +459,8 @@ namespace CNNInstallUtil
                 "Paths=" + modRoot + @"\System\*.u",
                 "Paths=" + modRoot + @"\Textures\*.utx",
                 "Paths=" + modRoot + @"\Music\*.umx",
+                // DXOgg reads the tracks from here, not the game's ..\Music\Ogg\
+                "OggPath=" + modRoot + @"\Music\Ogg\",
                 @"Paths=..\Music\*.umx",
                 @"Paths=..\Sounds\*.uax",
                 @"Paths=..\Textures\*.utx",
@@ -512,6 +518,10 @@ namespace CNNInstallUtil
                 // [WinDrv.WindowsClient] patches. Windows 10/11 expose no
                 // 16-bit fullscreen modes — a 16-bit request is the other half
                 // of "Failed resetting mode", independent of the renderer.
+                // A never-launched game has FirstRun=0: the engine would open its
+                // first-time wizard, which on current PCs certifies only Software
+                // Rendering and overwrites our renderer. 1100 is what it writes after.
+                if (line.StartsWith("FirstRun="))            { result.Add("FirstRun=1100");          continue; }
                 if (line.StartsWith("WindowedColorBits="))   { result.Add("WindowedColorBits=32");   continue; }
                 if (line.StartsWith("FullscreenColorBits=")) { result.Add("FullscreenColorBits=32"); continue; }
 
@@ -529,6 +539,7 @@ namespace CNNInstallUtil
                         continue;
                     }
                     if (line.StartsWith("Paths="))       continue; // skip existing, we inject our own
+                    if (line.StartsWith("OggPath="))     continue; // ours goes with the Paths=
                     if (line.StartsWith("; HD Textures")) continue; // skip old HD comments
 
                     if (line.StartsWith("Suppress="))
@@ -682,11 +693,6 @@ namespace CNNInstallUtil
             return paths.ToArray();
         }
 
-        // Copy RenderExt.dll and RenderExt.int to the game's System folder.
-        // CNN.ini sets Render=RenderExt.RenderExt, so UE1 LoadLibrary's these
-        // at startup — they must live alongside DeusEx.exe, not in the mod's
-        // System folder, because LoadLibrary uses the exe directory, not UE1
-        // Paths=.
         // Copies into the game's folders, noting what was not there before
         private void CopyIntoGame(string src, string dest, bool overwrite)
         {
@@ -701,14 +707,6 @@ namespace CNNInstallUtil
             using (var sha = System.Security.Cryptography.SHA1.Create())
             using (var stream = File.OpenRead(file))
                 return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
-        }
-
-        private void CreateGameDirectory(string dir)
-        {
-            if (Directory.Exists(dir))
-                return;
-            Directory.CreateDirectory(dir);
-            addedDirs.Add(dir);
         }
 
         private void LoadGameFiles(string pathToModSystem)
@@ -731,7 +729,8 @@ namespace CNNInstallUtil
         {
             var lines = new List<string>();
             foreach (var f in addedFiles)
-                lines.Add("file " + f.Value + " " + f.Key);
+                if (File.Exists(f.Key))
+                    lines.Add("file " + f.Value + " " + f.Key);
             addedDirs.Sort((a, b) => b.Length.CompareTo(a.Length));
             foreach (string d in addedDirs)
                 lines.Add("dir " + d);
@@ -739,72 +738,66 @@ namespace CNNInstallUtil
             Console.WriteLine("Noted {0} files and {1} folders added to the game for the uninstaller.", addedFiles.Count, addedDirs.Count);
         }
 
-        private void CopyRenderExt(string pathToSystem, string pathToModSystem)
+        // Native DLLs go to the game's System: the engine LoadLibrary's them
+        // from the exe's folder and ignores Paths= (RenderExt for
+        // Render=RenderExt.RenderExt, DXOgg for the music, D3D9Drv as the
+        // renderer). Nothing else leaves the mod folder: DXOgg.u is found via
+        // Paths=, the .ogg tracks via OggPath= in CNN.ini.
+        private void CopyNativeFiles(string pathToSystem, string pathToModSystem)
         {
-            foreach (string f in new[] { "RenderExt.dll", "RenderExt.int" })
-            {
-                string src = Path.Combine(pathToModSystem, f);
-                if (File.Exists(src))
-                {
-                    CopyIntoGame(src, Path.Combine(pathToSystem, f), true);
-                    Console.WriteLine("Copied {0} to System.", f);
-                }
-                else
-                {
-                    Console.WriteLine("Warning: {0} not found in mod System folder.", f);
-                }
-            }
+            // The D3D9 .dll and .int go as a pair: a player's own D3D9 stays whole.
+            if (!File.Exists(Path.Combine(pathToSystem, "D3D9Drv.dll")))
+                foreach (string f in new[] { "D3D9Drv.dll", "D3D9Drv.int" })
+                    CopyIntoGameIfFree(Path.Combine(pathToModSystem, f), Path.Combine(pathToSystem, f));
+
+            foreach (string f in new[] { "DXOgg.dll", "RenderExt.dll", "RenderExt.int" })
+                CopyIntoGameIfFree(Path.Combine(pathToModSystem, f), Path.Combine(pathToSystem, f));
         }
 
-        private void CopyMusicFiles(string pathToSystem, string pathToModSystem)
+        // Puts a file into the game's System unless something else owns that
+        // name there: a file the player or another mod put there stays as is.
+        private void CopyIntoGameIfFree(string src, string dest)
         {
-            string pathToMusic = Path.Combine(Directory.GetParent(currentPath).ToString(), "Music");
-            string pathToOggMusic = Path.Combine(pathToMusic, "Ogg");
-            string pathToModOggMusic = Path.Combine(currentPath, "Music", "Ogg");
-
-            CreateGameDirectory(pathToMusic);
-            CreateGameDirectory(pathToOggMusic);
-
-            // Copy D3D9 renderer as fallback (in case player has no modern renderer).
-            // The .dll and .int go as a pair: a player's own D3D9 stays whole.
-            bool playerHasD3D9 = File.Exists(Path.Combine(pathToSystem, "D3D9Drv.dll"));
-            foreach (string d3d9File in playerHasD3D9 ? new string[0] : new[] { "D3D9Drv.dll", "D3D9Drv.int" })
+            string name = Path.GetFileName(dest);
+            if (!File.Exists(src))
             {
-                string src = Path.Combine(pathToModSystem, d3d9File);
-                string dest = Path.Combine(pathToSystem, d3d9File);
-                if (File.Exists(src) && !File.Exists(dest))
+                Console.WriteLine("Warning: {0} not found in mod System folder.", name);
+                return;
+            }
+            if (File.Exists(dest) && !addedFiles.ContainsKey(dest))
+            {
+                if (Sha1(dest) == Sha1(src))
+                    Console.WriteLine("{0} is already in System (the same file).", name);
+                else
+                    Console.WriteLine("Kept the {0} already in System (not installed by CNN).", name);
+                return;
+            }
+            CopyIntoGame(src, dest, true);
+            Console.WriteLine("Copied {0} to System.", name);
+        }
+
+        // Earlier versions copied the .ogg tracks into the game's Music\Ogg.
+        // A copy byte-identical to the mod's own track can only be CNN's.
+        private void RemoveOldMusicCopies()
+        {
+            string gameOgg = Path.Combine(Directory.GetParent(currentPath).ToString(), "Music", "Ogg");
+            string modOgg = Path.Combine(currentPath, "Music", "Ogg");
+            if (!Directory.Exists(gameOgg) || !Directory.Exists(modOgg))
+                return;
+
+            int removed = 0;
+            foreach (FileInfo track in new DirectoryInfo(modOgg).GetFiles("*.ogg"))
+            {
+                string old = Path.Combine(gameOgg, track.Name);
+                if (File.Exists(old) && new FileInfo(old).Length == track.Length && Sha1(old) == Sha1(track.FullName))
                 {
-                    CopyIntoGame(src, dest, false);
-                    Console.WriteLine("Installed {0} to System (D3D9 fallback renderer).", d3d9File);
+                    File.Delete(old);
+                    addedFiles.Remove(old);
+                    removed++;
                 }
             }
-
-            // Copy DXOgg.dll to game System (needed for OGG playback)
-            string dxOggDll = Path.Combine(pathToModSystem, "DXOgg.dll");
-            if (File.Exists(dxOggDll))
-            {
-                CopyIntoGame(dxOggDll, Path.Combine(pathToSystem, "DXOgg.dll"), true);
-                Console.WriteLine("Copied DXOgg.dll to System.");
-            }
-
-            // Copy DXOgg.u to game System
-            string dxOggU = Path.Combine(pathToModSystem, "DXOgg.u");
-            if (File.Exists(dxOggU))
-            {
-                CopyIntoGame(dxOggU, Path.Combine(pathToSystem, "DXOgg.u"), true);
-                Console.WriteLine("Copied DXOgg.u to System.");
-            }
-
-            // Copy OGG music files
-            if (Directory.Exists(pathToModOggMusic))
-            {
-                foreach (FileInfo oggFile in new DirectoryInfo(pathToModOggMusic).GetFiles())
-                {
-                    Console.WriteLine("Copying music: {0}", oggFile.Name);
-                    CopyIntoGame(oggFile.FullName, Path.Combine(pathToOggMusic, oggFile.Name), true);
-                }
-                Console.WriteLine("Done copying OGG music.");
-            }
+            if (removed > 0)
+                Console.WriteLine("Removed {0} old copies of CNN music from the game's Music\\Ogg (now played from the mod folder).", removed);
         }
     }
 }

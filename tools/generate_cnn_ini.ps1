@@ -128,6 +128,7 @@ $cnnPaths += @(
     "Paths=$ModRoot\System\*.u",
     "Paths=$ModRoot\Textures\*.utx",
     "Paths=$ModRoot\Music\*.umx",
+    "OggPath=$ModRoot\Music\Ogg\",      # DXOgg reads the tracks from the mod, not ..\Music\Ogg\
     "Paths=..\Music\*.umx",
     "Paths=..\Sounds\*.uax",
     "Paths=..\Textures\*.utx",
@@ -180,6 +181,9 @@ for ($i = 0; $i -lt $lines.Length; $i++) {
     # Windows 10/11 expose no 16-bit fullscreen display modes; the vanilla
     # Default.ini asks for 16-bit, which makes the engine fail its mode reset
     # ("Failed resetting mode") regardless of which renderer is selected.
+    # FirstRun=0 (never-launched game) opens the engine's first-time wizard, which
+    # certifies only Software Rendering on current PCs; 1100 is what it writes after
+    if ($line -match '^FirstRun=')            { $result += 'FirstRun=1100';          continue }
     if ($line -match '^WindowedColorBits=')   { $result += 'WindowedColorBits=32';   continue }
     if ($line -match '^FullscreenColorBits=') { $result += 'FullscreenColorBits=32'; continue }
 
@@ -204,8 +208,8 @@ for ($i = 0; $i -lt $lines.Length; $i++) {
             $result += "SavePath=$ModRoot\Save"
             continue
         }
-        # Skip existing Paths= lines (we inject our own)
-        if ($line -match '^Paths=') {
+        # Skip existing Paths= and OggPath= lines (we inject our own)
+        if ($line -match '^(Paths|OggPath)=') {
             continue
         }
         # Skip old HD texture comments

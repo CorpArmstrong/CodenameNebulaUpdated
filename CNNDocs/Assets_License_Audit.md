@@ -151,7 +151,7 @@ creative commons». Точный вариант CC (BY / BY-NC-SA) — в README
 
 ## 7. Порядок действий
 
-1. Заменить X-Files (L1, комната отдыха) и крик Честера (Луна); удалить неиспользуемую музыку и пакеты (п. 3).
+1. Заменить X-Files (L1, комната отдыха) и крик Честера (Луна). Неиспользуемая музыка и пакеты (п. 3) из установщика убраны 22.10.2026 (`CNNInstaller/NotShipped.txt`, `Installer_Audit.md`).
 2. Заменить единственную текстуру `GenFX.LensFlar.new2` на L1; выяснить происхождение TITAN и STALKER-текстур.
 3. Уточнить авторов `WhoAmI`, `HijackingTheSpaceStation*`, `MagdaleneTheme_battle`, меша `Ship1` и `SciFiFighter`.
 4. Написать авторам (Bowen Wong, yukichigai, Deadalus08, Prototype,

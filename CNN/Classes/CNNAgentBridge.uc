@@ -12,6 +12,8 @@
 //-----------------------------------------------------------------------
 class CNNAgentBridge extends Actor config(CNNAgent);
 
+#exec OBJ LOAD FILE=DXOgg
+
 var() float pollInterval;
 var TantalusDenton Player;
 
@@ -65,6 +67,14 @@ var name   lastMagOrders;
 var string lastMagEnemy;
 var bool   bTubeLogged;
 var float  tubeLogDelay;
+
+// ASSETCHECK: what has been checked on this map ("|name|" lists) and the counts
+var string checkedCons;
+var string checkedPortraits;
+var int    checkCons;
+var int    checkLines;
+var int    checkVoiced;
+var int    checkProblems;
 
 function PostBeginPlay()
 {
@@ -183,6 +193,8 @@ function Run(string command, optional int seq)
         Snap(arg);
     else if (cmd == "RAW")
         LogRaw(Player.ConsoleCommand(arg));
+    else if (cmd == "ASSETCHECK")
+        AssetCheck();
     else if (cmd == "WHERE")
         Where();
     else if (cmd == "FLAGS")
@@ -198,7 +210,7 @@ function Run(string command, optional int seq)
     else
         Player.ClientMessage("unknown command " $ cmd $
             " -- use GOTO/GOTOVEC/WALK/WALKSTOP/ACTORS/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/AUTOCON/PICKS/" $
-            "SETFLAG/WAITFLAG/NEWGAME/GIVE/TAKE/INV/KILL/BODIES/CONLIST/SAVE/LOAD/QSAVE/QLOAD/SNAP/RAW/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            "SETFLAG/WAITFLAG/NEWGAME/GIVE/TAKE/INV/KILL/BODIES/CONLIST/SAVE/LOAD/QSAVE/QLOAD/SNAP/RAW/ASSETCHECK/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
 
     // a travel (OPEN, LOAD) happens at the end of the tick, after this
     if (seq > 0)
@@ -238,6 +250,145 @@ function LogRaw(string s)
     for (i = 0; i < Len(s); i += 1000)
         Log("CNN raw|" $ Mid(s, i, 1000) $ "|");
     Log("CNN raw: end");
+}
+
+// ----------------------------------------------------------------------
+// AssetCheck()
+//
+// Loads, the way the game does during play, everything this map can ask
+// for by name: the voice of every line of every conversation bound here
+// (barks and infolinks included), the classes conversations hand over,
+// infolink portraits (AiHUDInfoLinkDisplay's rule) and the .ogg of every
+// DXOggMusicManager slot, which DXOgg opens and complains about in the log
+// if it cannot. What the map itself imports needs no check: a missing
+// import fails the map load. tools/cnn_assetcheck.ps1 runs it everywhere.
+// ----------------------------------------------------------------------
+
+function AssetCheck()
+{
+    local Actor a;
+    local ConListItem item;
+
+    checkedCons = "|";
+    checkedPortraits = "|";
+    checkCons = 0;
+    checkLines = 0;
+    checkVoiced = 0;
+    checkProblems = 0;
+
+    foreach AllActors(class'Actor', a)
+        for (item = ConListItem(a.conListItems); item != none; item = item.next)
+            if (item.con != none)
+                CheckConversation(item.con);
+    CheckMusic();
+
+    Report("ASSETCHECK " $ Level.Game.GetURLMap() $ ": " $ checkCons $ " conversations, " $
+           checkLines $ " lines, " $ checkVoiced $ " voiced, " $ checkProblems $ " missing");
+}
+
+function CheckMissing(string what)
+{
+    checkProblems++;
+    Log("CNN check: MISSING " $ what);
+}
+
+function CheckConversation(Conversation con)
+{
+    local ConEvent ev;
+    local ConEventSpeech speech;
+    local ConEventTransferObject transfer;
+
+    if (InStr(checkedCons, "|" $ con.conName $ "|") >= 0)
+        return;
+    checkedCons = checkedCons $ con.conName $ "|";
+    checkCons++;
+
+    for (ev = con.eventList; ev != none; ev = ev.nextEvent)
+    {
+        speech = ConEventSpeech(ev);
+        if ((speech != none) && (speech.conSpeech != none))
+        {
+            // many lines are unvoiced by design; the tool compares these with a baseline run
+            checkLines++;
+            if (con.GetSpeechAudio(speech.conSpeech.soundID) != none)
+                checkVoiced++;
+            else
+                Log("CNN check: silent " $ con.conName $ " " $ speech.speakerName $ " " $ speech.conSpeech.soundID);
+            if (con.bDataLinkCon)
+                CheckPortrait(speech.speakerName);
+        }
+
+        // the import leaves giveObject empty when it cannot resolve the name; Chapter06L2
+        // repairs some of those at play time, so only a class that exists nowhere is missing
+        transfer = ConEventTransferObject(ev);
+        if ((transfer != none) && (transfer.giveObject == none) && (transfer.objectName != "") &&
+            !ClassExists(transfer.objectName))
+            CheckMissing("object " $ transfer.objectName $ " in " $ con.conName);
+    }
+}
+
+function bool ClassExists(string className)
+{
+    local string pkg, cls;
+
+    SplitAt(className, ".", pkg, cls);
+    if (cls == "")
+        cls = className;
+    return (DynamicLoadObject(className, class'Class', true) != none) ||
+           (DynamicLoadObject("DeusEx." $ cls, class'Class', true) != none) ||
+           (DynamicLoadObject("CNN." $ cls, class'Class', true) != none);
+}
+
+function CheckPortrait(string bindName)
+{
+    local AiDataLinkPlay names;
+    local string displayName, portrait;
+
+    if (InStr(checkedPortraits, "|" $ bindName $ "|") >= 0)
+        return;
+    checkedPortraits = checkedPortraits $ bindName $ "|";
+
+    names = Spawn(class'AiDataLinkPlay');
+    if (names != none)
+    {
+        displayName = names.GetDisplayName(bindName);
+        names.Destroy();
+    }
+
+    if ((displayName == "Ada") || (displayName == "Janus"))
+        portrait = "AiInfoPortraits." $ Left(bindName, 19);
+    else
+        portrait = "InfoPortraits." $ Left(bindName, 19);
+    if (bindName == "PaulDenton")
+        portrait = portrait $ "_" $ Chr(49 + Player.PlayerSkin);
+
+    if (Texture(DynamicLoadObject(portrait, class'Texture', true)) == none)
+        CheckMissing("portrait " $ portrait $ " (infolink speaker " $ bindName $ ")");
+}
+
+function CheckMusic()
+{
+    local DXOggMusicManager m;
+
+    foreach AllActors(class'DXOggMusicManager', m)
+    {
+        TryOgg(m, "ambient", m.AmbientIntroOggFile, m.AmbientOggFile);
+        TryOgg(m, "combat", m.CombatIntroOggFile, m.CombatOggFile);
+        TryOgg(m, "conversation", m.ConversationIntroOggFile, m.ConversationOggFile);
+        TryOgg(m, "outro", "", m.OutroOggFile);
+        TryOgg(m, "death", "", m.DeathOggFile);
+        if (m.AmbientOggFile != "")
+            m.SetCurrentOgg(m.AmbientIntroOggFile, m.AmbientOggFile, 0, MTran_Instant);
+    }
+}
+
+// DXOgg reports a file it cannot open in the log itself, right after this line
+function TryOgg(DXOgg ogg, string slot, string intro, string loop)
+{
+    if ((intro == "") && (loop == ""))
+        return;
+    Log("CNN check: ogg " $ ogg.Name $ " " $ slot $ " intro=" $ intro $ " loop=" $ loop);
+    ogg.SetCurrentOgg(intro, loop, 0, MTran_Instant);
 }
 
 function Ack(int seq, string cmd)

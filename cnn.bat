@@ -413,7 +413,6 @@ if exist "%DIST_DIR%\Maps\CNNentry.dx" (
 
 :: Package Music
 echo Packaging Music...
-if exist "%REPO_ROOT%\Music\Terrified.umx" copy /y "%REPO_ROOT%\Music\Terrified.umx" "%DIST_DIR%\Music\" >nul
 for %%f in ("%REPO_ROOT%\Music\Ogg\*.ogg") do (
     copy /y "%%f" "%DIST_DIR%\Music\Ogg\" >nul
     echo   %%~nxf
@@ -425,6 +424,10 @@ for %%f in ("%REPO_ROOT%\Textures\*.utx") do (
     copy /y "%%f" "%DIST_DIR%\Textures\" >nul
     echo   %%~nxf
 )
+
+:: Drop what nothing loads (CNNInstaller\NotShipped.txt; the repo keeps it for the editor)
+echo Dropping files listed in NotShipped.txt...
+for /f "usebackq eol=; delims=" %%f in ("%REPO_ROOT%\CNNInstaller\NotShipped.txt") do if exist "%DIST_DIR%\%%f" del /q "%DIST_DIR%\%%f"
 
 :: Package System files
 echo Packaging System...
@@ -638,6 +641,10 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo   end;
     echo end;
 )
+:: An upgrade removes what earlier versions shipped and this one does not
+>> "%ISS_FILE%" echo.
+>> "%ISS_FILE%" echo [InstallDelete]
+for /f "usebackq eol=; delims=" %%f in ("%REPO_ROOT%\CNNInstaller\NotShipped.txt") do >> "%ISS_FILE%" echo Type: files; Name: "{app}\%%f"
 
 echo Building installer...
 "%INNO_SETUP%\iscc.exe" "%ISS_FILE%"

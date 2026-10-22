@@ -1,0 +1,21 @@
+; Files that stay in the repo (the editor may want them) but are not shipped:
+; nothing loads them. Checked 2026-10-22 with the bridge: no map, package,
+; conversation, text or ini names them, and every map was run without them
+; (tools/cnn_assetcheck.ps1, CNNDocs/Installer_Audit.md). Paths are relative
+; to the distribution folder. cnn package deletes them from it; cnn installer
+; turns them into [InstallDelete] so an upgrade removes old copies.
+Textures\AITex.utx
+Textures\X3tex.utx
+Textures\X3.utx
+Music\Terrified.umx
+Music\Ogg\Anthemn_Battle.ogg
+Music\Ogg\Arabic_Hybrid_Sci_Fi_Music_Endless_Frontier.ogg
+Music\Ogg\Epic_North_Music_This_Is_The_Future_(Epic_Cinematic_Sci_Fi_Drama).ogg
+Music\Ogg\Humankind_Battle.ogg
+Music\Ogg\Royalty_Free_Music_[SpaceAmbientFantasy]_14_The_Cosmos.ogg
+Music\Ogg\Royalty_Free_Music_[SpaceTechnologySci_Fi]_08_Future_Club.ogg
+Music\Ogg\Royalty_Free_Music_[SpaceTechnologySci_Fi]_11_Tronicles.ogg
+Music\Ogg\Stellardrone_I_Dont_Belong_Here.ogg
+Music\Ogg\The_Intangible_Lost_In_Andromeda.ogg
+Music\Ogg\X_FilesThemePianoStringsVersion(HD).ogg
+RootSystemFiles\*

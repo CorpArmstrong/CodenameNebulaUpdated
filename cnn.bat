@@ -192,6 +192,7 @@ echo [2/4] Copying runtime dependencies to System...
 for %%f in (DXOgg.dll DXOgg.u GaussGun.u PFAD.u DXRVNewVehicles.u) do (
     if exist "%REPO_ROOT%\System\%%f" copy /y "%REPO_ROOT%\System\%%f" "%SYSTEM_DIR%\" >nul && echo   %%f
 )
+:: RenderExt is for the editor only (its too-many-lit-surfaces fix); the game uses the stock Render
 if exist "%REPO_ROOT%\CNN\System\RenderExt.dll" copy /y "%REPO_ROOT%\CNN\System\RenderExt.dll" "%SYSTEM_DIR%\" >nul && echo   RenderExt.dll
 
 :: Configure DeusEx.ini
@@ -443,14 +444,6 @@ if exist "%REPO_ROOT%\System\D3D9Drv.int" (
     copy /y "%REPO_ROOT%\System\D3D9Drv.int" "%DIST_DIR%\System\" >nul
     echo   D3D9Drv.int
 )
-:: Package RenderExt from CNN/System/ — the launcher's setup copies these into the
-:: game's System folder at install time so UE1 can LoadLibrary them.
-for %%f in (RenderExt.dll RenderExt.int) do (
-    if exist "%REPO_ROOT%\CNN\System\%%f" (
-        copy /y "%REPO_ROOT%\CNN\System\%%f" "%DIST_DIR%\System\" >nul
-        echo   %%f
-    )
-)
 
 :: The launcher: one window to play, configure and repair the mod; the
 :: installer runs it with --setup. .NET Framework 4.7.2 ships with Windows.
@@ -589,7 +582,7 @@ if not exist "%DEUSEX_ROOT%\CodenameNebula\Save" mkdir "%DEUSEX_ROOT%\CodenameNe
 
 :: Copy compiled packages to Deus Ex System
 echo Deploying packages to %SYSTEM_DIR%...
-for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u ApocalypseInside.u ApocalypseInsideText.u GaussGun.u DXOgg.u DXOgg.dll PFAD.u DXRVNewVehicles.u RenderExt.dll D3D9Drv.dll) do (
+for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u ApocalypseInside.u ApocalypseInsideText.u GaussGun.u DXOgg.u DXOgg.dll PFAD.u DXRVNewVehicles.u D3D9Drv.dll) do (
     if exist "%REPO_ROOT%\System\%%f" (
         copy /y "%REPO_ROOT%\System\%%f" "%SYSTEM_DIR%\" >nul
         echo   %%f

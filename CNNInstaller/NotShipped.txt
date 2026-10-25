@@ -11,6 +11,9 @@ Textures\TITAN.utx
 Textures\GenFX.utx
 Textures\Ophelia.utx
 Textures\CNNTextures.utx
+; RenderExt is for the editor only since 2026-10-25; the game uses the stock Render
+System\RenderExt.dll
+System\RenderExt.int
 Music\Terrified.umx
 Music\Ogg\Anthemn_Battle.ogg
 Music\Ogg\Arabic_Hybrid_Sci_Fi_Music_Endless_Frontier.ogg

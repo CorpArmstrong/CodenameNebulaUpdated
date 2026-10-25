@@ -64,7 +64,7 @@ mklink /J "<DeusExRoot>\CNNMaps" "<path-to-this-repo>\Maps"
 
 ### Step 5: Copy Runtime Dependencies to `<DeusExRoot>\System\`
 
-Copy DLLs (engine needs them at runtime):
+Copy DLLs (engine needs them at runtime; RenderExt only for the editor — hanfling's fix for the too-many-lit-surfaces crash; the game itself runs on the stock `Render.Render`):
 ```cmd
 copy "<repo>\System\DXOgg.dll" "<DeusExRoot>\System\"
 copy "<repo>\CNN\System\RenderExt.dll" "<DeusExRoot>\System\"

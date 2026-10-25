@@ -166,9 +166,9 @@ for ($i = 0; $i -lt $lines.Length; $i++) {
 
     # ---- [Engine.Engine] section patches ----
     if ($line -match '^DefaultGame=')      { $result += 'DefaultGame=CNN.CNNGameInfo';  continue }
-    # Replace Render= but NOT GameRenderDevice=, RenderDevice=, WindowedRenderDevice=
+    # Stock Render= (RenderExt, an editor fix, is no longer shipped), but NOT GameRenderDevice=, RenderDevice=, WindowedRenderDevice=
     if ($line -match '^Render=' -and $line -notmatch 'RenderDevice') {
-        $result += 'Render=RenderExt.RenderExt'
+        $result += 'Render=Render.Render'
         continue
     }
 

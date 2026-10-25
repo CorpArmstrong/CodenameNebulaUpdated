@@ -144,7 +144,7 @@ Mostly build output. **Tracked source files** (regenerating these by hand requir
 - `CNN.u` — main script package (~35 MB)
 - `CNNText.u` — conversations, written by the `CONVERSATION IMPORT` in `CNN` (no text content)
 - `CNNAudioCNN.u`, `CNNAudioChapter05.u`, `CNNAudioChapter06.u` — audio packages
-- Dependencies copied during setup: `GaussGun.u`, `PFAD.u`, `DXRVNewVehicles.u`, `DXOgg.u`, `DXOgg.dll`, `D3D9Drv.dll`, `RenderExt.dll`
+- Dependencies copied during setup: `GaussGun.u`, `PFAD.u`, `DXRVNewVehicles.u`, `DXOgg.u`, `DXOgg.dll`, `D3D9Drv.dll` (`RenderExt.dll` only by `cnn setup`, for the editor)
 
 ### Installer — `Build/`
 - `CodenameNebula_v<version>.exe` — Inno Setup output

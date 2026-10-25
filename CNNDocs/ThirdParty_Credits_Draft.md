@@ -26,8 +26,8 @@
   класс сделан из исходника Shifter как заготовки. Отсюда строка «Weapon code partly based on Shifter».
 - **PFAD** и **New Vehicles** — авторство записано в исходниках внутри пакетов («by Prototype»,
   «NewVehicles by Deadalus08»).
-- **RenderExt** — используется (`CNNInstallUtil` прописывает `Render=RenderExt.RenderExt`), автор в
-  файлах не указан; в сети не найден. В титрах без автора.
+- **RenderExt** — с 25.10.2026 только для редактора, игра на стоковом рендере; из титров убран. Автор —
+  Sebastian Kaufel (hanfling), «Deus Ex Editor Fix» 2014–2015 (`CNN/System/deusexedfix.txt`).
 
 ## README / страница мода
 
@@ -37,7 +37,7 @@
 
 ## Открыто
 
-1. Автор RenderExt: подписи нет ни в DLL, ни в справке Revision; поставляется с TNM2 и Revision вместе с DXOgg — в титрах «from The Nameless Mod and Deus Ex: Revision».
+1. ~~Автор RenderExt~~ — hanfling (см. выше).
 2. Фото Честера в титрах (`chester_credits`) — фотограф.
 3. В титры не попадает, но решить до релиза: ~~TITAN.utx и GenFX.utx~~ (заменены стоковыми 25.10.2026);
    LosAngelesTex — источники фото; модели `Ship1`, `SciFiFighter`.

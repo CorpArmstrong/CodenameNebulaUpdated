@@ -94,8 +94,6 @@
 <P>
 <P>Direct3D 9 renderer by Chris Dohnal
 <P>
-<P>Render Extension (RenderExt) from The Nameless Mod and Deus Ex: Revision
-<P>
 <P>Small Crowd Applause sound (Recorded by Yannick Lemieux) used under Attribution 3.0 license.
 <P>
 <P>Supported if installed: HDTP, New Vision

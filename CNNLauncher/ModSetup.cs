@@ -72,6 +72,7 @@ namespace CNNLauncher
             CreateCNNIni(pathToSystem, pathToModSystem);
             CreateCNNUserIni(pathToSystem, pathToModSystem);
             CopyNativeFiles(pathToSystem, pathToModSystem);
+            RemoveRetiredFiles(pathToSystem);
             RemoveOldMusicCopies();
             PrepareCdExe(pathToSystem);
             SaveGameFiles(pathToModSystem);
@@ -313,9 +314,10 @@ namespace CNNLauncher
 
                 // [Engine.Engine] patches
                 if (line.StartsWith("DefaultGame="))     { result.Add("DefaultGame=CNN.CNNGameInfo");  continue; }
+                // the stock renderer: RenderExt, an editor fix, is no longer shipped
                 if (line.StartsWith("Render=") && !line.StartsWith("RenderDevice"))
                 {
-                    result.Add("Render=RenderExt.RenderExt");
+                    result.Add("Render=Render.Render");
                     continue;
                 }
 
@@ -558,10 +560,9 @@ namespace CNNLauncher
         }
 
         // Native DLLs go to the game's System: the engine LoadLibrary's them
-        // from the exe's folder and ignores Paths= (RenderExt for
-        // Render=RenderExt.RenderExt, DXOgg for the music, D3D9Drv as the
-        // renderer). Nothing else leaves the mod folder: DXOgg.u is found via
-        // Paths=, the .ogg tracks via OggPath= in CNN.ini.
+        // from the exe's folder and ignores Paths= (DXOgg for the music,
+        // D3D9Drv as the renderer). Nothing else leaves the mod folder: DXOgg.u
+        // is found via Paths=, the .ogg tracks via OggPath= in CNN.ini.
         private void CopyNativeFiles(string pathToSystem, string pathToModSystem)
         {
             // The D3D9 .dll and .int go as a pair: a player's own D3D9 stays whole.
@@ -569,8 +570,23 @@ namespace CNNLauncher
                 foreach (string f in new[] { "D3D9Drv.dll", "D3D9Drv.int" })
                     CopyIntoGameIfFree(Path.Combine(pathToModSystem, f), Path.Combine(pathToSystem, f));
 
-            foreach (string f in new[] { "DXOgg.dll", "RenderExt.dll", "RenderExt.int" })
-                CopyIntoGameIfFree(Path.Combine(pathToModSystem, f), Path.Combine(pathToSystem, f));
+            CopyIntoGameIfFree(Path.Combine(pathToModSystem, "DXOgg.dll"), Path.Combine(pathToSystem, "DXOgg.dll"));
+        }
+
+        // Earlier versions put RenderExt into the game's System. A copy CNN
+        // added and nobody changed since is removed; anyone else's stays.
+        private void RemoveRetiredFiles(string pathToSystem)
+        {
+            foreach (string f in new[] { "RenderExt.dll", "RenderExt.int" })
+            {
+                string path = Path.Combine(pathToSystem, f);
+                string sha;
+                if (!File.Exists(path) || !addedFiles.TryGetValue(path, out sha) || Sha1(path) != sha)
+                    continue;
+                File.Delete(path);
+                addedFiles.Remove(path);
+                Report("Removed {0} from System (no longer used).", f);
+            }
         }
 
         // Puts a file into the game's System unless something else owns that

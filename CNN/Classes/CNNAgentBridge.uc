@@ -127,6 +127,8 @@ function Run(string command, optional int seq)
         DumpActors(arg);
     else if (cmd == "GOTOVEC")
         GotoVec(arg);
+    else if (cmd == "LOOKAT")
+        LookAt(arg);
     else if (cmd == "FIRE")
         FireTag(Player.rootWindow.StringToName(arg));
     else if (cmd == "FROB")
@@ -209,7 +211,7 @@ function Run(string command, optional int seq)
         Player.ConsoleCommand("exit");  // a killed process leaves Recovery Mode for the next launch
     else
         Player.ClientMessage("unknown command " $ cmd $
-            " -- use GOTO/GOTOVEC/WALK/WALKSTOP/ACTORS/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/AUTOCON/PICKS/" $
+            " -- use GOTO/GOTOVEC/LOOKAT/WALK/WALKSTOP/ACTORS/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/AUTOCON/PICKS/" $
             "SETFLAG/WAITFLAG/NEWGAME/GIVE/TAKE/INV/KILL/BODIES/CONLIST/SAVE/LOAD/QSAVE/QLOAD/SNAP/RAW/ASSETCHECK/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
 
     // a travel (OPEN, LOAD) happens at the end of the tick, after this
@@ -1391,6 +1393,33 @@ function GotoVec(string args)
         Player.ClientMessage("GOTOVEC: blocked at " $ dest);
         Log("CNN L2 goto: vec " $ dest $ " BLOCKED");
     }
+}
+
+// Turn the view to a world point, so a SHOT shows what is there.
+function LookAt(string args)
+{
+    local string x, y, z;
+    local vector target;
+    local rotator view;
+
+    SplitFirstWord(args, x, y);
+    SplitFirstWord(y, y, z);
+    if (z == "")
+    {
+        Log("CNN L2 goto: LOOKAT malformed arg (expected \"x y z\"): " $ args);
+        return;
+    }
+
+    target.X = float(x);
+    target.Y = float(y);
+    target.Z = float(z);
+
+    view = rotator(target - Player.Location - Player.EyeHeight * vect(0,0,1));
+    view.Pitch = view.Pitch & 65535;
+    Player.ViewRotation = view;
+    view.Pitch = 0;
+    Player.SetRotation(view);
+    Log("CNN L2 goto: look at " $ target $ " from " $ Player.Location);
 }
 
 // Landmarks are at floor level: lift clear of it and fan out until the

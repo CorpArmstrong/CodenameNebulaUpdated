@@ -9,12 +9,16 @@
  * size of the texture it replaces so the surfaces keep their mapping:
  *   - from "Zortch World Textures" by mutantleg (CC0, opengameart.org/content/
  *     zortch-world-textures), copied, cropped, repeated 2x2 or brightened;
- *   - hazard markings and the plain floor plates drawn from scratch below.
+ *   - hazard markings, the plain floor plates and most screens drawn from
+ *     scratch below;
+ *   - the rec-room TV: "Close Image of Flying Saucer", Air Force Office of
+ *     Special Investigations (US government work, public domain; Wikimedia
+ *     Commons File:Flying_Saucer.webp, 960px PNG preview), cropped.
  * Output: 24-bit BMPs in CNN/Textures/Station, imported into CNN.u by
  * CNN/Classes/CNNTextures.uc as CNN.Station.<the name Ophelia used>. FloorTech03
  * was a copy of GravityFloor and now uses it.
  *
- * Usage: node tools/station_textures.js <zortchskin folder>
+ * Usage: node tools/station_textures.js <zortchskin folder> <folder with Flying_Saucer.png>
  *
  * Written 2026-10-25 (CNNDocs/Third_Party_Textures.md).
  */
@@ -42,9 +46,11 @@ const TEXTURES = {
   FloorTech01c: { w: 256, h: 256, draw: 'stripedRing' },
   FloorTech05b: { w: 256, h: 256, draw: 'redStripes' },
   // screens that lost their pictures (L1); sized to the surfaces' mapping
-  ScreenRecRoom:  { w: 512, h: 512, draw: 'ufoNight' },
+  ScreenRecRoom:  { w: 512, h: 512, photo: 'Flying_Saucer.png', crop: [170, 40, 680] },
   ScreenMedical:  { w: 512, h: 512, draw: 'heartMonitor' },
   ScreenSecurity: { w: 1024, h: 512, draw: 'cameraFeeds' },
+  ScreenStation:  { w: 1024, h: 512, draw: 'stationMap' },
+  ScreenConsole:  { w: 64, h: 64, draw: 'consoleGlow' },
 };
 
 // ---- from Zortch: copy, repeat 2x2, or cut a window out
@@ -177,6 +183,14 @@ const FONT = {
   '2': '01110100010000100010001000100011111', '3': '11110000010000101110000010000111110',
   '4': '00010001100101010010111110001000010', '7': '11111000010001000100010000100001000',
   '8': '01110100011000101110100011000101110', '9': '01110100011000101111000010001001110',
+  L: '10000100001000010000100001000011111', I: '01110001000010000100001000010001110',
+  T: '11111001000010000100001000010000100', N: '10001110011010110011100011000110001',
+  G: '01110100011000010111100011000101111', V: '10001100011000110001100010101000100',
+  D: '11110100011000110001100011000111110', K: '10001100101010011000101001001010001',
+  U: '10001100011000110001100011000101110', Y: '10001100010101000100001000010000100',
+  W: '10001100011000110101101011010101010',
+  '5': '11111100001111000001000011000101110', '6': '00110010001000011110100011000101110',
+  '%': '11001110100001000100010000101110011', ':': '00000011000110000000011000110000000',
   ' ': '00000000000000000000000000000000000',
 };
 function text(cv, s, x, y, scale, col) {
@@ -188,26 +202,42 @@ function text(cv, s, x, y, scale, col) {
 }
 
 const SCREENS = {
-  // the rec-room TV that used to show a show's poster: a saucer over trees at night
-  ufoNight(w, h) {
-    const cv = canvas(w, h, (x, y) => { const t = y / h; return [10 + 20 * t, 18 + 40 * t, 40 + 50 * t]; });
-    for (let i = 0; i < 260; i++) { const b = 120 + 135 * rnd(); cv.px(rnd() * w, rnd() * h * 0.7, [b, b, b + 20]); }
-    const sx = w / 2, sy = h * 0.32;
-    for (let y = Math.round(sy); y < h; y++) {           // the beam, widening to the ground
-      const half = 30 + (y - sy) * 0.55;
-      for (let x = Math.round(sx - half); x <= sx + half; x++) cv.px(x, y, [170, 230, 220], 0.22 * (1 - Math.abs(x - sx) / half));
+  // the entrance info screen: a plan of the station with its systems
+  stationMap(w, h) {
+    const BLUE = [90, 170, 255], CYAN = [120, 230, 240], DIM = [40, 80, 130];
+    const cv = canvas(w, h, (x, y) => (x % 32 === 0 || y % 32 === 0 ? [14, 30, 52] : [6, 14, 28]));
+    const cx = 330, cy = 270;
+    for (let a = 0; a < 720; a++) {                        // habitat ring, hub, spokes
+      const t = a / 720 * Math.PI * 2;
+      for (const [rr, col] of [[190, BLUE], [178, DIM], [46, CYAN]]) cv.rect(cx + rr * Math.cos(t) - 2, cy + rr * Math.sin(t) - 2, cx + rr * Math.cos(t) + 2, cy + rr * Math.sin(t) + 2, col, 1);
     }
-    for (let y = -26; y <= 26; y++) for (let x = -120; x <= 120; x++) {   // saucer and dome
-      const disc = (x / 120) ** 2 + (y / 22) ** 2 <= 1, dome = y < 0 && (x / 46) ** 2 + ((y + 10) / 26) ** 2 <= 1;
-      if (disc) cv.px(sx + x, sy + y, [120 + 60 * (1 - y / 22) / 2, 125 + 60 * (1 - y / 22) / 2, 135 + 60 * (1 - y / 22) / 2]);
-      if (dome) cv.px(sx + x, sy + y, [150, 220, 230], 0.8);
+    for (let k = 0; k < 6; k++) {
+      const t = k / 6 * Math.PI * 2 + 0.3;
+      cv.line(cx + 46 * Math.cos(t), cy + 46 * Math.sin(t), cx + 178 * Math.cos(t), cy + 178 * Math.sin(t), DIM, 4);
+      const mx = cx + 184 * Math.cos(t), my = cy + 184 * Math.sin(t);   // a module on the ring
+      cv.rect(mx - 18, my - 12, mx + 18, my + 12, [10, 24, 44], 1);
+      for (const [x0, y0, x1, y1] of [[-18, -12, 18, -10], [-18, 10, 18, 12], [-18, -12, -16, 12], [16, -12, 18, 12]]) cv.rect(mx + x0, my + y0, mx + x1, my + y1, CYAN, 1);
     }
-    for (let i = -4; i <= 4; i++) cv.rect(sx + i * 24 - 3, sy + 6, sx + i * 24 + 3, sy + 12, [255, 230, 140], 1);
-    for (let x = 0; x < w; x++) {                          // treeline
-      const top = h * 0.78 - 30 * Math.abs(Math.sin(x * 0.045)) - 22 * Math.abs(Math.sin(x * 0.13 + 1)) - 10 * rnd();
-      for (let y = Math.round(top); y < h; y++) cv.px(x, y, [6, 10, 8]);
-    }
+    cv.line(cx + 46, cy, cx + 120, cy - 120, BLUE, 3);     // docking arm
+    cv.rect(cx + 112, cy - 150, cx + 160, cy - 120, [10, 24, 44], 1);
+    text(cv, 'OPHELIA STATION', 40, 30, 4, CYAN);
+    text(cv, 'DOCK', cx + 170, cy - 150, 3, BLUE);
+    const bars = [['POWER', 0.86], ['O2', 0.97], ['GRAVITY', 1.0], ['HULL', 0.74], ['COMMS', 0.31]];
+    bars.forEach(([label, v], i) => {
+      const y = 110 + i * 70;
+      text(cv, label, 620, y, 3, BLUE);
+      cv.rect(620, y + 30, 980, y + 44, [16, 34, 60], 1);
+      cv.rect(620, y + 30, 620 + 360 * v, y + 44, v < 0.5 ? [230, 120, 60] : CYAN, 1);
+      text(cv, Math.round(v * 100) + '%', 990 - 24 * 4, y, 3, CYAN);
+    });
     cv.tv();
+    return cv.img;
+  },
+  // a small console screen on a translucent (additive) surface: light, so it reads as lit glass
+  consoleGlow(w, h) {
+    const cv = canvas(w, h, () => [120, 175, 200]);
+    for (let y = 8; y < h - 6; y += 7) cv.rect(6, y, 6 + 14 + ((y * 37) % 34), y + 3, [40, 70, 110], 1);
+    cv.rect(0, 0, w, 3, [170, 220, 240], 1);
     return cv.img;
   },
   // medical bay: heart and oxygen traces with readouts
@@ -266,16 +296,35 @@ function bmp(w, h, rgb) {
   return b;
 }
 
+// a photo cut to a square, scaled down (box filter) and shown as a TV picture
+function fromPhoto(dir, t) {
+  const src = readPng(path.join(dir, t.photo));
+  if (!src) throw new Error(`${t.photo}: unreadable`);
+  const [ox, oy, size] = t.crop;
+  const cv = canvas(t.w, t.h, (x, y) => {
+    const s = size / t.w, acc = [0, 0, 0];
+    let n = 0;
+    for (let yy = Math.floor(y * s); yy < Math.floor((y + 1) * s); yy++) for (let xx = Math.floor(x * s); xx < Math.floor((x + 1) * s); xx++) {
+      const i = ((oy + yy) * src.w + ox + xx) * 3; acc[0] += src.rgb[i]; acc[1] += src.rgb[i + 1]; acc[2] += src.rgb[i + 2]; n++;
+    }
+    const g = (acc[0] + acc[1] + acc[2]) / (3 * n);
+    return [g * 0.92, g * 0.97, g * 1.05];    // black and white with a cold cast, as on an old TV
+  });
+  cv.tv();
+  return Buffer.from(cv.img.map((v) => Math.max(0, Math.min(255, v))));
+}
+
 function main() {
-  const dir = process.argv[2];
-  if (!dir) { console.error(fs.readFileSync(__filename, 'utf8').split('*/')[0]); process.exit(1); }
+  const [dir, photos] = process.argv.slice(2);
+  if (!dir || !photos) { console.error(fs.readFileSync(__filename, 'utf8').split('*/')[0]); process.exit(1); }
   fs.mkdirSync(OUT, { recursive: true });
   for (const [name, t] of Object.entries(TEXTURES)) {
     let rgb;
     if (t.draw) rgb = Buffer.from((SCREENS[t.draw] || DRAW[t.draw])(t.w, t.h).map((v) => Math.max(0, Math.min(255, v))));
+    else if (t.photo) rgb = fromPhoto(photos, t);
     else rgb = fromZortch(dir, t);
     fs.writeFileSync(path.join(OUT, name + '.bmp'), bmp(t.w, t.h, rgb));
-    console.log(`${name} ${t.w}x${t.h} <- ${t.draw ? 'drawn' : t.zortch}`);
+    console.log(`${name} ${t.w}x${t.h} <- ${t.draw ? 'drawn' : t.photo || t.zortch}`);
   }
 }
 

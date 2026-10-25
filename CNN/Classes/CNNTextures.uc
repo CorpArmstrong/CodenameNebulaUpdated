@@ -15,6 +15,7 @@ class CNNTextures extends Object abstract;
 #exec TEXTURE IMPORT FILE=Textures\TantalusMenu3.pcx NAME=TantalusMenu3 GROUP=UI MIPS=Off
 #exec TEXTURE IMPORT FILE=Textures\TantalusMenu4.pcx NAME=TantalusMenu4 GROUP=UI MIPS=Off
 #exec TEXTURE IMPORT FILE=Textures\TantalusMenu5.pcx NAME=TantalusMenu5 GROUP=UI MIPS=Off
+#exec TEXTURE IMPORT FILE=Textures\CNNTitle.bmp NAME=CNNTitle GROUP=UI
 #exec TEXTURE IMPORT FILE=Textures\skilliconFrench.pcx NAME=skilliconFrench GROUP=SkillIcons MIPS=Off
 #exec TEXTURE IMPORT FILE=Textures\skilliconPiloting.pcx NAME=skilliconPiloting GROUP=SkillIcons MIPS=Off
 #exec TEXTURE IMPORT FILE=Textures\mea1.pcx NAME=mea1 GROUP=DecoTex
@@ -56,6 +57,8 @@ class CNNTextures extends Object abstract;
 #exec TEXTURE IMPORT FILE=Textures\Station\ScreenMedical.bmp NAME=ScreenMedical GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\ScreenRecRoom.bmp NAME=ScreenRecRoom GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\ScreenSecurity.bmp NAME=ScreenSecurity GROUP=Station
+#exec TEXTURE IMPORT FILE=Textures\Station\ScreenStation.bmp NAME=ScreenStation GROUP=Station
+#exec TEXTURE IMPORT FILE=Textures\Station\ScreenConsole.bmp NAME=ScreenConsole GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\u_casing01.bmp NAME=u_casing01 GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\u_ceiling01.bmp NAME=u_ceiling01 GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\u_wall06.bmp NAME=u_wall06 GROUP=Station

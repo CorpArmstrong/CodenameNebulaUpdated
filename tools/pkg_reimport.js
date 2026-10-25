@@ -5,10 +5,13 @@
  * A map that borrows a texture from a package we no longer ship can take the
  * same texture from a stock package instead, without UnrealEd: every surface
  * and actor refers to the texture through one import entry, so changing that
- * entry's name and outer moves all of them at once. Only fixed-size fields are
- * touched (the outer is an INT, a name is a compact index of the same length),
- * so nothing else in the file moves. The new outer must already be imported,
- * and the new name must already be in the name table.
+ * entry's name and outer moves all of them at once. Where it fits, only
+ * fixed-size fields are touched (the outer is an INT, a name a compact index
+ * of the same length) and nothing else in the file moves. When a new name's
+ * index needs more bytes than the old one had, the whole import table is
+ * written again at the end of the file and the header pointed at it: imports
+ * are referred to by number, never by file offset. The new outer must already
+ * be imported, and the new name must already be in the name table.
  *
  * Usage:
  *   node tools/pkg_reimport.js <pkg> <Old.Path>=<New.Path> ... [--write]
@@ -31,15 +34,28 @@ function ciBytes(v, len = 0) {
   return out;
 }
 
-// Import table with the file offset of each field we may rewrite.
+// Import table: raw indices, and the file offset of each field we may rewrite.
 function importFields(P) {
   const r = new Reader(P.buf, P.buf.readUInt32LE(32));
   return P.imports.map(() => {
-    r.ci(); r.ci();
-    const pkgAt = r.p; r.i32();
-    const nameAt = r.p; r.ci();
-    return { pkgAt, nameAt, nameLen: r.p - nameAt };
+    const classPkg = r.ci(), className = r.ci();
+    const pkgAt = r.p; const pkg = r.i32();
+    const nameAt = r.p; const name = r.ci();
+    return { classPkg, className, pkg, name, pkgAt, nameAt, nameLen: r.p - nameAt };
   });
+}
+
+// The table serialized again, appended to the file; the header's ImportOffset moves to it.
+function relocateImports(buf, fields) {
+  const bytes = [];
+  for (const f of fields) {
+    bytes.push(...ciBytes(f.classPkg), ...ciBytes(f.className));
+    const b = Buffer.alloc(4); b.writeInt32LE(f.pkg); bytes.push(...b);
+    bytes.push(...ciBytes(f.name));
+  }
+  const out = Buffer.concat([buf, Buffer.from(bytes)]);
+  out.writeUInt32LE(buf.length, 32);
+  return out;
 }
 
 function main() {
@@ -68,24 +84,33 @@ function main() {
     }
     const ni = P.names.findIndex((n) => n.toLowerCase() === name.toLowerCase());
     if (ni < 0) throw new Error(`${to}: name ${name} is not in the name table`);
-    const enc = ciBytes(ni, fields[i].nameLen);
-    if (enc.length !== fields[i].nameLen) throw new Error(`${to}: name index ${ni} needs ${enc.length} bytes, the slot has ${fields[i].nameLen}`);
-    patches.push({ i, from, to, outer, enc });
+    patches.push({ i, from, to, outer, ni });
   }
 
+  let buf = P.buf;
+  const inPlace = patches.every((p) => ciBytes(p.ni, fields[p.i].nameLen).length === fields[p.i].nameLen);
   for (const p of patches) {
     console.log(`${-(p.i + 1)} ${P.imports[p.i].className} ${p.from} -> ${p.to}`);
-    P.buf.writeInt32LE(p.outer, fields[p.i].pkgAt);
-    Buffer.from(p.enc).copy(P.buf, fields[p.i].nameAt);
+    fields[p.i].pkg = p.outer;
+    fields[p.i].name = p.ni;
+    if (inPlace) {
+      buf.writeInt32LE(p.outer, fields[p.i].pkgAt);
+      Buffer.from(ciBytes(p.ni, fields[p.i].nameLen)).copy(buf, fields[p.i].nameAt);
+    }
+  }
+  if (!inPlace) {
+    buf = relocateImports(buf, fields);
+    console.log(`import table moved to the end of the file (+${buf.length - P.buf.length} bytes)`);
   }
 
   // read the patched table back before anything is written
-  const R = reload(P.buf);
+  const R = reload(buf);
   for (const p of patches) {
     const got = R.objPath(-(p.i + 1));
     if (got.toLowerCase() !== p.to.toLowerCase()) throw new Error(`${p.from}: reads back as ${got}, expected ${p.to}`);
   }
-  if (write) { fs.writeFileSync(path, P.buf); console.log(`wrote ${path}`); }
+  if (R.imports.length !== P.imports.length || R.exports.length !== P.exports.length) throw new Error('tables read back wrong');
+  if (write) { fs.writeFileSync(path, buf); console.log(`wrote ${path}`); }
   else console.log('dry run; add --write to apply');
 }
 

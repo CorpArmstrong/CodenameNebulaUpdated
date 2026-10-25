@@ -7,6 +7,10 @@
 Textures\AITex.utx
 Textures\X3tex.utx
 Textures\X3.utx
+Textures\TITAN.utx
+Textures\GenFX.utx
+Textures\Ophelia.utx
+Textures\CNNTextures.utx
 Music\Terrified.umx
 Music\Ogg\Anthemn_Battle.ogg
 Music\Ogg\Arabic_Hybrid_Sci_Fi_Music_Endless_Frontier.ogg

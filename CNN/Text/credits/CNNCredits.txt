@@ -86,6 +86,10 @@
 <P>
 <P>New Vehicles by Deadalus08
 <P>
+<P>Station textures partly from Zortch World Textures by mutantleg (CC0)
+<P>
+<P>Flying saucer photo: U.S. Air Force Office of Special Investigations (public domain)
+<P>
 <P>DXOgg Ogg Extension by Jim (The Nameless Mod)
 <P>
 <P>Direct3D 9 renderer by Chris Dohnal

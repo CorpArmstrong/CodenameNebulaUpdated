@@ -108,6 +108,14 @@
 | `mp_b_carb02` 512 | 3 | `CNN.Station.mp_b_carb02` | Zortch `tile339` |
 | `Metal.rustmetal1` 512 | 1 | `CNN.Station.rustmetal1` | Zortch `tile514` |
 
+Подвесные экраны L1 без картинки (раньше — постер «Секретных материалов» и другие изображения; поверхности
+были без текстуры и показывали `DefaultTexture`) получили нарисованные заставки в размер их разметки:
+`CNN.Station.ScreenRecRoom` 512×512 (зона отдыха, у кнопки `Xfiles`: летающая тарелка над лесом),
+`ScreenMedical` 512×512 (медотсек: кардиограмма), `ScreenSecurity` 1024×512 (у камеры наблюдения: четыре
+камеры); маленькая полупрозрачная панель — стоковый `V_Com_Center.Glass.ClenBlueLight_A`.
+Остальные такие поверхности (L1, Hijacking, Transcend, Mutiny) взяли текстуру своего браша —
+`tools/bsp_retexture.js`.
+
 Не использовались ни на одной карте и исчезают без замены: `FloorTech02b`, `FloorTech04b`, `FloorTech06`,
 `FloorTech08`, `FloorTiles`, `Wall01`, `Wall01b`, `Wall03`.
 
@@ -119,5 +127,7 @@
    `ObserX`, `wallfuse8`, `bassein`) — чей набор.
 4. `xmas_banner`, глобусы Земли и Марса, снимки картин — источник.
 5. `rammstein3` — заменить (предложение).
+7. `CNNTextures.OpheliaIW` (1024×512, подвесной экран L1 у (2, −431, 196)) — снимок командного зала; если `IW`
+   значит Deus Ex: Invisible War, это кадр из чужой игры — уточнить и при необходимости нарисовать свой.
 6. Бренды в наборе PFAD (Bounty, Bueno, Snickers, Pepsi, Red Bull, Monster) — оставить как есть
    (так их выпустил автор PFAD) или убрать эти предметы с карт.

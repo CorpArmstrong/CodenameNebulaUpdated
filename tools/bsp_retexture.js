@@ -16,7 +16,9 @@
  * Usage:
  *   node tools/bsp_retexture.js <map.dx>                       list what it would do
  *   node tools/bsp_retexture.js <map.dx> [surf=Pkg.Tex ...] --write
- * surf=Pkg.Tex overrides the pick for one surface (Pkg.Tex must be imported).
+ * surf=Pkg.Tex sets one surface, textured or not (Pkg.Tex must be imported;
+ * tools/pkg_reimport.js +Pkg.Tex adds the import). When every new reference is
+ * as long as the old one, the file is patched in place.
  *
  * Written 2026-10-25 for the DefaultTexture patches on L1 and the endings.
  */
@@ -118,7 +120,7 @@ function main() {
 
   const picks = [];
   levelSurfs.forEach((s, i) => {
-    if (s.tex !== 0 || (s.flags & 1) || !s.centre) return;
+    if ((s.tex !== 0 && !(i in forced)) || (s.flags & 1) || !s.centre) return;
     let tex = forced[i], why = 'given';
     const bp = polysOf(s.actor);
     if (!tex && bp) {
@@ -160,35 +162,43 @@ function main() {
   if (!picks.length) { console.log('no untextured visible surfaces'); return; }
   if (!write) { console.log('dry run; add --write to apply'); return; }
 
-  // new data for the level model and every brush Polys touched
-  const blobs = new Map([[level, rewrite(P, level, picks.map((p) => ({ at: p.s.texAt, len: p.s.texLen, value: p.tex })))]]);
-  const polyEdits = new Map();
+  // edits to the level model and every brush Polys touched
+  const edits = new Map([[level, picks.map((p) => ({ at: p.s.texAt, len: p.s.texLen, value: p.tex }))]]);
+  let brushes = 0;
   for (const p of picks) {
     if (!p.bp) continue;
     const poly = p.bp.polys[p.s.brushPoly];
-    if (!poly || poly.tex) continue;
-    if (!polyEdits.has(p.bp.export)) polyEdits.set(p.bp.export, []);
-    const list = polyEdits.get(p.bp.export);
+    if (!poly || (poly.tex && !(p.i in forced))) continue;
+    if (!edits.has(p.bp.export)) { edits.set(p.bp.export, []); brushes++; }
+    const list = edits.get(p.bp.export);
     if (!list.some((x) => x.at === poly.texAt)) list.push({ at: poly.texAt, len: poly.texLen, value: p.tex });
   }
-  for (const [e, edits] of polyEdits) blobs.set(e, rewrite(P, e, edits));
 
-  // blobs appended, then the export table with their new sizes and offsets
-  const parts = [P.buf]; let at = P.buf.length;
-  const place = new Map();
-  for (const [e, b] of blobs) { place.set(e, { off: at, size: b.length }); parts.push(b); at += b.length; }
-  const r = new Reader(P.buf, P.buf.readUInt32LE(24));
-  const table = [];
-  for (const e of P.exports) {
-    const start = r.p; r.ci(); r.ci(); r.i32(); r.ci(); r.u32();
-    const head = P.buf.subarray(start, r.p);
-    const size = r.ci(); if (size > 0) r.ci();
-    const pl = place.get(e) || { off: e.off, size };
-    table.push(head, ciBytes(pl.size), pl.size > 0 ? ciBytes(pl.off) : Buffer.alloc(0));
+  let out;
+  if ([...edits.values()].flat().every((ed) => ciBytes(ed.value).length === ed.len)) {
+    // a texture in place of another of the same index length: patched where it is
+    out = Buffer.from(P.buf);
+    for (const ed of [...edits.values()].flat()) ciBytes(ed.value).copy(out, ed.at);
+  } else {
+    // rewritten exports appended, then the export table with their new sizes and offsets
+    const parts = [P.buf]; let at = P.buf.length;
+    const place = new Map();
+    for (const [e, list] of edits) {
+      const b = rewrite(P, e, list);
+      place.set(e, { off: at, size: b.length }); parts.push(b); at += b.length;
+    }
+    const r = new Reader(P.buf, P.buf.readUInt32LE(24));
+    const table = [];
+    for (const e of P.exports) {
+      const start = r.p; r.ci(); r.ci(); r.i32(); r.ci(); r.u32();
+      const head = P.buf.subarray(start, r.p);
+      const size = r.ci(); if (size > 0) r.ci();
+      const pl = place.get(e) || { off: e.off, size };
+      table.push(head, ciBytes(pl.size), pl.size > 0 ? ciBytes(pl.off) : Buffer.alloc(0));
+    }
+    out = Buffer.concat([...parts, ...table]);
+    out.writeUInt32LE(at, 24);
   }
-  const tableBuf = Buffer.concat(table);
-  const out = Buffer.concat([...parts, tableBuf]);
-  out.writeUInt32LE(at, 24);
 
   // read it back: every pick textured, nothing else moved
   const tmp = require('os').tmpdir() + `/bsp_retexture_${process.pid}.tmp`;
@@ -200,7 +210,7 @@ function main() {
     if (qs.length !== levelSurfs.length || Q.exports.length !== P.exports.length) throw new Error('model read back wrong');
   } finally { fs.unlinkSync(tmp); }
   fs.writeFileSync(path, out);
-  console.log(`wrote ${path}: ${picks.length} surfaces, ${polyEdits.size} brushes (+${out.length - P.buf.length} bytes)`);
+  console.log(`wrote ${path}: ${picks.length} surfaces, ${brushes} brushes (+${out.length - P.buf.length} bytes)`);
 }
 
 if (require.main === module) main();

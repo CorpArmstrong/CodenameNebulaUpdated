@@ -17,7 +17,8 @@
  * existing number.
  *
  * Usage:
- *   node tools/pkg_reimport.js <pkg> <Old.Path>=<New.Path> ... [--write]
+ *   node tools/pkg_reimport.js <pkg> <Old.Path>=<New.Path> ... [+<Pkg.Group.Texture> ...] [--write]
+ * +Path adds an import of that texture, for tools/bsp_retexture.js to use.
  *
  * Without --write it only prints what it would change. Every import the
  * package still has afterwards must resolve, so a package that is dropped
@@ -103,7 +104,15 @@ function main() {
   };
 
   const patches = [];
-  for (const m of maps) {
+  for (const m of maps.filter((a) => a.startsWith('+'))) {
+    const parts = m.slice(1).split('.');
+    if (paths.some((x) => lower(x) === lower(m.slice(1)))) { console.log(`${m.slice(1)} is already imported`); continue; }
+    const outer = packageImport(parts.slice(0, -1).join('.'));
+    fields.push({ classPkg: nameIndex('Engine'), className: nameIndex('Texture'), pkg: outer, name: nameIndex(parts[parts.length - 1]) });
+    paths.push(m.slice(1));
+    console.log(`+${-fields.length} Texture ${m.slice(1)}`);
+  }
+  for (const m of maps.filter((a) => !a.startsWith('+'))) {
     const [from, to] = m.split('=');
     const i = paths.findIndex((x) => lower(x) === lower(from));
     if (i < 0 || i >= P.imports.length) throw new Error(`${from}: no such import`);

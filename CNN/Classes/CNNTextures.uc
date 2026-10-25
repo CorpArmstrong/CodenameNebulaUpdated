@@ -53,6 +53,9 @@ class CNNTextures extends Object abstract;
 #exec TEXTURE IMPORT FILE=Textures\Station\panels_ext.bmp NAME=panels_ext GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\pod_door.bmp NAME=pod_door GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\rustmetal1.bmp NAME=rustmetal1 GROUP=Station
+#exec TEXTURE IMPORT FILE=Textures\Station\ScreenMedical.bmp NAME=ScreenMedical GROUP=Station
+#exec TEXTURE IMPORT FILE=Textures\Station\ScreenRecRoom.bmp NAME=ScreenRecRoom GROUP=Station
+#exec TEXTURE IMPORT FILE=Textures\Station\ScreenSecurity.bmp NAME=ScreenSecurity GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\u_casing01.bmp NAME=u_casing01 GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\u_ceiling01.bmp NAME=u_ceiling01 GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\u_wall06.bmp NAME=u_wall06 GROUP=Station

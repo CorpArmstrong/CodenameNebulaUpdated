@@ -86,6 +86,8 @@
 <P>
 <P>New Vehicles by Deadalus08
 <P>
+<P>Station textures partly from Zortch World Textures by mutantleg (CC0)
+<P>
 <P>DXOgg Ogg Extension by Jim (The Nameless Mod)
 <P>
 <P>Direct3D 9 renderer by Chris Dohnal

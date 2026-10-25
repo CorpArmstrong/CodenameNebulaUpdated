@@ -1,17 +1,20 @@
 #!/usr/bin/env node
 /*
- * pkg_reimport.js - point a package's imports at other objects, in place.
+ * pkg_reimport.js - point a package's imports at other objects.
  *
- * A map that borrows a texture from a package we no longer ship can take the
- * same texture from a stock package instead, without UnrealEd: every surface
- * and actor refers to the texture through one import entry, so changing that
- * entry's name and outer moves all of them at once. Where it fits, only
- * fixed-size fields are touched (the outer is an INT, a name a compact index
- * of the same length) and nothing else in the file moves. When a new name's
- * index needs more bytes than the old one had, the whole import table is
- * written again at the end of the file and the header pointed at it: imports
- * are referred to by number, never by file offset. The new outer must already
- * be imported, and the new name must already be in the name table.
+ * A map that borrows a texture from a package we no longer ship can take a
+ * texture from another package instead, without UnrealEd: every surface and
+ * actor refers to the texture through one import entry, so changing that
+ * entry's name and outer moves all of them at once.
+ *
+ * Where it fits, only fixed-size fields are touched (the outer is an INT, a
+ * name a compact index of the same length) and nothing else in the file
+ * moves. When a name's index needs more bytes than the old one had, or the
+ * new path needs names or package/group imports the map does not have yet,
+ * the name and/or import table is written again at the end of the file, new
+ * entries appended, and the header pointed at it: names and imports are
+ * referred to by number, never by file offset, and appending keeps every
+ * existing number.
  *
  * Usage:
  *   node tools/pkg_reimport.js <pkg> <Old.Path>=<New.Path> ... [--write]
@@ -45,17 +48,28 @@ function importFields(P) {
   });
 }
 
-// The table serialized again, appended to the file; the header's ImportOffset moves to it.
-function relocateImports(buf, fields) {
+function serializeImports(fields) {
   const bytes = [];
   for (const f of fields) {
     bytes.push(...ciBytes(f.classPkg), ...ciBytes(f.className));
     const b = Buffer.alloc(4); b.writeInt32LE(f.pkg); bytes.push(...b);
     bytes.push(...ciBytes(f.name));
   }
-  const out = Buffer.concat([buf, Buffer.from(bytes)]);
-  out.writeUInt32LE(buf.length, 32);
-  return out;
+  return Buffer.from(bytes);
+}
+
+// Name entry as in v68 packages: length-prefixed zero-terminated string, flags.
+function serializeName(s, flags) {
+  const f = Buffer.alloc(4); f.writeUInt32LE(flags);
+  return Buffer.concat([Buffer.from(ciBytes(s.length + 1)), Buffer.from(s + '\0', 'latin1'), f]);
+}
+
+// Byte range and flags of the name table as it is in the file.
+function nameTable(P) {
+  const r = new Reader(P.buf, P.buf.readUInt32LE(16));
+  const start = r.p, flags = [];
+  for (let i = 0; i < P.names.length; i++) { r.str(); flags.push(r.u32()); }
+  return { start, end: r.p, flags };
 }
 
 function main() {
@@ -65,30 +79,43 @@ function main() {
   if (!path || !maps.length) { console.error(fs.readFileSync(__filename, 'utf8').split('*/')[0]); process.exit(1); }
 
   const P = load(path);
+  if (P.ver < 64) throw new Error('only packages of version 64 and later');
   const fields = importFields(P);
+  const names = [...P.names], newNames = [];
   const paths = P.imports.map((im, i) => P.objPath(-(i + 1)));
-  const byPath = (p) => paths.findIndex((x) => x.toLowerCase() === p.toLowerCase());
-  const patches = [];
+  const lower = (s) => s.toLowerCase();
 
+  const nameIndex = (s) => {
+    let i = names.findIndex((n) => lower(n) === lower(s));
+    if (i < 0) { i = names.length; names.push(s); newNames.push(s); }
+    return i;
+  };
+  // the import of a package or group, added (with its outers) when missing
+  const packageImport = (p) => {
+    const i = paths.findIndex((x) => lower(x) === lower(p));
+    if (i >= 0) return -(i + 1);
+    const parts = p.split('.');
+    const outer = parts.length > 1 ? packageImport(parts.slice(0, -1).join('.')) : 0;
+    fields.push({ classPkg: nameIndex('Core'), className: nameIndex('Package'), pkg: outer, name: nameIndex(parts[parts.length - 1]) });
+    paths.push(p);
+    console.log(`+${-fields.length} Package ${p}`);
+    return -fields.length;
+  };
+
+  const patches = [];
   for (const m of maps) {
     const [from, to] = m.split('=');
-    const i = byPath(from);
-    if (i < 0) throw new Error(`${from}: no such import`);
+    const i = paths.findIndex((x) => lower(x) === lower(from));
+    if (i < 0 || i >= P.imports.length) throw new Error(`${from}: no such import`);
     const parts = to.split('.');
-    const name = parts.pop();
-    let outer = 0;
-    if (parts.length) {
-      const o = byPath(parts.join('.'));
-      if (o < 0) throw new Error(`${to}: ${parts.join('.')} is not imported`);
-      outer = -(o + 1);
-    }
-    const ni = P.names.findIndex((n) => n.toLowerCase() === name.toLowerCase());
-    if (ni < 0) throw new Error(`${to}: name ${name} is not in the name table`);
-    patches.push({ i, from, to, outer, ni });
+    const outer = parts.length > 1 ? packageImport(parts.slice(0, -1).join('.')) : 0;
+    patches.push({ i, from, to, outer, ni: nameIndex(parts[parts.length - 1]) });
   }
 
   let buf = P.buf;
-  const inPlace = patches.every((p) => ciBytes(p.ni, fields[p.i].nameLen).length === fields[p.i].nameLen);
+  const added = fields.length > P.imports.length;
+  const inPlace = !added && !newNames.length &&
+    patches.every((p) => ciBytes(p.ni, fields[p.i].nameLen).length === fields[p.i].nameLen);
   for (const p of patches) {
     console.log(`${-(p.i + 1)} ${P.imports[p.i].className} ${p.from} -> ${p.to}`);
     fields[p.i].pkg = p.outer;
@@ -99,17 +126,40 @@ function main() {
     }
   }
   if (!inPlace) {
-    buf = relocateImports(buf, fields);
-    console.log(`import table moved to the end of the file (+${buf.length - P.buf.length} bytes)`);
+    const parts = [buf];
+    let at = buf.length;
+    const header = Buffer.from(buf.subarray(0, 64));
+    if (newNames.length) {
+      // the old table copied whole, the new names after it; flags as on the package names
+      const t = nameTable(P), flags = t.flags[P.names.findIndex((n) => n === 'Core')] || 0x70010;
+      const table = Buffer.concat([buf.subarray(t.start, t.end), ...newNames.map((s) => serializeName(s, flags))]);
+      header.writeUInt32LE(names.length, 12); header.writeUInt32LE(at, 16);
+      // the last generation records the name count too
+      const gens = header.readUInt32LE(52);
+      if (gens) header.writeUInt32LE(names.length, 56 + (gens - 1) * 8 + 4);
+      parts.push(table); at += table.length;
+      console.log(`name table moved to the end, ${newNames.length} added: ${newNames.join(' ')}`);
+    }
+    const imports = serializeImports(fields);
+    header.writeUInt32LE(fields.length, 28); header.writeUInt32LE(at, 32);
+    parts.push(imports);
+    buf = Buffer.concat(parts);
+    header.copy(buf, 0);
+    console.log(`import table moved to the end${added ? `, ${fields.length - P.imports.length} added` : ''} (+${buf.length - P.buf.length} bytes)`);
   }
 
-  // read the patched table back before anything is written
+  // read the patched tables back before anything is written
   const R = reload(buf);
   for (const p of patches) {
     const got = R.objPath(-(p.i + 1));
-    if (got.toLowerCase() !== p.to.toLowerCase()) throw new Error(`${p.from}: reads back as ${got}, expected ${p.to}`);
+    if (lower(got) !== lower(p.to)) throw new Error(`${p.from}: reads back as ${got}, expected ${p.to}`);
   }
-  if (R.imports.length !== P.imports.length || R.exports.length !== P.exports.length) throw new Error('tables read back wrong');
+  P.imports.forEach((im, i) => {
+    if (patches.some((p) => p.i === i)) return;
+    const a = P.objPath(-(i + 1)), b = R.objPath(-(i + 1));
+    if (a !== b && !patches.some((p) => a.startsWith(p.from + '.'))) throw new Error(`${a} changed to ${b}`);
+  });
+  if (R.exports.length !== P.exports.length || R.names.length !== names.length) throw new Error('tables read back wrong');
   if (write) { fs.writeFileSync(path, buf); console.log(`wrote ${path}`); }
   else console.log('dry run; add --write to apply');
 }

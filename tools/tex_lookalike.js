@@ -12,8 +12,8 @@
  * to level textures (no UI, skins, detail or font textures).
  *
  * Usage:
- *   node tools/tex_lookalike.js index <out.json> <pkg>...       thumbnails of every texture
- *   node tools/tex_lookalike.js match <stock.json> <mod.json> [--top N] [--only Pkg.Name,...] [--pool surface] > matches.json
+ *   node tools/tex_lookalike.js index <out.json> <pkg, .png or folder>...  features of every texture
+ *   node tools/tex_lookalike.js match <stock.json> <mod.json> [--top N] [--only Pkg.Name,...] [--pool surface|Pkg,Pkg...] > matches.json
  *   node tools/tex_lookalike.js html <matches.json> <out.html>  sheet: mod texture beside its candidates
  *
  * Written for the third-party texture inventory, 2026-10-25 (CNNDocs/Third_Party_Textures.md).
@@ -129,9 +129,54 @@ function preview(t) {
   return 'data:image/png;base64,' + png(w, h, rgb).toString('base64');
 }
 
-function index(out, pkgs) {
+// 8-bit PNG (grey, RGB, palette, RGBA; not interlaced) -> {w, h, rgb}: lets
+// free texture packs be compared the same way as packages.
+function readPng(file) {
+  const b = fs.readFileSync(file);
+  let p = 8, w = 0, h = 0, type = 0, depth = 0, pal = null;
+  const idat = [];
+  while (p < b.length) {
+    const len = b.readUInt32BE(p), t = b.toString('latin1', p + 4, p + 8), d = b.subarray(p + 8, p + 8 + len);
+    if (t === 'IHDR') { w = d.readUInt32BE(0); h = d.readUInt32BE(4); depth = d[8]; type = d[9]; if (d[12]) return null; }
+    else if (t === 'PLTE') pal = d;
+    else if (t === 'IDAT') idat.push(d);
+    p += 12 + len;
+  }
+  if (depth !== 8) return null;
+  const bpp = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[type];
+  const raw = zlib.inflateSync(Buffer.concat(idat));
+  const stride = w * bpp, px = Buffer.alloc(stride * h);
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * (stride + 1)], src = y * (stride + 1) + 1;
+    for (let x = 0; x < stride; x++) {
+      const a = x >= bpp ? px[y * stride + x - bpp] : 0, up = y ? px[(y - 1) * stride + x] : 0;
+      const c = x >= bpp && y ? px[(y - 1) * stride + x - bpp] : 0;
+      let v = raw[src + x];
+      if (f === 1) v += a; else if (f === 2) v += up; else if (f === 3) v += (a + up) >> 1;
+      else if (f === 4) { const q = a + up - c, pa = Math.abs(q - a), pb = Math.abs(q - up), pc = Math.abs(q - c); v += pa <= pb && pa <= pc ? a : pb <= pc ? up : c; }
+      px[y * stride + x] = v & 255;
+    }
+  }
+  const rgb = Buffer.alloc(w * h * 3);
+  for (let i = 0; i < w * h; i++) {
+    if (type === 3) pal.copy(rgb, i * 3, px[i] * 3, px[i] * 3 + 3);
+    else if (type === 0 || type === 4) rgb.fill(px[i * bpp], i * 3, i * 3 + 3);
+    else px.copy(rgb, i * 3, i * bpp, i * bpp + 3);
+  }
+  return { w, h, rgb, masked: false };
+}
+
+function index(out, args) {
   const all = [];
+  // a folder stands for the .png files in it
+  const pkgs = args.flatMap((a) => (fs.statSync(a).isDirectory()
+    ? fs.readdirSync(a).filter((f) => /\.png$/i.test(f)).map((f) => path.join(a, f)) : [a]));
   for (const file of pkgs) {
+    if (/\.png$/i.test(file)) {
+      const t = readPng(file);
+      if (t) all.push({ path: path.basename(file, '.png'), file, w: t.w, h: t.h, masked: false, f: features(t), preview: preview(t) });
+      continue;
+    }
     let P;
     try { P = load(file); } catch (err) { console.error(`${file}: ${err.message}`); continue; }
     const pkg = path.basename(file).replace(/\.[^.]+$/, '');
@@ -172,6 +217,7 @@ const NOT_SURFACE = /^(DeusExUI|DeusExItems|DeusExCharacters|DeusExDeco|Engine|R
 function match(stockFile, modFile, top, only, pool) {
   let stock = JSON.parse(fs.readFileSync(stockFile));
   if (pool === 'surface') stock = stock.filter((s) => !NOT_SURFACE.test(s.path));
+  else if (pool) stock = stock.filter((s) => pool.split(',').includes(s.path.split('.')[0]));
   let mod = JSON.parse(fs.readFileSync(modFile));
   if (only) mod = mod.filter((m) => only.some((o) => m.path.toLowerCase() === o.toLowerCase()));
   const res = mod.map((m) => ({
@@ -203,4 +249,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { decode, features, distance };
+module.exports = { decode, readPng, features, distance };

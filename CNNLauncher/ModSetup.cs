@@ -1,57 +1,28 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
-namespace CNNInstallUtil
+namespace CNNLauncher
 {
-    class InstallUtil
+    // Prepares Codename Nebula on this game copy: CNN.ini and CNNUser.ini from
+    // the player's own DeusEx.ini/User.ini, the native DLLs the engine loads
+    // from the game's System, and the list the uninstaller uses to remove
+    // exactly what was added there. Run by the installer (--setup) and by Repair.
+    public class ModSetup
     {
-        // DeusEx.exe size thresholds used to decide whether to rename-copy
-        // the exe (CD-protection bypass). See DetectAndPrepareLauncher().
-        //
-        //   > LauncherSize  : third-party launcher (Kentie/Han, ~300-500 KB).
-        //                     Never rename — users expect Kentie's settings
-        //                     to be inherited, which only works with the
-        //                     original exe name.
-        //   <= LauncherSize : either raw 1112fm or unpatched CD — both are
-        //                     ~254 KB, and we can't distinguish them by
-        //                     size or version metadata (CD has neither).
-        //                     Rename-copy regardless: it bypasses CD
-        //                     protection on CD and is a no-op on 1112fm.
-        //   <= WrapperSize  : Community Update wrapper (~126 KB). Don't
-        //                     rename — CU has its own launch mechanism.
-        //   <  SteamStubSize: Steam's own DeusEx.exe since its 2025-09 build
-        //                     (64,000 bytes, Steam DRM wrapper). Started
-        //                     directly it only shows "Failed to find Steam";
-        //                     it runs when Steam launches it, INI= included,
-        //                     so the launcher goes through steam://rungameid.
-        private const long LauncherSize  = 300_000;
-        private const long WrapperSize   = 200_000;
-        private const long SteamStubSize = 100_000;
+        private readonly GameFolder game;
+        private readonly string currentPath;
+        private readonly StringBuilder log = new StringBuilder();
 
-        private readonly string currentPath = Directory.GetCurrentDirectory();
-
-        // Name of the game exe to launch. Normally "DeusEx.exe" — but on
-        // unpatched CD installs we copy it to "CodenameNebula.exe" to sidestep
-        // the CD copy-protection check. Set by DetectAndPrepareLauncher().
-        private string launcherExeName = "DeusEx.exe";
-
-        // True when we renamed the exe (CD version only). Informs whether the
-        // Steam shortcut is useful (Steam launch only applies to Steam installs).
-        private bool isCdRenamed = false;
-
-        // True for Steam's DRM-wrapped DeusEx.exe: the game must be started
-        // by Steam, so PlayCodenameNebula.bat launches through steam://.
-        private bool isSteamStub = false;
-
-        // What this tool adds to the game's own folders (System DLLs, Music\Ogg
-        // tracks), written to {app}\System\CNNGameFiles.txt for the uninstaller,
-        // which otherwise only removes {app}. Only what wasn't there before is
-        // listed, so a player's own D3D9Drv.dll or DXOgg stays; entries from an
-        // earlier install are kept. Each file carries the SHA1 of what we put
-        // there: the uninstaller leaves a file something else has replaced since.
+        // What this adds to the game's own folders (native DLLs in System; older
+        // versions also Music\Ogg), written to CodenameNebula\System\CNNGameFiles.txt
+        // for the uninstaller, which otherwise only removes the mod folder. Only
+        // what wasn't there before is listed, so a player's own D3D9Drv.dll or
+        // DXOgg stays; entries from an earlier install are kept. Each file carries
+        // the SHA1 of what we put there: the uninstaller leaves a file something
+        // else has replaced since.
         private const string GameFilesList = "CNNGameFiles.txt";
         private readonly Dictionary<string, string> addedFiles =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -63,15 +34,81 @@ namespace CNNInstallUtil
         private const int MinViewportX = 800;
         private const int MinViewportY = 600;
 
+        public ModSetup(GameFolder game)
+        {
+            this.game = game;
+            currentPath = game.ModRoot;
+        }
+
+        public string Log => log.ToString();
+
+        // HD texture Paths= lines for the settings window (NewVision / HDTP, if installed)
+        public string[] FindHDPaths()
+        {
+            return DetectHDTextures(game.GameRoot);
+        }
+
+        private void Report(string format, params object[] args)
+        {
+            log.AppendLine(args.Length > 0 ? string.Format(format, args) : format);
+        }
+
+        // Returns false when the game folder is not usable; the reason is in Log
+        public bool Run()
+        {
+            string pathToModSystem = game.ModSystem;
+            string pathToSystem = game.GameSystem;
+            Report("Codename Nebula setup, {0}", DateTime.Now);
+            Report("Game: {0}", game.GameRoot);
+
+            if (!Directory.Exists(pathToSystem))
+            {
+                Report("Error: {0} doesn't exist -- the mod must be installed as <Deus Ex>\\CodenameNebula.", pathToSystem);
+                return false;
+            }
+            Directory.CreateDirectory(pathToModSystem);
+
+            LoadGameFiles(pathToModSystem);
+            CreateCNNIni(pathToSystem, pathToModSystem);
+            CreateCNNUserIni(pathToSystem, pathToModSystem);
+            CopyNativeFiles(pathToSystem, pathToModSystem);
+            RemoveOldMusicCopies();
+            PrepareCdExe(pathToSystem);
+            SaveGameFiles(pathToModSystem);
+            Report("DeusEx.exe: {0}", GameFolder.Describe(game.DeusExKind));
+            Report("Start: {0}", GameStarter.Summary(GameStarter.Plan(game)));
+            File.WriteAllText(Path.Combine(pathToModSystem, "CNNSetup.log"), Log);
+            return true;
+        }
+
+        // A CD copy's DeusEx.exe asks for the disc; a renamed copy of the same exe
+        // does not. Made from the player's own 1112fm/CD exe (GOG gets a harmless
+        // copy too -- they can't be told apart), with its own .int so the window
+        // is titled "Codename Nebula". Both names are CNN's own, so always listed.
+        private void PrepareCdExe(string pathToSystem)
+        {
+            string exe = Path.Combine(pathToSystem, GameFolder.CdExeName);
+            string intFile = Path.Combine(pathToSystem, "CodenameNebula.int");
+            if (game.DeusExKind != ExeKind.Original)
+                return;
+            File.Copy(game.DeusExExe, exe, true);
+            addedFiles[exe] = Sha1(exe);
+            File.WriteAllText(intFile, "[General]\r\nStart=Codename Nebula (Starting)\r\nExit=Codename Nebula (Exiting)\r\n" +
+                                       "Run=Codename Nebula (Running)\r\nProduct=Codename Nebula\r\n", Encoding.ASCII);
+            addedFiles[intFile] = Sha1(intFile);
+            Report("Created {0} (a copy of DeusEx.exe that needs no CD).", GameFolder.CdExeName);
+        }
+
+        // ---- display mode -------------------------------------------------------
         // Real current display mode in physical pixels. GetSystemMetrics is not
-        // usable here: this process is not DPI-aware, so it reports virtualized
-        // values (e.g. 1707x1067 on a 2560x1600 panel at 150% scaling) — and
+        // usable here: in a process that isn't DPI-aware it reports virtualized
+        // values (e.g. 1707x1067 on a 2560x1600 panel at 150% scaling) -- and
         // writing a resolution that isn't an actual display mode is precisely
         // what makes the engine fail its mode set.
         private const int ENUM_CURRENT_SETTINGS = -1;
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        private struct DEVMODE
+        internal struct DEVMODE
         {
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string dmDeviceName;
             public short dmSpecVersion, dmDriverVersion, dmSize, dmDriverExtra;
@@ -88,17 +125,17 @@ namespace CNNInstallUtil
         }
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        private static extern bool EnumDisplaySettings(string deviceName, int modeNum, ref DEVMODE devMode);
+        internal static extern bool EnumDisplaySettings(string deviceName, int modeNum, ref DEVMODE devMode);
 
         private static int desktopW;
         private static int desktopH;
 
-        private static int DesktopWidth
+        internal static int DesktopWidth
         {
             get { if (desktopW == 0) GetDesktopResolution(out desktopW, out desktopH); return desktopW; }
         }
 
-        private static int DesktopHeight
+        internal static int DesktopHeight
         {
             get { if (desktopH == 0) GetDesktopResolution(out desktopW, out desktopH); return desktopH; }
         }
@@ -118,41 +155,6 @@ namespace CNNInstallUtil
                 height = dm.dmPelsHeight;
             }
         }
-
-        public void Install()
-        {
-            string pathToModSystem = Path.Combine(currentPath, "System");
-            string pathToSystem = Path.Combine(Directory.GetParent(currentPath).ToString(), "System");
-
-            var modSystemInfo = new DirectoryInfo(pathToModSystem);
-            var originalSystemInfo = new DirectoryInfo(pathToSystem);
-
-            if (!modSystemInfo.Exists)
-            {
-                Console.WriteLine("Error: directory {0} doesn't exist! Creating directory!", pathToModSystem);
-                Directory.CreateDirectory(pathToModSystem);
-            }
-
-            if (!originalSystemInfo.Exists)
-            {
-                Console.WriteLine("Error: directory {0} doesn't exist!", pathToSystem);
-                return;
-            }
-
-            LoadGameFiles(pathToModSystem);
-            CreateCNNIni(pathToSystem, pathToModSystem);
-            CreateCNNUserIni(pathToSystem, pathToModSystem);
-            CopyMusicFiles(pathToSystem, pathToModSystem);
-            CopyRenderExt(pathToSystem, pathToModSystem);
-            DetectAndPrepareLauncher(pathToSystem);
-            CreateShortcuts(pathToSystem, pathToModSystem);
-            SaveGameFiles(pathToModSystem);
-
-            Console.WriteLine("\nInstallation complete! You can launch Codename Nebula from the desktop shortcuts.");
-            Console.WriteLine("  - Play Codename Nebula       (direct launch)");
-            Console.WriteLine("  - Play Codename Nebula Steam (Steam overlay + play time tracking)");
-        }
-
         private void CreateCNNIni(string pathToSystem, string pathToModSystem)
         {
             var originalDeusExIni = new FileInfo(Path.Combine(pathToSystem, "DeusEx.ini"));
@@ -161,11 +163,11 @@ namespace CNNInstallUtil
             {
                 File.Copy(originalDeusExIni.FullName, Path.Combine(pathToModSystem, "CNN.ini"), true);
                 InjectIniProperties(Path.Combine(pathToModSystem, "CNN.ini"));
-                Console.WriteLine("CNN.ini file created!");
+                Report("CNN.ini file created!");
             }
             else
             {
-                Console.WriteLine("Warning: DeusEx.ini not found, creating template CNN.ini");
+                Report("Warning: DeusEx.ini not found, creating template CNN.ini");
                 CreateTemplateCNNIniFile(pathToModSystem);
             }
         }
@@ -185,204 +187,24 @@ namespace CNNInstallUtil
                         lines[i] = "Class=CNN.TantalusDenton";
                 }
                 File.WriteAllLines(outputPath, lines);
-                Console.WriteLine("CNNUser.ini generated from player's User.ini (keybindings inherited).");
+                Report("CNNUser.ini generated from player's User.ini (keybindings inherited).");
             }
             else
             {
-                Console.WriteLine("Warning: User.ini not found, skipping CNNUser.ini.");
+                Report("Warning: User.ini not found, skipping CNNUser.ini.");
             }
         }
 
-        private void DetectAndPrepareLauncher(string pathToSystem)
-        {
-            string deusExExe = Path.Combine(pathToSystem, "DeusEx.exe");
 
-            if (!File.Exists(deusExExe))
-            {
-                Console.WriteLine("Warning: DeusEx.exe not found in {0}!", pathToSystem);
-                Console.WriteLine("  CNN requires a Deus Ex installation (Steam, GOG, or retail).");
-                return;
-            }
-
-            long size = new FileInfo(deusExExe).Length;
-            Console.WriteLine("DeusEx.exe: {0} bytes", size);
-
-            // Decision rule — can't distinguish CD from raw 1112fm by size or
-            // version metadata (both are ~254 KB; CD has no version info).
-            // Since renaming is a no-op on 1112fm but required to bypass CD
-            // copy protection, rename whenever the exe isn't a third-party
-            // launcher or CU wrapper.
-            if (size > LauncherSize)
-            {
-                Console.WriteLine("Detected DeusEx.exe: third-party launcher (Kentie/Han).");
-                Console.WriteLine("  Using DeusEx.exe directly to preserve launcher settings.");
-            }
-            else if (size < SteamStubSize)
-            {
-                Console.WriteLine("Detected DeusEx.exe: Steam build (starts only when Steam launches it).");
-                Console.WriteLine("  Launching through Steam (steam://rungameid/6910).");
-                isSteamStub = true;
-            }
-            else if (size <= WrapperSize)
-            {
-                Console.WriteLine("Detected DeusEx.exe: Community Update wrapper.");
-                Console.WriteLine("  Using DeusEx.exe directly.");
-            }
-            else
-            {
-                Console.WriteLine("Detected DeusEx.exe: original 1112fm or unpatched CD.");
-                string renamedExe = Path.Combine(pathToSystem, "CodenameNebula.exe");
-                try
-                {
-                    CopyIntoGame(deusExExe, renamedExe, true);
-                    launcherExeName = "CodenameNebula.exe";
-                    isCdRenamed = true;
-                    Console.WriteLine("  Created CodenameNebula.exe (bypasses CD check if present).");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("  Warning: could not create CodenameNebula.exe: {0}", ex.Message);
-                }
-            }
-        }
-
-        private void CreateShortcuts(string pathToSystem, string pathToModSystem)
-        {
-            string iconPath = Path.Combine(currentPath, "cnnico.ico");
-
-            // Create a .bat launcher — uses the detected exe (DeusEx.exe, or
-            // CodenameNebula.exe on unpatched CD installs) with INI= parameters.
-            // Works on Steam (with overlay), GOG, vanilla, and CD installs.
-            string batPath = Path.Combine(currentPath, "PlayCodenameNebula.bat");
-            if (isSteamStub)
-            {
-                // Same as PlayCNNSteam.bat: Steam starts its DeusEx.exe with our INI= arguments
-                File.WriteAllText(batPath,
-                    "@echo off\r\n" +
-                    ":: Steam's DeusEx.exe only runs when Steam starts it, so launch through Steam\r\n" +
-                    "powershell -ExecutionPolicy Bypass -File \"%~dp0tools\\steam_launch.ps1\" " +
-                    "-CnnIniPath \"%~dp0System\\CNN.ini\" -CnnUserIniPath \"%~dp0System\\CNNUser.ini\"\r\n");
-                Console.WriteLine("Created PlayCodenameNebula.bat launcher (through Steam).");
-            }
-            else
-            {
-                File.WriteAllText(batPath, string.Format(
-                    "@echo off\r\n" +
-                    "cd /d \"{0}\"\r\n" +
-                    ":: Launch Codename Nebula via {4} with custom INI files\r\n" +
-                    "\"{1}\" INI=\"{2}\" USERINI=\"{3}\"\r\n",
-                    pathToSystem,
-                    Path.Combine(pathToSystem, launcherExeName),
-                    Path.Combine(pathToModSystem, "CNN.ini"),
-                    Path.Combine(pathToModSystem, "CNNUser.ini"),
-                    launcherExeName));
-                Console.WriteLine("Created PlayCodenameNebula.bat launcher (uses {0}).", launcherExeName);
-            }
-
-            // Create .lnk shortcuts on Desktop and Start Menu via PowerShell
-            // (handles OneDrive/Cyrillic/Unicode paths that .NET trimmed builds can't)
-            CreateShortcutViaPowerShell(
-                "[Environment]::GetFolderPath('Desktop')",
-                "Play Codename Nebula.lnk", batPath, currentPath, iconPath);
-            Console.WriteLine("Created desktop shortcut: Play Codename Nebula");
-
-            CreateShortcutViaPowerShell(
-                "Join-Path ([Environment]::GetFolderPath('Programs')) 'Codename Nebula'",
-                "Play Codename Nebula.lnk", batPath, currentPath, iconPath);
-
-            // Steam launch shortcut — only useful on Steam-installed copies.
-            // Skip it on CD installs (no Steam integration available there).
-            string steamBatPath = Path.Combine(currentPath, "PlayCNNSteam.bat");
-            if (File.Exists(steamBatPath) && !isCdRenamed)
-            {
-                CreateShortcutViaPowerShell(
-                    "[Environment]::GetFolderPath('Desktop')",
-                    "Play Codename Nebula Steam.lnk", steamBatPath, currentPath, iconPath);
-                Console.WriteLine("Created desktop shortcut: Play Codename Nebula Steam");
-
-                CreateShortcutViaPowerShell(
-                    "Join-Path ([Environment]::GetFolderPath('Programs')) 'Codename Nebula'",
-                    "Play Codename Nebula Steam.lnk", steamBatPath, currentPath, iconPath);
-            }
-            Console.WriteLine("Created Start Menu shortcuts.");
-        }
-
-
-        private void CreateShortcutViaPowerShell(string destFolderExpression, string lnkName, string targetPath, string workingDir, string iconPath)
-        {
-            string psScript = Path.Combine(Path.GetTempPath(), "cnn_shortcut.ps1");
-            File.WriteAllText(psScript, string.Format(
-                "$destDir = {0}\r\n" +
-                "if (-not (Test-Path $destDir)) {{ New-Item -ItemType Directory -Path $destDir -Force | Out-Null }}\r\n" +
-                "$lnkPath = Join-Path $destDir '{1}'\r\n" +
-                "$ws = New-Object -COM WScript.Shell\r\n" +
-                "$s = $ws.CreateShortcut($lnkPath)\r\n" +
-                "$s.TargetPath = '{2}'\r\n" +
-                "$s.WorkingDirectory = '{3}'\r\n" +
-                "$s.IconLocation = '{4},0'\r\n" +
-                "$s.Save()\r\n",
-                destFolderExpression,
-                lnkName,
-                targetPath.Replace("'", "''"),
-                workingDir.Replace("'", "''"),
-                iconPath.Replace("'", "''")),
-                System.Text.Encoding.UTF8);
-
-            var psi = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "powershell",
-                Arguments = "-ExecutionPolicy Bypass -File \"" + psScript + "\"",
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            try
-            {
-                var proc = System.Diagnostics.Process.Start(psi);
-                proc.WaitForExit(10000);
-                File.Delete(psScript);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Warning: Could not create shortcut: " + ex.Message);
-            }
-        }
-
-        private void CopyViaPowerShell(string sourceFile, string destFolderExpression, string destFileName)
-        {
-            string psScript = Path.Combine(Path.GetTempPath(), "cnn_copy.ps1");
-            File.WriteAllText(psScript, string.Format(
-                "$destDir = {0}\r\n" +
-                "if (-not (Test-Path $destDir)) {{ New-Item -ItemType Directory -Path $destDir -Force | Out-Null }}\r\n" +
-                "Copy-Item '{1}' (Join-Path $destDir '{2}') -Force\r\n",
-                destFolderExpression, sourceFile.Replace("'", "''"), destFileName),
-                System.Text.Encoding.UTF8);
-
-            var psi = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "powershell",
-                Arguments = "-ExecutionPolicy Bypass -File \"" + psScript + "\"",
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            try
-            {
-                var proc = System.Diagnostics.Process.Start(psi);
-                proc.WaitForExit(10000);
-                File.Delete(psScript);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Warning: Copy failed: " + ex.Message);
-            }
-        }
 
         private void CreateTemplateCNNIniFile(string pathToModSystem)
         {
             using (var writer = new StreamWriter(Path.Combine(pathToModSystem, "CNN.ini")))
             {
                 string templateFile = new System.Text.StringBuilder()
+                    .AppendLine("[FirstRun]")
+                    .AppendLine("FirstRun=1100")
+                    .AppendLine()
                     .AppendLine("[URL]")
                     .AppendLine("Class=CNN.TantalusDenton")
                     .AppendLine()
@@ -409,6 +231,7 @@ namespace CNNInstallUtil
                     .AppendLine("Paths=" + Path.Combine(currentPath, "System\\*.u"))
                     .AppendLine("Paths=" + Path.Combine(currentPath, "Textures\\*.utx"))
                     .AppendLine("Paths=" + Path.Combine(currentPath, "Music\\*.umx"))
+                    .AppendLine("OggPath=" + Path.Combine(currentPath, "Music\\Ogg\\"))
                     .ToString();
 
                 writer.Write(templateFile);
@@ -425,7 +248,7 @@ namespace CNNInstallUtil
             var result = new System.Collections.Generic.List<string>();
 
             string modRoot = @"..\CodenameNebula";
-            string deusExRoot = Directory.GetParent(currentPath)?.FullName ?? "";
+            string deusExRoot = game.GameRoot;
             bool inCoreSystem = false;
             bool pathsInjected = false;
             bool seenSuppressBlock = false;
@@ -455,6 +278,8 @@ namespace CNNInstallUtil
                 "Paths=" + modRoot + @"\System\*.u",
                 "Paths=" + modRoot + @"\Textures\*.utx",
                 "Paths=" + modRoot + @"\Music\*.umx",
+                // DXOgg reads the tracks from here, not the game's ..\Music\Ogg\
+                "OggPath=" + modRoot + @"\Music\Ogg\",
                 @"Paths=..\Music\*.umx",
                 @"Paths=..\Sounds\*.uax",
                 @"Paths=..\Textures\*.utx",
@@ -512,6 +337,10 @@ namespace CNNInstallUtil
                 // [WinDrv.WindowsClient] patches. Windows 10/11 expose no
                 // 16-bit fullscreen modes — a 16-bit request is the other half
                 // of "Failed resetting mode", independent of the renderer.
+                // A never-launched game has FirstRun=0: the engine would open its
+                // first-time wizard, which on current PCs certifies only Software
+                // Rendering and overwrites our renderer. 1100 is what it writes after.
+                if (line.StartsWith("FirstRun="))            { result.Add("FirstRun=1100");          continue; }
                 if (line.StartsWith("WindowedColorBits="))   { result.Add("WindowedColorBits=32");   continue; }
                 if (line.StartsWith("FullscreenColorBits=")) { result.Add("FullscreenColorBits=32"); continue; }
 
@@ -529,6 +358,7 @@ namespace CNNInstallUtil
                         continue;
                     }
                     if (line.StartsWith("Paths="))       continue; // skip existing, we inject our own
+                    if (line.StartsWith("OggPath="))     continue; // ours goes with the Paths=
                     if (line.StartsWith("; HD Textures")) continue; // skip old HD comments
 
                     if (line.StartsWith("Suppress="))
@@ -569,9 +399,9 @@ namespace CNNInstallUtil
             {
                 string device = renderer.Substring("GameRenderDevice=".Length);
                 if (replacedFrom != null)
-                    Console.WriteLine("  Renderer: {0} (replaced {1} — unusable on modern Windows)", device, replacedFrom);
+                    Report("  Renderer: {0} (replaced {1} — unusable on modern Windows)", device, replacedFrom);
                 else
-                    Console.WriteLine("  Renderer: {0} (inherited from player)", device);
+                    Report("  Renderer: {0} (inherited from player)", device);
             }
         }
 
@@ -664,29 +494,24 @@ namespace CNNInstallUtil
             if (nvPath != null)
             {
                 paths.Add("Paths=" + nvPath + @"\*.utx");
-                Console.WriteLine("  NewVision: FOUND [{0}] -> {1}", hdSource, nvPath);
+                Report("  NewVision: FOUND [{0}] -> {1}", hdSource, nvPath);
             }
             if (hdtpTexPath != null)
             {
                 paths.Add("Paths=" + hdtpTexPath + @"\*.utx");
-                Console.WriteLine("  HDTP Textures: FOUND -> {0}", hdtpTexPath);
+                Report("  HDTP Textures: FOUND -> {0}", hdtpTexPath);
             }
             if (hdtpSysPath != null)
             {
                 paths.Add("Paths=" + hdtpSysPath + @"\*.u");
-                Console.WriteLine("  HDTP Models: FOUND -> {0}", hdtpSysPath);
+                Report("  HDTP Models: FOUND -> {0}", hdtpSysPath);
             }
             if (nvPath == null && hdtpSysPath == null)
-                Console.WriteLine("  HD textures: not found (optional)");
+                Report("  HD textures: not found (optional)");
 
             return paths.ToArray();
         }
 
-        // Copy RenderExt.dll and RenderExt.int to the game's System folder.
-        // CNN.ini sets Render=RenderExt.RenderExt, so UE1 LoadLibrary's these
-        // at startup — they must live alongside DeusEx.exe, not in the mod's
-        // System folder, because LoadLibrary uses the exe directory, not UE1
-        // Paths=.
         // Copies into the game's folders, noting what was not there before
         private void CopyIntoGame(string src, string dest, bool overwrite)
         {
@@ -701,14 +526,6 @@ namespace CNNInstallUtil
             using (var sha = System.Security.Cryptography.SHA1.Create())
             using (var stream = File.OpenRead(file))
                 return BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
-        }
-
-        private void CreateGameDirectory(string dir)
-        {
-            if (Directory.Exists(dir))
-                return;
-            Directory.CreateDirectory(dir);
-            addedDirs.Add(dir);
         }
 
         private void LoadGameFiles(string pathToModSystem)
@@ -731,80 +548,75 @@ namespace CNNInstallUtil
         {
             var lines = new List<string>();
             foreach (var f in addedFiles)
-                lines.Add("file " + f.Value + " " + f.Key);
+                if (File.Exists(f.Key))
+                    lines.Add("file " + f.Value + " " + f.Key);
             addedDirs.Sort((a, b) => b.Length.CompareTo(a.Length));
             foreach (string d in addedDirs)
                 lines.Add("dir " + d);
             File.WriteAllLines(Path.Combine(pathToModSystem, GameFilesList), lines.ToArray());
-            Console.WriteLine("Noted {0} files and {1} folders added to the game for the uninstaller.", addedFiles.Count, addedDirs.Count);
+            Report("Noted {0} files and {1} folders added to the game for the uninstaller.", addedFiles.Count, addedDirs.Count);
         }
 
-        private void CopyRenderExt(string pathToSystem, string pathToModSystem)
+        // Native DLLs go to the game's System: the engine LoadLibrary's them
+        // from the exe's folder and ignores Paths= (RenderExt for
+        // Render=RenderExt.RenderExt, DXOgg for the music, D3D9Drv as the
+        // renderer). Nothing else leaves the mod folder: DXOgg.u is found via
+        // Paths=, the .ogg tracks via OggPath= in CNN.ini.
+        private void CopyNativeFiles(string pathToSystem, string pathToModSystem)
         {
-            foreach (string f in new[] { "RenderExt.dll", "RenderExt.int" })
+            // The D3D9 .dll and .int go as a pair: a player's own D3D9 stays whole.
+            if (!File.Exists(Path.Combine(pathToSystem, "D3D9Drv.dll")))
+                foreach (string f in new[] { "D3D9Drv.dll", "D3D9Drv.int" })
+                    CopyIntoGameIfFree(Path.Combine(pathToModSystem, f), Path.Combine(pathToSystem, f));
+
+            foreach (string f in new[] { "DXOgg.dll", "RenderExt.dll", "RenderExt.int" })
+                CopyIntoGameIfFree(Path.Combine(pathToModSystem, f), Path.Combine(pathToSystem, f));
+        }
+
+        // Puts a file into the game's System unless something else owns that
+        // name there: a file the player or another mod put there stays as is.
+        private void CopyIntoGameIfFree(string src, string dest)
+        {
+            string name = Path.GetFileName(dest);
+            if (!File.Exists(src))
             {
-                string src = Path.Combine(pathToModSystem, f);
-                if (File.Exists(src))
-                {
-                    CopyIntoGame(src, Path.Combine(pathToSystem, f), true);
-                    Console.WriteLine("Copied {0} to System.", f);
-                }
+                Report("Warning: {0} not found in mod System folder.", name);
+                return;
+            }
+            if (File.Exists(dest) && !addedFiles.ContainsKey(dest))
+            {
+                if (Sha1(dest) == Sha1(src))
+                    Report("{0} is already in System (the same file).", name);
                 else
-                {
-                    Console.WriteLine("Warning: {0} not found in mod System folder.", f);
-                }
+                    Report("Kept the {0} already in System (not installed by CNN).", name);
+                return;
             }
+            CopyIntoGame(src, dest, true);
+            Report("Copied {0} to System.", name);
         }
 
-        private void CopyMusicFiles(string pathToSystem, string pathToModSystem)
+        // Earlier versions copied the .ogg tracks into the game's Music\Ogg.
+        // A copy byte-identical to the mod's own track can only be CNN's.
+        private void RemoveOldMusicCopies()
         {
-            string pathToMusic = Path.Combine(Directory.GetParent(currentPath).ToString(), "Music");
-            string pathToOggMusic = Path.Combine(pathToMusic, "Ogg");
-            string pathToModOggMusic = Path.Combine(currentPath, "Music", "Ogg");
+            string gameOgg = Path.Combine(game.GameRoot, "Music", "Ogg");
+            string modOgg = Path.Combine(currentPath, "Music", "Ogg");
+            if (!Directory.Exists(gameOgg) || !Directory.Exists(modOgg))
+                return;
 
-            CreateGameDirectory(pathToMusic);
-            CreateGameDirectory(pathToOggMusic);
-
-            // Copy D3D9 renderer as fallback (in case player has no modern renderer).
-            // The .dll and .int go as a pair: a player's own D3D9 stays whole.
-            bool playerHasD3D9 = File.Exists(Path.Combine(pathToSystem, "D3D9Drv.dll"));
-            foreach (string d3d9File in playerHasD3D9 ? new string[0] : new[] { "D3D9Drv.dll", "D3D9Drv.int" })
+            int removed = 0;
+            foreach (FileInfo track in new DirectoryInfo(modOgg).GetFiles("*.ogg"))
             {
-                string src = Path.Combine(pathToModSystem, d3d9File);
-                string dest = Path.Combine(pathToSystem, d3d9File);
-                if (File.Exists(src) && !File.Exists(dest))
+                string old = Path.Combine(gameOgg, track.Name);
+                if (File.Exists(old) && new FileInfo(old).Length == track.Length && Sha1(old) == Sha1(track.FullName))
                 {
-                    CopyIntoGame(src, dest, false);
-                    Console.WriteLine("Installed {0} to System (D3D9 fallback renderer).", d3d9File);
+                    File.Delete(old);
+                    addedFiles.Remove(old);
+                    removed++;
                 }
             }
-
-            // Copy DXOgg.dll to game System (needed for OGG playback)
-            string dxOggDll = Path.Combine(pathToModSystem, "DXOgg.dll");
-            if (File.Exists(dxOggDll))
-            {
-                CopyIntoGame(dxOggDll, Path.Combine(pathToSystem, "DXOgg.dll"), true);
-                Console.WriteLine("Copied DXOgg.dll to System.");
-            }
-
-            // Copy DXOgg.u to game System
-            string dxOggU = Path.Combine(pathToModSystem, "DXOgg.u");
-            if (File.Exists(dxOggU))
-            {
-                CopyIntoGame(dxOggU, Path.Combine(pathToSystem, "DXOgg.u"), true);
-                Console.WriteLine("Copied DXOgg.u to System.");
-            }
-
-            // Copy OGG music files
-            if (Directory.Exists(pathToModOggMusic))
-            {
-                foreach (FileInfo oggFile in new DirectoryInfo(pathToModOggMusic).GetFiles())
-                {
-                    Console.WriteLine("Copying music: {0}", oggFile.Name);
-                    CopyIntoGame(oggFile.FullName, Path.Combine(pathToOggMusic, oggFile.Name), true);
-                }
-                Console.WriteLine("Done copying OGG music.");
-            }
+            if (removed > 0)
+                Report("Removed {0} old copies of CNN music from the game's Music\\Ogg (now played from the mod folder).", removed);
         }
     }
 }

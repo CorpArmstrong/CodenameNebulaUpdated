@@ -10,13 +10,13 @@ Codename Nebula is a **total conversion mod for Deus Ex (GOTY edition)** built o
 
 - **UnrealScript (.uc)** — Primary language, ~272 source files in `CNN/Classes/`
 - **C++ (.cpp/.h)** — Model converter utility (`Converter/obj2de/`) and conversation animation plugin (`ConAnimSys/`)
-- **C# (.cs)** — Installer utility (`CNNInstallUtil/`, Visual Studio solution)
+- **C# (.cs)** — Launcher `CNNLauncher/` (WinForms, .NET Framework 4.7.2): play, settings, repair, and the install-time setup (`--setup`)
 
 ## Build System
 
 UnrealScript is compiled by the Unreal Engine 1 `ucc.exe` compiler into `.u` packages. There is no in-repo build command for the UnrealScript — it relies on the Deus Ex SDK toolchain being installed.
 
-- **CNNInstallUtil** — Build via Visual Studio: `CNNInstallUtil/CNNInstallUtil.sln`
+- **CNNLauncher** — `dotnet build CNNLauncher\CNNLauncher.csproj -c Release` (`cnn package` does it); ~100 KB, no runtime bundled
 - **Converter (obj2de)** — Legacy Visual C++ project: `Converter/obj2de/Source/obj2de.vcproj`
 - **Packaging** — `cnn.bat package` copies compiled assets into the `CodenameNebula/` distribution directory (the older `CodenameNebula/package.bat` is retired; it's archived under `_Backups/Phase3_Legacy/` for reference)
 - **Game launch** — `System/CNNStart.bat`
@@ -167,7 +167,7 @@ cnn test
 This auto-detects the best available game executable and creates `CodenameNebula.exe`:
 - **Kentie/Han launcher** (>300KB) — used as-is, player gets D3D10/D3D11 and advanced features
 - **Original 1112fm exe** (~254KB) — GOG, patched retail/CD, works with all renderers
-- **Steam DRM exe** (64,000 bytes, Steam build of 2025-09-27) — runs only when Steam starts it; started directly it shows "Failed to find Steam". `CNNInstallUtil` makes `PlayCodenameNebula.bat` launch through `steam://rungameid/6910//INI=…` for it (verified 2026-10-22)
+- **Steam DRM exe** (64,000 bytes, Steam build of 2025-09-27) — runs only when Steam starts it; started directly it shows "Failed to find Steam". `CNNLauncher` starts it through `steam://rungameid/6910//INI=…` (verified 2026-10-22)
 - **CU backup** (`DeusEx 1112fm (Original EXE).exe`) — when Community Update replaced the exe
 
 The `cnn install` command generates `CNN.ini` from the player's `DeusEx.ini`, inheriting their renderer, resolution, and graphics settings. Only CNN-specific values are patched (player class, game mode, asset paths).
@@ -191,11 +191,13 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 
 ### Known Issues & Pitfalls
 
-- **Steam's own `DeusEx.exe` can't be started directly** — since the 2025-09-27 Steam build it is a 64 KB DRM wrapper ("Failed to find Steam" outside Steam). Launch through `steam://rungameid/6910//INI=%22…%22 USERINI=%22…%22` (`tools/steam_launch.ps1`); Steam starts it and the INI= arguments reach the engine. Dev installs with Kentie/Han or the CU backup exe don't hit this, which is why it went unnoticed until the clean-install test. A clean stock copy for testing comes from the Steam console: `download_depot 6910 6911 8456979172979270170`.
+- **Steam's own `DeusEx.exe` can't be started directly** — since the 2025-09-27 Steam build it is a 64 KB DRM wrapper ("Failed to find Steam" outside Steam). Launch through `steam://rungameid/6910//INI=%22…%22 USERINI=%22…%22` (`CNNLauncher/GameStarter.cs`); Steam starts it and the INI= arguments reach the engine. Dev installs with Kentie/Han or the CU backup exe don't hit this, which is why it went unnoticed until the clean-install test. A clean stock copy for testing comes from the Steam console: `download_depot 6910 6911 8456979172979270170`.
 - **Launcher-agnostic INI generation** — `CNN.ini` is generated from the player's `DeusEx.ini` at install time, inheriting their renderer, resolution, and settings. The static `CNN.ini` in the repo is only a fallback. Kentie's launcher, Han's launcher, Community Update, and vanilla Steam are all supported.
 - **`Failed resetting mode` / `HandleBigChange <- UD3DRenderDevice::Lock`** — the player's INI selected the legacy 1999 Direct3D device (`D3DDrv.D3DRenderDevice`) and/or 16-bit colour. Windows 10/11 can't set those modes, so *vanilla Deus Ex crashes the same way* — it is not a mod or CD-version problem. A never-configured retail/CD install inherits `GlideDrv` + 640x480 @ 16-bit from the game's `Default.ini`. Both INI generators now rewrite legacy renderers to `D3D9Drv.D3D9RenderDevice` and force 32-bit colour; to fix an already-installed copy, edit `GameRenderDevice`/`RenderDevice`/`WindowedRenderDevice` and the `*ColorBits` values in `CodenameNebula/System/CNN.ini`.
-- **In-game "Rendering Device..." can select a dead renderer** — the button runs `RELAUNCH -changevideo`, and that engine dialog lists every class declared `MetaClass=Engine.RenderDevice` by a `.int` in the game `System/`. `D3DDrv.int` offers "Direct3D support" (the 1999 device) right beside "Direct3D9 support"; picking it writes `D3DDrv` into `CNN.ini` and gives a **black screen** or `Failed resetting mode`. The entry is deliberately left in place (removing base-game `.int` files was considered and rejected); recover with `tools/fix_renderer.ps1` (players get it as `FixRenderer.bat` and the Start-menu shortcuts "Fix Renderer" / "Fix Renderer (windowed)", packaged by `cnn package`). Glide/MeTaL self-hide via `Autodetect=Glide2X.dll`/`Metal.dll`, and `SGLDrv.int` is commented out upstream, so `D3DDrv` is the only dead entry the dialog offers.
-- **Black monitor but the game renders** — if a screen-share/capture shows the menu correctly while the monitor is black, the frame buffer is fine and only *fullscreen presentation* is failing (exclusive fullscreen vs. HDR, a second monitor, or a refresh-rate mismatch). Diagnose with `tools/fix_renderer.ps1 -Windowed`, which sets `StartupFullscreen=False`. This is a different fault from `Failed resetting mode`, where no mode is set at all.
+- **In-game "Rendering Device..." can select a dead renderer** — the button runs `RELAUNCH -changevideo`, and that engine dialog lists every class declared `MetaClass=Engine.RenderDevice` by a `.int` in the game `System/`. `D3DDrv.int` offers "Direct3D support" (the 1999 device) right beside "Direct3D9 support"; picking it writes `D3DDrv` into `CNN.ini` and gives a **black screen** or `Failed resetting mode`. The entry is deliberately left in place (removing base-game `.int` files was considered and rejected); players recover with the launcher's Settings (renderer, fullscreen), devs with `tools/fix_renderer.ps1`. Glide/MeTaL self-hide via `Autodetect=Glide2X.dll`/`Metal.dll`, and `SGLDrv.int` is commented out upstream, so `D3DDrv` is the only dead entry the dialog offers.
+- **Black monitor but the game renders** — if a screen-share/capture shows the menu correctly while the monitor is black, the frame buffer is fine and only *fullscreen presentation* is failing (exclusive fullscreen vs. HDR, a second monitor, or a refresh-rate mismatch). Diagnose by turning Fullscreen off in the launcher's Settings (or `tools/fix_renderer.ps1 -Windowed`), which sets `StartupFullscreen=False`. This is a different fault from `Failed resetting mode`, where no mode is set at all.
+- **DXOgg reads music from `OggPath=` (`[Core.System]`), default `..\Music\Ogg\` of the game** — `CNN.ini` sets `OggPath=..\CodenameNebula\Music\Ogg\`, so nothing is copied into the game's `Music\Ogg`. A missing track logs `DXOgg: Error - Either could not find or could not open Ogg File`. Editor inis are untouched.
+- **`FirstRun=0` opens the engine's first-time wizard** — a never-launched game has it in `DeusEx.ini`; on current PCs the wizard certifies only Software Rendering and overwrites the renderer. Both INI generators write `FirstRun=1100`.
 - **Do NOT use the SDK's `Core.dll`** — it silently breaks `#exec CONVERSATION IMPORT`. Keep the Steam GOTY `Core.dll`.
 - **UnrealEd 2.2 (UED22)** is incompatible with CNN maps — its stripped `.u` packages from UT 469e are missing Deus Ex functions. Engine versions are binary-incompatible; swapping `.u` files doesn't work.
 - **Original SDK editor** freezes on large maps (OpheliaL1, MoonIntro) and crashes when clicking empty space with properties window open (`HitSize==0` assertion in `UnCamera.cpp`).
@@ -217,7 +219,7 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 | `CodenameNebula/` | Distribution/deployment root (configs, compiled packages, maps, music) |
 | `ConAnimSys/` | Native C++ plugin for conversation cutscene animations |
 | `Converter/` | obj2de tool — converts 3DS/OBJ models to Unreal .t3d format |
-| `CNNInstallUtil/` | C# .NET installer that configures game .ini files |
+| `CNNLauncher/` | C# launcher: play (picks how to start the game each time), settings, repair, install-time setup |
 | `CNNInstaller/` | Installer resources and batch scripts |
 | `CNNDocs/` | Design docs, story notes, concept art, walkthrough guides |
 | `Maps/` | Raw map source files (.t3d, .dx) |
@@ -308,10 +310,10 @@ For a verified open-issues list, see [CODE_REVIEW.md](CODE_REVIEW.md). For class
 16. **Variable shadowing in C++** — `Converter/obj2de/Source/UnrealModel.cpp:234-235`
     Iterator `v` declared, then immediately shadowed by loop variable `int v`. The iterator is dead code.
 
-17. **Inconsistent path construction in C#** — `CNNInstallUtil/CNNInstallUtil/InstallUtil.cs:119-123`
+17. ~~**Inconsistent path construction in C#**~~ (CNNInstallUtil removed 2026-10-22; logic now in `CNNLauncher/ModSetup.cs`)
     `pathToOggMusic` computed from parent directory, but `pathToModOggMusic` uses hardcoded `"Music\\Ogg"` from a different base.
 
-18. **Broken format string** — `CNNInstallUtil/CNNInstallUtil/Program.cs:15`
+18. ~~**Broken format string**~~ (CNNInstallUtil removed 2026-10-22)
     `WriteLine("...{0}..." + e.Message)` — the `{0}` placeholder is never filled; `e.Message` is concatenated to the format string instead.
 
 ### Low Priority

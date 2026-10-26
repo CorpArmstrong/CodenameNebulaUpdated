@@ -445,6 +445,20 @@ if exist "%REPO_ROOT%\System\D3D9Drv.int" (
     echo   D3D9Drv.int
 )
 
+:: Zero what the shipped packages carry but nothing reads: old copies of
+:: tables and models our map tools left behind, and the unused part of
+:: third-party packages. Positions stay, the installer's LZMA drops the zeros
+:: (tools\pkg_deadbytes.js). Keep lists: what cnn_objdump.ps1 saw loaded.
+where node >nul 2>&1
+if errorlevel 1 (
+    echo WARNING: node not found - packages ship with their dead bytes
+) else (
+    echo Zeroing dead bytes...
+    for %%f in ("%DIST_DIR%\Maps\*.dx") do node "%REPO_ROOT%\tools\pkg_deadbytes.js" "%%f" --gaps --out "%%f" | findstr /c:"not covered"
+    node "%REPO_ROOT%\tools\pkg_deadbytes.js" "%DIST_DIR%\System\DXRVNewVehicles.u" --keep Texture:Skins.JBigTank1 --gaps --out "%DIST_DIR%\System\DXRVNewVehicles.u" | findstr /c:"dropped"
+    node "%REPO_ROOT%\tools\pkg_deadbytes.js" "%DIST_DIR%\Textures\ArtPieces.utx" --keep Texture:AdaLovelace,monalisa,last-supper --gaps --out "%DIST_DIR%\Textures\ArtPieces.utx" | findstr /c:"dropped"
+)
+
 :: The launcher: one window to play, configure and repair the mod; the
 :: installer runs it with --setup. .NET Framework 4.7.2 ships with Windows.
 echo Building CNNLauncher...
@@ -536,6 +550,7 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo.
     echo [Icons]
     echo Name: "{group}\{#MyAppName}"; Filename: "{app}\CNNLauncher.exe"; WorkingDir: "{app}"
+    echo Name: "{group}\Read Me"; Filename: "{app}\README.txt"
     echo Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\cnnico.ico"
     echo Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\CNNLauncher.exe"; WorkingDir: "{app}"
     echo.

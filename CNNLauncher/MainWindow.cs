@@ -10,9 +10,8 @@ namespace CNNLauncher
 {
     public class MainWindow : Form
     {
-        private static readonly Color Accent = Color.FromArgb(47, 111, 214);
-        private static readonly Color AccentLight = Color.FromArgb(90, 160, 255);
-        private static readonly Color Muted = Color.FromArgb(160, 172, 196);
+        private static readonly Color AccentLight = Theme.AccentLight;
+        private static readonly Color Muted = Theme.Muted;
 
         private readonly GameFolder game = GameFolder.FromLauncher();
         private readonly float scale;
@@ -27,6 +26,7 @@ namespace CNNLauncher
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
             DoubleBuffered = true;
+            Theme.DarkTitleBar(this);
 
             // laid out at 96 DPI and scaled by hand: fonts follow the DPI on
             // their own, sizes and positions do not
@@ -117,19 +117,12 @@ namespace CNNLauncher
             {
                 Text = text,
                 Size = Scaled(270, 46),
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.White,
                 Font = new Font("Segoe UI Semibold", 10.5F),
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(S(14), 0, 0, 0),
-                Cursor = Cursors.Hand,
-                UseVisualStyleBackColor = false,
-                BackColor = primary ? Accent : Color.FromArgb(120, 18, 24, 44)
+                Cursor = Cursors.Hand
             };
-            b.FlatAppearance.BorderSize = 1;
-            b.FlatAppearance.BorderColor = primary ? AccentLight : Color.FromArgb(70, 90, 130);
-            b.FlatAppearance.MouseOverBackColor = primary ? Color.FromArgb(66, 134, 240) : Color.FromArgb(170, 36, 56, 100);
-            b.FlatAppearance.MouseDownBackColor = primary ? Color.FromArgb(36, 90, 180) : Color.FromArgb(200, 26, 40, 76);
+            Theme.StyleButton(b, primary);
             return b;
         }
 

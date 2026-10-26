@@ -76,6 +76,7 @@ var int    checkLines;
 var int    checkVoiced;
 var int    checkProblems;
 
+
 function PostBeginPlay()
 {
     SetTimer(pollInterval, true);
@@ -364,7 +365,8 @@ function CheckPortrait(string bindName)
     if (bindName == "PaulDenton")
         portrait = portrait $ "_" $ Chr(49 + Player.PlayerSkin);
 
-    if (Texture(DynamicLoadObject(portrait, class'Texture', true)) == none)
+    if ((Texture(DynamicLoadObject(portrait, class'Texture', true)) == none) &&
+        (class'AiHUDInfoLinkDisplay'.static.CNNPortrait(bindName) == none))
         CheckMissing("portrait " $ portrait $ " (infolink speaker " $ bindName $ ")");
 }
 

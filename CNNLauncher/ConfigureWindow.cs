@@ -53,20 +53,29 @@ namespace CNNLauncher
                 scale = g.DpiX / 96F;
             ClientSize = new Size((int)(440 * scale), (int)(220 * scale));
             Font = new Font("Segoe UI", 9F);
+            BackColor = Theme.Window;
+            ForeColor = Theme.Text;
+            Theme.DarkTitleBar(this);
+            Theme.StyleComboBox(renderer);
+            Theme.StyleComboBox(resolution);
+            Theme.StyleCheckBox(fullscreen);
+            Theme.StyleCheckBox(hdTextures);
 
             var layout = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(14), ColumnCount = 2 };
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            layout.Controls.Add(new Label { Text = "Renderer", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 0);
+            layout.Controls.Add(new Label { Text = "Renderer", AutoSize = true, Anchor = AnchorStyles.Left, ForeColor = Theme.Muted }, 0, 0);
             layout.Controls.Add(renderer, 1, 0);
-            layout.Controls.Add(new Label { Text = "Resolution", AutoSize = true, Anchor = AnchorStyles.Left }, 0, 1);
+            layout.Controls.Add(new Label { Text = "Resolution", AutoSize = true, Anchor = AnchorStyles.Left, ForeColor = Theme.Muted }, 0, 1);
             layout.Controls.Add(resolution, 1, 1);
             layout.Controls.Add(fullscreen, 1, 2);
             layout.Controls.Add(hdTextures, 1, 3);
 
             var buttons = new FlowLayoutPanel { FlowDirection = FlowDirection.RightToLeft, Dock = DockStyle.Bottom, Height = (int)(48 * scale), Padding = new Padding(10) };
-            var ok = new Button { Text = "Save", DialogResult = DialogResult.OK, AutoSize = true };
-            var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, AutoSize = true };
+            var ok = new Button { Text = "Save", DialogResult = DialogResult.OK, AutoSize = true, MinimumSize = new Size((int)(84 * scale), 0) };
+            var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, AutoSize = true, MinimumSize = new Size((int)(84 * scale), 0) };
+            Theme.StyleButton(ok, true);
+            Theme.StyleButton(cancel, false);
             ok.Click += (s, e) => Save();
             buttons.Controls.Add(cancel);
             buttons.Controls.Add(ok);

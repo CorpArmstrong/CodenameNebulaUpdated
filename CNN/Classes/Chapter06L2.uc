@@ -905,47 +905,6 @@ function TrimMagdaleneCoilGuns()
         Log("CNN L2: removed " $ n $ " extra coil guns from Magdalene");
 }
 
-// ----------------------------------------------------------------------
-// Tick() / RepairItemClasses()
-//
-// ArmMagdalene names WeaponAssaultRifle and WeaponSnowblind, which the
-// engine looks up in DeusEx and does not find. Put the right classes back
-// every frame, since each conversation lookup clears them again.
-// ----------------------------------------------------------------------
-
-function Tick(float deltaTime)
-{
-    Super.Tick(deltaTime);
-
-    if ((Player != none) && (Player.conPlay != none) && (Player.conPlay.con != none))
-        RepairItemClasses(Player.conPlay.con);
-}
-
-function RepairItemClasses(Conversation con)
-{
-    local ConEvent ev;
-
-    for (ev = con.eventList; ev != none; ev = ev.nextEvent)
-    {
-        if ((ConEventTransferObject(ev) != none) && (ConEventTransferObject(ev).giveObject == none))
-            ConEventTransferObject(ev).giveObject = ResolveItemClass(ConEventTransferObject(ev).objectName);
-        else if ((ConEventCheckObject(ev) != none) && (ConEventCheckObject(ev).checkObject == none))
-            ConEventCheckObject(ev).checkObject = ResolveItemClass(ConEventCheckObject(ev).objectName);
-    }
-}
-
-function class<Inventory> ResolveItemClass(string objName)
-{
-    local string key;
-
-    key = Caps(objName);
-    if (key == "WEAPONASSAULTRIFLE")
-        return class'WeaponAssaultGun';
-    if ((key == "WEAPONSNOWBLIND") || (key == "APOCALYPSEINSIDE.WEAPONSNOWBLIND"))
-        return class'WeaponSnowblind';
-    return none;
-}
-
 // The wheel stands in the line of fire, and without it there is no
 // Hijacking.
 function ProtectShipsWheel()

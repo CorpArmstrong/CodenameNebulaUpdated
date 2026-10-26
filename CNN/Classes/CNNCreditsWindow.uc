@@ -4,6 +4,7 @@
 class CNNCreditsWindow extends CreditsWindow;
 
 var string textPackage;
+var bool bLeaving;
 
 // ----------------------------------------------------------------------
 // ProcessText()
@@ -53,10 +54,54 @@ function ProcessFinished()
 // DestroyWindow()
 // ----------------------------------------------------------------------
 
+// ----------------------------------------------------------------------
+// FinishedScrolling()
+//
+// The credits stay on screen while the menu map loads. Closing them first
+// (root.PopWindow) turns rendering back on, and the map they ran over --
+// the endgame -- showed for the second or two the load takes.
+// TantalusDenton.Possess closes them on the menu map. A click and ESC end
+// the credits the same way.
+// ----------------------------------------------------------------------
+
+function FinishedScrolling()
+{
+    LeaveToMenuMap();
+}
+
+event bool VirtualKeyPressed(EInputKey key, bool bRepeat)
+{
+    if (key == IK_Escape)
+    {
+        LeaveToMenuMap();
+        return true;
+    }
+    return Super.VirtualKeyPressed(key, bRepeat);
+}
+
+function LeaveToMenuMap()
+{
+    if (bLeaving)
+        return;
+    bLeaving = true;
+    bScrolling = false;
+    bTickEnabled = false;
+    player.Level.Game.SendPlayer(player, "cnnentry");
+}
+
+// ----------------------------------------------------------------------
+// DestroyWindow()
+// ----------------------------------------------------------------------
+
 event DestroyWindow()
 {
     bLoadIntro = false;
-    player.Level.Game.SendPlayer(player, "cnnentry");
+    // closed some other way than the above
+    if (!bLeaving)
+    {
+        bLeaving = true;
+        player.Level.Game.SendPlayer(player, "cnnentry");
+    }
     super.DestroyWindow();
 }
 

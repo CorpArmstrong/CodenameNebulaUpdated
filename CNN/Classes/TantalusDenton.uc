@@ -325,6 +325,7 @@ function UpdatePlayerSkin()
 function Possess()
 {
     local DeusExRootWindow root;
+    local CNNCreditsWindow credits;
     super.Possess();
 
     root = DeusExRootWindow(rootWindow);
@@ -334,6 +335,15 @@ function Possess()
 
     root.hud.UpdateSettings(self);
     root.hud.SetWindowAlignments(HALIGN_Full,VALIGN_Full, 0, 0);
+
+    // The credits stay up while the menu map loads (CNNCreditsWindow); close
+    // them here, now that they belong to the new player
+    credits = CNNCreditsWindow(root.GetTopWindow());
+    if ((credits != none) && credits.bLeaving)
+    {
+        credits.player = self;
+        root.ClearWindowStack();
+    }
 }
 
 // ----------------------------------------------------------------------

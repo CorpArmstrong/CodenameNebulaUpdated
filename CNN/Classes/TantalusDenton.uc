@@ -179,6 +179,26 @@ function bool CheckActorDistances()
 }
 
 // ----------------------------------------------------------------------
+// PostPostBeginPlay()
+//
+// Keeps a CNNItemClassRepair on every map: conversations name item classes
+// the engine cannot find (ArmMagdalene). Called on a new map and after a
+// load alike; an older save has none yet. (The player gets PlayerTick, not
+// Tick, so this cannot wait for a tick.)
+// ----------------------------------------------------------------------
+
+function PostPostBeginPlay()
+{
+    local CNNItemClassRepair repair;
+
+    Super.PostPostBeginPlay();
+
+    foreach AllActors(class'CNNItemClassRepair', repair)
+        return;
+    Spawn(class'CNNItemClassRepair', self);
+}
+
+// ----------------------------------------------------------------------
 // QuickSave()
 //
 // No saving during a conversation: such a save cannot be loaded.

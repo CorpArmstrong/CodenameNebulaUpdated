@@ -58,6 +58,15 @@ class CNNTextures extends Object abstract;
 #exec TEXTURE IMPORT FILE=Textures\Station\ScreenRecRoom.bmp NAME=ScreenRecRoom GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\ScreenSecurity.bmp NAME=ScreenSecurity GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\ScreenStation.bmp NAME=ScreenStation GROUP=Station
+
+// Infolink portraits for the speakers without one (tools/make_portraits.ps1)
+#exec TEXTURE IMPORT FILE=Textures\Portraits\Tantalus.bmp NAME=Tantalus GROUP=Portraits MIPS=OFF
+#exec TEXTURE IMPORT FILE=Textures\Portraits\JCDenton.bmp NAME=JCDenton GROUP=Portraits MIPS=OFF
+#exec TEXTURE IMPORT FILE=Textures\Portraits\CaptainValiente.bmp NAME=CaptainValiente GROUP=Portraits MIPS=OFF
+#exec TEXTURE IMPORT FILE=Textures\Portraits\DrMephistopheles.bmp NAME=DrMephistopheles GROUP=Portraits MIPS=OFF
+#exec TEXTURE IMPORT FILE=Textures\Portraits\MikeWong.bmp NAME=MikeWong GROUP=Portraits MIPS=OFF
+#exec TEXTURE IMPORT FILE=Textures\Portraits\MJ12troop.bmp NAME=MJ12troop GROUP=Portraits MIPS=OFF
+#exec TEXTURE IMPORT FILE=Textures\Portraits\MassacreWitness.bmp NAME=MassacreWitness GROUP=Portraits MIPS=OFF
 #exec TEXTURE IMPORT FILE=Textures\Station\ScreenConsole.bmp NAME=ScreenConsole GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\u_casing01.bmp NAME=u_casing01 GROUP=Station
 #exec TEXTURE IMPORT FILE=Textures\Station\u_ceiling01.bmp NAME=u_ceiling01 GROUP=Station

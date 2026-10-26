@@ -52,5 +52,24 @@ function SetSpeaker(String bindName, String displayName)
 	}
 
     // Get a pointer to the portrait
-    speakerPortrait = Texture(DynamicLoadObject(portraitStringName, class'Texture'));
+    speakerPortrait = Texture(DynamicLoadObject(portraitStringName, class'Texture', true));
+    if (speakerPortrait == None)
+        speakerPortrait = CNNPortrait(bindName);
+}
+
+// ----------------------------------------------------------------------
+// CNNPortrait()
+//
+// CNN's own portraits (CNN.Portraits, tools/make_portraits.ps1) for the
+// speakers Deus Ex has none for; two of them go by a second bind name.
+// ----------------------------------------------------------------------
+
+static function Texture CNNPortrait(String bindName)
+{
+    if (bindName == "MichaelWong")
+        bindName = "MikeWong";
+    else if (bindName == "Captain")
+        bindName = "CaptainValiente";
+
+    return Texture(DynamicLoadObject("CNN.Portraits." $ bindName, class'Texture', true));
 }

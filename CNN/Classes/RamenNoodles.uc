@@ -34,11 +34,6 @@ Begin:
 
 defaultproperties
 {
-	 rechargeAmount=5
-     mpRechargeAmount=50
-     msgRecharged="Recharged %d points"
-     RechargesLabel="Recharges %d Energy Units"
-     healthEffect=5
      maxCopies=10
      bCanHaveMultipleCopies=True
      bActivatable=True
@@ -59,5 +54,4 @@ defaultproperties
      CollisionHeight=0.980000
      Mass=3.000000
      Buoyancy=4.000000
-	 MultiSkins[0] = Texture'HK_Signs.HK_Sign_28'
 }

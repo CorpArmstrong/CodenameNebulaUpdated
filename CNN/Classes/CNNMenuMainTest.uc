@@ -14,7 +14,7 @@ function StartNewGame()
 
 defaultproperties
 {
-    Title="Welcome to Codename Nebula v1.11"
+    Title="Welcome to Codename Nebula"
     buttonDefaults(0)=(Y=13,Action=MA_NewGame,Invoke=Class'CNN.ApocalypseInsideMenuSelectDifficulty')
     buttonDefaults(6)=(Y=229,Action=MA_MenuScreen,Invoke=Class'CNN.CNNCreditsWindow')
     clientTextures(0)=Texture'DeusExUI.MenuMainBackground_1_unscaled'

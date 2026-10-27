@@ -30,7 +30,6 @@ function name WeaponDamageType ()
 
 defaultproperties
 {
-	EAreaType=AOE_Cone
 	bPenetrating=True
      GoverningSkill=Class'DeusEx.SkillWeaponPistol'
      NoiseLevel=0.010000

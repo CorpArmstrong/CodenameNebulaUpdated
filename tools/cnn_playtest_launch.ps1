@@ -64,6 +64,7 @@ Set-Content -Path $autoStartFile -Value "set cnn.tantalusdenton bAgentAutoStart 
 #    especially bad if the last line left there was QUIT.
 $cmdFile = Join-Path $SystemDir "CNNAgentCmd.txt"
 Set-Content -Path $cmdFile -Value '' -NoNewline -Encoding ASCII
+& (Join-Path $PSScriptRoot 'cnn_agent_listen.ps1') -Ini (Join-Path $SystemDir 'CNNAgent.ini') | Out-Null
 
 # 3. Generate the launch INI (LocalMap=/Map= override -- see the caveat
 #    above about it not actually skipping the menu).

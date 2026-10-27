@@ -15,6 +15,7 @@ param([string]$Root = 'D:\Program Files (x86)\Steam\steamapps\common\Deus Ex',
 $sys = Join-Path $Root 'System'
 $ini = Join-Path $Root "CodenameNebula\System\$Ini"
 $user = Join-Path $Root 'CodenameNebula\System\CNNUser.ini'
+& (Join-Path $PSScriptRoot 'cnn_agent_listen.ps1') | Out-Null
 Start-Process -FilePath (Join-Path $sys 'DeusEx.exe') -WorkingDirectory $sys `
     -ArgumentList "INI=`"$ini`"", "USERINI=`"$user`"", '-log'
 

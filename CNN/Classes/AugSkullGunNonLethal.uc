@@ -77,6 +77,5 @@ defaultproperties
      LevelValues(1)=0.250000
      LevelValues(2)=0.125000
      LevelValues(3)=0.062500
-     LevelValues(4)=0.031250
      MPConflictSlot=3
 }

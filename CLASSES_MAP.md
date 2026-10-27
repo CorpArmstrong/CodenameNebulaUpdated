@@ -205,7 +205,7 @@ These exist as `class X extends Object` import declarations paired with their co
 | [DecoCannister](CNN/Classes/DecoCannister.uc), [DecoChemicalCannister](CNN/Classes/DecoChemicalCannister.uc) | Cannister / ChemicalCannister |
 | [DecoCautionBox](CNN/Classes/DecoCautionBox.uc), [DecoCrateExplosiveMed](CNN/Classes/DecoCrateExplosiveMed.uc) | CautionBox / CrateExplosiveMed |
 | [DecoGasCan](CNN/Classes/DecoGasCan.uc) | GasCan |
-| [DecoButton1B](CNN/Classes/DecoButton1B.uc), [DecoCandle1](CNN/Classes/DecoCandle1.uc), [DecoClipBoard](CNN/Classes/DecoClipBoard.uc), [DecoFolders](CNN/Classes/DecoFolders.uc), [DecoGlassBottle](CNN/Classes/DecoGlassBottle.uc), [DecoHandDry](CNN/Classes/DecoHandDry.uc), [DecoIV](CNN/Classes/DecoIV.uc), [DecoKarkianEgg](CNN/Classes/DecoKarkianEgg.uc), [DecoMagazine](CNN/Classes/DecoMagazine.uc), [DecoSinks](CNN/Classes/DecoSinks.uc), [DecoToiletPaper](CNN/Classes/DecoToiletPaper.uc), [DecoTowelRack](CNN/Classes/DecoTowelRack.uc), [DecoAmmoPlasma2](CNN/Classes/DecoAmmoPlasma2.uc) | Decoration import stubs (pair with concrete classes above) |
+| [DecoButton1B](CNN/Classes/DecoButton1B.uc), [DecoCandle1](CNN/Classes/DecoCandle1.uc), [DecoClipBoard](CNN/Classes/DecoClipBoard.uc), [DecoFolders](CNN/Classes/DecoFolders.uc), [DecoGlassBottle](CNN/Classes/DecoGlassBottle.uc), [DecoHandDry](CNN/Classes/DecoHandDry.uc), [DecoIV](CNN/Classes/DecoIV.uc), [DecoKarkianEgg](CNN/Classes/DecoKarkianEgg.uc), [DecoMagazine](CNN/Classes/DecoMagazine.uc), [DecoSinks](CNN/Classes/DecoSinks.uc), [DecoToiletPaper](CNN/Classes/DecoToiletPaper.uc), [DecoTowelRack](CNN/Classes/DecoTowelRack.uc) | Decoration import stubs (pair with concrete classes above) |
 
 All REACHABLE-CODE — referenced via `#exec` directives at compile time.
 

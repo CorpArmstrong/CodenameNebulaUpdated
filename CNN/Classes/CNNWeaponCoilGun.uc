@@ -25,6 +25,17 @@ function name WeaponDamageType()
     return 'KnockedOut';
 }
 
+// The coil gun mesh has only Idle1 (no Idle2/Idle3), played as often as
+// DeusExWeapon plays it
+simulated function PlayIdleAnim()
+{
+    if (bZoomed || bNearWall)
+        return;
+
+    if (FRand() < 0.1)
+        PlayAnim('Idle1',,0.1);
+}
+
 // Reload time is down considerably
 defaultproperties
 {

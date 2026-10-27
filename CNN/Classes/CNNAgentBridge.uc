@@ -6,6 +6,10 @@
 // "CNNAgentRun <seq> <command>" reaches TantalusDenton.CNNAgentRun and from
 // there Run(). By hand: "CNNDev <command>" at the console.
 //
+// It polls only with bListen=True in CNNAgent.ini (tools/cnn_agent_listen.ps1):
+// a missing CNNAgentCmd.txt logs a warning every second, and players have
+// no such file.
+//
 // Results go to the log and to CNNAgent.ini, which reaches disk at once.
 // GOTO landmarks are 06_OpheliaL2's. On that map it also logs, in any
 // game, what the endings depend on (WatchL2).
@@ -17,6 +21,7 @@ class CNNAgentBridge extends Actor config(CNNAgent);
 var() float pollInterval;
 var TantalusDenton Player;
 
+var config bool   bListen;
 var config int    ackSeq;
 var config string ackCmd;
 var config int    outCount;
@@ -93,7 +98,8 @@ function Timer()
     if (Player == none)
         return;
 
-    Player.ConsoleCommand("exec CNNAgentCmd.txt");
+    if (bListen)
+        Player.ConsoleCommand("exec CNNAgentCmd.txt");
     CheckAutoCon();
     ConStep();
     CheckWait();
@@ -208,12 +214,14 @@ function Run(string command, optional int seq)
         TestEnding(arg);
     else if (cmd == "SHOT")
         Player.ConsoleCommand("shot");
+    else if (cmd == "DATALINK")
+        Log("CNN agent: datalink " $ arg $ " started=" $ Player.StartDataLinkTransmission(arg));
     else if (cmd == "QUIT")
         Player.ConsoleCommand("exit");  // a killed process leaves Recovery Mode for the next launch
     else
         Player.ClientMessage("unknown command " $ cmd $
             " -- use GOTO/GOTOVEC/LOOKAT/WALK/WALKSTOP/ACTORS/FIRE/FROB/DAMAGE/OPEN/CONVERSE/ADVANCE/STATUS/MAGSTATE/CONDUMP/CONEVENTS/TALK/CONSTATE/CHOOSE/CONRUN/AUTOCON/PICKS/" $
-            "SETFLAG/WAITFLAG/NEWGAME/GIVE/TAKE/INV/KILL/BODIES/CONLIST/SAVE/LOAD/QSAVE/QLOAD/SNAP/RAW/ASSETCHECK/WHERE/FLAGS/PROBE/TESTENDING/SHOT/QUIT");
+            "SETFLAG/WAITFLAG/NEWGAME/GIVE/TAKE/INV/KILL/BODIES/CONLIST/SAVE/LOAD/QSAVE/QLOAD/SNAP/RAW/ASSETCHECK/WHERE/FLAGS/PROBE/TESTENDING/SHOT/DATALINK/QUIT");
 
     // a travel (OPEN, LOAD) happens at the end of the tick, after this
     if (seq > 0)

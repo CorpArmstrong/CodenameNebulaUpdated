@@ -26,7 +26,6 @@ simulated function PreBeginPlay()
 
 defaultproperties
 {
-	EAreaType=AOE_Cone
 	AreaOfEffect=2
 	bPenetrating=True
      GoverningSkill=Class'DeusEx.SkillWeaponPistol'

@@ -68,8 +68,3 @@ function EventCommand GetCodeEvent(Class<EventCommand> codeEventClass)
 
     return EventCommand(evs);
 }
-
-defaultproperties
-{
-    CodeEventNames[0]=class'CNN.EventCommandToggleGravity'
-}

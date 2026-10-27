@@ -6,9 +6,10 @@
   This level was not made and is not supported by Ion Storm and Eidos
   Interactive.
 
-  Author:  <NAME>
-  E-mail:  <E-MAIL>
-  Web:     https://apocalypseinside.heraldic.cloud/
+  Project director:    Artem "Tantalus" D
+  Assistant director:  Dmitriy "CorpArmstrong" Fedykovych
+  E-mail:              cherry.cake128@gmail.com
+  Web:                 https://apocalypseinside.heraldic.cloud/
 
 
 ------------------------------------------------------------------------------

@@ -538,6 +538,8 @@ set "ISS_FILE=%BUILD_DIR%\CNNSetup.generated.iss"
     echo Compression=lzma
     echo SolidCompression=yes
     echo UsePreviousAppDir=no
+    echo ;; The desktop shortcut is meant for the player who runs the setup
+    echo UsedUserAreasWarning=no
     echo.
     echo [Languages]
     echo Name: "english"; MessagesFile: "compiler:Default.isl"

@@ -15,9 +15,6 @@ class SFighter extends Actor;
 //Edit X, Y, and Z values in line below to change size of mesh in game
 #exec MESHMAP SCALE MESHMAP=SFighter X=7.743437 Y=7.743437 Z=7.743437
 
-#exec TEXTURE IMPORT NAME=SFighterTex0 FILE=textures\SciFi_Fighter_AK5-diffuse.jpg GROUP=Skins FLAGS=2
-#exec MESHMAP SETTEXTURE MESHMAP=SFighter NUM=0 TEXTURE=SFighterTex0
-
 defaultproperties
 {
     DrawType=DT_Mesh

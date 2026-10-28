@@ -86,9 +86,15 @@
 <P>
 <P>New Vehicles by Deadalus08
 <P>
+<P>Free Sci Fi Fighter by GrafxBOX / CGPitbull (CC BY)
+<P>
 <P>Station textures partly from Zortch World Textures by mutantleg (CC0)
 <P>
 <P>Flying saucer photo: U.S. Air Force Office of Special Investigations (public domain)
+<P>
+<P>Apollo 11 crew portrait: NASA (public domain)
+<P>
+<P>Los Angeles skyline photo by Serouj (public domain)
 <P>
 <P>DXOgg Ogg Extension by Jim (The Nameless Mod)
 <P>
@@ -102,9 +108,9 @@
 <P>
 <P>Soundtrack:
 <P>
-<P>The Spark by Solar Smoke
+<P>The Spark by Solar Smoke (CC BY-NC-ND 4.0)
 <P>
-<P>Mysterious_SciFi_Music_THE_LAST_FRONTIER by Luke West
+<P>The Last Frontier by Luke West (CC BY-NC-ND 4.0)
 <P>
 <P>Win XP is life by CorpArmstrong
 <P>

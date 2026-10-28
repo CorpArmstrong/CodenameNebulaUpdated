@@ -728,7 +728,9 @@ function Status()
         " conPlayNone=" $ (Player.conPlay == none) $
         " conPlayHasCon=" $ bConPlayHasCon $
         " nextState=" $ Player.NextState $
-        " physics=" $ Player.Physics);
+        " physics=" $ Player.Physics $
+        " health=" $ Player.Health $
+        " energy=" $ int(Player.Energy));
 }
 
 // ----------------------------------------------------------------------
@@ -1765,7 +1767,13 @@ function DumpActors(string className)
             extra = " radius=" $ a.CollisionRadius $ " once=" $ Trigger(a).bTriggerOnceOnly;
         else if (ScriptedPawn(a) != none)
             extra = " orders=" $ ScriptedPawn(a).Orders $ " alliance=" $ ScriptedPawn(a).Alliance $
-                    " health=" $ ScriptedPawn(a).Health;
+                    " health=" $ ScriptedPawn(a).Health $ " state=" $ a.GetStateName();
+        else if (ThrownProjectile(a) != none)
+            extra = " prox=" $ ThrownProjectile(a).bProximityTriggered $ " armed=" $ ThrownProjectile(a).bArmed $
+                    " disabled=" $ ThrownProjectile(a).bDisabled $ " physics=" $ a.Physics;
+
+        if (Robot(a) != none)
+            extra = extra $ " emp=" $ Robot(a).EMPHitPoints;
 
         Log("CNN actors: " $ a.Class.Name $ " " $ a.Name $ " tag=" $ a.Tag $ " event=" $ a.Event $
             " bind=" $ a.BindName $ " loc=" $ VecText(a.Location) $ extra);

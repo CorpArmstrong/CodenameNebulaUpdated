@@ -131,10 +131,40 @@
 3. **Custom Decorations** (`Button1B`, `ChemicalCannister`, `Magazine`, `TowelRack`, `HandDry`, `Sink`, `Pipe*`,
    `ObserX`, `wallfuse8`, `bassein`) — чей набор.
 4. `xmas_banner`, глобусы Земли и Марса, снимки картин — источник.
-5. `rammstein3` — заменить (предложение).
+5. ~~`rammstein3`~~ — заменён портретом экипажа Apollo 11 (28.10.2026).
 7. ~~`CNNTextures.OpheliaIW`~~ — заменён своей схемой станции (см. выше).
 6. Бренды в наборе PFAD (Bounty, Bueno, Snickers, Pepsi, Red Bull, Monster) — оставить как есть
    (так их выпустил автор PFAD) или убрать эти предметы с карт.
+
+## Поиск источников (28.10.2026)
+
+Текстуры выгружены в PNG и просмотрены; поиск — текстовый (обратный поиск по картинке не делался:
+он требует загрузки файла на сторонний сервис).
+
+| Текстура | Что на ней на самом деле | Вывод |
+|---|---|---|
+| `CNN.xmas_banner` | рекламный баннер «Mise en Abyme — Coming to Kickstarter Q1 2015 — ApostleMod» поверх снимка Apollo 11 | **свой**: ApostleMod — студия самой команды (Apocalypse Inside), Mise en Abyme — её «облачные компьютеры» из сюжета AI; фото Apollo 11 — NASA, общественное достояние |
+| `CNN.rammstein3` | кадр из клипа Rammstein «Amerika» (2004, реж. Jörn Heitmann): группа в скафандрах на «Луне» | **заменён** 28.10.2026: `CNN.Photos.Apollo11Crew` (портрет экипажа Apollo 11, NASA, общественное достояние) |
+| `LosAngelesTex.lasky` | фото панорамы даунтауна Лос-Анджелеса, затемнено, звёздное небо поверх | **заменён** 28.10.2026: `CNN.Photos.LASkyline` (`Downtown Los Angeles skyline.jpg`, Serouj, общественное достояние), ночь — `tools/photo_textures.js`; `lasky` обнуляется в `LosAngelesTex.utx` при упаковке |
+| `LosAngelesTex.hollywood` | ночной любительский снимок надписи Hollywood, 512² с артефактами сжатия | источник не найден; заменить свободным снимком или нарисовать |
+| `LosAngelesTex.CityOnTheHill`, `LastSupperSalon` | вывески, сделанные командой (свой текст) на фото досок | текст свой; доски — типовые фото дерева, источник не найден, риск низкий |
+| `LosAngelesTex.satelliteflip`, `avatar-screen` | тонированные снимки сцен самой Deus Ex | производные стоковой Deus Ex — в рамках SDK |
+| `ArtPieces.RaidPhoto` | групповой рендер стоковых персонажей Deus Ex | производная Deus Ex |
+| `ArtPieces.WashDelaware`, `kossaks`, `monalisa`, `AdaLovelace`, `last-supper` | Лойце, Репин, Леонардо, портрет Ады Лавлейс (Шалон) | картины — общественное достояние |
+| `CNN.earthMapWest/East` | развёртка Земли день/ночь с облаками | по виду Blue Marble + City Lights (NASA, общественное достояние); готовая склейка не найдена |
+| `CNN.MarsWest/East` | цветная карта Марса | по виду мозаика Viking (NASA/USGS, общественное достояние) |
+| «Custom Decorations» | ≈23 класса (`Barrel2`, `ChemicalCannister`, `HandDry`, `TowelRack`, `KarkianEgg`…), добавлены Tantalus 05.07.2017 (`0e72341`) | автор в интернете не находится; вопрос остаётся к Tantalus |
+| `SciFiFighter` | «free sci-fi fighter» (`070773a`, 15.04.2017, CorpArmstrong) | **найден**: «Free Sci Fi Fighter», GrafxBOX / CGPitbull, Sketchfab `dca1c832ee574e2fa2cdaa06515f66a9`, CC Attribution. 2570 треугольников — ровно как в `SciFiFighter_d.3d`; в исходной `Free_S.jpg` слой Photoshop `SciFi_Fighter_AK5-diffuse` (2013). Наша текстура — перекраска. В титрах и README с 28.10 |
+
+### Кандидаты на замену (Wikimedia Commons, 28.10.2026)
+
+| Заменяет | Снимок | Лицензия |
+|---|---|---|
+| `LosAngelesTex.lasky` (выбран другой, см. выше) | `Downtown Los Angeles skyline from Toy District.jpg` (Eric Polk, 3775×1438, с земли, как исходная) | CC BY-SA 4.0 — указать автора, текстура тоже CC BY-SA |
+| — запасной | `Downtown Los Angeles skyline.jpg` (Serouj, 1274×752, с Гриффита, дымка) | общественное достояние |
+| `LosAngelesTex.hollywood` | `Hollywood Sign at Night (8965649621).jpg` (Atomic Taco, 5184×2916, почти тот же ракурс) | CC BY-SA 2.0; надпись Hollywood — товарный знак Hollywood Chamber of Commerce (была и в исходной) |
+| `CNN.rammstein3` | `Apollo XI - Prime Crew Portrait (S69-31740).jpg` — экипаж в скафандрах без шлемов на фоне Луны | NASA, общественное достояние |
+| — вариант с намёком на клип | `Two crew men of the Apollo 13 lunar landing mission simulate lunar surface Extravehicular Activity.jpg` — тренировка в павильоне с макетом модуля и флагом | NASA, общественное достояние |
 
 ## Что стороннего осталось (25.10.2026, после пересборки)
 
@@ -156,5 +186,5 @@
 | В `CNN.u`: Олдрин, Земля, Марс | — | NASA, общественное достояние | в порядке |
 | В `CNN.u`: 9 текстур станции из Zortch; снимок «тарелки» | — | CC0; общественное достояние (ВВС США) | в титрах |
 | Код `WeaponSnowblind` | — | заготовка из Shifter (Y\|yukichigai) | в титрах |
-| Музыка: «The Spark» (Solar Smoke), «The Last Frontier» (Luke West) | 2 трека из 12 | указаны | лицензии не проверены; остальные 10 — команды |
+| Музыка: «The Spark» (Solar Smoke), «The Last Frontier» (Luke West) | 2 трека из 12 | указаны | проверено 28.10: обе на Bandcamp под **CC BY-NC-ND 4.0** (некоммерческое, с автором, без переделки — подходит); в титрах с лицензией; остальные 10 — команды |
 | Звук аплодисментов | — | Yannick Lemieux, CC BY 3.0 | в титрах |

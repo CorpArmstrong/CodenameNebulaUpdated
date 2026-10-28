@@ -175,9 +175,38 @@
 - `Ship1` — модель JJoe (Evgeniy Bortnik, команда, в титрах).
 - Milosh--Andrich: паки 01 и 03 лежат в его папке DeviantArt «TEXTURE Free for all» («Textures packs free for
   all»); в титрах исправлены ссылки (старые вели на 404).
-- «Custom Decorations» (23 класса `Deco*`, добавлены Tantalus 05.07.2017, `0e72341`): в интернете не найдены —
-  проверены ModDB, DXEditingTools (Blade_Sword), S.T.A.L.K.E.R. PROJECT (Lurker), упоминания Nihilum. Вопрос к
-  Tantalus.
+- «Custom Decorations» (23 класса `Deco*`, добавлены Tantalus 05.07.2017, `0e72341`): по именам в интернете не
+  находятся (ModDB, DXEditingTools, S.T.A.L.K.E.R. PROJECT, Deus Ex Editing Pack 2.2 — в нём только префабы).
+  **Сверка пикселей** (`texmatch.js` в scratchpad сессии, все пакеты установленного Revision): 9 из 86 текстур
+  совпадают **точно** с `Revision/System/RevisionDeco.u` — `HandDryTex1/2`, `TowelRackTex1/2`, `ToiletPaperTex1/2`,
+  `GlassBottleTex1`, `Candle1Tex1`, `BoardBoxSmallTex1` (= `JRedPlasticBox4`). Остальные 77 (канистры с элементами,
+  `CautionBox`, `KarkianEgg`, кофемашина, журналы, бочки, кнопки) в нынешнем Revision нет. Сам Revision тоже
+  собирает чужое (`TNMBroom`, `TNMCeilingLight`, модели HDTP). Вероятный путь: ранняя сборка Revision 2011 →
+  Nihilum (по его странице «used in accordance with the mod's license») → CNN; доказать нельзя без архива Nihilum.
+  Нынешний EULA Revision (`Revision/Help/DXR EULA.txt`): распространяет только Caustic Creative, вопросы
+  использования ассетов — contact@dx-revision.com.
+  **Первоисточник найден (28.10.2026, вечер):** исходный текст классов внутри `RevisionDeco.u` у всех пяти
+  совпавших (`HandDry`, `TowelRack`, `ToiletPaper`, `GlassBottle`, `Candle1`, `RedPlasticBox`) начинается строкой
+  «Borrowed from TNM for the mod Deus Ex: Revision, and may be used according to the project licence»; таких
+  классов в `RevisionDeco.u` 44. То есть это декорации **The Nameless Mod** (Off Topic Productions, 2009), которые
+  Revision тоже взял себе. Лицензия TNM — CC BY-NC-SA 3.0 (страница TNM на Internet Archive). Совпадают ли с TNM
+  остальные 77 текстур, проверяется только по пакетам TNM: TNM 1.0.4 SDK (ModDB, 452 МБ, «все наши модели и
+  исходники») или установка TNM. Если подтвердится — источник в титрах: The Nameless Mod (OTP), CC BY-NC-SA 3.0.
+  **Сверка с TNM 1.0.4 SDK (28.10.2026, ночь):** `TNM104SDK.zip` с Internet Archive (`the-nameless-mod-archive`,
+  MD5 `cb5e0400…` = ModDB). Наши исходники `CNN/Models` против 2117 моделей и текстур SDK, по байтам и по картинке:
+  - **из TNM (`SDK/TNMDeco`, файл в файл, 42 файла)**: `Barrel2`, `BoardBoxSmall`, `Candle1`, `CautionBox`,
+    `CrateExplosiveMed`, `GlassBottle`, `HandDry`, `Magazine` (7 обложек), `ToiletPaper`, `TowelRack` + `Towel`;
+  - **в TNM 1.0.4 нет** (101 файл): `Barrel3`, `BarrelGas`, `BarrelToxic`, `Button1B` (24 текстуры), `Cannister`,
+    `ChemicalCannister` (21 элемент), `ClipBoard`, `CoffeeCup`, `CoffeeMachine`, `Document`, `Folder`/`FolderOpen`,
+    `GasCan`, `KarkianEgg` (+ `Egg`, `Incubator`), `Sink1`/`Sink2`, `IVUnit`. Часть из них — Apocalypse Inside
+    (`IVUnit` лежит в `ApocalypseInside/Models`; `CoffeeMachine`/`CoffeeCup` в 2026 перенесены из
+    `ApocalypseInside.u`, см. `CLASSES_MAP.md`), остальное — вопрос к Tantalus.
+  - Шапка «Custom Decorations.» — не имя пакета, а шаблон: так оформлен `TNMDeco/Classes/DecoAshtraySmall.uc` (тот же
+    масштаб 1/256, те же строки `SEQ`), по образцу уроков Steve Tack («How to organize mesh import files»).
+  - В титрах TNM сторонние модели: Steve Tack (стулья из ZODIAC и Redsun 2020), FiveEight (The Cassandra Project),
+    Endemia, The Blessed Phantom. Непроверенные 101 файл могут быть оттуда — пакеты этих модов не проверялись.
+  - Лицензия TNM — CC BY-NC-SA 3.0; CNN распространяется под той же (README), противоречия нет. Нужна строка в
+    титрах и README: «Decorations from The Nameless Mod by Off Topic Productions (CC BY-NC-SA 3.0)».
 - Доски на вывесках `CityOnTheHill` и `LastSupperSalon`: текстовым поиском источник не определить (типовые фото
   старого дерева); обратный поиск по картинке не делался. Риск низкий.
 

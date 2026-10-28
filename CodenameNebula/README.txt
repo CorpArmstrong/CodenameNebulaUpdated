@@ -118,6 +118,8 @@
   - Weapon code partly based on Shifter by Y|yukichigai.
   - Custom consumables (PFAD) by Prototype.
   - New Vehicles by Deadalus08.
+  - Free Sci Fi Fighter by GrafxBOX / CGPitbull, Creative Commons
+    Attribution license (sketchfab.com/GrafxBOX).
   - Sci-fi textures by Milosh-Andrich.
   - Station textures partly from Zortch World Textures by mutantleg (CC0).
   - Flying saucer photo: U.S. Air Force Office of Special Investigations

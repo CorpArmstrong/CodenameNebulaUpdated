@@ -181,3 +181,4 @@ function reload(buf) {
 }
 
 if (require.main === module) main();
+module.exports = { ciBytes, serializeName, nameTable };

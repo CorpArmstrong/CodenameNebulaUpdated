@@ -182,20 +182,27 @@ function bool CheckActorDistances()
 // PostPostBeginPlay()
 //
 // Keeps a CNNItemClassRepair on every map: conversations name item classes
-// the engine cannot find (ArmMagdalene). Called on a new map and after a
+// the engine cannot find (ArmMagdalene); and a CNNPlacedGrenades: grenades
+// placed in a map have no owner to flash. Called on a new map and after a
 // load alike; an older save has none yet. (The player gets PlayerTick, not
 // Tick, so this cannot wait for a tick.)
 // ----------------------------------------------------------------------
 
 function PostPostBeginPlay()
 {
-    local CNNItemClassRepair repair;
-
     Super.PostPostBeginPlay();
 
-    foreach AllActors(class'CNNItemClassRepair', repair)
+    SpawnOnce(class'CNNItemClassRepair');
+    SpawnOnce(class'CNNPlacedGrenades');
+}
+
+function SpawnOnce(class<Actor> actorClass)
+{
+    local Actor a;
+
+    foreach AllActors(actorClass, a)
         return;
-    Spawn(class'CNNItemClassRepair', self);
+    Spawn(actorClass, self);
 }
 
 // ----------------------------------------------------------------------

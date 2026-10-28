@@ -93,6 +93,7 @@ function load(path) {
 function readProps(P, r) {
   const props = [];
   for (;;) {
+    const at = r.p;
     const name = P.names[r.ci()];
     if (name === 'None') break;
     const info = r.u8();
@@ -131,7 +132,7 @@ function readProps(P, r) {
       default: value = `<type${type} ${size}b>`;
     }
     if (type !== 3) r.p = start + size;
-    props.push({ name: idx ? `${name}[${idx}]` : name, value, type });
+    props.push({ name: idx ? `${name}[${idx}]` : name, value, type, at, to: r.p });
   }
   return { props, end: r.p };
 }

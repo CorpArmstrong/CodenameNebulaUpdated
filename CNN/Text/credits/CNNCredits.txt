@@ -75,7 +75,7 @@
 <P>
 <P>Third-party content:
 <P>
-<P>Assets from Deus Ex: Nihilum (HUD, Gauss gun, models) by FastGamerr,
+<P>Assets from Deus Ex: Nihilum (HUD, Gauss gun, models, decorations) by FastGamerr,
 <P>used in accordance with the Creative Commons license.
 <P>Nihilum includes material from UNATCO Born (fender2k1) and Deus Ex: Revision (2011).
 <P>
@@ -90,6 +90,9 @@
 <P>Free Sci Fi Fighter by GrafxBOX / CGPitbull (CC BY)
 <P>
 <P>Decorations from The Nameless Mod by Off Topic Productions (CC BY-NC-SA 3.0)
+<P>
+<P>Custom decorations by Endemia (planetdeusex.com/endemia, 2002);
+<P>coffee machine based on a model by Gusher (Prefab Lab, planetunreal.com/prefablab)
 <P>
 <P>Station textures partly from Zortch World Textures by mutantleg (CC0)
 <P>

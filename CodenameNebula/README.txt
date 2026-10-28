@@ -111,9 +111,9 @@
 
   Third-party content:
 
-  - Assets from Deus Ex: Nihilum (HUD, Gauss gun, models) by FastGamerr, used
-    in accordance with the Creative Commons license. Nihilum includes material
-    from UNATCO Born (fender2k1) and Deus Ex: Revision (2011).
+  - Assets from Deus Ex: Nihilum (HUD, Gauss gun, models, decorations) by
+    FastGamerr, used in accordance with the Creative Commons license. Nihilum
+    includes material from UNATCO Born (fender2k1) and Deus Ex: Revision (2011).
   - Gauss Gun by Bowen Wong, modifications by Y|yukichigai.
   - Weapon code partly based on Shifter by Y|yukichigai.
   - Custom consumables (PFAD) by Prototype.
@@ -123,6 +123,11 @@
   - Decorations from The Nameless Mod by Off Topic Productions (hand dryer,
     towel rack, toilet paper, magazines, candle, bottle, boxes, barrel),
     Creative Commons Attribution-NonCommercial-ShareAlike 3.0.
+  - Custom decorations by Endemia (to_an@planetdeusex.com,
+    planetdeusex.com/endemia, 2002): barrels, cannisters, Karkian egg, buttons,
+    sinks, clipboard, folders, IV unit and others; many reached CNN through
+    The Nameless Mod and Deus Ex: Nihilum. Coffee machine based on a model by
+    Gusher (Prefab Lab, planetunreal.com/prefablab).
   - Sci-fi textures by Milosh--Andrich (DeviantArt, "Texture Free for all").
   - Station textures partly from Zortch World Textures by mutantleg (CC0).
   - Flying saucer photo: U.S. Air Force Office of Special Investigations

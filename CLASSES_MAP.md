@@ -200,11 +200,10 @@ These exist as `class X extends Object` import declarations paired with their co
 
 | Template | Concrete container/item |
 |---|---|
-| [DecoBarrel2](CNN/Classes/DecoBarrel2.uc), [DecoBarrel3](CNN/Classes/DecoBarrel3.uc), [DecoBarrelGas](CNN/Classes/DecoBarrelGas.uc), [DecoBarrelToxic](CNN/Classes/DecoBarrelToxic.uc) | Barrel2 / Barrel3 / BarrelGas / BarrelToxic |
+| [DecoBarrel2](CNN/Classes/DecoBarrel2.uc), [DecoBarrelGas](CNN/Classes/DecoBarrelGas.uc), [DecoBarrelToxic](CNN/Classes/DecoBarrelToxic.uc) | Barrel2 / BarrelGas / BarrelToxic (Barrel3 and GasCan use the stock `DeusExDeco.Barrel1` mesh) |
 | [DecoBoardBoxSmall](CNN/Classes/DecoBoardBoxSmall.uc) | BoardBoxSmall |
 | [DecoCannister](CNN/Classes/DecoCannister.uc), [DecoChemicalCannister](CNN/Classes/DecoChemicalCannister.uc) | Cannister / ChemicalCannister |
 | [DecoCautionBox](CNN/Classes/DecoCautionBox.uc), [DecoCrateExplosiveMed](CNN/Classes/DecoCrateExplosiveMed.uc) | CautionBox / CrateExplosiveMed |
-| [DecoGasCan](CNN/Classes/DecoGasCan.uc) | GasCan |
 | [DecoButton1B](CNN/Classes/DecoButton1B.uc), [DecoCandle1](CNN/Classes/DecoCandle1.uc), [DecoClipBoard](CNN/Classes/DecoClipBoard.uc), [DecoFolders](CNN/Classes/DecoFolders.uc), [DecoGlassBottle](CNN/Classes/DecoGlassBottle.uc), [DecoHandDry](CNN/Classes/DecoHandDry.uc), [DecoIV](CNN/Classes/DecoIV.uc), [DecoKarkianEgg](CNN/Classes/DecoKarkianEgg.uc), [DecoMagazine](CNN/Classes/DecoMagazine.uc), [DecoSinks](CNN/Classes/DecoSinks.uc), [DecoToiletPaper](CNN/Classes/DecoToiletPaper.uc), [DecoTowelRack](CNN/Classes/DecoTowelRack.uc) | Decoration import stubs (pair with concrete classes above) |
 
 All REACHABLE-CODE — referenced via `#exec` directives at compile time.

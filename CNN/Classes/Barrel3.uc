@@ -9,7 +9,9 @@ defaultproperties
     bFlammable=false
     ItemName="Radioactive Barrel"
     bBlockSight=true
-    Mesh=LodMesh'CNN.Barrel3'
+    Mesh=LodMesh'DeusExDeco.Barrel1'
+    Skin=Texture'DeusExDeco.Skins.Barrel1Tex9'
+    DrawScale=1.034500
     CollisionRadius=19.000000
     CollisionHeight=30.000000
     AmbientSound=Sound'Ambient.GeigerLoop'

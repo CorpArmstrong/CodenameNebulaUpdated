@@ -128,7 +128,8 @@
 
 1. ~~Ophelia.utx~~ — заменён (см. выше).
 2. **LosAngelesTex** — источники фото (`lasky`, `hollywood`, `CityOnTheHill`, `LastSupperSalon`).
-3. **Custom Decorations** (`Button1B`, `ChemicalCannister`, `Magazine`, `TowelRack`, `HandDry`, `Sink`, `Pipe*`,
+3. **Custom Decorations** — большая часть найдена (TNM, Nihilum SDK, сток), см. «Поиск источников»; открыты
+   `Barrel3`, `BarrelGas`, `BarrelToxic`, `Cannister`, `ChemicalCannister`, `GasCan`, `KarkianEgg`. Исходный список: (~~`Button1B`~~ — перерисовка стоковой Deus Ex, см. ниже; `ChemicalCannister`, `Magazine`, `TowelRack`, `HandDry`, `Sink`, `Pipe*`,
    `ObserX`, `wallfuse8`, `bassein`) — чей набор.
 4. `xmas_banner`, глобусы Земли и Марса, снимки картин — источник.
 5. ~~`rammstein3`~~ — заменён портретом экипажа Apollo 11 (28.10.2026).
@@ -196,11 +197,79 @@
   MD5 `cb5e0400…` = ModDB). Наши исходники `CNN/Models` против 2117 моделей и текстур SDK, по байтам и по картинке:
   - **из TNM (`SDK/TNMDeco`, файл в файл, 42 файла)**: `Barrel2`, `BoardBoxSmall`, `Candle1`, `CautionBox`,
     `CrateExplosiveMed`, `GlassBottle`, `HandDry`, `Magazine` (7 обложек), `ToiletPaper`, `TowelRack` + `Towel`;
-  - **в TNM 1.0.4 нет** (101 файл): `Barrel3`, `BarrelGas`, `BarrelToxic`, `Button1B` (24 текстуры), `Cannister`,
+  - **в TNM 1.0.4 нет** (101 файл): `Barrel3`, `BarrelGas`, `BarrelToxic`, `Button1B` (24 текстуры, см. ниже), `Cannister`,
     `ChemicalCannister` (21 элемент), `ClipBoard`, `CoffeeCup`, `CoffeeMachine`, `Document`, `Folder`/`FolderOpen`,
     `GasCan`, `KarkianEgg` (+ `Egg`, `Incubator`), `Sink1`/`Sink2`, `IVUnit`. Часть из них — Apocalypse Inside
     (`IVUnit` лежит в `ApocalypseInside/Models`; `CoffeeMachine`/`CoffeeCup` в 2026 перенесены из
     `ApocalypseInside.u`, см. `CLASSES_MAP.md`), остальное — вопрос к Tantalus.
+  - **Кнопки `Button1A`/`Button1B` — перерисовка стоковой Deus Ex** (сверка 28.10.2026): по пикселям ни с одной
+    из 1497 текстур TNM SDK не совпадают (у TNM свои кнопки `Button1_Grey/Red/WC` — другой рисунок). Зато классы
+    `Button1A`/`Button1B` — копии стокового `DeusEx.Button1` (тот же `SetSkin(EButtonType, lit)`), а текстуры —
+    32×32 в том же порядке, что `DeusExDeco.Skins.Button1Tex1–24` (вверх, вниз, 1–9, пустая; обычная/подсвеченная).
+    Яркость стрелок и пустой кнопки совпадает со стоковыми (r = −0.7…−0.85 у стрелок — инвертированы; 0.81 у
+    пустой), цифры нарисованы заново: `Button1A` — красная с цифрой в кружке (+2 своих: пустая и «◁▷»),
+    `Button1B` — с жёлто-чёрной рамкой. Это производные ассетов Deus Ex — в рамках SDK, как остальные моды.
+    `Button1A` в `CNN.u` не собирается (лежит в `CNN/Models`) и на картах не стоит; `Button1B` стоит на картах
+    `06_OpheliaL1/L2`, `06_Hijacking`, `06_Transcend`.
+  - **Остальные (`Barrel3`, `BarrelGas`, `BarrelToxic`, `Cannister`, `ChemicalCannister`, `CoffeeMachine`, `GasCan`,
+    `IVUnit`, `Sink1/2`) — не сток и не TNM** (сверка 28.10.2026, 36 текстур против 4588: `DeusExDeco.u`,
+    `DeusExItems.u`, все `Textures/*.utx` игры, TNM SDK; ни цветом, ни формой — лучшее расстояние 17–43 из 255).
+    Поиск в интернете по именам классов ничего не дал. **Главная зацепка — Nihilum:** новость Tantalus на ModDB
+    «Codename Nebula is 3 years old!» (30.03.2017): «we've found a modding treasure — Deus Ex Nihilum SDK, released
+    under creative commons… the assets from Nihilum». Декорации добавлены через три месяца (05.07.2017). Nihilum
+    сам включает Revision 2011, а Revision — декорации TNM; это объясняет и 10 файлов TNM. SDK лежит по ссылке
+    автора (FastGamerr) со страницы «[OLD VERSION] Deus Ex: Nihilum (1.2)»: Dropbox `DXNSDK.7z`, 4 587 454 байт;
+    полная версия 1.2 — `DXN_1.2.0.0.7z`, 464 МБ, MD5 `5234cc2465ef5c1e487474247b0faa6f`.
+    Просьба CorpArmstrong к LastEr20 в Steam (19.11.2017) — позже 05.07.2017, к этому набору не относится.
+  - **Сверка с Nihilum SDK (`DXNSDK.7z`, 28.10.2026): 45 файлов совпали байт в байт** с пакетом `fgrhk`:
+    `ClipBoard`, `CoffeeMachine` + `CoffeeCup` (включая иконки и сам `DecoCoffeeMachine.uc`), `Folder`/`FolderOpen`
+    + `Document`, `IVUnit`, `Sink1`/`Sink2`, а также `Candle1`, `ToiletPaper`, `TowelRack` + `Towel` (их же нашли в TNM —
+    так подтверждается цепочка TNM → Revision 2011 → Nihilum → CNN). Классы `DecoSinks`, `DecoClipBoard`,
+    `DecoFolders`, `DecoTowelRack`, `DecoToiletPaper`, `DecoCandle1` в Nihilum те же — с шапкой «Custom Decorations.»
+    и даже с опечаткой `DecoClipBOard`; у нас отличается только оформление строки `class` и пустой
+    `defaultproperties`. `CoffeeMachine` и `IVUnit` считались Apocalypse Inside — на деле тоже из Nihilum.
+    Лицензия Nihilum (`DXN SDK Documentation/License.txt`): CC BY-NC-SA 3.0 + Duke Nukem 3D HRP Art License (для
+    Duke-контента). В титрах и README Nihilum уже указан; добавлено слово «decorations».
+  - **Источник не найден (7 наборов):** `Barrel3`, `BarrelGas`, `BarrelToxic`, `Cannister`, `ChemicalCannister`
+    (21 текстура), `GasCan`, `KarkianEgg`. Их нет ни в стоке, ни в TNM SDK, ни в исходниках Nihilum SDK (в нём из
+    бочек только своя `BarrelBoom`). Остаётся: собранные пакеты полной Nihilum 1.2 (464 МБ — там же содержимое
+    UNATCO Born и Revision 2011, которое SDK не повторяет) или вопрос к Tantalus.
+  - **Полная Nihilum 1.2 (`DXN_1.2.0.0.7z`, MD5 совпал, 28.10.2026)** — этих 7 наборов тоже нет: ни по именам в
+    `fgrhk.u`, `clyzmsmod.u` и 40 `.utx`, ни по картинке (1553 текстуры; проверка сверки: `Sink*`, `CoffeeMachine*`,
+    `IVUnitTex0` находятся там с расстоянием 0.0). Нет их и в установленном Revision, и в интернете (поиск по
+    строкам «Biological & Organic Stuff», «Incubated Karkian Egg»). В титрах Nihilum авторы моделей: [A] Studios,
+    Pete «MEAT» Parisi, wta, ceski, Xzero, BombshellRapture, HDTP, Prefab Lab, Endemia, Gusher.
+    Особенность этих 7 классов в коммите 2017 года — заголовки разделов (`// Crates`, `// Biological & Organic
+    Stuff`, `// Switches and Buttons`): они вырезаны из одного большого файла импорта, которого нет ни в TNM, ни в
+    Nihilum. Вероятные источники — ранняя сборка Revision или собственная работа Tantalus; ответить может только он.
+    В том же коммите была карта `Maps/LDN_Deco.dx` с чужим пакетом `LDNDeco` (`VipPole`, `VIPRope`, `eucone`,
+    `woodenbench`) — удалена в 2020 (`a5b02b9`), в CNN не входит.
+  - **ПЕРВОИСТОЧНИК ВСЕГО НАБОРА — Endemia (2002)** (найдено 28.10.2026). Сайт `planetdeusex.com/endemia`
+    (автор — `to_an@planetdeusex.com`, ник Endemia; копия: gamespy-archives.quaddicted.com/sites/www.planetdeusex.com/endemia/),
+    обновление 04.10.2002. Разделы сайта = заголовки в наших `.uc`: Containers (`Barrel2`, `Barrel3`, `BarrelGas`,
+    `BarrelToxic`, `BoardBoxSmall`, `CautionBox`, `CrateExplosiveMed`, `GasCan`…), Buttons (`Button1A`/`1B` — «пришлось
+    переделать, т. к. текстуры не ложились на меш игры»), Furnitures (`CoffeeMachine`, `ClipBoard`, `Folders`,
+    `GlassBottle`, `HandDry`, `Magazine`, `Sinks`, `ToiletPaper`, `TowelRack`…), Organics (`Cannister`,
+    `ChemicalCannister`, `KarkianEgg`). Шапка «Custom Decorations.» — её оформление; TNM и Nihilum взяли набор у неё
+    (Endemia есть в титрах обоих). Локальные копии архивов 2002 г. (скачаны 2004) лежат у пользователя:
+    `D:\Files\PC\MacBookPro\Docs\Docs\SWAP!\GameMods\DeusExEditing\Docs\` (`CANNISTE`, `CHEMICAL`, `KARKIANE`,
+    `CLIPBOAR`, `COFFEEMA`, `AMMOPLAS`, `BROOM1`, `ROCKETSE`, `WHISKYBO`… `.ZIP`) — с нашими совпали байт в байт 43 файла
+    (`ChemicalCannister` 23, `CoffeeMachine` 10, `KarkianEgg` 4, `Cannister` 3, `ClipBoard` 3).
+    Условия: на сайте — «provided as is», «use them as seems to you»; просьба при переносе заменить имя пакета
+    `Endemia` на своё. `COFFEEMA.ZIP/readme.txt`: модель — переделка Gusher (Prefab Lab), «you need to include links,
+    credits, and contact information of above said authors» — Gusher и Endemia добавлены в README и титры.
+    **Риск — два заимствования из коммерческих игр** (по словам самой Endemia): `Barrel3` — «taken from Unreal
+    Tournament» (стоит: 13 на `05_MoonIntro`, 6 на `06_OpheliaDocks`), `GasCan` — «taken from the game Vampire»
+    (1 на `05_MoonIntro`). Остальное — «inspired by» (UT, System Shock 2) или своё.
+    **Решено 28.10.2026 (ветка `chore/stock-barrel-gascan`):** классы `Barrel3` и `GasCan` оставлены (карты на них
+    ссылаются), но переведены на стоковый меш `DeusExDeco.Barrel1`: `Barrel3` — скин `Barrel1Tex9` (радиоактивная
+    бочка), `GasCan` — скин `Barrel1Tex6` («Flammable Liquid»). `DecoBarrel3.uc`, `DecoGasCan.uc` и их меши/текстуры
+    (`Barrel3_*`, `GasCan_*`) удалены; в `CNN.u` их больше нет.
+    Масштаб сохранён по замерам мешей: старый `Barrel3` 38×38×60 (радиус 19, высота 30), стоковый `Barrel1` 36.95×36.95×58
+    (рамка ±4730/±7424 при Scale 1/256) → `DrawScale=1.0345`, коллизия 19×30 как была. Старый `GasCan` — плоская
+    канистра 9×17×24.5 в мире → `DrawScale=0.4224` (высота 24.5, диаметр 15.6), коллизия 9×12.25 как была.
+    Проверено в игре через мост: `05_MoonIntro` (бочки и канистра стоят на полу) и `06_OpheliaDocks` (6 бочек под
+    потолком — `fly` + свет; читы: `set TantalusDenton bCheatsEnabled True`), ошибок загрузки нет.
   - Шапка «Custom Decorations.» — не имя пакета, а шаблон: так оформлен `TNMDeco/Classes/DecoAshtraySmall.uc` (тот же
     масштаб 1/256, те же строки `SEQ`), по образцу уроков Steve Tack («How to organize mesh import files»).
   - В титрах TNM сторонние модели: Steve Tack (стулья из ZODIAC и Redsun 2020), FiveEight (The Cassandra Project),

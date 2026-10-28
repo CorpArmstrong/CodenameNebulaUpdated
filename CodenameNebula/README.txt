@@ -120,6 +120,9 @@
   - New Vehicles by Deadalus08.
   - Free Sci Fi Fighter by GrafxBOX / CGPitbull, Creative Commons
     Attribution license (sketchfab.com/GrafxBOX).
+  - Decorations from The Nameless Mod by Off Topic Productions (hand dryer,
+    towel rack, toilet paper, magazines, candle, bottle, boxes, barrel),
+    Creative Commons Attribution-NonCommercial-ShareAlike 3.0.
   - Sci-fi textures by Milosh--Andrich (DeviantArt, "Texture Free for all").
   - Station textures partly from Zortch World Textures by mutantleg (CC0).
   - Flying saucer photo: U.S. Air Force Office of Special Investigations

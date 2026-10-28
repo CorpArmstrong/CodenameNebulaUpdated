@@ -57,7 +57,7 @@
 | Группа | Сколько | Что | Происхождение |
 |---|---|---|---|
 | `UserInterface` (`NewHUDHitDisplay_*`, `UBHUD_*`) | 12 | HUD | Nihilum (FastGamerr, Creative Commons, разрешение в комментариях ModDB 2017) |
-| `Skins` декораций (`Button1BTex1–24`, `ChemicalCannisterTex1–21`, `Magazine`, `TowelRack`, `HandDry`, `Sink`, `CoffeeMachine`, `Pipe*`, `ObserX`, `wallfuse8`, `bassein` …) | ~70 | «Custom Decorations» (шапка классов), 2017 | **не известно**, чей это набор — уточнить |
+| `Skins` декораций (`Button1BTex1–24`, `ChemicalCannisterTex1–21`, `Magazine`, `TowelRack`, `HandDry`, `Sink`, `CoffeeMachine`, `Pipe*`, `ObserX`, `wallfuse8`, `bassein` …) | ~70 | «Custom Decorations» (шапка классов), 2017 | Endemia (2002), часть через TNM/Nihilum; `Pipe*`/`ObserX`/`wallfuse8`/`bassein` — Nihilum; `Button1B` — перерисовка стока. В титрах |
 | `Skins` персонажей (`Tantalus*`, `Magdalene*`, `NSFJacket`, `paulsshirt`, `UberAllesHelmet`) | 12 | одежда и лица | свои; `TantalusBlack` — перекраска стоковой `JCDentonTex4` |
 | `UI` (`TantalusMenu1–5`), `chester_credits`, `codenamenebula_credits` | 7 | меню и титры | свои; фото Честера — фотограф не указан |
 | прочее (`Gen_Green`, `S_CNNTrig`, иконки кофе, `skilliconFrench`, `DecoTex.mea1–3`) | 7 | эффекты, иконки | свои / Apocalypse Inside |
@@ -127,10 +127,11 @@
 ## Открытые вопросы (к автору / Tantalus)
 
 1. ~~Ophelia.utx~~ — заменён (см. выше).
-2. **LosAngelesTex** — источники фото (`lasky`, `hollywood`, `CityOnTheHill`, `LastSupperSalon`).
-3. **Custom Decorations** — большая часть найдена (TNM, Nihilum SDK, сток), см. «Поиск источников»; открыты
-   `Barrel3`, `BarrelGas`, `BarrelToxic`, `Cannister`, `ChemicalCannister`, `GasCan`, `KarkianEgg`. Исходный список: (~~`Button1B`~~ — перерисовка стоковой Deus Ex, см. ниже; `ChemicalCannister`, `Magazine`, `TowelRack`, `HandDry`, `Sink`, `Pipe*`,
-   `ObserX`, `wallfuse8`, `bassein`) — чей набор.
+2. ~~**LosAngelesTex**~~ — `lasky`, `hollywood` заменены (28.10.2026); доски `CityOnTheHill`, `LastSupperSalon` —
+   типовые фото дерева, источник не найден, риск низкий.
+3. ~~**Custom Decorations**~~ — решено 28.10.2026: весь набор — Endemia (2002), см. «Поиск источников»; `Barrel3`
+   (из UT) и `GasCan` (из Vampire) переведены на стоковую бочку. `Pipe*`, `ObserX`, `wallfuse8`, `bassein` — не этот
+   набор, а классы `AIDeco`: байт в байт из Nihilum SDK (`fgrhk`, 21 файл), Nihilum в титрах.
 4. `xmas_banner`, глобусы Земли и Марса, снимки картин — источник.
 5. ~~`rammstein3`~~ — заменён портретом экипажа Apollo 11 (28.10.2026).
 7. ~~`CNNTextures.OpheliaIW`~~ — заменён своей схемой станции (см. выше).
@@ -154,7 +155,7 @@
 | `ArtPieces.WashDelaware`, `kossaks`, `monalisa`, `AdaLovelace`, `last-supper` | Лойце, Репин, Леонардо, портрет Ады Лавлейс (Шалон) | картины — общественное достояние |
 | `CNN.earthMapWest/East` | развёртка Земли день/ночь с облаками | по виду Blue Marble + City Lights (NASA, общественное достояние); готовая склейка не найдена |
 | `CNN.MarsWest/East` | цветная карта Марса | по виду мозаика Viking (NASA/USGS, общественное достояние) |
-| «Custom Decorations» | ≈23 класса (`Barrel2`, `ChemicalCannister`, `HandDry`, `TowelRack`, `KarkianEgg`…), добавлены Tantalus 05.07.2017 (`0e72341`) | автор в интернете не находится; вопрос остаётся к Tantalus |
+| «Custom Decorations» | ≈23 класса (`Barrel2`, `ChemicalCannister`, `HandDry`, `TowelRack`, `KarkianEgg`…), добавлены Tantalus 05.07.2017 (`0e72341`) | **найден**: Endemia (planetdeusex.com/endemia, 2002), см. ниже |
 | `SciFiFighter` | «free sci-fi fighter» (`070773a`, 15.04.2017, CorpArmstrong) | **найден**: «Free Sci Fi Fighter», GrafxBOX / CGPitbull, Sketchfab `dca1c832ee574e2fa2cdaa06515f66a9`, CC Attribution. 2570 треугольников — ровно как в `SciFiFighter_d.3d`; в исходной `Free_S.jpg` слой Photoshop `SciFi_Fighter_AK5-diffuse` (2013). Наша текстура — перекраска. В титрах и README с 28.10 |
 
 ### Кандидаты на замену (Wikimedia Commons, 28.10.2026)
@@ -293,8 +294,9 @@
 | `PFAD.u` + `PFADTex.utx` — 81 текстура и меши батончиков и напитков | 5,7 МБ | Prototype | в титрах; настоящие бренды на обёртках |
 | `DXOgg.dll/.u`, `D3D9Drv.dll` | 0,5 МБ | Jim (TNM); Chris Dohnal | в титрах |
 | В `CNN.u`: HUD (12 текстур) и модели Nihilum | — | FastGamerr, CC; разрешение 2017 | в титрах |
-| В `CNN.u`: «Custom Decorations» — ≈80 скинов и их меши (кнопки, канистры, журналы, раковины, трубы…) | — | не известно | открытый вопрос |
-| В `CNN.u`: модели `SciFiFighter`, `Ship1` | — | «free sci-fi fighter», не известно | открытый вопрос |
+| В `CNN.u`: «Custom Decorations» — ≈80 скинов и их меши (кнопки, канистры, журналы, раковины…) | — | Endemia (2002), часть через TNM/Nihilum | в титрах; `Barrel3`/`GasCan` → сток |
+| В `CNN.u`: трубы `Pipe*`, `ObserX`, `wallfuse8`, `bassein` | — | Nihilum SDK (`fgrhk`) | в титрах (Nihilum) |
+| В `CNN.u`: модели `SciFiFighter`, `Ship1` | — | GrafxBOX / CGPitbull (CC BY); `Ship1` — JJoe (команда) | в титрах |
 | В `CNN.u`: `rammstein3`, `xmas_banner`, фото Честера в титрах | — | чужие изображения | `rammstein3` — заменить; остальное уточнить |
 | В `CNN.u`: Олдрин, Земля, Марс | — | NASA, общественное достояние | в порядке |
 | В `CNN.u`: 9 текстур станции из Zortch; снимок «тарелки» | — | CC0; общественное достояние (ВВС США) | в титрах |

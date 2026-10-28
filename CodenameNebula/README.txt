@@ -124,6 +124,8 @@
   - Station textures partly from Zortch World Textures by mutantleg (CC0).
   - Flying saucer photo: U.S. Air Force Office of Special Investigations
     (public domain).
+  - Apollo 11 crew portrait: NASA (public domain).
+  - Los Angeles skyline photo by Serouj (public domain).
   - DXOgg Ogg Extension by Jim (The Nameless Mod).
   - Direct3D 9 renderer by Chris Dohnal (ships with the game).
   - Small Crowd Applause sound, recorded by Yannick Lemieux, used under the

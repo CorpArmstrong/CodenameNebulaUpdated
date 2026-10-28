@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * photo_textures.js - public-domain photos in place of two images we could
+ * photo_textures.js - freely licensed photos in place of images we could
  * not clear for distribution (CNNDocs/Third_Party_Textures.md, 2026-10-28):
  *   - Apollo11Crew 512x512 for CNN.rammstein3 (a frame of Rammstein's
  *     "Amerika" video), Moon: "Apollo XI - Prime Crew Portrait (S69-31740)",
@@ -10,13 +10,23 @@
  *     Mutiny: "Downtown Los Angeles skyline.jpg" by Serouj, Wikimedia Commons,
  *     released into the public domain; turned to night like the old one --
  *     darkened, the sky above the skyline replaced with stars, a few lit
- *     windows.
+ *     windows;
+ *   - Hollywood 512x512 for LosAngelesTex.hollywood (a snapshot of unknown
+ *     source), Mutiny: "Hollywood Sign at Night (8965649621).jpg" by Atomic
+ *     Taco, CC BY-SA 2.0, Wikimedia Commons, 3840px preview; a square around
+ *     the sign and the mast, darkened. The texture is CC BY-SA 2.0 as well;
+ *   - ChesterBennington 256x256 for CNN.chester_credits (the "In memory of"
+ *     photo in the credits, photographer unknown): "Chester Bennington 2011
+ *     (suran2007) 3 - Flickr.jpg" by suran2007, CC BY 2.0, Wikimedia Commons,
+ *     1920px preview; a square around the face and the microphone, in black
+ *     and white like the old one, the watermark left outside.
  * Each keeps the size of the texture it replaces, so the surfaces keep their
  * mapping. Output: 24-bit BMPs in CNN/Textures/Photos, imported into CNN.u
  * by CNN/Classes/CNNTextures.uc as CNN.Photos.<name>.
  *
  * The photos are JPEGs; convert them to 24-bit PNG first (any editor, or
- * System.Drawing) and name them apollo11_crew.png and la_skyline.png.
+ * System.Drawing) and name them apollo11_crew.png, la_skyline.png,
+ * hollywood.png and chester.png.
  *
  * Usage: node tools/photo_textures.js <folder with the PNGs>
  */
@@ -146,6 +156,23 @@ function main() {
   if (!la) throw new Error('la_skyline.png: unreadable');
   fs.writeFileSync(path.join(OUT, 'LASkyline.bmp'), bmp(4096, 2048, nightSkyline(la, 4096, 2048)));
   console.log('LASkyline 4096x2048');
+
+  const sign = readPng(path.join(dir, 'hollywood.png'));
+  if (!sign) throw new Error('hollywood.png: unreadable');
+  const cut = squareCut(sign, Math.round(sign.w * 0.21), Math.round(sign.h * 0.35), Math.round(sign.h * 0.65), 512);
+  fs.writeFileSync(path.join(OUT, 'Hollywood.bmp'), bmp(512, 512, cut.map((v) => Math.round(v * 0.55))));
+  console.log('Hollywood 512x512');
+
+  const chester = readPng(path.join(dir, 'chester.png'));
+  if (!chester) throw new Error('chester.png: unreadable');
+  const face = squareCut(chester, Math.round(chester.w * 0.16), Math.round(chester.h * 0.08), Math.round(chester.w * 0.78), 256);
+  for (let i = 0; i < face.length; i += 3) {
+    // grey, the midtones darker, as a black-and-white print on a dark stage
+    const g = (face[i] * 0.3 + face[i + 1] * 0.59 + face[i + 2] * 0.11) / 255;
+    face[i] = face[i + 1] = face[i + 2] = Math.round(255 * Math.pow(g, 1.7));
+  }
+  fs.writeFileSync(path.join(OUT, 'ChesterBennington.bmp'), bmp(256, 256, face));
+  console.log('ChesterBennington 256x256');
 }
 
 if (require.main === module) main();

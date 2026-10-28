@@ -120,12 +120,15 @@
   - New Vehicles by Deadalus08.
   - Free Sci Fi Fighter by GrafxBOX / CGPitbull, Creative Commons
     Attribution license (sketchfab.com/GrafxBOX).
-  - Sci-fi textures by Milosh-Andrich.
+  - Sci-fi textures by Milosh--Andrich (DeviantArt, "Texture Free for all").
   - Station textures partly from Zortch World Textures by mutantleg (CC0).
   - Flying saucer photo: U.S. Air Force Office of Special Investigations
     (public domain).
   - Apollo 11 crew portrait: NASA (public domain).
   - Los Angeles skyline photo by Serouj (public domain).
+  - "Hollywood Sign at Night" photo by Atomic Taco, Creative Commons
+    Attribution-ShareAlike 2.0 (the texture made from it is CC BY-SA 2.0 too).
+  - Photo of Chester Bennington by suran2007, Creative Commons Attribution 2.0.
   - DXOgg Ogg Extension by Jim (The Nameless Mod).
   - Direct3D 9 renderer by Chris Dohnal (ships with the game).
   - Small Crowd Applause sound, recorded by Yannick Lemieux, used under the

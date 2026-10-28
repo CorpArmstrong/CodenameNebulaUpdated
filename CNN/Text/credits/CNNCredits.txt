@@ -67,8 +67,9 @@
 <P>
 <P>Textures used:
 <P>
-<P>12/2015 Sci-fi textures by Milosh-Andrich milosh-andrich.deviantart.com/art/Sci-fi-pack-01-335182027
-<P>milosh-andrich.deviantart.com/art/Sci-fi-pack-03-335294667
+<P>12/2015 Sci-fi textures by Milosh--Andrich ("Texture Free for all")
+<P>deviantart.com/milosh--andrich/art/Sci-fi-Texure-pack-01-335182027
+<P>deviantart.com/milosh--andrich/art/Sci-fi-Texure-pack-03-335294667
 <P>
 <P>
 <P>
@@ -95,6 +96,10 @@
 <P>Apollo 11 crew portrait: NASA (public domain)
 <P>
 <P>Los Angeles skyline photo by Serouj (public domain)
+<P>
+<P>Hollywood Sign at Night photo by Atomic Taco (CC BY-SA 2.0)
+<P>
+<P>Photo of Chester Bennington by suran2007 (CC BY 2.0)
 <P>
 <P>DXOgg Ogg Extension by Jim (The Nameless Mod)
 <P>

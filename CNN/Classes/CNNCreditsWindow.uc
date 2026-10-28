@@ -108,7 +108,7 @@ event DestroyWindow()
 defaultproperties
 {
     CreditsBannerTextures(0)=Texture'CNN.codenamenebula_credits'
-    TeamPhotoTextures(0)=Texture'CNN.chester_credits'
+    TeamPhotoTextures(0)=Texture'CNN.Photos.ChesterBennington'
     creditsEndSoundLength=4.000000
     ScrollMusicString="" // Don't use vanilla music in credits
     textName=CNNCredits

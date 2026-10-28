@@ -30,8 +30,6 @@ class CNNTextures extends Object abstract;
 #exec TEXTURE IMPORT FILE=Textures\apocalypseinside.pcx NAME=apocalypseinside
 #exec TEXTURE IMPORT FILE=Textures\codenamenebula.pcx NAME=codenamenebula
 #exec TEXTURE IMPORT FILE=Textures\codenamenebula_credits.pcx NAME=codenamenebula_credits
-#exec TEXTURE IMPORT FILE=Textures\chester.bmp NAME=chester
-#exec TEXTURE IMPORT FILE=Textures\chester_credits.bmp NAME=chester_credits
 #exec TEXTURE IMPORT FILE=Textures\Aldrin_Apollo_1.pcx NAME=Aldrin_Apollo_1
 #exec TEXTURE IMPORT FILE=Textures\meacomputer2.pcx NAME=meacomputer2
 #exec TEXTURE IMPORT FILE=Textures\xmas_banner.pcx NAME=xmas_banner
@@ -43,9 +41,11 @@ class CNNTextures extends Object abstract;
 #exec TEXTURE IMPORT FILE=Textures\earthMapEast.bmp NAME=earthMapEast
 #exec TEXTURE IMPORT FILE=Textures\earthMapWest.bmp NAME=earthMapWest
 
-// Public-domain photos in place of rammstein3 and LosAngelesTex.lasky (tools/photo_textures.js)
+// Free photos in place of rammstein3, LosAngelesTex.lasky/hollywood and chester_credits (tools/photo_textures.js)
 #exec TEXTURE IMPORT FILE=Textures\Photos\Apollo11Crew.bmp NAME=Apollo11Crew GROUP=Photos
 #exec TEXTURE IMPORT FILE=Textures\Photos\LASkyline.bmp NAME=LASkyline GROUP=Photos
+#exec TEXTURE IMPORT FILE=Textures\Photos\Hollywood.bmp NAME=Hollywood GROUP=Photos
+#exec TEXTURE IMPORT FILE=Textures\Photos\ChesterBennington.bmp NAME=ChesterBennington GROUP=Photos
 
 // Station textures in place of Ophelia.utx (tools/station_textures.js)
 #exec TEXTURE IMPORT FILE=Textures\Station\FloorTech01b.bmp NAME=FloorTech01b GROUP=Station

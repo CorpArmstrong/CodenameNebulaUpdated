@@ -457,7 +457,7 @@ if errorlevel 1 (
     for %%f in ("%DIST_DIR%\Maps\*.dx") do node "%REPO_ROOT%\tools\pkg_deadbytes.js" "%%f" --gaps --out "%%f" | findstr /c:"not covered"
     node "%REPO_ROOT%\tools\pkg_deadbytes.js" "%DIST_DIR%\System\DXRVNewVehicles.u" --keep Texture:Skins.JBigTank1 --gaps --out "%DIST_DIR%\System\DXRVNewVehicles.u" | findstr /c:"dropped"
     node "%REPO_ROOT%\tools\pkg_deadbytes.js" "%DIST_DIR%\Textures\ArtPieces.utx" --keep Texture:AdaLovelace,monalisa,last-supper --gaps --out "%DIST_DIR%\Textures\ArtPieces.utx" | findstr /c:"dropped"
-    node "%REPO_ROOT%\tools\pkg_deadbytes.js" "%DIST_DIR%\Textures\LosAngelesTex.utx" --keep Texture:satelliteflip,CityOnTheHill,hollywood,LastSupperSalon,avatar-screen --gaps --out "%DIST_DIR%\Textures\LosAngelesTex.utx" | findstr /c:"dropped"
+    node "%REPO_ROOT%\tools\pkg_deadbytes.js" "%DIST_DIR%\Textures\LosAngelesTex.utx" --keep Texture:satelliteflip,CityOnTheHill,LastSupperSalon,avatar-screen --gaps --out "%DIST_DIR%\Textures\LosAngelesTex.utx" | findstr /c:"dropped"
 )
 
 :: The launcher: one window to play, configure and repair the mod; the

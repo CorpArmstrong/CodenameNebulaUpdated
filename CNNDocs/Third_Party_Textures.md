@@ -166,6 +166,21 @@
 | `CNN.rammstein3` | `Apollo XI - Prime Crew Portrait (S69-31740).jpg` — экипаж в скафандрах без шлемов на фоне Луны | NASA, общественное достояние |
 | — вариант с намёком на клип | `Two crew men of the Apollo 13 lunar landing mission simulate lunar surface Extravehicular Activity.jpg` — тренировка в павильоне с макетом модуля и флагом | NASA, общественное достояние |
 
+### Итог 28.10.2026 (вечер)
+
+- `LosAngelesTex.hollywood` → `CNN.Photos.Hollywood`: «Hollywood Sign at Night (8965649621).jpg», Atomic Taco,
+  CC BY-SA 2.0 (текстура тоже CC BY-SA 2.0), в титрах и README; `hollywood` обнуляется в `LosAngelesTex.utx`.
+- `CNN.chester_credits` → `CNN.Photos.ChesterBennington`: «Chester Bennington 2011 (suran2007) 3 - Flickr.jpg»,
+  suran2007, CC BY 2.0, в титрах и README; `chester.bmp` (не использовался) и `chester_credits.bmp` удалены.
+- `Ship1` — модель JJoe (Evgeniy Bortnik, команда, в титрах).
+- Milosh--Andrich: паки 01 и 03 лежат в его папке DeviantArt «TEXTURE Free for all» («Textures packs free for
+  all»); в титрах исправлены ссылки (старые вели на 404).
+- «Custom Decorations» (23 класса `Deco*`, добавлены Tantalus 05.07.2017, `0e72341`): в интернете не найдены —
+  проверены ModDB, DXEditingTools (Blade_Sword), S.T.A.L.K.E.R. PROJECT (Lurker), упоминания Nihilum. Вопрос к
+  Tantalus.
+- Доски на вывесках `CityOnTheHill` и `LastSupperSalon`: текстовым поиском источник не определить (типовые фото
+  старого дерева); обратный поиск по картинке не делался. Риск низкий.
+
 ## Что стороннего осталось (25.10.2026, после пересборки)
 
 Установщик `Build/CodenameNebula_v1.5.0.exe` — 95,3 МБ (было 98,9 МБ 22.10), папка поставки — 250 МБ.

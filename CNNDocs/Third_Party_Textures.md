@@ -131,7 +131,7 @@
 3. **Custom Decorations** (`Button1B`, `ChemicalCannister`, `Magazine`, `TowelRack`, `HandDry`, `Sink`, `Pipe*`,
    `ObserX`, `wallfuse8`, `bassein`) — чей набор.
 4. `xmas_banner`, глобусы Земли и Марса, снимки картин — источник.
-5. `rammstein3` — заменить (предложение).
+5. ~~`rammstein3`~~ — заменён портретом экипажа Apollo 11 (28.10.2026).
 7. ~~`CNNTextures.OpheliaIW`~~ — заменён своей схемой станции (см. выше).
 6. Бренды в наборе PFAD (Bounty, Bueno, Snickers, Pepsi, Red Bull, Monster) — оставить как есть
    (так их выпустил автор PFAD) или убрать эти предметы с карт.
@@ -144,8 +144,8 @@
 | Текстура | Что на ней на самом деле | Вывод |
 |---|---|---|
 | `CNN.xmas_banner` | рекламный баннер «Mise en Abyme — Coming to Kickstarter Q1 2015 — ApostleMod» поверх снимка Apollo 11 | **свой**: ApostleMod — студия самой команды (Apocalypse Inside), Mise en Abyme — её «облачные компьютеры» из сюжета AI; фото Apollo 11 — NASA, общественное достояние |
-| `CNN.rammstein3` | кадр из клипа Rammstein «Amerika» (2004, реж. Jörn Heitmann): группа в скафандрах на «Луне» | **заменить**: кадр клипа — чужое произведение, не только товарный знак |
-| `LosAngelesTex.lasky` | фото панорамы даунтауна Лос-Анджелеса, затемнено, звёздное небо поверх | источник не найден; фото чужое — заменить своим/свободным (на Commons много панорам ЛА под CC BY-SA) |
+| `CNN.rammstein3` | кадр из клипа Rammstein «Amerika» (2004, реж. Jörn Heitmann): группа в скафандрах на «Луне» | **заменён** 28.10.2026: `CNN.Photos.Apollo11Crew` (портрет экипажа Apollo 11, NASA, общественное достояние) |
+| `LosAngelesTex.lasky` | фото панорамы даунтауна Лос-Анджелеса, затемнено, звёздное небо поверх | **заменён** 28.10.2026: `CNN.Photos.LASkyline` (`Downtown Los Angeles skyline.jpg`, Serouj, общественное достояние), ночь — `tools/photo_textures.js`; `lasky` обнуляется в `LosAngelesTex.utx` при упаковке |
 | `LosAngelesTex.hollywood` | ночной любительский снимок надписи Hollywood, 512² с артефактами сжатия | источник не найден; заменить свободным снимком или нарисовать |
 | `LosAngelesTex.CityOnTheHill`, `LastSupperSalon` | вывески, сделанные командой (свой текст) на фото досок | текст свой; доски — типовые фото дерева, источник не найден, риск низкий |
 | `LosAngelesTex.satelliteflip`, `avatar-screen` | тонированные снимки сцен самой Deus Ex | производные стоковой Deus Ex — в рамках SDK |
@@ -160,7 +160,7 @@
 
 | Заменяет | Снимок | Лицензия |
 |---|---|---|
-| `LosAngelesTex.lasky` | `Downtown Los Angeles skyline from Toy District.jpg` (Eric Polk, 3775×1438, с земли, как исходная) | CC BY-SA 4.0 — указать автора, текстура тоже CC BY-SA |
+| `LosAngelesTex.lasky` (выбран другой, см. выше) | `Downtown Los Angeles skyline from Toy District.jpg` (Eric Polk, 3775×1438, с земли, как исходная) | CC BY-SA 4.0 — указать автора, текстура тоже CC BY-SA |
 | — запасной | `Downtown Los Angeles skyline.jpg` (Serouj, 1274×752, с Гриффита, дымка) | общественное достояние |
 | `LosAngelesTex.hollywood` | `Hollywood Sign at Night (8965649621).jpg` (Atomic Taco, 5184×2916, почти тот же ракурс) | CC BY-SA 2.0; надпись Hollywood — товарный знак Hollywood Chamber of Commerce (была и в исходной) |
 | `CNN.rammstein3` | `Apollo XI - Prime Crew Portrait (S69-31740).jpg` — экипаж в скафандрах без шлемов на фоне Луны | NASA, общественное достояние |

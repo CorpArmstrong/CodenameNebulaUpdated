@@ -167,11 +167,10 @@ echo.
 :: Create junctions
 echo [1/4] Creating directory junctions...
 set "JUNCTIONS_OK=1"
-for %%j in (CodenameNebulaUpdated CNN CNNMaps ApocalypseInside) do (
+for %%j in (CodenameNebulaUpdated CNN CNNMaps) do (
     if "%%j"=="CodenameNebulaUpdated" set "JUNCTION_SRC=%REPO_ROOT%"
     if "%%j"=="CNN" set "JUNCTION_SRC=%REPO_ROOT%\CNN"
     if "%%j"=="CNNMaps" set "JUNCTION_SRC=%REPO_ROOT%\Maps"
-    if "%%j"=="ApocalypseInside" set "JUNCTION_SRC=%REPO_ROOT%\ApocalypseInside"
     if exist "%DEUSEX_ROOT%\%%j" (
         echo   %%j already exists, skipping.
     ) else (
@@ -211,7 +210,7 @@ if not errorlevel 1 (
     powershell -Command ^
         "$ini = Get-Content '%INI_FILE%' -Raw;" ^
         "$ini = $ini -replace '(Paths=\.\.\\Music\\\*\.umx)', \"`$1`r`nPaths=..\CodenameNebulaUpdated\System\*.u`r`nPaths=..\CodenameNebulaUpdated\Maps\*.dx`r`nPaths=..\CodenameNebulaUpdated\Textures\*.utx`r`nPaths=..\CodenameNebulaUpdated\CNN\Sounds\*.uax`r`nPaths=..\CodenameNebulaUpdated\Music\*.umx\";" ^
-        "$ini = $ini -replace '(EditPackages=DeusEx)\r?\n', \"`$1`r`nEditPackages=GaussGun`r`nEditPackages=CNN`r`nEditPackages=CNNText`r`nEditPackages=ApocalypseInside`r`n\";" ^
+        "$ini = $ini -replace '(EditPackages=DeusEx)\r?\n', \"`$1`r`nEditPackages=GaussGun`r`nEditPackages=CNN`r`nEditPackages=CNNText`r`n\";" ^
         "$ini = $ini -replace 'CacheSizeMegs=\d+', 'CacheSizeMegs=256';" ^
         "Set-Content '%INI_FILE%' $ini -NoNewline" 2>nul
     if errorlevel 1 (
@@ -232,7 +231,7 @@ if not exist "%CU_SYSTEM%\UnrealEd.exe" (
 )
 
 :: Copy packages to CU
-for %%f in (CNN.u CNNText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u ApocalypseInside.u ApocalypseInsideText.u GaussGun.u DXOgg.u DXOgg.dll) do (
+for %%f in (CNN.u CNNText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u GaussGun.u DXOgg.u DXOgg.dll) do (
     if exist "%REPO_ROOT%\System\%%f" copy /y "%REPO_ROOT%\System\%%f" "%CU_SYSTEM%\" >nul
     if exist "%SYSTEM_DIR%\%%f" copy /y "%SYSTEM_DIR%\%%f" "%CU_SYSTEM%\" >nul
 )
@@ -256,7 +255,7 @@ if not errorlevel 1 (
     powershell -Command ^
         "$ini = Get-Content '%CU_INI%' -Raw;" ^
         "$ini = $ini -replace '(Paths=\.\.\\\.\.\\\.\.\\Music\\\*\.umx)', \"`$1`r`nPaths=..\..\..\CodenameNebulaUpdated\System\*.u`r`nPaths=..\..\..\CodenameNebulaUpdated\Maps\*.dx`r`nPaths=..\..\..\CodenameNebulaUpdated\Textures\*.utx`r`nPaths=..\..\..\CodenameNebulaUpdated\CNN\Sounds\*.uax`r`nPaths=..\..\..\CodenameNebulaUpdated\Music\*.umx`r`nPaths=..\..\..\CNNMaps\*.dx\";" ^
-        "$ini = $ini -replace '(EditPackages=MoreTriggers)', \"`$1`r`nEditPackages=GaussGun`r`nEditPackages=CNN`r`nEditPackages=CNNText`r`nEditPackages=ApocalypseInside\";" ^
+        "$ini = $ini -replace '(EditPackages=MoreTriggers)', \"`$1`r`nEditPackages=GaussGun`r`nEditPackages=CNN`r`nEditPackages=CNNText\";" ^
         "Set-Content '%CU_INI%' $ini -NoNewline" 2>nul
     if errorlevel 1 (
         echo   WARNING: Auto-config failed. Please edit CU DeusEx.ini manually per SetupCNN.md.
@@ -295,11 +294,16 @@ echo.
 
 :: Verify junctions exist
 if not exist "%DEUSEX_ROOT%\CNN\Classes" echo ERROR: Junction CNN not found. Run: mklink /J "%DEUSEX_ROOT%\CNN" "%REPO_ROOT%\CNN" && goto :eof
-if not exist "%DEUSEX_ROOT%\ApocalypseInside\Classes" echo ERROR: Junction ApocalypseInside not found. Run: mklink /J "%DEUSEX_ROOT%\ApocalypseInside" "%REPO_ROOT%\ApocalypseInside" && goto :eof
+:: The ApocalypseInside stub package is retired (its ConList_Mission04 is in CNNText now);
+:: an older setup still lists it in EditPackages, where ucc make would stop on it
+for %%i in ("%SYSTEM_DIR%\DeusEx.ini" "%CU_SYSTEM%\DeusEx.ini") do if exist %%i (
+    findstr /x /c:"EditPackages=ApocalypseInside" %%i >nul && powershell -NoProfile -Command "$p = '%%~i'; (Get-Content $p) | Where-Object { $_ -ne 'EditPackages=ApocalypseInside' } | Set-Content $p" && echo Removed EditPackages=ApocalypseInside from %%~i
+)
+for %%d in ("%SYSTEM_DIR%" "%REPO_ROOT%\System" "%CU_SYSTEM%") do del /q "%%~d\ApocalypseInside*.u" 2>nul
 
 :: Remove old compiled packages so ucc recompiles from source
 echo Cleaning old packages...
-set "CNN_PACKAGES=CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u ApocalypseInside.u ApocalypseInsideText.u"
+set "CNN_PACKAGES=CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u"
 for %%f in (%CNN_PACKAGES%) do (
     if exist "%SYSTEM_DIR%\%%f" del "%SYSTEM_DIR%\%%f"
     if exist "%REPO_ROOT%\System\%%f" del "%REPO_ROOT%\System\%%f"
@@ -432,7 +436,7 @@ for /f "usebackq eol=; delims=" %%f in ("%REPO_ROOT%\CNNInstaller\NotShipped.txt
 
 :: Package System files
 echo Packaging System...
-for %%f in (CNN.u CNNText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u ApocalypseInside.u ApocalypseInsideText.u PFAD.u GaussGun.u DXRVNewVehicles.u DXOgg.u DXOgg.dll D3D9Drv.dll CNN.ini CNNUser.ini) do (
+for %%f in (CNN.u CNNText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u PFAD.u GaussGun.u DXRVNewVehicles.u DXOgg.u DXOgg.dll D3D9Drv.dll CNN.ini CNNUser.ini) do (
     if exist "%REPO_ROOT%\System\%%f" (
         copy /y "%REPO_ROOT%\System\%%f" "%DIST_DIR%\System\" >nul
         echo   %%f
@@ -600,7 +604,7 @@ if not exist "%DEUSEX_ROOT%\CodenameNebula\Save" mkdir "%DEUSEX_ROOT%\CodenameNe
 
 :: Copy compiled packages to Deus Ex System
 echo Deploying packages to %SYSTEM_DIR%...
-for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u ApocalypseInside.u ApocalypseInsideText.u GaussGun.u DXOgg.u DXOgg.dll PFAD.u DXRVNewVehicles.u D3D9Drv.dll) do (
+for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u GaussGun.u DXOgg.u DXOgg.dll PFAD.u DXRVNewVehicles.u D3D9Drv.dll) do (
     if exist "%REPO_ROOT%\System\%%f" (
         copy /y "%REPO_ROOT%\System\%%f" "%SYSTEM_DIR%\" >nul
         echo   %%f
@@ -609,7 +613,7 @@ for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNA
 
 :: Copy packages to mod System folder too
 echo Deploying packages to CodenameNebula\System...
-for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u ApocalypseInside.u ApocalypseInsideText.u GaussGun.u DXOgg.u DXOgg.dll PFAD.u DXRVNewVehicles.u) do (
+for %%f in (CNN.u CNNText.u CNNTextText.u CNNAudioCNN.u CNNAudioChapter05.u CNNAudioChapter06.u GaussGun.u DXOgg.u DXOgg.dll PFAD.u DXRVNewVehicles.u) do (
     if exist "%REPO_ROOT%\System\%%f" (
         copy /y "%REPO_ROOT%\System\%%f" "%DEUSEX_ROOT%\CodenameNebula\System\" >nul
     )

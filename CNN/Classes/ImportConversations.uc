@@ -12,6 +12,8 @@ class ImportConversations extends Object abstract;
 #exec CONVERSATION IMPORT FILE="Conversations\OpheliaL2.Con"
 #exec CONVERSATION IMPORT FILE="Conversations\DL_Moon.Con"
 #exec CONVERSATION IMPORT FILE="Conversations\OpheliaL2ArmMagdalene.Con"
+// ConList_Mission04 for the ending maps (mission 4); nothing on them uses it
+#exec CONVERSATION IMPORT FILE="Conversations\Mission04.Con"
 
 // shared conversations
 

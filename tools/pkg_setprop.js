@@ -13,7 +13,8 @@
  * Usage:
  *   node tools/pkg_setprop.js <pkg> <Object> <Prop>=<value> ... [--write]
  * A value of true/false is a bool, a number a byte (Physics=0 is PHYS_None),
- * unless the object already has the property, whose type is then kept.
+ * unless the object already has the property, whose type is then kept
+ * (a string property takes the value as text).
  * An empty value (Mesh=) removes the property: the object takes the class
  * default again.
  * A name the package does not have yet is added: the name table is written
@@ -53,6 +54,12 @@ function tagBytes(nameIndex, type, value) {
   if (type === 3) return Buffer.from([...ciBytes(nameIndex), 0x03 | (value ? 0x80 : 0)]);
   if (type === 1) return Buffer.from([...ciBytes(nameIndex), 0x01, value & 0xff]);
   if (type === 2) { const b = Buffer.alloc(4); b.writeInt32LE(value); return Buffer.from([...ciBytes(nameIndex), 0x22, ...b]); }
+  if (type === 13) {
+    // length with the terminating zero, the characters, the zero; size in one byte
+    const s = Buffer.from([...ciBytes(value.length + 1), ...Buffer.from(value, 'latin1'), 0]);
+    if (s.length > 255) throw new Error('string too long');
+    return Buffer.from([...ciBytes(nameIndex), 0x5d, s.length, ...s]);
+  }
   throw new Error(`property type ${type} not supported`);
 }
 
@@ -86,7 +93,7 @@ function main() {
     let ni = names.findIndex((n) => n.toLowerCase() === name.toLowerCase());
     if (ni < 0) { ni = names.length; names.push(name); newNames.push(name); }
     const type = old ? old.type : /^(true|false)$/i.test(v) ? 3 : 1;
-    const value = type === 3 ? /^true$/i.test(v) : parseInt(v, 10);
+    const value = type === 3 ? /^true$/i.test(v) : type === 13 ? (v === '""' ? '' : v) : parseInt(v, 10);
     console.log(`${P.className(e)} ${e.name}: ${names[ni]} ${old ? JSON.stringify(old.value) : '(default)'} -> ${JSON.stringify(value)}`);
     return { name: names[ni], bytes: tagBytes(ni, type, value) };
   });

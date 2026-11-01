@@ -7,7 +7,7 @@
 // shot. The player becomes the owner of every placed grenade (no owner, no
 // instigator). An owned trap no longer goes off for its owner, so the
 // player's approach is checked here, as ThrownProjectile.Tick does for a
-// trap without one.
+// trap without one. In a cutscene the flash is dropped: TantalusDenton.ClientFlash.
 //
 // TantalusDenton.PostPostBeginPlay spawns it on every map.
 //=============================================================================

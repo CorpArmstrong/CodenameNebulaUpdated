@@ -12,7 +12,10 @@
  *   "Deus Ex Conversation File" 0x1A
  *   int32  version
  *   ...    author / summary / package strings, each [int32 len][bytes]
- *   int32  x5   header fields (last two look like record + name counts)
+ *   int32  x5   header fields: 0, 1, mission number (the list is ConList_Mission<n>),
+ *                size in bytes of the tables that follow, speaker count. Change a
+ *                table string and the size must change too: ucc reads by it, ConEdit
+ *                does not, so a file that opens in ConEdit can still crash the import.
  *   name table: repeating [int32 index][int32 len][bytes]
  *
  * Usage:

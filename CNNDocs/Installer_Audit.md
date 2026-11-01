@@ -59,11 +59,15 @@
 
 ## Зависимости от Apocalypse Inside
 
-1. **Пакет-заглушка `ApocalypseInside.u` (+ `ApocalypseInsideText.u`)** собирается из папки
-   `ApocalypseInside/` в репозитории. Карты концовок (`06_Conspiracy`, `06_Hijacking`,
-   `06_Transcend`) ссылаются на его список разговоров `ConList_Mission04`; заглушка его
-   содержит (разговоры Chapter04, на картах концовок они молчат). Сам родительский мод игроку не
-   нужен — заглушка поставляется с CNN.
+1. **Пакет-заглушка `ApocalypseInside.u` (+ `ApocalypseInsideText.u`)** — убран 31.10.2026.
+   Карты концовок (`06_Conspiracy`, `06_Hijacking`, `06_Transcend`) брали из него только список
+   разговоров `ConList_Mission04` (свойство `DeusExLevelInfo.ConversationPackage="ApocalypseInside"`,
+   `missionNumber=4`). Теперь `ConversationPackage="CNN"`, а `Mission04.con` импортируется в CNN
+   (`CNN/Conversations`, `ImportConversations.uc`), так что список лежит в `CNNText.u`. Привязки те
+   же: на Conspiracy к `MarketKid` привязан один молчащий разговор, на Hijacking/Transcend — ни
+   одного. Без списка движок пишет `Failed to load ... ConList_Mission04` на каждого актёра;
+   номера миссий 5/6 не подходят — к пешке Магдалины на этих картах привязались бы разговоры Луны
+   или L2 (`RememberWhoYouAre` стартует сам в радиусе 120).
 2. **Ресурсы, которых в заглушке нет.** 8 классов CNN ссылаются на модели и текстуры полного
    пакета `ApocalypseInside`. При сборке эти ссылки молча становятся пустыми (в логах ошибок нет):
 

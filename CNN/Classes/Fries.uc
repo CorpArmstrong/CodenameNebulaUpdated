@@ -37,16 +37,12 @@ defaultproperties
      ItemName="French Fries"
      ItemArticle="some"
      PlayerViewOffset=(X=30.000000,Z=-12.000000)
-     PlayerViewMesh=LodMesh'ApocalypseInside.fries01'
-     PickupViewMesh=LodMesh'ApocalypseInside.fries01'
-     ThirdPersonMesh=LodMesh'ApocalypseInside.fries01'
      Icon=Texture'CNN.Icons.BeltIconFries'
      largeIcon=Texture'CNN.Icons.LargeIconFries'
      largeIconWidth=42
      largeIconHeight=46
      Description="French fries or chips (United Kingdom) are batons of deep-fried potato. They are an integral part of fast food menus and their popularity extends all over the world."
      beltDescription="FRIES"
-     Mesh=LodMesh'ApocalypseInside.fries01'
      CollisionRadius=11.880000
      CollisionHeight=9.630000
      Mass=3.000000

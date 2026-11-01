@@ -37,16 +37,12 @@ defaultproperties
      ItemName="Hamburger"
      ItemArticle="a"
      PlayerViewOffset=(X=30.000000,Z=-12.000000)
-     PlayerViewMesh=LodMesh'ApocalypseInside.Burger01'
-     PickupViewMesh=LodMesh'ApocalypseInside.Burger01'
-     ThirdPersonMesh=LodMesh'ApocalypseInside.Burger01'
      Icon=Texture'CNN.Icons.BeltIconBurger'
      largeIcon=Texture'CNN.Icons.LargeIconBurger'
      largeIconWidth=42
      largeIconHeight=46
      Description="A hamburger (also called a burger) is a sandwich consisting of a cooked patty of ground meat usually placed inside a sliced bread roll."
      beltDescription="BURGER"
-     Mesh=LodMesh'ApocalypseInside.Burger01'
      CollisionRadius=11.880000
      CollisionHeight=9.630000
      Mass=3.000000

@@ -63,7 +63,7 @@ function string FoundName(string objName)
     key = Caps(objName);
     if (key == "WEAPONASSAULTRIFLE")
         return "WeaponAssaultGun";
-    if ((key == "WEAPONSNOWBLIND") || (key == "APOCALYPSEINSIDE.WEAPONSNOWBLIND"))
+    if ((key == "WEAPONSNOWBLIND") || (key == "CNN.WEAPONSNOWBLIND"))
         return SnowblindStandIn;
     return objName;
 }

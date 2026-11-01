@@ -142,6 +142,16 @@ function TakeDamage(int Damage, Pawn instigatedBy, Vector hitlocation, Vector mo
     Super.TakeDamage(Damage, instigatedBy, hitlocation, momentum, damageType);
 }
 
+// A placed grenade flashes the screen of its owner, the player (see
+// CNNPlacedGrenades). No flash in a cutscene: the meteor on MoonIntro goes
+// off right beside the player while the camera is flying.
+simulated function ClientFlash(float scale, vector fog)
+{
+    if (IsInState('Paralyzed') || IsInState('Interpolating'))
+        return;
+    Super.ClientFlash(scale, fog);
+}
+
 //this is to make sure convos work if actors are far away from e o
 function CheckActiveConversationRadius()
 {

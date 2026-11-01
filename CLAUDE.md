@@ -189,6 +189,8 @@ Use the **Community Update editor** for all map editing:
 
 The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it freezes on large maps with 30+ texture packages.
 
+`tools\cnn_ued.ps1 -Map <map> -Play` opens a map and plays it as the CNN player with the bridge alive; `-Close` closes without saving, puts the editor inis back and lists the problems in `Editor.log`. `tools\cnn_conedit.ps1` opens every `.con` in ConEdit and reports the ones that fail.
+
 ### Known Issues & Pitfalls
 
 - **Steam's own `DeusEx.exe` can't be started directly** — since the 2025-09-27 Steam build it is a 64 KB DRM wrapper ("Failed to find Steam" outside Steam). Launch through `steam://rungameid/6910//INI=%22…%22 USERINI=%22…%22` (`CNNLauncher/GameStarter.cs`); Steam starts it and the INI= arguments reach the engine. Dev installs with Kentie/Han or the CU backup exe don't hit this, which is why it went unnoticed until the clean-install test. A clean stock copy for testing comes from the Steam console: `download_depot 6910 6911 8456979172979270170`.
@@ -198,6 +200,8 @@ The original SDK editor (`System\UnrealEd.exe`) works for small maps only — it
 - **Black monitor but the game renders** — if a screen-share/capture shows the menu correctly while the monitor is black, the frame buffer is fine and only *fullscreen presentation* is failing (exclusive fullscreen vs. HDR, a second monitor, or a refresh-rate mismatch). Diagnose by turning Fullscreen off in the launcher's Settings (or `tools/fix_renderer.ps1 -Windowed`), which sets `StartupFullscreen=False`. This is a different fault from `Failed resetting mode`, where no mode is set at all.
 - **DXOgg reads music from `OggPath=` (`[Core.System]`), default `..\Music\Ogg\` of the game** — `CNN.ini` sets `OggPath=..\CodenameNebula\Music\Ogg\`, so nothing is copied into the game's `Music\Ogg`. A missing track logs `DXOgg: Error - Either could not find or could not open Ogg File`. Editor inis are untouched.
 - **`FirstRun=0` opens the engine's first-time wizard** — a never-launched game has it in `DeusEx.ini`; on current PCs the wizard certifies only Software Rendering and overwrites the renderer. Both INI generators write `FirstRun=1100`.
+- **Play Level by hand plays as `RF.RFJCDentonMale`** — the editor uses its own inis, so no `TantalusDenton`, no bridge and no CNN game rules; `tools\cnn_ued.ps1` passes CNN inis through `GameCommandLine` for its run. The class comes from `[DefaultPlayer]` in the user ini, not `[URL]`. Play Level works relative to the editor's current directory, which its Open dialog can change.
+- **`Failed to load ...\Save\Current\SaveInfo.dxs`** (and `DeusExSaveInfo None.MyDeusExSaveInfo`) on a save is stock: `DeusExPlayer.SaveGame` is native, and stock Deus Ex logs the same two lines at every save until the first load. Harmless, and not reachable from script.
 - **Do NOT use the SDK's `Core.dll`** — it silently breaks `#exec CONVERSATION IMPORT`. Keep the Steam GOTY `Core.dll`.
 - **UnrealEd 2.2 (UED22)** is incompatible with CNN maps — its stripped `.u` packages from UT 469e are missing Deus Ex functions. Engine versions are binary-incompatible; swapping `.u` files doesn't work.
 - **Original SDK editor** freezes on large maps (OpheliaL1, MoonIntro) and crashes when clicking empty space with properties window open (`HitSize==0` assertion in `UnCamera.cpp`).

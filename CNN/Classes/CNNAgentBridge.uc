@@ -204,6 +204,8 @@ function Run(string command, optional int seq)
         LogRaw(Player.ConsoleCommand(arg));
     else if (cmd == "ASSETCHECK")
         AssetCheck();
+    else if (cmd == "TEXTDUMP")
+        TextDump();
     else if (cmd == "WHERE")
         Where();
     else if (cmd == "FLAGS")
@@ -295,6 +297,106 @@ function AssetCheck()
 
     Report("ASSETCHECK " $ Level.Game.GetURLMap() $ ": " $ checkCons $ " conversations, " $
            checkLines $ " lines, " $ checkVoiced $ " voiced, " $ checkProblems $ " missing");
+}
+
+// ----------------------------------------------------------------------
+// TextDump()
+//
+// Logs the text of this map, for comparing two builds: every line, choice,
+// goal and note of the bound conversations, the items they name, the text
+// of every book and datacube, and the credits.
+// ----------------------------------------------------------------------
+
+function TextDump()
+{
+    local Actor a;
+    local ConListItem item;
+    local InformationDevices device;
+    local int cons, texts;
+
+    foreach AllActors(class'Actor', a)
+        for (item = ConListItem(a.conListItems); item != none; item = item.next)
+            if (item.con != none)
+            {
+                DumpConversationText(a, item.con);
+                cons++;
+            }
+
+    foreach AllActors(class'InformationDevices', device)
+        if (device.textTag != '')
+        {
+            DumpText(device.textTag, device.TextPackage);
+            texts++;
+        }
+    DumpText('CNNCredits', "CNN");
+
+    Report("TEXTDUMP " $ Level.Game.GetURLMap() $ ": " $ cons $ " conversations, " $ texts $ " texts");
+}
+
+function DumpConversationText(Actor conOwner, Conversation con)
+{
+    local ConEvent ev;
+    local ConEventSpeech speech;
+    local ConChoice choice;
+    local string prefix;
+
+    prefix = "CNN text: " $ con.conName $ " ";
+    Log(prefix $ "owner " $ conOwner.BindName $ " audio " $ con.audioPackageName);
+
+    for (ev = con.eventList; ev != none; ev = ev.nextEvent)
+    {
+        speech = ConEventSpeech(ev);
+        if ((speech != none) && (speech.conSpeech != none))
+            LogLong(prefix $ "say " $ speech.speakerName $ " #" $ speech.conSpeech.soundID $ ": ", speech.conSpeech.speech);
+        else if (ConEventChoice(ev) != none)
+        {
+            for (choice = ConEventChoice(ev).ChoiceList; choice != none; choice = choice.nextChoice)
+                LogLong(prefix $ "choice " $ choice.choiceLabel $ ": ", choice.choiceText);
+        }
+        else if (ConEventAddGoal(ev) != none)
+            LogLong(prefix $ "goal " $ ConEventAddGoal(ev).goalName $ ": ", ConEventAddGoal(ev).goalText);
+        else if (ConEventAddNote(ev) != none)
+            LogLong(prefix $ "note: ", ConEventAddNote(ev).noteText);
+        else if (ConEventAddSkillPoints(ev) != none)
+            LogLong(prefix $ "award: ", ConEventAddSkillPoints(ev).awardMessage);
+        else if (ConEventTransferObject(ev) != none)
+            Log(prefix $ "give " $ ConEventTransferObject(ev).objectName $ " = " $ ConEventTransferObject(ev).giveObject);
+        else if (ConEventCheckObject(ev) != none)
+            Log(prefix $ "check " $ ConEventCheckObject(ev).objectName $ " = " $ ConEventCheckObject(ev).checkObject);
+    }
+}
+
+// A very long line in the log crashes the game.
+function LogLong(string prefix, string text)
+{
+    while (Len(text) > 300)
+    {
+        Log(prefix $ Left(text, 300));
+        text = Mid(text, 300);
+    }
+    Log(prefix $ text);
+}
+
+function DumpText(name textName, string textPackage)
+{
+    local DeusExTextParser parser;
+    local byte tag;
+
+    parser = new(none) class'DeusExTextParser';
+    if (parser.OpenText(textName, textPackage))
+    {
+        parser.SetPlayerName(Player.TruePlayerName);
+        while (parser.ProcessText())
+        {
+            tag = parser.GetTag();
+            if ((tag == 0) || (tag == 9) || (tag == 10))
+                LogLong("CNN text: " $ textPackage $ "." $ textName $ ": ", parser.GetText());
+        }
+        parser.CloseText();
+    }
+    else
+        Log("CNN text: MISSING " $ textPackage $ "." $ textName);
+    CriticalDelete(parser);
 }
 
 function CheckMissing(string what)

@@ -539,6 +539,15 @@ UNK. Treat it as "gated on this flag" and nothing more.
 
 ## 7b. The invisible wall — a 3.9-unit membrane where two subtracts fail to meet
 
+> **Superseded 2026-11-04: do not apply `L2_SeamPatch.t3d`.** Everything below was measured on
+> `L2_export.t3d` (2026-08-16), which no longer matches the map: `Brush1272` has since moved 20
+> units (Y -4643.8 -> -4624). On the current map, in game and in a fresh export, X≈760 and X≈1140
+> are a solid wall from Y -5464 to Y -5439, 25 thick, and `membranes` finds none. The patch applied
+> to a copy only shaved it to Y -5459; the player still stops. The route is open through the
+> doorway at X≈940. Whether the side strips should be open at all is a design question, and the
+> south face (dark blue, hard to read as a wall) may be the actual complaint. Export a fresh t3d
+> before trusting `map_probe.js`. The patch also needs a builder brush first: see `tools/t3d_write.js`.
+
 Found 2026-08-26 with `tools/map_probe.js` after two wrong diagnoses (both recorded at the
 bottom, so nobody re-walks them).
 

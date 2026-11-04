@@ -98,11 +98,16 @@ if ($Close) {
         [void][UedMenu]::Click($ed.Id, 'Exit')
         for ($i = 0; $i -lt 10 -and -not $ed.HasExited; $i++) { Start-Sleep 1; $ed.Refresh() }
         if (-not $ed.HasExited) {
-            # "save changes?" is answered no
+            # "save changes?" is answered no, only when the editor really has the focus
             $shell = New-Object -ComObject WScript.Shell
-            [void]$shell.AppActivate($ed.Id); Start-Sleep 1; $shell.SendKeys('n')
-            for ($i = 0; $i -lt 15 -and -not $ed.HasExited; $i++) { Start-Sleep 1; $ed.Refresh() }
+            if ($ed.Responding -and $shell.AppActivate($ed.Id)) {
+                Start-Sleep 1; $shell.SendKeys('n')
+                for ($i = 0; $i -lt 15 -and -not $ed.HasExited; $i++) { Start-Sleep 1; $ed.Refresh() }
+            }
         }
+        # it can hang on the way out with its windows already gone; nothing is saved here anyway
+        if (-not $ed.HasExited -and -not $ed.Responding) { 'editor hung on exit: stopped'; Stop-Process -Id $ed.Id -Force; Start-Sleep 2 }
+        $ed.Refresh()
         if (-not $ed.HasExited) { 'editor still open: nothing restored'; return }
     }
     $log = Get-Content (Join-Path $cu 'Editor.log') -ErrorAction SilentlyContinue
@@ -126,7 +131,8 @@ if ($Map) {
         foreach ($f in $kept) { if (Test-Path "$cu\$f") { Copy-Item "$cu\$f" "$keep\" -Force } }
     }
     if ($Play) { Write-PlayInis }
-    $ed = Start-Process (Join-Path $cu 'UnrealEd.exe') -WorkingDirectory $cu -ArgumentList "..\..\..\CNNMaps\$Map.dx" -PassThru
+    $mapPath = if ($Map -match ':') { "$Map.dx" } else { "..\..\..\CNNMaps\$Map.dx" }
+    $ed = Start-Process (Join-Path $cu 'UnrealEd.exe') -WorkingDirectory $cu -ArgumentList $mapPath -PassThru
     for ($i = 0; $i -lt 30; $i++) { Start-Sleep 2; $ed.Refresh(); if ($ed.MainWindowTitle -match 'UnrealEd' -and $ed.Responding) { break } }
     Start-Sleep $LoadSeconds
     "editor up with $Map"

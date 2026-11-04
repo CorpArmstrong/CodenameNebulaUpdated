@@ -41,8 +41,7 @@ const parts = [
     box('Balcony', 'CSG_Add', [0, 384, 64], [1024, 256, 128], METAL),
     stairs('Step', 'CSG_Add', {x: 0, y: 0, z: 0, width: 128}, 8, METAL),
     wedge('Ramp', 'CSG_Add', [350, 128, 64], [128, 256, 128], METAL),
-    // A ladder is any surface of a texture in group Ladder. Here ladder_a drew black, on the wall
-    // and on a masked sheet (flags as in the stock maps), cause not found; LadrBrwnMetal draws.
+    // A ladder is any solid surface of a texture in group Ladder; t3d_write's ladder() adds rungs.
     box('Tower', 'CSG_Add', [-448, 0, 128], [128, 128, 256], {top: METAL, bottom: METAL, side: METAL, px: 'LadrBrwnMetal'}),
 
     // Brushes that do not cut the world as solids.

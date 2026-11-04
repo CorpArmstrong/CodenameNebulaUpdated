@@ -8,6 +8,8 @@
  * conversation finished?" without opening a GUI. This reads the binary
  * directly.
  *
+ * tools/con_format.js reads the whole format; this one stays for its flag map.
+ *
  * Format (reverse-engineered from CNN's own .con files):
  *   "Deus Ex Conversation File" 0x1A
  *   int32  version

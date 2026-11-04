@@ -16,14 +16,16 @@
 #
 # With the game up, the bridge takes the -SystemDir and -Ini printed here.
 # Usage:
-#   cnn_ued.ps1 -Map 06_OpheliaL2 [-Play]
+#   cnn_ued.ps1 -Map 06_OpheliaL2 [-Play] [-ExtraPaths 'X:\*.u','X:\*.dx']
 #   cnn_ued.ps1 -Play                     (editor already open on a map)
 #   cnn_ued.ps1 -Close                    (lists the problems in Editor.log)
+# -ExtraPaths adds a mod's own packages and maps to the ini, for this run only.
 # ---------------------------------------------------------------------------
 param(
     [string]$Map,
     [switch]$Play,
     [switch]$Close,
+    [string[]]$ExtraPaths,
     [string]$Root = 'D:\Program Files (x86)\Steam\steamapps\common\Deus Ex',
     [int]$LoadSeconds = 25,
     [int]$Timeout = 90
@@ -129,6 +131,11 @@ if ($Map) {
     if (-not (Test-Path $keep)) {
         New-Item -ItemType Directory -Force $keep | Out-Null
         foreach ($f in $kept) { if (Test-Path "$cu\$f") { Copy-Item "$cu\$f" "$keep\" -Force } }
+    }
+    if ($ExtraPaths) {
+        $t = Get-Content $ini
+        $at = [Array]::IndexOf($t, '[Core.System]')
+        Set-Content $ini ($t[0..$at] + ($ExtraPaths | ForEach-Object { "Paths=$_" }) + $t[($at + 1)..($t.Count - 1)]) -Encoding ASCII
     }
     if ($Play) { Write-PlayInis }
     $mapPath = if ($Map -match ':') { "$Map.dx" } else { "..\..\..\CNNMaps\$Map.dx" }

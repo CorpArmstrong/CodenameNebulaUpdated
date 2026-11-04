@@ -20,6 +20,10 @@
  * generates hypotheses. It sees holes in the tree, not faults in rendering order
  * or zone visibility, and only from where actors stand.
  *
+ * Looked at by eye, 2026-11-04. INVISIBLE is real: a wall flagged Invisible draws as a
+ * black void (the room behind it does not show), and it was reported as such. NO_POLY is
+ * unproven: on stock Airfield most of it is a sea floor under fog, nothing to see there.
+ *
  * Usage:
  *   node tools/bsp_audit.js <map.dx> [--rays 300] [--range 4000] [--top 25] [--all]
  *   node tools/bsp_audit.js <map.dx> at <x> <y> <z>        solid or open, zone

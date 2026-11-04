@@ -13,6 +13,7 @@
  *   wedge(name, op, centre, size, tex, opts)            a ramp rising towards +Y
  *   stairs(prefix, op, base, steps, tex)                columns from base.z; see below
  *   sheet(name, centre, plane, w, h, tex, flags)        one polygon: 'XY' floor, 'XZ', 'YZ' wall
+ *   ladder(name, x, y, z, height, face)                 climbable, with rungs, on a wall along Y
  *   zonePortal, waterSurface, mover                     sheets and movers with the usual flags
  *
  * tex is a name or {top, bottom, side}, a box also takes {px, nx, py, ny} per wall.
@@ -46,9 +47,9 @@ function texAxes(n) {
     return [unit(cross([0, 0, 1], n)), [0, 0, -1]];
 }
 
-function poly(verts, normal, tex, flags) {
+function poly(verts, normal, tex, flags, texScale = 1) {
     const head = 'Begin Polygon' + (tex ? ' Texture=' + tex : '') + (flags ? ' Flags=' + flags : '');
-    const [u, v] = texAxes(normal);
+    const [u, v] = texAxes(normal).map((a) => a.map((x) => x * texScale));
     return `          ${head}
              Origin   ${vec(verts[0])}
              Normal   ${vec(normal)}
@@ -151,11 +152,19 @@ const sheetVerts = {
     YZ: (a, b) => [[0, a, b], [0, a, -b], [0, -a, -b], [0, -a, b]],
 };
 
-const sheet = (name, loc, plane, w, h, tex, flags) => {
+const sheet = (name, loc, plane, w, h, tex, flags, texScale) => {
     const verts = sheetVerts[plane](w / 2, h / 2);
     const n = unit(cross(sub(verts[1], verts[0]), sub(verts[2], verts[0])));
-    return brushActor('Brush', name, loc, brushProps('CSG_Add', {flags}), poly(verts, n, tex, flags));
+    return brushActor('Brush', name, loc, brushProps('CSG_Add', {flags}), poly(verts, n, tex, flags, texScale));
 };
+
+// A ladder as in the stock maps, along a YZ wall: an invisible solid of a Ladder-group texture is
+// what the player climbs, a masked sheet in front of it is what the player sees. ladder_a is 128 wide with
+// rails at both edges; texScale 2 fits one tile in 64 units. On a plain solid wall ladder_a has no
+// mask (Masked needs a sheet) and its see-through part draws black; a sheet alone cannot be climbed.
+const ladder = (name, x, y, z, height, face = -1) =>
+    box(name + 'Block', 'CSG_Add', [x, y, z], [8, 64, height], 'LadrBrwnMetal', {flags: PF.Invisible | PF.Semisolid | PF.TwoSided})
+    + sheet(name + 'Rungs', [x + face * 6, y, z], 'YZ', 64, height, 'ladder_a', PF.Masked | PF.NotSolid | PF.TwoSided, 2);
 
 // Seals a zone across an opening. Needs a ZoneInfo inside the zone it closes.
 const zonePortal = (name, loc, width, height, plane = 'YZ') =>
@@ -177,4 +186,4 @@ const actor = (cls, name, loc, props = '') =>
 
 const map = (parts) => 'Begin Map\n' + parts.join('') + 'End Map\n';
 
-module.exports = {PF, builder, box, prism, wedge, stairs, sheet, zonePortal, waterSurface, mover, actor, map};
+module.exports = {PF, builder, box, prism, wedge, stairs, sheet, ladder, zonePortal, waterSurface, mover, actor, map};
